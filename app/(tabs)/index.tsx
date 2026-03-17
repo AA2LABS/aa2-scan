@@ -1,4 +1,4 @@
-import { supabase } from '../../Lib/supabase';
+import { supabase } from '../../lib/supabase';
 import Anthropic from '@anthropic-ai/sdk';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState } from 'react';
@@ -72,7 +72,7 @@ const SPECIES_SUBS = [
 function buildSystemPrompt(tab: string, speciesSub?: string): string {
   const base = `You are The Equalizer — AA2's immune system and first line of truth. You are backed by 9 databases: Open Food Facts, USDA FoodData Central, OpenFDA Food Recalls, OpenFDA Cosmetics/Animal & Veterinary, Open Beauty Facts/Open Pet Food Facts, PubChem NIH, EWG, ASPCA Animal Poison Control, and EU CosIng/CA Safe Cosmetics/WHO FAO Codex.
 
-PERSONALITY DOCTRINE: Heimdall sees it first. The Kybalion explains why. Logic translates it. Denzel handles it if it gets out of hand. Never alarmist. Never silent about real danger.
+PERSONALITY DOCTRINE: Speak as The Equalizer in first person only. Direct, calm, factual, complete. Never alarmist. Never silent about real danger. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference in any output. These are permanently banned from all responses.
 
 Return ONLY valid JSON — no markdown, no backticks, no preamble.`;
 
@@ -82,9 +82,9 @@ Return ONLY valid JSON — no markdown, no backticks, no preamble.`;
   "productName": "string",
   "keyFindings": ["string", "string", "string"],
   "databasesHit": ["string"],
-  "equalizerVoice": "string — Equalizer's direct assessment (Heimdall/Denzel/Logic/Kybalion blend)",
-  "chefNote": "string — The Chef's practical kitchen/pairing/recipe angle",
-  "actRightDollars": "string — how this decision affects the Vault",
+  "equalizerVoice": "string — The Equalizer speaks in first person. Calm, factual, complete. No mythological references.",
+  "chefNote": "string — REQUIRED. The Chef always speaks. Must include exactly 3 specific recipes, preparation methods, or usage suggestions. Number them 1. 2. 3. Never null. Never empty.",
+  "actRightDollars": "string — REQUIRED. State the exact dollar amount saved by choosing the better alternative. Always end with: That amount goes directly into your AA2 Vault as Act Right Dollars. Never generic. Never null.",
   "recallAlert": "string or null",
   "alternatives": ["string"]
 }`;
@@ -176,23 +176,21 @@ export default function ScannerScreen() {
   const [result, setResult] = useState<any>(null);
   const [history, setHistory] = useState<ScanRecord[]>([]);
   const [historyVisible, setHistoryVisible] = useState(false);
+  const [barcodeReady, setBarcodeReady] = useState(false);
   const scannedRef = useRef(false);
+  const lastBarcodeRef = useRef<string | null>(null);
 
   const currentTab = TABS.find(t => t.id === activeTab)!;
   const accentColor = activeTab === 'species'
     ? SPECIES_SUBS.find(s => s.id === speciesSub)?.color || C.electricBlue
     : currentTab.color;
 
-  // ── CAMERA SCAN (barcode or vision) ────────────────────────────────────────
-  const handleBarcodeScanned = async ({ data }: { data: string }) => {
-    if (scannedRef.current || loading) return;
-    scannedRef.current = true;
-    setScanning(false);
-    setCameraMode(false);
-    await runAnalysis(data);
+  const handleBarcodeScanned = ({ data }: { data: string }) => {
+    if (loading) return;
+    lastBarcodeRef.current = data;
+    setBarcodeReady(true);
   };
 
-  // ── MANUAL INPUT ────────────────────────────────────────────────────────────
   const handleManualSubmit = async () => {
     if (!manualInput.trim()) {
       Alert.alert('Enter Something', 'Type a product name, barcode, or describe what you see.');
@@ -202,7 +200,6 @@ export default function ScannerScreen() {
     setManualInput('');
   };
 
-  // ── OPEN FOOD FACTS REAL PRODUCT LOOKUP ────────────────────────────────────
   const lookupBarcode = async (barcode: string): Promise<string> => {
     try {
       const res = await fetch(
@@ -211,7 +208,7 @@ export default function ScannerScreen() {
       );
       const data = await res.json();
       if (data.status !== 1 || !data.product) {
-        return `Barcode: ${barcode}. Product not found in Open Food Facts. Analyze based on barcode.`;
+        return `Barcode: ${barcode}. Product not found in Open Food Facts database. Use your training knowledge to infer likely ingredients, additives, and safety profile for this product. Return full verdict JSON with chefNote, actRightDollars, and alternatives.`;
       }
       const p = data.product;
       const name        = p.product_name || p.product_name_en || 'Unknown product';
@@ -241,22 +238,27 @@ export default function ScannerScreen() {
     }
   };
 
-  // ── CORE ANALYSIS ENGINE (ALL 9 DATABASES) ─────────────────────────────────
   const runAnalysis = async (query: string) => {
     setLoading(true);
     setResult(null);
     const effectiveSub = activeTab === 'species' ? speciesSub : undefined;
 
     try {
-      // For TAB 1 SCAN — look up REAL product from Open Food Facts first
       const isBarcode = activeTab === 'scan' && /^\d{6,14}$/.test(query.trim());
-      const analysisContent = isBarcode
-        ? await lookupBarcode(query.trim())
+      let analysisContent = isBarcode
+        ? `Barcode: ${query.trim()}. Product name unknown yet. Analyze based on barcode and return verdict JSON.`
         : activeTab === 'scan'
         ? `Product name: ${query}. Analyze against all 9 databases and return verdict JSON.`
         : activeTab === 'species'
         ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.label} — item/ingredient: ${query}. Analyze and return verdict JSON.`
         : `Item observed: ${query}. Analyze and return verdict JSON.`;
+      if (isBarcode) {
+        const barcodeData = await Promise.race([
+          lookupBarcode(query.trim()),
+          new Promise<null>(r => setTimeout(() => r(null), 2000))
+        ]);
+        if (barcodeData) analysisContent = barcodeData;
+      }
 
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-20250514',
@@ -273,10 +275,8 @@ export default function ScannerScreen() {
       const parsed = JSON.parse(cleaned);
       setResult(parsed);
 
-      // FIX: use query (the actual barcode or product name) — was lastScannedBarcode (undeclared)
       await saveToSupabase(parsed, query);
 
-      // save to history
       const record: ScanRecord = {
         id: Date.now().toString(),
         timestamp: new Date().toLocaleString(),
@@ -317,7 +317,6 @@ export default function ScannerScreen() {
     }
   };
 
-  // ── OPEN CAMERA ─────────────────────────────────────────────────────────────
   const openCamera = async () => {
     if (!permission?.granted) {
       const res = await requestPermission();
@@ -327,44 +326,82 @@ export default function ScannerScreen() {
       }
     }
     scannedRef.current = false;
+    lastBarcodeRef.current = null;
+    setBarcodeReady(false);
     setCameraMode(true);
     setScanning(true);
   };
 
-  // ── VERDICT COLORS ──────────────────────────────────────────────────────────
+  const handleCapture = async () => {
+    if (loading) return;
+    const barcode = lastBarcodeRef.current;
+    if (activeTab === 'scan') {
+      if (barcode) {
+        scannedRef.current = true;
+        setScanning(false);
+        setCameraMode(false);
+        await runAnalysis(barcode);
+      } else {
+        Alert.alert('Point at Barcode', 'Aim at a barcode, then tap the capture button.');
+      }
+      return;
+    }
+    if (activeTab === 'care' && barcode) {
+      scannedRef.current = true;
+      setScanning(false);
+      setCameraMode(false);
+      await runAnalysis(barcode);
+      return;
+    }
+    const prompt = `Vision scan from camera — ${currentTab.label} tab`;
+    setCameraMode(false);
+    setScanning(false);
+    await runAnalysis(prompt);
+  };
+
+  const handleCancelCamera = () => {
+    lastBarcodeRef.current = null;
+    setBarcodeReady(false);
+    scannedRef.current = false;
+    setCameraMode(false);
+    setScanning(false);
+  };
+
   const verdictColor = (v: string) =>
     v === 'ALL CLEAR' ? C.allClear : v === 'HEADS UP' ? C.headsUp : C.payAttention;
 
   const verdictIcon = (v: string) =>
     v === 'ALL CLEAR' ? '✓' : v === 'HEADS UP' ? '⚠' : '✕';
 
-  // ── RENDER ──────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.root}>
 
       {/* ── HEADER ── */}
       <View style={styles.header}>
-        <Text style={styles.receipt}>I AM THE RECEIPT</Text>
-        {/* FIX: DNA replaces infinity symbol per Canon v17 */}
+        <Text style={styles.receipt} numberOfLines={1}>I AM THE RECEIPT</Text>
         <Text style={styles.logoSymbol}>🧬</Text>
         <TouchableOpacity onPress={() => setHistoryVisible(true)} style={styles.historyBtn}>
           <Text style={styles.historyBtnText}>{history.length > 0 ? `⏱ ${history.length}` : '⏱'}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── TAB BAR ── */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabBar} contentContainerStyle={styles.tabBarContent}>
-        {TABS.map(tab => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[styles.tabBtn, activeTab === tab.id && { borderBottomColor: tab.color, borderBottomWidth: 2 }]}
-            onPress={() => { setActiveTab(tab.id); setResult(null); }}
-          >
-            <Text style={styles.tabIcon}>{tab.icon}</Text>
-            <Text style={[styles.tabLabel, activeTab === tab.id && { color: tab.color }]}>{tab.label}</Text>
-          </TouchableOpacity>
+      {/* ── TAB BAR — 2 rows of 3 ── */}
+      <View style={styles.tabGrid}>
+        {[TABS.slice(0, 3), TABS.slice(3, 6)].map((row, rowIdx) => (
+          <View key={rowIdx} style={styles.tabRow}>
+            {row.map(tab => (
+              <TouchableOpacity
+                key={tab.id}
+                style={[styles.tabBtn, activeTab === tab.id && { borderBottomColor: tab.color, borderBottomWidth: 2 }]}
+                onPress={() => { setActiveTab(tab.id); setResult(null); }}
+              >
+                <Text style={styles.tabIcon}>{tab.icon}</Text>
+                <Text style={[styles.tabLabel, activeTab === tab.id && { color: tab.color }]}>{tab.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         ))}
-      </ScrollView>
+      </View>
 
       {/* ── SPECIES SUB-TABS ── */}
       {activeTab === 'species' && (
@@ -388,29 +425,29 @@ export default function ScannerScreen() {
           <CameraView
             style={styles.camera}
             facing="back"
-            onBarcodeScanned={activeTab === 'scan' ? handleBarcodeScanned : undefined}
+            onBarcodeScanned={activeTab === 'scan' || activeTab === 'care' ? handleBarcodeScanned : undefined}
           >
             <View style={styles.cameraOverlay}>
-              <View style={[styles.scanFrame, { borderColor: accentColor }]} />
-              <Text style={[styles.cameraHint, { color: accentColor }]}>
-                {activeTab === 'scan' ? 'POINT AT BARCODE' : 'FRAME THE ITEM'}
-              </Text>
-              {activeTab !== 'scan' && (
+              <View style={styles.cameraFrameGroup}>
+                <View style={[styles.scanFrame, { borderColor: accentColor }]} />
+                <Text style={[styles.cameraHint, { color: accentColor }]}>
+                  {activeTab === 'scan'
+                    ? (barcodeReady ? 'BARCODE READY · TAP TO SCAN' : 'POINT AT BARCODE')
+                    : 'FRAME THE ITEM'}
+                </Text>
+              </View>
+              <View style={styles.cameraControls}>
                 <TouchableOpacity
-                  style={[styles.captureBtn, { backgroundColor: accentColor }]}
-                  onPress={() => {
-                    const prompt = `Vision scan from camera — ${currentTab.label} tab`;
-                    setCameraMode(false);
-                    setScanning(false);
-                    runAnalysis(prompt);
-                  }}
+                  style={[styles.captureCircleOuter, { borderColor: accentColor }]}
+                  onPress={handleCapture}
+                  activeOpacity={0.85}
                 >
-                  <Text style={styles.captureBtnText}>ANALYZE THIS</Text>
+                  <View style={[styles.captureCircleInner, { backgroundColor: accentColor }]} />
                 </TouchableOpacity>
-              )}
-              <TouchableOpacity style={styles.cancelCameraBtn} onPress={() => { setCameraMode(false); setScanning(false); }}>
-                <Text style={styles.cancelCameraText}>✕ CANCEL</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.cancelRestartBtn} onPress={handleCancelCamera}>
+                  <Text style={styles.cancelRestartText}>✕ CANCEL</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </CameraView>
         </View>
@@ -426,7 +463,7 @@ export default function ScannerScreen() {
                activeTab === 'grownfolks' ? '🍷 GROWN FOLKS TABLE' :
                activeTab === 'species' ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.icon} SPECIES INTELLIGENCE` :
                activeTab === 'produce' ? '🌿 FRESH PRODUCE INTELLIGENCE' :
-               '⚡ 9-DATABASE SCAN ENGINE'}
+               '⚡ SCAN — SAFETY CLARIFIER ADAPTIVE NERVE'}
             </Text>
             <Text style={styles.doctrineBody}>
               {activeTab === 'meat'
@@ -443,14 +480,12 @@ export default function ScannerScreen() {
                 ? 'USDA feed safety + mycotoxin database. Protecting the herd from slow, invisible harm.'
                 : activeTab === 'produce'
                 ? 'No barcode needed. EWG Dirty Dozen / Clean 15. Pesticide residue likelihood. The Chef on preparation.'
-                : 'Open Food Facts · USDA · OpenFDA · PubChem · EWG · ASPCA · EU CosIng · WHO/FAO Codex and more.'}
+                : 'SCAN — Safety Clarifier Adaptive Nerve'}
             </Text>
           </View>
 
           {/* ── SCAN INPUT ── */}
           <View style={styles.inputCard}>
-
-            {/* Camera button */}
             <TouchableOpacity
               style={[styles.cameraActivateBtn, { backgroundColor: accentColor + '22', borderColor: accentColor }]}
               onPress={openCamera}
@@ -465,7 +500,6 @@ export default function ScannerScreen() {
 
             <Text style={styles.orDivider}>— or type it —</Text>
 
-            {/* Manual input */}
             <TextInput
               style={[styles.manualInput, { borderColor: accentColor + '55' }]}
               placeholder={
@@ -505,7 +539,6 @@ export default function ScannerScreen() {
           {result && !loading && (
             <View style={styles.resultBlock}>
 
-              {/* VERDICT BANNER */}
               <View style={[styles.verdictBanner, { backgroundColor: verdictColor(result.verdict) + '20', borderColor: verdictColor(result.verdict) }]}>
                 <Text style={[styles.verdictIcon, { color: verdictColor(result.verdict) }]}>
                   {verdictIcon(result.verdict)}
@@ -518,25 +551,20 @@ export default function ScannerScreen() {
                 </View>
               </View>
 
-              {/* PRODUCT NAME */}
               {result.productName && (
                 <Text style={styles.productName}>{result.productName}</Text>
               )}
 
-              {/* RECALL ALERT */}
               {result.recallAlert && (
                 <View style={styles.recallBanner}>
                   <Text style={styles.recallText}>🚨 RECALL ALERT: {result.recallAlert}</Text>
                 </View>
               )}
 
-              {/* THE EQUALIZER */}
               <View style={styles.intelligenceCard}>
-                <Text style={styles.intelHeader}>⚖ THE EQUALIZER</Text>
                 <Text style={styles.intelBody}>{result.equalizerVoice}</Text>
               </View>
 
-              {/* KEY FINDINGS */}
               {result.keyFindings?.length > 0 && (
                 <View style={styles.findingsCard}>
                   <Text style={styles.findingsHeader}>KEY FINDINGS</Text>
@@ -549,18 +577,18 @@ export default function ScannerScreen() {
                 </View>
               )}
 
-              {/* THE CHEF / SOMMELIER / FORMULATOR */}
               {result.chefNote && (
                 <View style={[styles.intelligenceCard, { borderLeftColor: C.orange }]}>
                   <Text style={[styles.intelHeader, { color: C.orange }]}>
-                    {activeTab === 'care' ? '⚗ THE FORMULATOR' :
-                     activeTab === 'grownfolks' ? '🍷 THE SOMMELIER' : '👨‍🍳 THE CHEF'}
+                    {activeTab === 'care' ? '⚗ Cosmo Chemist' :
+                     activeTab === 'grownfolks' ? '🍷 THE SOMMELIER' :
+                     activeTab === 'species' ? (speciesSub === 'k9' ? '🐕 Canine Nutritionist' : speciesSub === 'horse' ? '🐴 Equine Nutritionist' : '🌾 Agricultural Analyst') :
+                     '👨‍🍳 THE CHEF'}
                   </Text>
                   <Text style={styles.intelBody}>{result.chefNote}</Text>
                 </View>
               )}
 
-              {/* ALTERNATIVES */}
               {result.alternatives?.length > 0 && (
                 <View style={styles.altCard}>
                   <Text style={styles.altHeader}>BETTER ALTERNATIVES</Text>
@@ -570,7 +598,6 @@ export default function ScannerScreen() {
                 </View>
               )}
 
-              {/* ACT RIGHT DOLLARS */}
               {result.actRightDollars && (
                 <View style={styles.vaultCard}>
                   <Text style={styles.vaultLabel}>💎 ACT RIGHT DOLLARS</Text>
@@ -578,9 +605,6 @@ export default function ScannerScreen() {
                 </View>
               )}
 
-              {/* FIX: DATABASES CONSULTED — REMOVED. Internal intelligence. Never displayed. */}
-
-              {/* SCAN AGAIN */}
               <TouchableOpacity
                 style={[styles.scanAgainBtn, { borderColor: accentColor }]}
                 onPress={() => setResult(null)}
@@ -654,35 +678,30 @@ export default function ScannerScreen() {
 const styles = StyleSheet.create({
   root:               { flex: 1, backgroundColor: C.nearBlack },
 
-  // Header
   header:             { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
-  receipt:            { fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', fontSize: 9, color: C.dimWhite, letterSpacing: 2, flex: 1 },
+  receipt:            { fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', fontSize: 9, color: C.dimWhite, letterSpacing: 2, flex: 1, flexShrink: 0 },
   logoSymbol:         { fontSize: 20, color: C.electricBlue, flex: 1, textAlign: 'center' },
   historyBtn:         { flex: 1, alignItems: 'flex-end' },
   historyBtnText:     { color: C.dimWhite, fontSize: 11, fontWeight: '700' },
 
-  // Tab Bar
-  tabBar:             { maxHeight: 60, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
-  tabBarContent:      { paddingHorizontal: 8, alignItems: 'center' },
-  tabBtn:             { paddingHorizontal: 12, paddingVertical: 10, marginHorizontal: 2, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabIcon:            { fontSize: 14 },
-  tabLabel:           { color: C.dimWhite, fontSize: 9, fontWeight: '800', letterSpacing: 1, marginTop: 2 },
+  // ── 2-row tab grid ──
+  tabGrid:            { borderBottomWidth: 1, borderBottomColor: C.glassBorder },
+  tabRow:             { flexDirection: 'row' },
+  tabBtn:             { flex: 1, paddingVertical: 10, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabIcon:            { fontSize: 16 },
+  tabLabel:           { color: C.dimWhite, fontSize: 8, fontWeight: '800', letterSpacing: 0.8, marginTop: 2 },
 
-  // Species sub-tabs
   speciesRow:         { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
   subTab:             { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: C.glassBorder, backgroundColor: C.glass },
   subTabIcon:         { fontSize: 14 },
   subTabLabel:        { color: C.dimWhite, fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 
-  // Body
   body:               { flex: 1 },
 
-  // Doctrine banner
   doctrineBanner:     { marginHorizontal: 12, marginTop: 10, padding: 12, backgroundColor: C.glass, borderRadius: 10, borderLeftWidth: 3, borderWidth: 1, borderColor: C.glassBorder },
   doctrineTitleText:  { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
   doctrineBody:       { color: C.dimWhite, fontSize: 11, lineHeight: 17 },
 
-  // Input card
   inputCard:          { margin: 12, padding: 16, backgroundColor: C.glass, borderRadius: 12, borderWidth: 1, borderColor: C.glassBorder },
   cameraActivateBtn:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 14, borderRadius: 10, borderWidth: 1, marginBottom: 12 },
   cameraActivateIcon: { fontSize: 20 },
@@ -692,23 +711,22 @@ const styles = StyleSheet.create({
   analyzeBtn:         { paddingVertical: 13, borderRadius: 8, alignItems: 'center' },
   analyzeBtnText:     { color: C.nearBlack, fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  // Camera
   cameraContainer:    { flex: 1 },
   camera:             { flex: 1 },
-  cameraOverlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
+  cameraOverlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'space-between', alignItems: 'center', paddingTop: 40, paddingBottom: 48 },
+  cameraFrameGroup:   { alignItems: 'center' },
   scanFrame:          { width: 240, height: 160, borderWidth: 2, borderRadius: 12, marginBottom: 20 },
-  cameraHint:         { fontWeight: '800', fontSize: 12, letterSpacing: 2, marginBottom: 20 },
-  captureBtn:         { paddingVertical: 14, paddingHorizontal: 32, borderRadius: 10, marginBottom: 16 },
-  captureBtnText:     { color: C.nearBlack, fontWeight: '900', fontSize: 13, letterSpacing: 1 },
-  cancelCameraBtn:    { paddingVertical: 10, paddingHorizontal: 24 },
-  cancelCameraText:   { color: C.white, fontSize: 12, fontWeight: '700', letterSpacing: 1 },
+  cameraHint:         { fontWeight: '800', fontSize: 12, letterSpacing: 2 },
+  cameraControls:     { alignItems: 'center', width: '100%' },
+  captureCircleOuter: { width: 80, height: 80, borderRadius: 40, borderWidth: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: C.glass, marginBottom: 20 },
+  captureCircleInner: { width: 60, height: 60, borderRadius: 30 },
+  cancelRestartBtn:   { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder },
+  cancelRestartText:  { color: C.dimWhite, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
 
-  // Loading
   loadingCard:        { margin: 12, padding: 28, backgroundColor: C.glass, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: C.glassBorder },
   loadingLabel:       { fontWeight: '900', fontSize: 11, letterSpacing: 2, marginTop: 14 },
   loadingDb:          { color: C.dimWhite, fontSize: 9, letterSpacing: 1.5, marginTop: 6 },
 
-  // Result
   resultBlock:        { margin: 12 },
   verdictBanner:      { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: 2, marginBottom: 10 },
   verdictIcon:        { fontSize: 28, fontWeight: '900', width: 36, textAlign: 'center' },
@@ -734,13 +752,11 @@ const styles = StyleSheet.create({
   scanAgainBtn:       { borderWidth: 1, borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   scanAgainText:      { fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  // Empty state
   emptyState:         { alignItems: 'center', paddingTop: 60, paddingBottom: 40 },
   emptyIcon:          { fontSize: 64 },
   emptyLabel:         { color: C.dimWhite, fontWeight: '900', fontSize: 11, letterSpacing: 3, marginTop: 16 },
   emptySubLabel:      { color: C.dimWhite + '88', fontSize: 9, letterSpacing: 2, marginTop: 4 },
 
-  // History modal
   modalRoot:          { flex: 1, backgroundColor: '#080c12' },
   modalHeader:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
   modalTitle:         { color: C.white, fontWeight: '900', fontSize: 14, letterSpacing: 2 },
