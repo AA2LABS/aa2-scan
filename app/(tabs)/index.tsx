@@ -46,15 +46,15 @@ const anthropic = new Anthropic({
 
 // ─── HERO IMAGES ─────────────────────────────────────────────────────────────
 const TAB_HEROES: Record<string, any> = {
-  scan:       require('../../assets/images/tab-scan.png'),
+  scan:       require('../../assets/images/tab-scan.jpg'),
   produce:    require('../../assets/images/tab-produce.jpg'),
-  meat:       require('../../assets/images/tab-meat.png'),
-  care:       require('../../assets/images/tab-care.png'),
-  grownfolks: require('../../assets/images/tab-grownfolks.png'),
+  meat:       require('../../assets/images/tab-meat.jpg'),
+  care:       require('../../assets/images/tab-care.jpg'),
+  grownfolks: require('../../assets/images/tab-grownfolks.jpg'),
   species:    null,
-  k9:         require('../../assets/images/tab-k9.png'),
+  k9:         require('../../assets/images/tab-k9.jpg'),
   horse:      require('../../assets/images/tab-horse.jpg'),
-  agri:       require('../../assets/images/tab-agri.png'),
+  agri:       require('../../assets/images/tab-agri.jpg'),
 };
 
 // ─── TAB CONFIG ───────────────────────────────────────────────────────────────
