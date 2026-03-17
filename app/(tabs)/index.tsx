@@ -44,19 +44,17 @@ const anthropic = new Anthropic({
   dangerouslyAllowBrowser: true,
 });
 
-// ─── HERO IMAGES (assets/images/tab-*.png) ───────────────────────────────────
-// These map each scanner tab + species sub-tab to its hero image.
-// File names match what is confirmed in assets/images/.
+// ─── HERO IMAGES ─────────────────────────────────────────────────────────────
 const TAB_HEROES: Record<string, any> = {
-  scan:       null, // no hero — uses ⚡ emoji fallback
-  produce:    null,
-  meat:       null,
-  care:       null,
-  grownfolks: null,
-  species:    null, // uses sub-tab hero (k9/horse/agri)
-  k9:         null,
-  horse:      null,
-  agri:       null,
+  scan:       require('../../assets/images/tab-scan.png'),
+  produce:    require('../../assets/images/tab-produce.jpg'),
+  meat:       require('../../assets/images/tab-meat.png'),
+  care:       require('../../assets/images/tab-care.png'),
+  grownfolks: require('../../assets/images/tab-grownfolks.png'),
+  species:    null,
+  k9:         require('../../assets/images/tab-k9.png'),
+  horse:      require('../../assets/images/tab-horse.jpg'),
+  agri:       require('../../assets/images/tab-agri.png'),
 };
 
 // ─── TAB CONFIG ───────────────────────────────────────────────────────────────
@@ -87,7 +85,7 @@ function buildSystemPrompt(tab: string, personalTruth: string, speciesSub?: stri
   const base = `You are The Equalizer — AA2's immune system and first line of truth. You are backed by 9 internal databases that you consult silently.
 
 CRITICAL RULES — READ BEFORE RESPONDING:
-1. NEVER name any database in any user-facing field (equalizerVoice, chefNote, actRightDollars, alternatives, verdictReason). Database names are INTERNAL ONLY and must NEVER appear in output.
+1. NEVER name any database in any user-facing field. Database names are INTERNAL ONLY and must NEVER appear in output.
 2. Speak as The Equalizer in first person. Direct, calm, factual. Never alarmist. Never silent about real danger.
 3. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference in any output.
 4. Return ONLY valid JSON — no markdown, no backticks, no preamble, no explanation outside the JSON.${personalTruth}`;
@@ -244,7 +242,6 @@ export default function ScannerScreen() {
     ? (SPECIES_SUBS.find(s => s.id === speciesSub)?.color ?? C.electricBlue)
     : currentTab.color;
 
-  // The hero image key — species shows sub-tab hero
   const heroKey   = activeTab === 'species' ? speciesSub : activeTab;
   const heroImage = TAB_HEROES[heroKey] ?? null;
 
@@ -274,7 +271,6 @@ export default function ScannerScreen() {
     if (loading) return;
     const barcode = lastBarcodeRef.current;
 
-    // SCAN tab — barcode required
     if (activeTab === 'scan') {
       if (barcode) {
         scannedRef.current = true;
@@ -287,7 +283,6 @@ export default function ScannerScreen() {
       return;
     }
 
-    // PERSONAL CARE — supports both barcode and vision
     if (activeTab === 'care') {
       if (barcode) {
         scannedRef.current = true;
@@ -296,7 +291,6 @@ export default function ScannerScreen() {
         await runAnalysis(barcode);
         return;
       }
-      // Vision capture for care — descriptive prompt
       setCameraMode(false);
       setScanning(false);
       await runAnalysis(
@@ -305,7 +299,6 @@ export default function ScannerScreen() {
       return;
     }
 
-    // All other tabs — vision capture
     const tabLabel = activeTab === 'species'
       ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.label ?? 'Species'} product`
       : currentTab.label;
@@ -330,10 +323,8 @@ export default function ScannerScreen() {
     const effectiveSub = activeTab === 'species' ? speciesSub : undefined;
 
     try {
-      // Personal truth — empty until onboarding is completed by member
       const personalTruth = buildPersonalTruth(null);
 
-      // Build user message content
       const isBarcode = activeTab === 'scan' && /^\d{6,14}$/.test(query.trim());
       let content     = query;
 
@@ -363,7 +354,6 @@ export default function ScannerScreen() {
 
       setResult(parsed);
 
-      // Save through sovereignty layer
       await saveScan({
         query,
         productName: parsed.productName || query,
@@ -683,15 +673,17 @@ export default function ScannerScreen() {
           {/* EMPTY STATE — hero image */}
           {!result && !loading && (
             <View style={styles.emptyState}>
-              {heroImage && (
+              {heroImage ? (
                 <Image
                   source={heroImage}
                   style={styles.heroImage}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
+              ) : (
+                <Text style={{ fontSize: 48, marginBottom: 16 }}>{currentTab.icon}</Text>
               )}
               <Text style={styles.emptyLabel}>READY TO SCAN</Text>
-              <Text style={styles.emptySubLabel}>9 databases standing by</Text>
+              <Text style={styles.emptySubLabel}>9 DATABASES STANDING BY</Text>
             </View>
           )}
 
@@ -820,8 +812,8 @@ const styles = StyleSheet.create({
   scanAgainBtn:   { borderWidth: 1, borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
   scanAgainText:  { fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  emptyState:     { alignItems: 'center', paddingTop: 40, paddingBottom: 40 },
-  heroImage:      { width: 130, height: 130, marginBottom: 16, opacity: 0.75 },
+  emptyState:     { alignItems: 'center', paddingTop: 32, paddingBottom: 40 },
+  heroImage:      { width: 200, height: 140, marginBottom: 16, borderRadius: 12, opacity: 0.85 },
   emptyLabel:     { color: C.dimWhite, fontWeight: '900', fontSize: 11, letterSpacing: 3, marginTop: 4 },
   emptySubLabel:  { color: C.dimWhite + '88', fontSize: 9, letterSpacing: 2, marginTop: 4 },
 
