@@ -171,7 +171,7 @@ export default function MapScreen() {
       <View style={s.header}>
         <Text style={s.headerDna}>🧬</Text>
         <Text style={s.headerTitle} numberOfLines={1} adjustsFontSizeToFit>I AM THE RECEIPT</Text>
-        <Text style={s.headerSub}>CHAUFFEUR</Text>
+        <Text style={s.headerSub}>THE CHAUFFEUR</Text>
       </View>
 
       {/* COMPACT MODE TOGGLE */}
