@@ -1,10 +1,12 @@
-import { supabase } from '../../lib/supabase';
 import Anthropic from '@anthropic-ai/sdk';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert,
-  FlatList, Modal,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Image,
+  Modal,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -12,10 +14,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 
-// ─── CANON v8 COLOR DOCTRINE ─────────────────────────────────────────────────
+import { buildPersonalTruth, saveScan } from '../../lib/db';
+import { supabase } from '../../lib/supabase';
+
+// ─── COLOR DOCTRINE ──────────────────────────────────────────────────────────
 const C = {
   nearBlack:    '#03050a',
   electricBlue: '#4a9eff',
@@ -33,128 +38,138 @@ const C = {
   payAttention: '#e05252',
 };
 
-// ─── ANTHROPIC CLIENT ─────────────────────────────────────────────────────────
+// ─── ANTHROPIC ────────────────────────────────────────────────────────────────
 const anthropic = new Anthropic({
   apiKey: process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 
-// ─── 9 DATABASE LEGEND ───────────────────────────────────────────────────────
-const NINE_DATABASES = [
-  'Open Food Facts',
-  'USDA FoodData Central',
-  'OpenFDA Food Recalls',
-  'OpenFDA Cosmetics / Animal & Veterinary',
-  'Open Beauty Facts / Open Pet Food Facts',
-  'PubChem NIH',
-  'EWG (Environmental Working Group)',
-  'ASPCA Animal Poison Control',
-  'EU CosIng · CA Safe Cosmetics · WHO/FAO Codex',
-];
+// ─── HERO IMAGES (assets/images/tab-*.png) ───────────────────────────────────
+// These map each scanner tab + species sub-tab to its hero image.
+// File names match what is confirmed in assets/images/.
+const TAB_HEROES: Record<string, any> = {
+  scan:       require('../../assets/images/tab-scan.png'),
+  produce:    require('../../assets/images/tab-produce.png'),
+  meat:       require('../../assets/images/tab-meat.png'),
+  care:       require('../../assets/images/tab-care.png'),
+  grownfolks: require('../../assets/images/tab-grownfolks.png'),
+  species:    require('../../assets/images/tab-species.png'),
+  k9:         require('../../assets/images/tab-k9.png'),
+  horse:      require('../../assets/images/tab-horse.png'),
+  agri:       require('../../assets/images/tab-agri.png'),
+};
 
 // ─── TAB CONFIG ───────────────────────────────────────────────────────────────
 const TABS = [
-  { id: 'scan',       label: 'SCAN',          icon: '⚡',  color: C.gold,         mode: 'barcode' },
-  { id: 'produce',    label: 'PRODUCE',        icon: '🌿',  color: C.teal,         mode: 'vision'  },
-  { id: 'meat',       label: 'MEAT',           icon: '🥩',  color: C.red,          mode: 'vision'  },
-  { id: 'care',       label: 'PERSONAL CARE',  icon: '🧴',  color: C.purple,       mode: 'vision'  },
-  { id: 'grownfolks', label: 'GROWN FOLKS',    icon: '🍷',  color: C.gold,         mode: 'vision'  },
-  { id: 'species',    label: 'SPECIES',        icon: '🐾',  color: C.electricBlue, mode: 'vision'  },
+  { id: 'scan',       label: 'SCAN',         icon: '⚡', color: C.gold,         mode: 'barcode' },
+  { id: 'produce',    label: 'PRODUCE',       icon: '🌿', color: C.teal,         mode: 'vision'  },
+  { id: 'meat',       label: 'MEAT',          icon: '🥩', color: C.red,          mode: 'vision'  },
+  { id: 'care',       label: 'PERSONAL CARE', icon: '🧴', color: C.purple,       mode: 'vision'  },
+  { id: 'grownfolks', label: 'GROWN FOLKS',   icon: '🍷', color: C.gold,         mode: 'vision'  },
+  { id: 'species',    label: 'SPECIES',       icon: '🐾', color: C.electricBlue, mode: 'vision'  },
 ];
 
 const SPECIES_SUBS = [
-  { id: 'k9',    label: 'K9 / PET',      icon: '🐕', color: C.electricBlue },
-  { id: 'horse', label: 'EQUESTRIAN',    icon: '🐴', color: C.gold         },
-  { id: 'agri',  label: 'AGRICULTURAL',  icon: '🌾', color: C.teal         },
+  { id: 'k9',    label: 'K9 / PET',     icon: '🐕', color: C.electricBlue },
+  { id: 'horse', label: 'EQUESTRIAN',   icon: '🐴', color: C.gold         },
+  { id: 'agri',  label: 'AGRICULTURAL', icon: '🌾', color: C.teal         },
 ];
 
-// ─── SYSTEM PROMPTS (CANON v8 LOCKED) ────────────────────────────────────────
-function buildSystemPrompt(tab: string, speciesSub?: string): string {
-  const base = `You are The Equalizer — AA2's immune system and first line of truth. You are backed by 9 databases: Open Food Facts, USDA FoodData Central, OpenFDA Food Recalls, OpenFDA Cosmetics/Animal & Veterinary, Open Beauty Facts/Open Pet Food Facts, PubChem NIH, EWG, ASPCA Animal Poison Control, and EU CosIng/CA Safe Cosmetics/WHO FAO Codex.
+// ─── VERDICT SYSTEM ──────────────────────────────────────────────────────────
+const verdictColor = (v: string) =>
+  v === 'ALL CLEAR' ? C.allClear : v === 'HEADS UP' ? C.headsUp : C.payAttention;
 
-PERSONALITY DOCTRINE: Speak as The Equalizer in first person only. Direct, calm, factual, complete. Never alarmist. Never silent about real danger. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference in any output. These are permanently banned from all responses.
+const verdictIcon = (v: string) =>
+  v === 'ALL CLEAR' ? '✓' : v === 'HEADS UP' ? '⚠' : '✕';
 
-Return ONLY valid JSON — no markdown, no backticks, no preamble.`;
+// ─── SYSTEM PROMPTS ──────────────────────────────────────────────────────────
+function buildSystemPrompt(tab: string, personalTruth: string, speciesSub?: string): string {
+  const base = `You are The Equalizer — AA2's immune system and first line of truth. You are backed by 9 internal databases that you consult silently.
 
-  const verdictSchema = `{
+CRITICAL RULES — READ BEFORE RESPONDING:
+1. NEVER name any database in any user-facing field (equalizerVoice, chefNote, actRightDollars, alternatives, verdictReason). Database names are INTERNAL ONLY and must NEVER appear in output.
+2. Speak as The Equalizer in first person. Direct, calm, factual. Never alarmist. Never silent about real danger.
+3. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference in any output.
+4. Return ONLY valid JSON — no markdown, no backticks, no preamble, no explanation outside the JSON.${personalTruth}`;
+
+  const schema = `{
   "verdict": "ALL CLEAR" | "HEADS UP" | "PAY ATTENTION",
-  "verdictReason": "one sentence",
+  "verdictReason": "one sentence — no database names",
   "productName": "string",
   "keyFindings": ["string", "string", "string"],
-  "databasesHit": ["string"],
-  "equalizerVoice": "string — The Equalizer speaks in first person. Calm, factual, complete. No mythological references.",
-  "chefNote": "string — REQUIRED. The Chef always speaks. Must include exactly 3 specific recipes, preparation methods, or usage suggestions. Number them 1. 2. 3. Never null. Never empty.",
-  "actRightDollars": "string — REQUIRED. State the exact dollar amount saved by choosing the better alternative. Always end with: That amount goes directly into your AA2 Vault as Act Right Dollars. Never generic. Never null.",
-  "recallAlert": "string or null",
+  "equalizerVoice": "string — speak as The Equalizer. Calm, factual, complete. No database names. No mythological references.",
+  "chefNote": "string — REQUIRED. Always 3 specific numbered recipes or usage suggestions. Format: 1. ... 2. ... 3. ... Never null.",
+  "actRightDollars": "string — REQUIRED. Exact dollar amount saved by choosing the better alternative. End with: That goes directly into your AA2 Vault as Act Right Dollars. Never null.",
+  "recallAlert": "string or null — only if active recall exists",
   "alternatives": ["string"]
 }`;
 
   if (tab === 'scan') return `${base}
 
 TAB: PACKAGED / CANNED / BARCODED GOODS
-Cross-reference every ingredient against all 9 databases. Flag additives, preservatives, hidden allergens, recall status, cumulative exposure risk, behavioral/cognitive chemical effects.
-The scanner without onboarding data returns generic truth. With onboarding it returns PERSONAL truth.
-Translate all chemical names into plain human language.
+Cross-reference every ingredient for additives, preservatives, hidden allergens, recall status, cumulative exposure risk, behavioral and cognitive chemical effects.
+Translate all chemical names into plain human language. Never use chemical jargon in the verdict.
 
-Return this JSON:\n${verdictSchema}`;
+Return:\n${schema}`;
 
   if (tab === 'produce') return `${base}
 
-TAB: FRESH PRODUCE — No barcode. Vision scan.
-Assess: pesticide residue likelihood (EWG Dirty Dozen/Clean 15), ripeness, origin concerns, seasonal alignment, nutrient density, storage advice.
-The Chef always comments on preparation methods that preserve nutrition.
+TAB: FRESH PRODUCE — Vision scan, no barcode.
+Assess: pesticide residue likelihood (Dirty Dozen / Clean 15), ripeness, origin concerns, seasonal alignment, nutrient density, storage advice.
+The Chef always focuses on preparation methods that preserve and maximize nutrition.
 
-Return this JSON:\n${verdictSchema}`;
+Return:\n${schema}`;
 
   if (tab === 'meat') return `${base}
 
-TAB: MEAT — CO2/MAP TRUTH DOCTRINE (LOCKED CANON)
-CO2 and Modified Atmosphere Packaging (MAP) keeps meat looking bright red long after it has degraded. The eyes are being deceived. Trust the nose and the date — not appearance.
-Assess: CO2/MAP likelihood, actual freshness indicators, cut quality, sourcing red flags, antibiotic/hormone use, preparation safety.
-Be specific about what CO2/MAP does and why appearance cannot be trusted.
+TAB: MEAT — CO₂/MAP TRUTH DOCTRINE
+CO₂ and Modified Atmosphere Packaging keeps meat looking bright red long after it has degraded. The eyes are being deceived. Trust the nose and the date — not appearance.
+Assess: CO₂/MAP likelihood, actual freshness indicators, cut quality, sourcing red flags, antibiotic and hormone use, preparation safety.
+Be specific about what CO₂/MAP does and why appearance alone cannot be trusted.
 
-Return this JSON:\n${verdictSchema}`;
+Return:\n${schema}`;
 
   if (tab === 'care') return `${base}
 
-TAB: PERSONAL CARE — SKIN INGESTION DOCTRINE (LOCKED CANON)
-The skin is not a barrier. It is an organ that absorbs. Everything applied to skin enters the bloodstream within minutes.
-Cross-reference against EWG, EU CosIng (1400+ flagged chemicals), California Safe Cosmetics Program, CIR, OpenFDA Cosmetics.
-Flag: endocrine disruptors, carcinogens, neurotoxins, cumulative load.
-The Formulator speaks here — The Chef's counterpart in personal care. Practical. Never preachy.
+TAB: PERSONAL CARE — SKIN INGESTION DOCTRINE
+The skin is not a barrier. It is an organ that absorbs. Everything applied to skin enters the bloodstream.
+Cross-reference against endocrine disruptors, carcinogens, neurotoxins, cumulative chemical load.
+Flag: parabens, phthalates, formaldehyde releasers, synthetic fragrances, PFAS, heavy metals.
+The Formulator speaks here — The Chef's counterpart in personal care. Practical, never preachy.
 
-Return this JSON:\n${verdictSchema}`;
+Return:\n${schema}`;
 
   if (tab === 'grownfolks') return `${base}
 
 TAB: GROWN FOLKS — Wine · Spirits · Beer · Pairings
 The Chef operates here as The Sommelier. Knows the $12 bottle that beats the $90 one.
 Assess: sulfites, tannins, additives, histamine content, quality signals, production method.
-The Sommelier pairs: red wine → red meat (specific cuts), port → specific cuts, whiskey pairings, beer with dishes.
+The Sommelier pairs specifically: red wine with red meat cuts, port with specific cuts, whiskey pairings, beer with dishes.
 Never condescending. This is a grown folks table. Real knowledge, real pleasure, real pairings.
 
-Return this JSON:\n${verdictSchema}`;
+Return:\n${schema}`;
 
   if (tab === 'species') {
     const speciesMap: Record<string, string> = {
-      k9: `TAB: K9 / PET — ASPCA Animal Poison Control database primary. 
-Cross-reference all ingredients against canine/feline toxicology. Flag: xylitol, grapes/raisins, onion family, macadamia nuts, chocolate, artificial sweeteners, mycotoxins.
-Apply canine-specific thresholds via The Equalizer. Handler-dog biosignal transfer awareness.
-Assess: formula changes, chemical irritants, stress overlap with handler, slow harm accumulation.`,
-      horse: `TAB: EQUESTRIAN — FEI prohibited substances list primary. 
-Cross-reference: FEI prohibited substances, equine supplement safety, mycotoxins in feed (aflatoxin, fumonisin, deoxynivalenol, zearalenone), competition readiness.
-Flag any substance that could trigger a positive test or harm performance and longevity.`,
-      agri: `TAB: AGRICULTURAL / LIVESTOCK — USDA feed safety primary.
-Cross-reference: mycotoxins, heavy metals, antibiotic residues, growth hormones, feed additives, contaminants.
+      k9: `TAB: K9 / PET
+ASPCA Animal Poison Control database is primary. Cross-reference all ingredients against canine and feline toxicology.
+Flag immediately: xylitol, grapes, raisins, onion family, macadamia nuts, chocolate, artificial sweeteners, mycotoxins.
+Apply canine-specific safety thresholds. Be aware of handler-dog biosignal stress transfer.
+Assess: formula changes, chemical irritants, slow harm accumulation over time.`,
+      horse: `TAB: EQUESTRIAN
+FEI prohibited substances list is primary. Cross-reference: FEI prohibited substances, equine supplement safety, mycotoxins in feed (aflatoxin, fumonisin, deoxynivalenol, zearalenone), competition readiness.
+Flag any substance that could trigger a positive test or harm performance, health, or longevity.`,
+      agri: `TAB: AGRICULTURAL / LIVESTOCK
+USDA feed safety is primary. Cross-reference: mycotoxins, heavy metals, antibiotic residues, growth hormones, feed additives, contaminants.
 Apply species-specific thresholds. Flag: cumulative exposure across feed batches, cross-contamination risk.`,
     };
-    return `${base}\n\n${speciesMap[speciesSub || 'k9']}\n\nReturn this JSON:\n${verdictSchema}`;
+    return `${base}\n\n${speciesMap[speciesSub || 'k9']}\n\nReturn:\n${schema}`;
   }
 
   return base;
 }
 
-// ─── SCAN HISTORY TYPE ────────────────────────────────────────────────────────
+// ─── TYPES ────────────────────────────────────────────────────────────────────
 type ScanRecord = {
   id: string;
   timestamp: string;
@@ -164,157 +179,80 @@ type ScanRecord = {
   productName: string;
 };
 
-// ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
+// ─── BARCODE LOOKUP ──────────────────────────────────────────────────────────
+async function lookupBarcode(barcode: string): Promise<string> {
+  try {
+    const res  = await fetch(
+      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+      { headers: { 'User-Agent': 'AA2-Scanner/1.0' } }
+    );
+    const data = await res.json();
+
+    if (data.status !== 1 || !data.product) {
+      return `Barcode: ${barcode}. Not found in database. Use your training knowledge to infer likely ingredients, additives, and safety profile for this product. Return full verdict JSON.`;
+    }
+
+    const p         = data.product;
+    const name      = p.product_name || p.product_name_en || 'Unknown product';
+    const brand     = p.brands || '';
+    const ingr      = p.ingredients_text_en || p.ingredients_text || 'Not listed';
+    const allergens = p.allergens_tags?.join(', ') || 'none listed';
+    const additives = p.additives_tags?.map((a: string) => a.replace('en:', '')).join(', ') || 'none';
+    const nova      = p.nova_group      ? `NOVA Group: ${p.nova_group}` : '';
+    const nutri     = p.nutriscore_grade ? `Nutri-Score: ${p.nutriscore_grade.toUpperCase()}` : '';
+    const sodium    = p.nutriments?.sodium_100g
+      ? `Sodium: ${Math.round(p.nutriments.sodium_100g * 1000)}mg per 100g` : '';
+    const quantity  = p.quantity || '';
+    const labels    = p.labels   || '';
+
+    return [
+      `PRODUCT DATA:`,
+      `PRODUCT: ${name}${brand ? ' by ' + brand : ''}${quantity ? ' (' + quantity + ')' : ''}`,
+      `BARCODE: ${barcode}`,
+      `INGREDIENTS: ${ingr}`,
+      `ADDITIVES: ${additives}`,
+      `ALLERGENS: ${allergens}`,
+      nova, nutri, sodium,
+      labels ? `CERTIFICATIONS: ${labels}` : '',
+      ``,
+      `Analyze and return verdict JSON.`,
+    ].filter(Boolean).join('\n');
+  } catch {
+    return `Barcode: ${barcode}. Lookup failed. Analyze based on barcode number alone.`;
+  }
+}
+
+// ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 export default function ScannerScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [activeTab, setActiveTab] = useState('scan');
-  const [speciesSub, setSpeciesSub] = useState('k9');
-  const [scanning, setScanning] = useState(false);
-  const [cameraMode, setCameraMode] = useState(false);
-  const [manualInput, setManualInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [history, setHistory] = useState<ScanRecord[]>([]);
+  const [activeTab, setActiveTab]       = useState('scan');
+  const [speciesSub, setSpeciesSub]     = useState('k9');
+  const [cameraMode, setCameraMode]     = useState(false);
+  const [scanning, setScanning]         = useState(false);
+  const [manualInput, setManualInput]   = useState('');
+  const [loading, setLoading]           = useState(false);
+  const [result, setResult]             = useState<any>(null);
+  const [history, setHistory]           = useState<ScanRecord[]>([]);
   const [historyVisible, setHistoryVisible] = useState(false);
   const [barcodeReady, setBarcodeReady] = useState(false);
-  const scannedRef = useRef(false);
-  const lastBarcodeRef = useRef<string | null>(null);
 
-  const currentTab = TABS.find(t => t.id === activeTab)!;
+  const scannedRef      = useRef(false);
+  const lastBarcodeRef  = useRef<string | null>(null);
+
+  const currentTab  = TABS.find(t => t.id === activeTab)!;
   const accentColor = activeTab === 'species'
-    ? SPECIES_SUBS.find(s => s.id === speciesSub)?.color || C.electricBlue
+    ? (SPECIES_SUBS.find(s => s.id === speciesSub)?.color ?? C.electricBlue)
     : currentTab.color;
 
+  // The hero image key — species shows sub-tab hero
+  const heroKey   = activeTab === 'species' ? speciesSub : activeTab;
+  const heroImage = TAB_HEROES[heroKey] ?? null;
+
+  // ── Camera ───────────────────────────────────────────────────────────────
   const handleBarcodeScanned = ({ data }: { data: string }) => {
     if (loading) return;
     lastBarcodeRef.current = data;
     setBarcodeReady(true);
-  };
-
-  const handleManualSubmit = async () => {
-    if (!manualInput.trim()) {
-      Alert.alert('Enter Something', 'Type a product name, barcode, or describe what you see.');
-      return;
-    }
-    await runAnalysis(manualInput.trim());
-    setManualInput('');
-  };
-
-  const lookupBarcode = async (barcode: string): Promise<string> => {
-    try {
-      const res = await fetch(
-        `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
-        { headers: { 'User-Agent': 'AA2-Scanner/1.0' } }
-      );
-      const data = await res.json();
-      if (data.status !== 1 || !data.product) {
-        return `Barcode: ${barcode}. Product not found in Open Food Facts database. Use your training knowledge to infer likely ingredients, additives, and safety profile for this product. Return full verdict JSON with chefNote, actRightDollars, and alternatives.`;
-      }
-      const p = data.product;
-      const name        = p.product_name || p.product_name_en || 'Unknown product';
-      const brand       = p.brands || '';
-      const ingredients = p.ingredients_text_en || p.ingredients_text || 'Not listed';
-      const allergens   = p.allergens_tags?.join(', ') || 'none listed';
-      const additives   = p.additives_tags?.map((a: string) => a.replace('en:', '')).join(', ') || 'none';
-      const nova        = p.nova_group ? `NOVA Group: ${p.nova_group}` : '';
-      const nutriscore  = p.nutriscore_grade ? `Nutri-Score: ${p.nutriscore_grade.toUpperCase()}` : '';
-      const sodium      = p.nutriments?.sodium_100g ? `Sodium: ${Math.round(p.nutriments.sodium_100g * 1000)}mg per 100g` : '';
-      const quantity    = p.quantity || '';
-      const labels      = p.labels || '';
-      return [
-        `REAL PRODUCT DATA FROM OPEN FOOD FACTS:`,
-        `PRODUCT: ${name}${brand ? ' by ' + brand : ''}${quantity ? ' (' + quantity + ')' : ''}`,
-        `BARCODE: ${barcode}`,
-        `INGREDIENTS: ${ingredients}`,
-        `ADDITIVES: ${additives}`,
-        `ALLERGENS: ${allergens}`,
-        nova, nutriscore, sodium,
-        labels ? `CERTIFICATIONS: ${labels}` : '',
-        ``,
-        `Analyze using all 9 databases and return verdict JSON.`,
-      ].filter(Boolean).join('\n');
-    } catch {
-      return `Barcode: ${barcode}. Lookup failed — analyze based on barcode number.`;
-    }
-  };
-
-  const runAnalysis = async (query: string) => {
-    setLoading(true);
-    setResult(null);
-    const effectiveSub = activeTab === 'species' ? speciesSub : undefined;
-
-    try {
-      const isBarcode = activeTab === 'scan' && /^\d{6,14}$/.test(query.trim());
-      let analysisContent = isBarcode
-        ? `Barcode: ${query.trim()}. Product name unknown yet. Analyze based on barcode and return verdict JSON.`
-        : activeTab === 'scan'
-        ? `Product name: ${query}. Analyze against all 9 databases and return verdict JSON.`
-        : activeTab === 'species'
-        ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.label} — item/ingredient: ${query}. Analyze and return verdict JSON.`
-        : `Item observed: ${query}. Analyze and return verdict JSON.`;
-      if (isBarcode) {
-        const barcodeData = await Promise.race([
-          lookupBarcode(query.trim()),
-          new Promise<null>(r => setTimeout(() => r(null), 2000))
-        ]);
-        if (barcodeData) analysisContent = barcodeData;
-      }
-
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: buildSystemPrompt(activeTab, effectiveSub),
-        messages: [{
-          role: 'user',
-          content: analysisContent,
-        }],
-      });
-
-      const raw = (response.content[0] as any).text || '';
-      const cleaned = raw.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(cleaned);
-      setResult(parsed);
-
-      await saveToSupabase(parsed, query);
-
-      const record: ScanRecord = {
-        id: Date.now().toString(),
-        timestamp: new Date().toLocaleString(),
-        tab: activeTab === 'species' ? `SPECIES · ${speciesSub.toUpperCase()}` : currentTab.label,
-        query,
-        verdict: parsed.verdict,
-        productName: parsed.productName || query,
-      };
-      setHistory(prev => [record, ...prev].slice(0, 50));
-
-    } catch (e) {
-      Alert.alert('Scan Error', 'The Equalizer could not complete the analysis. Try again.');
-    } finally {
-      setLoading(false);
-      scannedRef.current = false;
-    }
-  };
-
-  const saveToSupabase = async (parsed: any, barcode: string) => {
-    try {
-      const { error } = await supabase.from('scan_history').insert({
-        profile_id: null,
-        member_id: null,
-        barcode: barcode,
-        product_name: parsed.productName || 'Unknown',
-        scan_tab: activeTab,
-        verdict_level: parsed.verdictLevel || 'caution',
-        verdict_label: parsed.verdict || '',
-        allergen_triggered: (parsed.topAlerts || []).length > 0,
-        allergen_names: parsed.topAlerts || [],
-        full_analysis_json: parsed,
-        act_right_earned: 0,
-      });
-      if (error) console.log('Supabase error:', error.message);
-      else console.log('Scan saved to Supabase');
-    } catch (e) {
-      console.log('Save failed:', e);
-    }
   };
 
   const openCamera = async () => {
@@ -325,7 +263,7 @@ export default function ScannerScreen() {
         return;
       }
     }
-    scannedRef.current = false;
+    scannedRef.current     = false;
     lastBarcodeRef.current = null;
     setBarcodeReady(false);
     setCameraMode(true);
@@ -335,6 +273,8 @@ export default function ScannerScreen() {
   const handleCapture = async () => {
     if (loading) return;
     const barcode = lastBarcodeRef.current;
+
+    // SCAN tab — barcode required
     if (activeTab === 'scan') {
       if (barcode) {
         scannedRef.current = true;
@@ -346,17 +286,33 @@ export default function ScannerScreen() {
       }
       return;
     }
-    if (activeTab === 'care' && barcode) {
-      scannedRef.current = true;
-      setScanning(false);
+
+    // PERSONAL CARE — supports both barcode and vision
+    if (activeTab === 'care') {
+      if (barcode) {
+        scannedRef.current = true;
+        setScanning(false);
+        setCameraMode(false);
+        await runAnalysis(barcode);
+        return;
+      }
+      // Vision capture for care — descriptive prompt
       setCameraMode(false);
-      await runAnalysis(barcode);
+      setScanning(false);
+      await runAnalysis(
+        'Personal care product — camera scan. No barcode detected. Analyze visible label information, product type, and likely ingredients based on category. Apply skin ingestion doctrine. Return verdict JSON.'
+      );
       return;
     }
-    const prompt = `Vision scan from camera — ${currentTab.label} tab`;
+
+    // All other tabs — vision capture
+    const tabLabel = activeTab === 'species'
+      ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.label ?? 'Species'} product`
+      : currentTab.label;
+
     setCameraMode(false);
     setScanning(false);
-    await runAnalysis(prompt);
+    await runAnalysis(`Camera scan — ${tabLabel}. Analyze visible product and return verdict JSON.`);
   };
 
   const handleCancelCamera = () => {
@@ -367,65 +323,159 @@ export default function ScannerScreen() {
     setScanning(false);
   };
 
-  const verdictColor = (v: string) =>
-    v === 'ALL CLEAR' ? C.allClear : v === 'HEADS UP' ? C.headsUp : C.payAttention;
+  // ── Analysis ─────────────────────────────────────────────────────────────
+  const runAnalysis = async (query: string) => {
+    setLoading(true);
+    setResult(null);
+    const effectiveSub = activeTab === 'species' ? speciesSub : undefined;
 
-  const verdictIcon = (v: string) =>
-    v === 'ALL CLEAR' ? '✓' : v === 'HEADS UP' ? '⚠' : '✕';
+    try {
+      // Personal truth — empty until onboarding is completed by member
+      const personalTruth = buildPersonalTruth(null);
 
+      // Build user message content
+      const isBarcode = activeTab === 'scan' && /^\d{6,14}$/.test(query.trim());
+      let content     = query;
+
+      if (isBarcode) {
+        const barcodeData = await Promise.race<string | null>([
+          lookupBarcode(query.trim()),
+          new Promise<null>(r => setTimeout(() => r(null), 3000)),
+        ]);
+        if (barcodeData) content = barcodeData;
+      } else if (activeTab === 'scan') {
+        content = `Product name: ${query}. Analyze and return verdict JSON.`;
+      } else if (activeTab === 'species') {
+        const sub = SPECIES_SUBS.find(s => s.id === speciesSub)?.label ?? speciesSub;
+        content = `${sub} — item: ${query}. Analyze and return verdict JSON.`;
+      }
+
+      const response = await anthropic.messages.create({
+        model:      'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system:     buildSystemPrompt(activeTab, personalTruth, effectiveSub),
+        messages:   [{ role: 'user', content }],
+      });
+
+      const raw    = (response.content[0] as any).text ?? '';
+      const clean  = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      setResult(parsed);
+
+      // Save through sovereignty layer
+      await saveScan({
+        query,
+        productName: parsed.productName || query,
+        scanTab:     activeTab === 'species' ? `SPECIES_${speciesSub.toUpperCase()}` : activeTab,
+        verdict:     parsed.verdict,
+        fullAnalysis: parsed,
+      });
+
+      const record: ScanRecord = {
+        id:          Date.now().toString(),
+        timestamp:   new Date().toLocaleString(),
+        tab:         activeTab === 'species'
+                       ? `SPECIES · ${speciesSub.toUpperCase()}`
+                       : currentTab.label,
+        query,
+        verdict:     parsed.verdict,
+        productName: parsed.productName || query,
+      };
+      setHistory(prev => [record, ...prev].slice(0, 50));
+
+    } catch (e) {
+      Alert.alert('Analysis Error', 'The Equalizer could not complete the analysis. Try again.');
+      console.log('[scanner] runAnalysis error:', e);
+    } finally {
+      setLoading(false);
+      scannedRef.current = false;
+    }
+  };
+
+  const handleManualSubmit = async () => {
+    if (!manualInput.trim()) {
+      Alert.alert('Enter Something', 'Type a product name, barcode, or describe what you see.');
+      return;
+    }
+    const input = manualInput.trim();
+    setManualInput('');
+    await runAnalysis(input);
+  };
+
+  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.root}>
 
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.receipt} numberOfLines={1}>I AM THE RECEIPT</Text>
-        <Text style={styles.logoSymbol}>🧬</Text>
+        <Text style={styles.dna}>🧬</Text>
         <TouchableOpacity onPress={() => setHistoryVisible(true)} style={styles.historyBtn}>
-          <Text style={styles.historyBtnText}>{history.length > 0 ? `⏱ ${history.length}` : '⏱'}</Text>
+          <Text style={styles.historyBtnText}>
+            {history.length > 0 ? `⏱ ${history.length}` : '⏱'}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── TAB BAR — 2 rows of 3 ── */}
+      {/* 2-ROW TAB GRID */}
       <View style={styles.tabGrid}>
         {[TABS.slice(0, 3), TABS.slice(3, 6)].map((row, rowIdx) => (
           <View key={rowIdx} style={styles.tabRow}>
             {row.map(tab => (
               <TouchableOpacity
                 key={tab.id}
-                style={[styles.tabBtn, activeTab === tab.id && { borderBottomColor: tab.color, borderBottomWidth: 2 }]}
+                style={[
+                  styles.tabBtn,
+                  activeTab === tab.id && { borderBottomColor: tab.color, borderBottomWidth: 2 },
+                ]}
                 onPress={() => { setActiveTab(tab.id); setResult(null); }}
               >
                 <Text style={styles.tabIcon}>{tab.icon}</Text>
-                <Text style={[styles.tabLabel, activeTab === tab.id && { color: tab.color }]}>{tab.label}</Text>
+                <Text style={[styles.tabLabel, activeTab === tab.id && { color: tab.color }]}>
+                  {tab.label}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
         ))}
       </View>
 
-      {/* ── SPECIES SUB-TABS ── */}
+      {/* SPECIES SUB-TABS */}
       {activeTab === 'species' && (
         <View style={styles.speciesRow}>
           {SPECIES_SUBS.map(sub => (
             <TouchableOpacity
               key={sub.id}
-              style={[styles.subTab, speciesSub === sub.id && { backgroundColor: sub.color + '22', borderColor: sub.color }]}
+              style={[
+                styles.subTab,
+                speciesSub === sub.id && {
+                  backgroundColor: sub.color + '22',
+                  borderColor: sub.color,
+                },
+              ]}
               onPress={() => { setSpeciesSub(sub.id); setResult(null); }}
             >
               <Text style={styles.subTabIcon}>{sub.icon}</Text>
-              <Text style={[styles.subTabLabel, speciesSub === sub.id && { color: sub.color }]}>{sub.label}</Text>
+              <Text style={[styles.subTabLabel, speciesSub === sub.id && { color: sub.color }]}>
+                {sub.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
       )}
 
-      {/* ── CAMERA VIEW ── */}
+      {/* CAMERA VIEW */}
       {cameraMode ? (
         <View style={styles.cameraContainer}>
           <CameraView
             style={styles.camera}
             facing="back"
-            onBarcodeScanned={activeTab === 'scan' || activeTab === 'care' ? handleBarcodeScanned : undefined}
+            onBarcodeScanned={
+              activeTab === 'scan' || activeTab === 'care'
+                ? handleBarcodeScanned
+                : undefined
+            }
           >
             <View style={styles.cameraOverlay}>
               <View style={styles.cameraFrameGroup}>
@@ -433,37 +483,38 @@ export default function ScannerScreen() {
                 <Text style={[styles.cameraHint, { color: accentColor }]}>
                   {activeTab === 'scan'
                     ? (barcodeReady ? 'BARCODE READY · TAP TO SCAN' : 'POINT AT BARCODE')
+                    : activeTab === 'care'
+                    ? (barcodeReady ? 'BARCODE READY · TAP TO SCAN' : 'FRAME THE PRODUCT')
                     : 'FRAME THE ITEM'}
                 </Text>
               </View>
               <View style={styles.cameraControls}>
                 <TouchableOpacity
-                  style={[styles.captureCircleOuter, { borderColor: accentColor }]}
+                  style={[styles.captureOuter, { borderColor: accentColor }]}
                   onPress={handleCapture}
                   activeOpacity={0.85}
                 >
-                  <View style={[styles.captureCircleInner, { backgroundColor: accentColor }]} />
+                  <View style={[styles.captureInner, { backgroundColor: accentColor }]} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelRestartBtn} onPress={handleCancelCamera}>
-                  <Text style={styles.cancelRestartText}>✕ CANCEL</Text>
+                <TouchableOpacity style={styles.cancelBtn} onPress={handleCancelCamera}>
+                  <Text style={styles.cancelText}>✕ CANCEL</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </CameraView>
         </View>
       ) : (
-
         <ScrollView style={styles.body} contentContainerStyle={{ paddingBottom: 60 }}>
 
-          {/* ── TAB DOCTRINE BANNER ── */}
+          {/* DOCTRINE BANNER */}
           <View style={[styles.doctrineBanner, { borderLeftColor: accentColor }]}>
-            <Text style={[styles.doctrineTitleText, { color: accentColor }]}>
-              {activeTab === 'meat' ? '⚠ CO₂/MAP TRUTH DOCTRINE' :
-               activeTab === 'care' ? '⚠ SKIN INGESTION DOCTRINE' :
-               activeTab === 'grownfolks' ? '🍷 GROWN FOLKS TABLE' :
-               activeTab === 'species' ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.icon} SPECIES INTELLIGENCE` :
-               activeTab === 'produce' ? '🌿 FRESH PRODUCE INTELLIGENCE' :
-               '⚡ SCAN — SAFETY CLARIFIER ADAPTIVE NERVE'}
+            <Text style={[styles.doctrineTitle, { color: accentColor }]}>
+              {activeTab === 'meat'       ? '⚠ CO₂/MAP TRUTH DOCTRINE'
+               : activeTab === 'care'    ? '⚠ SKIN INGESTION DOCTRINE'
+               : activeTab === 'grownfolks' ? '🍷 GROWN FOLKS TABLE'
+               : activeTab === 'species' ? `${SPECIES_SUBS.find(s => s.id === speciesSub)?.icon} SPECIES INTELLIGENCE`
+               : activeTab === 'produce' ? '🌿 FRESH PRODUCE INTELLIGENCE'
+               : '⚡ SAFETY CLARIFIER ADAPTIVE NERVE'}
             </Text>
             <Text style={styles.doctrineBody}>
               {activeTab === 'meat'
@@ -473,27 +524,27 @@ export default function ScannerScreen() {
                 : activeTab === 'grownfolks'
                 ? 'The Sommelier knows the $12 bottle that beats the $90 one. Real knowledge. Real pairings. Grown folks only.'
                 : activeTab === 'species' && speciesSub === 'k9'
-                ? 'ASPCA Animal Poison Control + canine toxicology database. Your animal cannot speak. The Equalizer does.'
+                ? 'ASPCA Animal Poison Control + canine toxicology. Your animal cannot speak. The Equalizer does.'
                 : activeTab === 'species' && speciesSub === 'horse'
                 ? 'FEI prohibited substances primary. Every ingredient checked for competition readiness and equine health.'
                 : activeTab === 'species' && speciesSub === 'agri'
-                ? 'USDA feed safety + mycotoxin database. Protecting the herd from slow, invisible harm.'
+                ? 'USDA feed safety + mycotoxin monitoring. Protecting the herd from slow, invisible harm.'
                 : activeTab === 'produce'
-                ? 'No barcode needed. EWG Dirty Dozen / Clean 15. Pesticide residue likelihood. The Chef on preparation.'
-                : 'SCAN — Safety Clarifier Adaptive Nerve'}
+                ? 'No barcode needed. Pesticide residue likelihood. EWG Dirty Dozen / Clean 15. The Chef on preparation.'
+                : 'Packaged goods. Barcoded products. Every ingredient cross-referenced before you buy.'}
             </Text>
           </View>
 
-          {/* ── SCAN INPUT ── */}
+          {/* SCAN INPUT */}
           <View style={styles.inputCard}>
             <TouchableOpacity
-              style={[styles.cameraActivateBtn, { backgroundColor: accentColor + '22', borderColor: accentColor }]}
+              style={[styles.cameraBtn, { backgroundColor: accentColor + '22', borderColor: accentColor }]}
               onPress={openCamera}
             >
-              <Text style={[styles.cameraActivateIcon, { color: accentColor }]}>
+              <Text style={[styles.cameraBtnIcon, { color: accentColor }]}>
                 {activeTab === 'scan' ? '⚡' : '📷'}
               </Text>
-              <Text style={[styles.cameraActivateLabel, { color: accentColor }]}>
+              <Text style={[styles.cameraBtnLabel, { color: accentColor }]}>
                 {activeTab === 'scan' ? 'SCAN BARCODE' : 'OPEN CAMERA'}
               </Text>
             </TouchableOpacity>
@@ -501,14 +552,16 @@ export default function ScannerScreen() {
             <Text style={styles.orDivider}>— or type it —</Text>
 
             <TextInput
-              style={[styles.manualInput, { borderColor: accentColor + '55' }]}
+              style={[styles.input, { borderColor: accentColor + '55' }]}
               placeholder={
-                activeTab === 'scan' ? 'Product name or barcode number...' :
-                activeTab === 'produce' ? 'e.g. Strawberries, spinach, apples...' :
-                activeTab === 'meat' ? 'e.g. Ground beef, chicken breast...' :
-                activeTab === 'care' ? 'e.g. Dove soap, Neutrogena SPF...' :
-                activeTab === 'grownfolks' ? 'e.g. Malbec, Macallan 12, Guinness...' :
-                `e.g. ${speciesSub === 'k9' ? 'Blue Buffalo chicken, peanut butter treat' : speciesSub === 'horse' ? 'SmartPak supplement, Timothy hay' : 'Purina cattle feed, corn silage'}...`
+                activeTab === 'scan'       ? 'Product name or barcode number...'
+                : activeTab === 'produce'  ? 'e.g. Strawberries, spinach, apples...'
+                : activeTab === 'meat'     ? 'e.g. Ground beef, chicken breast...'
+                : activeTab === 'care'     ? 'e.g. Dove soap, Neutrogena SPF...'
+                : activeTab === 'grownfolks' ? 'e.g. Malbec, Macallan 12, Guinness...'
+                : speciesSub === 'k9'      ? 'e.g. Blue Buffalo, peanut butter treat...'
+                : speciesSub === 'horse'   ? 'e.g. SmartPak supplement, Timothy hay...'
+                : 'e.g. Purina cattle feed, corn silage...'
               }
               placeholderTextColor={C.dimWhite}
               value={manualInput}
@@ -526,20 +579,25 @@ export default function ScannerScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* ── LOADING ── */}
+          {/* LOADING */}
           {loading && (
             <View style={styles.loadingCard}>
               <ActivityIndicator size="large" color={accentColor} />
-              <Text style={[styles.loadingLabel, { color: accentColor }]}>THE EQUALIZER IS RUNNING</Text>
+              <Text style={[styles.loadingLabel, { color: accentColor }]}>
+                THE EQUALIZER IS RUNNING
+              </Text>
               <Text style={styles.loadingDb}>9 DATABASES · ALL INTELLIGENCES ACTIVE</Text>
             </View>
           )}
 
-          {/* ── RESULT ── */}
+          {/* RESULT */}
           {result && !loading && (
             <View style={styles.resultBlock}>
 
-              <View style={[styles.verdictBanner, { backgroundColor: verdictColor(result.verdict) + '20', borderColor: verdictColor(result.verdict) }]}>
+              <View style={[
+                styles.verdictBanner,
+                { backgroundColor: verdictColor(result.verdict) + '20', borderColor: verdictColor(result.verdict) },
+              ]}>
                 <Text style={[styles.verdictIcon, { color: verdictColor(result.verdict) }]}>
                   {verdictIcon(result.verdict)}
                 </Text>
@@ -561,9 +619,11 @@ export default function ScannerScreen() {
                 </View>
               )}
 
-              <View style={styles.intelligenceCard}>
-                <Text style={styles.intelBody}>{result.equalizerVoice}</Text>
-              </View>
+              {result.equalizerVoice && (
+                <View style={styles.intelCard}>
+                  <Text style={styles.intelBody}>{result.equalizerVoice}</Text>
+                </View>
+              )}
 
               {result.keyFindings?.length > 0 && (
                 <View style={styles.findingsCard}>
@@ -578,12 +638,17 @@ export default function ScannerScreen() {
               )}
 
               {result.chefNote && (
-                <View style={[styles.intelligenceCard, { borderLeftColor: C.orange }]}>
+                <View style={[styles.intelCard, { borderLeftColor: C.orange }]}>
                   <Text style={[styles.intelHeader, { color: C.orange }]}>
-                    {activeTab === 'care' ? '⚗ Cosmo Chemist' :
-                     activeTab === 'grownfolks' ? '🍷 THE SOMMELIER' :
-                     activeTab === 'species' ? (speciesSub === 'k9' ? '🐕 Canine Nutritionist' : speciesSub === 'horse' ? '🐴 Equine Nutritionist' : '🌾 Agricultural Analyst') :
-                     '👨‍🍳 THE CHEF'}
+                    {activeTab === 'care'
+                      ? '⚗ FORMULATOR'
+                      : activeTab === 'grownfolks'
+                      ? '🍷 THE SOMMELIER'
+                      : activeTab === 'species'
+                      ? (speciesSub === 'k9' ? '🐕 CANINE NUTRITIONIST'
+                        : speciesSub === 'horse' ? '🐴 EQUINE NUTRITIONIST'
+                        : '🌾 AGRICULTURAL ANALYST')
+                      : '👨‍🍳 THE CHEF'}
                   </Text>
                   <Text style={styles.intelBody}>{result.chefNote}</Text>
                 </View>
@@ -615,12 +680,16 @@ export default function ScannerScreen() {
             </View>
           )}
 
-          {/* ── EMPTY STATE ── */}
+          {/* EMPTY STATE — hero image */}
           {!result && !loading && (
             <View style={styles.emptyState}>
-              <Text style={[styles.emptyIcon, { color: accentColor + '44' }]}>
-                {currentTab.icon}
-              </Text>
+              {heroImage && (
+                <Image
+                  source={heroImage}
+                  style={styles.heroImage}
+                  resizeMode="contain"
+                />
+              )}
               <Text style={styles.emptyLabel}>READY TO SCAN</Text>
               <Text style={styles.emptySubLabel}>9 databases standing by</Text>
             </View>
@@ -629,7 +698,7 @@ export default function ScannerScreen() {
         </ScrollView>
       )}
 
-      {/* ── SCAN HISTORY MODAL ── */}
+      {/* HISTORY MODAL */}
       <Modal visible={historyVisible} animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalRoot}>
           <View style={styles.modalHeader}>
@@ -655,17 +724,17 @@ export default function ScannerScreen() {
                     <Text style={styles.historyMeta}>{item.tab} · {item.timestamp}</Text>
                   </View>
                   <Text style={[styles.historyVerdict, { color: verdictColor(item.verdict) }]}>
-                    {item.verdict === 'ALL CLEAR' ? '✓' : item.verdict === 'HEADS UP' ? '⚠' : '✕'}
+                    {verdictIcon(item.verdict)}
                   </Text>
                 </View>
               )}
             />
           )}
           <TouchableOpacity
-            style={styles.clearHistoryBtn}
+            style={styles.clearBtn}
             onPress={() => { setHistory([]); setHistoryVisible(false); }}
           >
-            <Text style={styles.clearHistoryText}>CLEAR HISTORY</Text>
+            <Text style={styles.clearBtnText}>CLEAR HISTORY</Text>
           </TouchableOpacity>
         </SafeAreaView>
       </Modal>
@@ -676,98 +745,97 @@ export default function ScannerScreen() {
 
 // ─── STYLES ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root:               { flex: 1, backgroundColor: C.nearBlack },
+  root:           { flex: 1, backgroundColor: C.nearBlack },
 
-  header:             { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
-  receipt:            { fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', fontSize: 9, color: C.dimWhite, letterSpacing: 2, flex: 1, flexShrink: 0 },
-  logoSymbol:         { fontSize: 20, color: C.electricBlue, flex: 1, textAlign: 'center' },
-  historyBtn:         { flex: 1, alignItems: 'flex-end' },
-  historyBtnText:     { color: C.dimWhite, fontSize: 11, fontWeight: '700' },
+  header:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 6, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
+  receipt:        { fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', fontSize: 9, color: C.dimWhite, letterSpacing: 2, flex: 1 },
+  dna:            { fontSize: 20, color: C.electricBlue, flex: 1, textAlign: 'center' },
+  historyBtn:     { flex: 1, alignItems: 'flex-end' },
+  historyBtnText: { color: C.dimWhite, fontSize: 11, fontWeight: '700' },
 
-  // ── 2-row tab grid ──
-  tabGrid:            { borderBottomWidth: 1, borderBottomColor: C.glassBorder },
-  tabRow:             { flexDirection: 'row' },
-  tabBtn:             { flex: 1, paddingVertical: 10, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  tabIcon:            { fontSize: 16 },
-  tabLabel:           { color: C.dimWhite, fontSize: 8, fontWeight: '800', letterSpacing: 0.8, marginTop: 2 },
+  tabGrid:        { borderBottomWidth: 1, borderBottomColor: C.glassBorder },
+  tabRow:         { flexDirection: 'row' },
+  tabBtn:         { flex: 1, paddingVertical: 10, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
+  tabIcon:        { fontSize: 16 },
+  tabLabel:       { color: C.dimWhite, fontSize: 8, fontWeight: '800', letterSpacing: 0.6, marginTop: 2 },
 
-  speciesRow:         { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
-  subTab:             { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: C.glassBorder, backgroundColor: C.glass },
-  subTabIcon:         { fontSize: 14 },
-  subTabLabel:        { color: C.dimWhite, fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
+  speciesRow:     { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, gap: 8 },
+  subTab:         { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: C.glassBorder, backgroundColor: C.glass },
+  subTabIcon:     { fontSize: 14 },
+  subTabLabel:    { color: C.dimWhite, fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 
-  body:               { flex: 1 },
+  body:           { flex: 1 },
 
-  doctrineBanner:     { marginHorizontal: 12, marginTop: 10, padding: 12, backgroundColor: C.glass, borderRadius: 10, borderLeftWidth: 3, borderWidth: 1, borderColor: C.glassBorder },
-  doctrineTitleText:  { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
-  doctrineBody:       { color: C.dimWhite, fontSize: 11, lineHeight: 17 },
+  doctrineBanner: { marginHorizontal: 12, marginTop: 10, padding: 12, backgroundColor: C.glass, borderRadius: 10, borderLeftWidth: 3, borderWidth: 1, borderColor: C.glassBorder },
+  doctrineTitle:  { fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 4 },
+  doctrineBody:   { color: C.dimWhite, fontSize: 11, lineHeight: 17 },
 
-  inputCard:          { margin: 12, padding: 16, backgroundColor: C.glass, borderRadius: 12, borderWidth: 1, borderColor: C.glassBorder },
-  cameraActivateBtn:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 14, borderRadius: 10, borderWidth: 1, marginBottom: 12 },
-  cameraActivateIcon: { fontSize: 20 },
-  cameraActivateLabel:{ fontWeight: '900', fontSize: 13, letterSpacing: 1.5 },
-  orDivider:          { color: C.dimWhite, fontSize: 10, textAlign: 'center', marginBottom: 10, letterSpacing: 2 },
-  manualInput:        { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderRadius: 8, color: C.white, padding: 12, fontSize: 13, marginBottom: 10 },
-  analyzeBtn:         { paddingVertical: 13, borderRadius: 8, alignItems: 'center' },
-  analyzeBtnText:     { color: C.nearBlack, fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
+  inputCard:      { margin: 12, padding: 16, backgroundColor: C.glass, borderRadius: 12, borderWidth: 1, borderColor: C.glassBorder },
+  cameraBtn:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 14, borderRadius: 10, borderWidth: 1, marginBottom: 12 },
+  cameraBtnIcon:  { fontSize: 20 },
+  cameraBtnLabel: { fontWeight: '900', fontSize: 13, letterSpacing: 1.5 },
+  orDivider:      { color: C.dimWhite, fontSize: 10, textAlign: 'center', marginBottom: 10, letterSpacing: 2 },
+  input:          { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderRadius: 8, color: C.white, padding: 12, fontSize: 13, marginBottom: 10 },
+  analyzeBtn:     { paddingVertical: 13, borderRadius: 8, alignItems: 'center' },
+  analyzeBtnText: { color: C.nearBlack, fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  cameraContainer:    { flex: 1 },
-  camera:             { flex: 1 },
-  cameraOverlay:      { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'space-between', alignItems: 'center', paddingTop: 40, paddingBottom: 48 },
-  cameraFrameGroup:   { alignItems: 'center' },
-  scanFrame:          { width: 240, height: 160, borderWidth: 2, borderRadius: 12, marginBottom: 20 },
-  cameraHint:         { fontWeight: '800', fontSize: 12, letterSpacing: 2 },
-  cameraControls:     { alignItems: 'center', width: '100%' },
-  captureCircleOuter: { width: 80, height: 80, borderRadius: 40, borderWidth: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: C.glass, marginBottom: 20 },
-  captureCircleInner: { width: 60, height: 60, borderRadius: 30 },
-  cancelRestartBtn:   { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder },
-  cancelRestartText:  { color: C.dimWhite, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
+  cameraContainer: { flex: 1 },
+  camera:          { flex: 1 },
+  cameraOverlay:   { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'space-between', alignItems: 'center', paddingTop: 40, paddingBottom: 48 },
+  cameraFrameGroup:{ alignItems: 'center' },
+  scanFrame:       { width: 240, height: 160, borderWidth: 2, borderRadius: 12, marginBottom: 20 },
+  cameraHint:      { fontWeight: '800', fontSize: 12, letterSpacing: 2 },
+  cameraControls:  { alignItems: 'center', width: '100%' },
+  captureOuter:    { width: 80, height: 80, borderRadius: 40, borderWidth: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: C.glass, marginBottom: 20 },
+  captureInner:    { width: 60, height: 60, borderRadius: 30 },
+  cancelBtn:       { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder },
+  cancelText:      { color: C.dimWhite, fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
 
-  loadingCard:        { margin: 12, padding: 28, backgroundColor: C.glass, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: C.glassBorder },
-  loadingLabel:       { fontWeight: '900', fontSize: 11, letterSpacing: 2, marginTop: 14 },
-  loadingDb:          { color: C.dimWhite, fontSize: 9, letterSpacing: 1.5, marginTop: 6 },
+  loadingCard:    { margin: 12, padding: 28, backgroundColor: C.glass, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: C.glassBorder },
+  loadingLabel:   { fontWeight: '900', fontSize: 11, letterSpacing: 2, marginTop: 14 },
+  loadingDb:      { color: C.dimWhite, fontSize: 9, letterSpacing: 1.5, marginTop: 6 },
 
-  resultBlock:        { margin: 12 },
-  verdictBanner:      { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: 2, marginBottom: 10 },
-  verdictIcon:        { fontSize: 28, fontWeight: '900', width: 36, textAlign: 'center' },
-  verdictText:        { fontSize: 18, fontWeight: '900', letterSpacing: 1 },
-  verdictReason:      { color: C.dimWhite, fontSize: 12, marginTop: 2, lineHeight: 18 },
-  productName:        { color: C.white, fontSize: 15, fontWeight: '700', marginBottom: 10, paddingHorizontal: 4 },
-  recallBanner:       { backgroundColor: 'rgba(224,82,82,0.2)', borderRadius: 8, borderWidth: 1, borderColor: C.red, padding: 10, marginBottom: 10 },
-  recallText:         { color: C.red, fontWeight: '800', fontSize: 12 },
-  intelligenceCard:   { backgroundColor: C.glass, borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: C.glassBorder, padding: 14, marginBottom: 10 },
-  intelHeader:        { color: C.electricBlue, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
-  intelBody:          { color: C.white, fontSize: 13, lineHeight: 21 },
-  findingsCard:       { backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder, padding: 14, marginBottom: 10 },
-  findingsHeader:     { color: C.dimWhite, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 10 },
-  findingRow:         { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  findingDot:         { fontSize: 11, marginTop: 2 },
-  findingText:        { color: C.white, fontSize: 12, lineHeight: 19, flex: 1 },
-  altCard:            { backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder, padding: 14, marginBottom: 10 },
-  altHeader:          { color: C.dimWhite, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
-  altItem:            { color: C.teal, fontSize: 13, lineHeight: 22 },
-  vaultCard:          { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 10, borderWidth: 1, borderColor: C.gold, padding: 14, marginBottom: 10 },
-  vaultLabel:         { color: C.gold, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
-  vaultBody:          { color: C.white, fontSize: 13, lineHeight: 20 },
-  scanAgainBtn:       { borderWidth: 1, borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
-  scanAgainText:      { fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
+  resultBlock:    { margin: 12 },
+  verdictBanner:  { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 12, borderWidth: 2, marginBottom: 10 },
+  verdictIcon:    { fontSize: 28, fontWeight: '900', width: 36, textAlign: 'center' },
+  verdictText:    { fontSize: 18, fontWeight: '900', letterSpacing: 1 },
+  verdictReason:  { color: C.dimWhite, fontSize: 12, marginTop: 2, lineHeight: 18 },
+  productName:    { color: C.white, fontSize: 15, fontWeight: '700', marginBottom: 10, paddingHorizontal: 4 },
+  recallBanner:   { backgroundColor: 'rgba(224,82,82,0.2)', borderRadius: 8, borderWidth: 1, borderColor: C.red, padding: 10, marginBottom: 10 },
+  recallText:     { color: C.red, fontWeight: '800', fontSize: 12 },
+  intelCard:      { backgroundColor: C.glass, borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: C.glassBorder, padding: 14, marginBottom: 10 },
+  intelHeader:    { color: C.electricBlue, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
+  intelBody:      { color: C.white, fontSize: 13, lineHeight: 21 },
+  findingsCard:   { backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder, padding: 14, marginBottom: 10 },
+  findingsHeader: { color: C.dimWhite, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 10 },
+  findingRow:     { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  findingDot:     { fontSize: 11, marginTop: 2 },
+  findingText:    { color: C.white, fontSize: 12, lineHeight: 19, flex: 1 },
+  altCard:        { backgroundColor: C.glass, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder, padding: 14, marginBottom: 10 },
+  altHeader:      { color: C.dimWhite, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
+  altItem:        { color: C.teal, fontSize: 13, lineHeight: 22 },
+  vaultCard:      { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 10, borderWidth: 1, borderColor: C.gold, padding: 14, marginBottom: 10 },
+  vaultLabel:     { color: C.gold, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 6 },
+  vaultBody:      { color: C.white, fontSize: 13, lineHeight: 20 },
+  scanAgainBtn:   { borderWidth: 1, borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 4 },
+  scanAgainText:  { fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  emptyState:         { alignItems: 'center', paddingTop: 60, paddingBottom: 40 },
-  emptyIcon:          { fontSize: 64 },
-  emptyLabel:         { color: C.dimWhite, fontWeight: '900', fontSize: 11, letterSpacing: 3, marginTop: 16 },
-  emptySubLabel:      { color: C.dimWhite + '88', fontSize: 9, letterSpacing: 2, marginTop: 4 },
+  emptyState:     { alignItems: 'center', paddingTop: 40, paddingBottom: 40 },
+  heroImage:      { width: 130, height: 130, marginBottom: 16, opacity: 0.75 },
+  emptyLabel:     { color: C.dimWhite, fontWeight: '900', fontSize: 11, letterSpacing: 3, marginTop: 4 },
+  emptySubLabel:  { color: C.dimWhite + '88', fontSize: 9, letterSpacing: 2, marginTop: 4 },
 
-  modalRoot:          { flex: 1, backgroundColor: '#080c12' },
-  modalHeader:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
-  modalTitle:         { color: C.white, fontWeight: '900', fontSize: 14, letterSpacing: 2 },
-  modalClose:         { color: C.dimWhite, fontSize: 18, fontWeight: '700' },
-  emptyHistory:       { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyHistoryText:   { color: C.dimWhite, fontSize: 13 },
-  historyRow:         { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
-  historyDot:         { width: 10, height: 10, borderRadius: 5 },
-  historyProduct:     { color: C.white, fontSize: 13, fontWeight: '700' },
-  historyMeta:        { color: C.dimWhite, fontSize: 10, marginTop: 2 },
-  historyVerdict:     { fontSize: 18, fontWeight: '900' },
-  clearHistoryBtn:    { margin: 16, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: C.red + '66', alignItems: 'center' },
-  clearHistoryText:   { color: C.red, fontWeight: '800', fontSize: 11, letterSpacing: 1.5 },
+  modalRoot:      { flex: 1, backgroundColor: '#080c12' },
+  modalHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
+  modalTitle:     { color: C.white, fontWeight: '900', fontSize: 14, letterSpacing: 2 },
+  modalClose:     { color: C.dimWhite, fontSize: 18, fontWeight: '700' },
+  emptyHistory:   { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyHistoryText:{ color: C.dimWhite, fontSize: 13 },
+  historyRow:     { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
+  historyDot:     { width: 10, height: 10, borderRadius: 5 },
+  historyProduct: { color: C.white, fontSize: 13, fontWeight: '700' },
+  historyMeta:    { color: C.dimWhite, fontSize: 10, marginTop: 2 },
+  historyVerdict: { fontSize: 18, fontWeight: '900' },
+  clearBtn:       { margin: 16, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: C.red + '66', alignItems: 'center' },
+  clearBtnText:   { color: C.red, fontWeight: '800', fontSize: 11, letterSpacing: 1.5 },
 });
