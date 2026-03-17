@@ -48,12 +48,12 @@ const anthropic = new Anthropic({
 // These map each scanner tab + species sub-tab to its hero image.
 // File names match what is confirmed in assets/images/.
 const TAB_HEROES: Record<string, any> = {
-  scan:       null,
+  scan:       null, // no hero — uses ⚡ emoji fallback
   produce:    require('../../assets/images/tab-produce.png'),
   meat:       require('../../assets/images/tab-meat.png'),
   care:       require('../../assets/images/tab-care.png'),
   grownfolks: require('../../assets/images/tab-grownfolks.png'),
-  species:    null,
+  species:    null, // uses sub-tab hero (k9/horse/agri)
   k9:         require('../../assets/images/tab-k9.png'),
   horse:      require('../../assets/images/tab-horse.jpg'),
   agri:       require('../../assets/images/tab-agri.png'),
