@@ -49,14 +49,14 @@ const anthropic = new Anthropic({
 // File names match what is confirmed in assets/images/.
 const TAB_HEROES: Record<string, any> = {
   scan:       null, // no hero — uses ⚡ emoji fallback
-  produce:    require('../../assets/images/tab-produce.png'),
-  meat:       require('../../assets/images/tab-meat.png'),
-  care:       require('../../assets/images/tab-care.png'),
-  grownfolks: require('../../assets/images/tab-grownfolks.png'),
+  produce:    null,
+  meat:       null,
+  care:       null,
+  grownfolks: null,
   species:    null, // uses sub-tab hero (k9/horse/agri)
-  k9:         require('../../assets/images/tab-k9.png'),
-  horse:      require('../../assets/images/tab-horse.jpg'),
-  agri:       require('../../assets/images/tab-agri.png'),
+  k9:         null,
+  horse:      null,
+  agri:       null,
 };
 
 // ─── TAB CONFIG ───────────────────────────────────────────────────────────────
@@ -839,3 +839,4 @@ const styles = StyleSheet.create({
   clearBtn:       { margin: 16, padding: 14, borderRadius: 8, borderWidth: 1, borderColor: C.red + '66', alignItems: 'center' },
   clearBtnText:   { color: C.red, fontWeight: '800', fontSize: 11, letterSpacing: 1.5 },
 });
+
