@@ -6,7 +6,7 @@ import {
   SafeAreaView, ScrollView, StyleSheet, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
-import { buildPersonalTruth, saveScan } from '../../lib/db';
+import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 
 const C = {
@@ -131,7 +131,8 @@ export default function ScannerScreen() {
     setLoading(true);setResult(null);
     const effectiveSub=activeTab==='species'?speciesSub:undefined;
     try {
-      const personalTruth=buildPersonalTruth(null);
+      const profile = await loadMemberProfile();
+      const personalTruth = buildPersonalTruth(profile);
       const isBarcode=activeTab==='scan'&&/^\d{6,14}$/.test(query.trim());
       let content=query;
       if(isBarcode){const bd=await Promise.race<string|null>([lookupBarcode(query.trim()),new Promise<null>(r=>setTimeout(()=>r(null),3000))]);if(bd)content=bd;}
@@ -140,7 +141,14 @@ export default function ScannerScreen() {
       const response=await anthropic.messages.create({model:'claude-sonnet-4-20250514',max_tokens:1000,system:buildSystemPrompt(activeTab,personalTruth,effectiveSub),messages:[{role:'user',content}]});
       const parsed=JSON.parse(((response.content[0] as any).text??'').replace(/```json|```/g,'').trim());
       setResult(parsed);
-      await saveScan({query,productName:parsed.productName||query,scanTab:activeTab==='species'?`SPECIES_${speciesSub.toUpperCase()}`:activeTab,verdict:parsed.verdict,fullAnalysis:parsed});
+      await saveScan({
+        query,
+        productName: parsed.productName || query,
+        scanTab: activeTab === 'species' ? `SPECIES_${speciesSub.toUpperCase()}` : activeTab,
+        verdict: parsed.verdict,
+        fullAnalysis: parsed,
+        memberId: profile?.memberId ?? null,
+      });
       setHistory(prev=>[{id:Date.now().toString(),timestamp:new Date().toLocaleString(),tab:activeTab==='species'?`SPECIES · ${speciesSub.toUpperCase()}`:currentTab.label,query,verdict:parsed.verdict,productName:parsed.productName||query},...prev].slice(0,50));
     } catch(e){Alert.alert('Analysis Error','The Equalizer could not complete the analysis. Try again.');}
     finally{setLoading(false);scannedRef.current=false;}
