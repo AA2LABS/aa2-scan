@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, useColorScheme,
   TextInput, ActivityIndicator, Alert, SafeAreaView, Platform,
 } from 'react-native';
 import * as Location from 'expo-location';
@@ -27,6 +27,14 @@ const anthropic = new Anthropic({
 });
 
 const MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+const getTheme = (isDark: boolean) => ({
+  bg:     isDark ? '#0D0A04' : '#FAF7F2',
+  card:   isDark ? '#1A1408' : '#FFFDF9',
+  border: isDark ? '#2E2208' : '#E8DFD0',
+  text:   isDark ? '#FFFFFF' : '#2A1E10',
+  muted:  isDark ? 'rgba(255,255,255,0.60)' : '#8a7a6a',
+});
 
 type Waypoint    = { id: string; name: string; };
 type StoreResult = { name: string; vicinity: string; placeId: string; };
@@ -58,6 +66,8 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 }
 
 export default function MapScreen() {
+  const scheme = useColorScheme();
+  const T = useMemo(() => getTheme(scheme === 'dark'), [scheme]);
   const [mode, setMode]                   = useState<'on' | 'off'>('on');
   const [userLocation, setUserLocation]   = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationReady, setLocationReady] = useState(false);
@@ -436,18 +446,18 @@ export default function MapScreen() {
 }
 
 const s = StyleSheet.create({
-  root:            { flex: 1, backgroundColor: C.nearBlack },
+  root:            { flex: 1, backgroundColor: T.bg },
   header:          { alignItems: 'center', paddingTop: 8, paddingBottom: 10, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
   headerDna:       { fontSize: 22, marginBottom: 2 },
-  headerTitle:     { fontSize: 17, fontWeight: '800', color: C.white, letterSpacing: 2 },
+  headerTitle:     { fontSize: 17, fontWeight: '800', color: T.text, letterSpacing: 2 },
   headerSub:       { fontSize: 9, color: C.gold, letterSpacing: 2, marginTop: 2 },
 
   // Compact horizontal toggle
   toggleRow:       { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 10 },
-  toggleBtn:       { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: C.glassBorder, backgroundColor: C.glass },
+  toggleBtn:       { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: T.border, backgroundColor: T.card },
   toggleIcon:      { fontSize: 20 },
-  toggleLabel:     { color: C.dimWhite, fontWeight: '900', fontSize: 12, letterSpacing: 1 },
-  toggleSub:       { color: C.dimWhite, fontSize: 9, opacity: 0.7, marginTop: 1 },
+  toggleLabel:     { color: T.muted, fontWeight: '900', fontSize: 12, letterSpacing: 1 },
+  toggleSub:       { color: T.muted, fontSize: 9, opacity: 0.7, marginTop: 1 },
 
   locationBadge:   { marginHorizontal: 12, marginBottom: 6, padding: 8, borderRadius: 8, borderWidth: 1 },
   locationText:    { fontSize: 10, fontWeight: '600' },
@@ -457,41 +467,41 @@ const s = StyleSheet.create({
   scanAgainBar:    { marginHorizontal: 12, marginTop: 8, marginBottom: 4, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
   scanAgainBarText:{ fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  card:            { marginHorizontal: 12, marginTop: 8, marginBottom: 8, padding: 16, backgroundColor: C.glass, borderRadius: 14, borderWidth: 1, borderColor: C.glassBorder },
+  card:            { marginHorizontal: 12, marginTop: 8, marginBottom: 8, padding: 16, backgroundColor: T.card, borderRadius: 14, borderWidth: 1, borderColor: T.border },
   cardTitleRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' },
   gridBadge:       { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
-  cardTitle:       { color: C.white, fontSize: 13, fontWeight: '900', letterSpacing: 1, flex: 1 },
-  cardDesc:        { color: C.dimWhite, fontSize: 11, lineHeight: 17, marginBottom: 14 },
-  sectionLabel:    { color: C.dimWhite, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 6, marginTop: 10 },
-  input:           { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: C.glassBorder, borderRadius: 8, color: C.white, padding: 11, fontSize: 13, marginBottom: 10 },
+  cardTitle:       { color: T.text, fontSize: 13, fontWeight: '900', letterSpacing: 1, flex: 1 },
+  cardDesc:        { color: T.muted, fontSize: 11, lineHeight: 17, marginBottom: 14 },
+  sectionLabel:    { color: T.muted, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 6, marginTop: 10 },
+  input:           { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: T.border, borderRadius: 8, color: T.text, padding: 11, fontSize: 13, marginBottom: 10 },
   primaryBtn:      { paddingVertical: 13, borderRadius: 8, alignItems: 'center', marginTop: 4 },
-  primaryBtnText:  { fontWeight: '900', fontSize: 12, letterSpacing: 1.5, color: C.white },
+  primaryBtnText:  { fontWeight: '900', fontSize: 12, letterSpacing: 1.5, color: T.text },
   rowInput:        { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 10 },
   addBtn:          { backgroundColor: C.electricBlue, width: 44, height: 44, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   addBtnText:      { color: C.nearBlack, fontSize: 24, fontWeight: '900', lineHeight: 28 },
-  storeRow:        { padding: 11, borderRadius: 8, borderWidth: 1, borderColor: C.glassBorder, marginBottom: 6 },
-  storeName:       { color: C.white, fontWeight: '700', fontSize: 13 },
-  storeVicinity:   { color: C.dimWhite, fontSize: 11, marginTop: 2 },
+  storeRow:        { padding: 11, borderRadius: 8, borderWidth: 1, borderColor: T.border, marginBottom: 6 },
+  storeName:       { color: T.text, fontWeight: '700', fontSize: 13 },
+  storeVicinity:   { color: T.muted, fontSize: 11, marginTop: 2 },
   optionCard:      { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 11, marginBottom: 8 },
-  optionName:      { color: C.white, fontWeight: '700', fontSize: 13, marginBottom: 4 },
-  optionWhy:       { color: C.dimWhite, fontSize: 12, lineHeight: 18 },
+  optionName:      { color: T.text, fontWeight: '700', fontSize: 13, marginBottom: 4 },
+  optionWhy:       { color: T.muted, fontSize: 12, lineHeight: 18 },
   optionSavings:   { color: C.gold, fontWeight: '700', fontSize: 12, marginTop: 4 },
   storeSection:    { color: C.teal, fontSize: 12, fontWeight: '600', marginVertical: 8 },
-  intelCard:       { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: C.glassBorder, padding: 13, marginBottom: 10 },
+  intelCard:       { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: T.border, padding: 13, marginBottom: 10 },
   intelHeader:     { color: C.electricBlue, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
-  intelBody:       { color: C.white, fontSize: 13, lineHeight: 21 },
+  intelBody:       { color: T.text, fontSize: 13, lineHeight: 21 },
   vaultCard:       { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 10, borderWidth: 1, borderColor: C.gold, padding: 13, marginBottom: 10 },
   vaultLabel:      { color: C.gold, fontSize: 9, fontWeight: '900', letterSpacing: 1.5, marginBottom: 6 },
-  vaultBody:       { color: C.white, fontSize: 13, lineHeight: 20 },
+  vaultBody:       { color: T.text, fontSize: 13, lineHeight: 20 },
   waypointRow:     { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 10, marginBottom: 6 },
   waypointLetter:  { color: C.teal, fontWeight: '900', fontSize: 14, width: 24 },
-  waypointName:    { color: C.white, flex: 1, fontSize: 13 },
+  waypointName:    { color: T.text, flex: 1, fontSize: 13 },
   removeWp:        { color: C.red, fontWeight: '800', fontSize: 16, paddingLeft: 8 },
   statsRow:        { flexDirection: 'row', justifyContent: 'space-around', marginTop: 8 },
   statItem:        { alignItems: 'center' },
-  statValue:       { color: C.white, fontSize: 20, fontWeight: '900' },
-  statLabel:       { color: C.dimWhite, fontSize: 9, letterSpacing: 1.5, marginTop: 2 },
-  loadingCard:     { marginHorizontal: 12, marginVertical: 8, padding: 28, backgroundColor: C.glass, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: C.glassBorder },
+  statValue:       { color: T.text, fontSize: 20, fontWeight: '900' },
+  statLabel:       { color: T.muted, fontSize: 9, letterSpacing: 1.5, marginTop: 2 },
+  loadingCard:     { marginHorizontal: 12, marginVertical: 8, padding: 28, backgroundColor: T.card, borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: T.border },
   loadingLabel:    { fontWeight: '900', fontSize: 11, letterSpacing: 2, marginTop: 14, textAlign: 'center' },
-  loadingSubLabel: { color: C.dimWhite, fontSize: 9, letterSpacing: 1, marginTop: 6, textAlign: 'center' },
+  loadingSubLabel: { color: T.muted, fontSize: 9, letterSpacing: 1, marginTop: 6, textAlign: 'center' },
 });
