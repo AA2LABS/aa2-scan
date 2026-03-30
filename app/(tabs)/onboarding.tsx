@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Dimensions, Modal, NativeSyntheticEvent, NativeScrollEvent,
   Platform, ScrollView, StyleSheet, Text, TextInput,
@@ -193,6 +193,19 @@ const STACK_TIER_LABELS: Record<StackTier, { name: string; description: string }
 const NUM_SCREENS = 6;
 
 export default function OnboardingScreen() {
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (!session) {
+        const { error } = await supabase.auth.signInAnonymously();
+        if (error) console.error("Auth error:", error);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const systemScheme = useColorScheme();
   const [colorMode,    setColorMode]    = useState<ColorMode>('system');
   const [deliveryMode, setDeliveryMode] = useState<DeliveryMode>('voice');
