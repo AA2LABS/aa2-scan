@@ -1,0 +1,287 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{display:flex;flex-direction:column;gap:0;padding:0 0 8px}
+.hdr{padding:8px 10px 6px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:12px;font-weight:500;letter-spacing:.06em;color:var(--color-text-primary)}
+.receipt{font-size:9px;font-weight:500;letter-spacing:.1em;color:var(--color-text-tertiary)}
+.tabs{display:flex;gap:5px;flex-wrap:wrap;padding:7px 10px 5px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tab{font-size:10px;font-weight:500;padding:4px 10px;border-radius:99px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.tier-line{font-size:8px;color:var(--color-text-tertiary);padding:5px 10px 0;letter-spacing:.04em;font-weight:500}
+.driver-row{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:6px 10px 0}
+.pcard{border-radius:8px;padding:10px 11px;border:0.5px solid}
+.pname{font-size:12px;font-weight:500;color:var(--color-text-primary);line-height:1.2}
+.prole{font-size:8px;color:var(--color-text-tertiary);margin-top:1px;margin-bottom:5px}
+.live-r{display:flex;align-items:center;gap:4px;font-size:8px;color:var(--color-text-tertiary);margin-bottom:3px}
+.ldot{width:5px;height:5px;border-radius:50%;flex-shrink:0;animation:blp 1.4s ease-in-out infinite}
+@keyframes blp{0%,100%{opacity:1}50%{opacity:.25}}
+.badge{font-size:8px;font-weight:500;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.ch-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.ekg-wrap{border-radius:3px;overflow:hidden;margin:3px 0}
+.eq-row{display:flex;gap:2px;align-items:flex-end;height:20px;margin-top:5px}
+.eq-bar{flex:1;border-radius:1px 1px 0 0;transition:height .5s ease}
+.eq-labels{display:flex;gap:2px;margin-top:2px}
+.eql{flex:1;font-size:5px;color:var(--color-text-tertiary);text-align:center;overflow:hidden;white-space:nowrap}
+.cmd-wrap{padding:6px 10px 0}
+.cmd-card{border-radius:8px;padding:10px 12px;border:0.5px solid}
+.cmd-name{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.cmd-role{font-size:8px;color:var(--color-text-tertiary);margin-top:2px;margin-bottom:5px}
+.channels{display:flex;gap:5px;margin-top:6px}
+.ch{flex:1;padding:3px 8px;border-radius:4px;border:0.5px solid;font-size:8px;display:flex;align-items:center;gap:4px;color:var(--color-text-secondary)}
+.ch-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;animation:blp 1.4s ease-in-out infinite}
+.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;padding:6px 10px 0}
+.tcard{border-radius:6px;padding:7px 8px;border:0.5px solid}
+.tn{font-size:8px;font-weight:500;color:var(--color-text-primary);margin-bottom:1px}
+.tr{font-size:6.5px;color:var(--color-text-tertiary);margin-bottom:4px}
+.tbadge{font-size:6.5px;font-weight:500;padding:1px 5px;border-radius:99px;display:inline-block;margin-bottom:3px}
+.bmsect{margin:8px 10px 0;border-radius:8px;overflow:hidden;border:0.5px solid var(--color-border-tertiary)}
+.bmsect img{width:100%;display:block}
+.ftr{padding:6px 10px 0;border-top:0.5px solid var(--color-border-tertiary);margin-top:6px;display:flex;justify-content:space-between}
+.flock{font-size:8px;font-weight:500;letter-spacing:.05em;color:var(--color-text-tertiary)}
+</style>
+
+<div class="wrap">
+<div class="hdr">
+  <div class="logo">AA2 · BIOMESH ENTERPRISE DASHBOARD</div>
+  <div class="receipt">I AM THE RECEIPT</div>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="tier-line" id="tier"></div>
+<div class="driver-row" id="drivers"></div>
+<div class="cmd-wrap" id="cmd"></div>
+<div class="tgrid" id="tgrid"></div>
+<div class="bmsect">
+  <img src="/mnt/user-data/uploads/12856.png" alt="AA2 BioMesh — all species all roles">
+</div>
+<div class="ftr">
+  <div class="flock">Same membrane · Different lens · Different voice · Different stakes</div>
+  <div class="flock">AA2 · Canon v30 · FINAL SEALED</div>
+</div>
+</div>
+
+<script>
+const KP=[[0,0],[.2,0],[.25,.22],[.3,0],[.37,0],[.4,-.12],[.44,1],[.48,-.18],[.53,0],[.6,0],[.65,.32],[.75,0],[1,0]];
+function ekgY(t){for(let i=0;i<KP.length-1;i++){const[t0,v0]=KP[i],[t1,v1]=KP[i+1];if(t>=t0&&t<=t1)return v0+(v1-v0)*(t-t0)/(t1-t0);}return 0;}
+
+const C={red:'#E24B4A',coral:'#D85A30',amber:'#BA7517',purple:'#7F77DD',blue:'#378ADD',teal:'#1D9E75',green:'#639922',gray:'#888780',pink:'#D4537E'};
+
+const TABS=[
+  {k:'ferrari',label:'Ferrari F1',color:C.red},
+  {k:'nba',label:'NBA Franchise',color:C.blue},
+  {k:'fire',label:'CA Fire Dept',color:C.coral},
+  {k:'panama',label:'Gov. Panama',color:C.pink},
+  {k:'equestrian',label:'Racing Stable',color:C.green},
+  {k:'family',label:'Family',color:C.teal}
+];
+
+const D={
+  ferrari:{
+    tier:'Tier 2 · Scuderia Ferrari · 87 seats · 24 countries',accent:C.red,
+    feat:[
+      {name:'Lewis Hamilton',sub:'Car #44 · Driver #1',badge:'THE COACH',bc:C.blue,col:C.red,hr:62,sp:2.2,amp:26,bands:[82,65,70,45,78,72,55,60,88,75]},
+      {name:'Charles Leclerc',sub:'Car #16 · Driver #2',badge:'THE COACH',bc:C.blue,col:'#D85A30',hr:58,sp:2.0,amp:24,bands:[79,58,72,42,81,69,62,65,85,71]}
+    ],
+    eql:['Ready','Load','Recover','Inflam','Fuel','Hydrate','Sleep','Cognitive','Reaction','Peak'],
+    cmd:{name:'Fred Vasseur',role:'Team Principal · Commander · Master bus — all channels',badge:'THE ROSTER',bc:C.amber,col:C.amber,sp:1.8,amp:20,channels:[{l:'Lewis #44',c:C.red},{l:'Charles #16',c:C.coral}]},
+    team:[
+      {name:'R. Adami',role:'Race Engineer',badge:'THE DATA',bc:C.purple,col:C.purple},
+      {name:'A. Vierula',role:'Perf. Coach',badge:'THE COACH',bc:C.blue,col:C.blue},
+      {name:'Team Doctor',role:'Medical',badge:'THE DOC',bc:C.teal,col:C.teal},
+      {name:'Nutritionist',role:'Fuel Protocol',badge:'THE COACH',bc:C.green,col:C.green},
+      {name:'60 Engineers',role:'Pit + Factory',badge:'Javier',bc:C.gray,col:C.gray}
+    ]
+  },
+  nba:{
+    tier:'Tier 2 · NBA Franchise · 25 active seats · 82-game season',accent:C.blue,
+    feat:[
+      {name:'Starting Guard',sub:'Position · Active roster',badge:'THE COACH',bc:C.blue,col:C.blue,hr:68,sp:2.4,amp:27,bands:[85,71,65,38,82,75,58,72,89,80]},
+      {name:'Starting Forward',sub:'Position · Active roster',badge:'THE COACH',bc:C.blue,col:'#185FA5',hr:65,sp:2.2,amp:25,bands:[81,68,68,41,79,72,61,68,83,77]}
+    ],
+    eql:['Ready','Load','Recover','Inflam','Fuel','Hydrate','Sleep','Stress','Reaction','Form'],
+    cmd:{name:'Head Coach / GM',role:'Head Coach · Commander · Full roster oversight',badge:'THE ROSTER',bc:C.amber,col:C.amber,sp:1.9,amp:21,channels:[{l:'Full roster',c:C.blue},{l:'Medical staff',c:C.teal}]},
+    team:[
+      {name:'Lead Trainer',role:'Athletic Trainer',badge:'THE COACH',bc:C.blue,col:C.blue},
+      {name:'Team Physician',role:'Medical Director',badge:'THE DOC',bc:C.teal,col:C.teal},
+      {name:'Analyst',role:'Perf. Analytics',badge:'THE DATA',bc:C.purple,col:C.purple},
+      {name:'Nutritionist',role:'Fuel Protocol',badge:'THE COACH',bc:C.green,col:C.green},
+      {name:'Front Office',role:'GM + Ops',badge:'Javier',bc:C.gray,col:C.gray}
+    ]
+  },
+  fire:{
+    tier:'Tier 4 · California Fire Dept Station 7 · Domestic Agency License',accent:C.coral,
+    feat:[
+      {name:'Captain',sub:'Company Officer · Station 7',badge:'COMMAND',bc:C.coral,col:C.coral,hr:72,sp:2.5,amp:25,bands:[88,75,62,55,80,78,52,65,82,70]},
+      {name:'Lead Firefighter',sub:'Engine Company · Station 7',badge:'COMMAND',bc:C.coral,col:'#993C1D',hr:70,sp:2.4,amp:24,bands:[85,73,65,52,78,75,55,62,80,68]}
+    ],
+    eql:['Ready','Load','Recover','Heat','Hydrate','O2','Stress','Focus','Endure','Exposure'],
+    cmd:{name:'Station Commander / Chief',role:'I am responsible for getting you locked, loaded, and ready to send it down range.',badge:'COMMAND',bc:C.amber,col:C.amber,sp:1.9,amp:20,channels:[{l:'Engine crew',c:C.coral},{l:'K9 unit',c:C.amber}]},
+    team:[
+      {name:'Paramedic',role:'Medical Response',badge:'THE DOC',bc:C.teal,col:C.teal},
+      {name:'K9 Handler',role:'Search + Rescue',badge:'COMMAND',bc:C.coral,col:C.coral},
+      {name:'Battalion Chief',role:'Command Staff',badge:'THE ROSTER',bc:C.amber,col:C.amber},
+      {name:'Engineer',role:'Apparatus',badge:'COMMAND',bc:C.coral,col:'#993C1D'},
+      {name:'Admin',role:'Station Support',badge:'Javier',bc:C.gray,col:C.gray}
+    ]
+  },
+  panama:{
+    tier:'Tier 5 · Republic of Panama · Sovereign License · Ministry of Health',accent:C.pink,
+    feat:[
+      {name:'Field Officer 1',sub:'Ministry Personnel · Cleared',badge:'THE BRIEF',bc:C.pink,col:C.pink,hr:64,sp:2.2,amp:23,bands:[80,62,68,44,76,71,60,70,78,65]},
+      {name:'Field Officer 2',sub:'Ministry Personnel · Cleared',badge:'THE BRIEF',bc:C.pink,col:'#993556',hr:62,sp:2.1,amp:22,bands:[78,60,70,42,74,69,62,68,76,63]}
+    ],
+    eql:['Ready','Stress','Recover','Fuel','Hydrate','Sleep','Cognitive','Focus','Endure','Performance'],
+    cmd:{name:'Ministry Designee',role:'By order of the Ministry. This onboarding is classified to your deployment tier. Proceed.',badge:'THE BRIEF',bc:C.amber,col:C.amber,sp:1.8,amp:19,channels:[{l:'Field personnel',c:C.pink},{l:'Medical corps',c:C.teal}]},
+    team:[
+      {name:'Medical Officer',role:'Public Health',badge:'THE DOC',bc:C.teal,col:C.teal},
+      {name:'Customs/Border',role:'Border Authority',badge:'THE BRIEF',bc:C.pink,col:C.pink},
+      {name:'Military Health',role:'Armed Forces',badge:'COMMAND',bc:C.coral,col:C.coral},
+      {name:'Ministry Admin',role:'Government Ops',badge:'THE BRIEF',bc:C.pink,col:'#993556'},
+      {name:'Civilian Pgm',role:'Public Enrollees',badge:'Javier',bc:C.gray,col:C.gray}
+    ]
+  },
+  equestrian:{
+    tier:'Tier 3 · Thoroughbred Racing Stable · Equestrian Operation License',accent:C.green,
+    feat:[
+      {name:'Lead Jockey',sub:'Race Weight · Current rider',badge:'THE STABLE',bc:C.green,col:C.green,hr:58,sp:2.0,amp:22,bands:[82,78,65,40,75,70,60,65,82,74]},
+      {name:'Head Trainer',sub:'Training Operations',badge:'THE STABLE',bc:C.green,col:'#3B6D11',hr:60,sp:2.1,amp:22,bands:[78,65,70,38,77,73,63,70,78,70]}
+    ],
+    eql:['Ready','Weight','Recover','Inflam','Fuel','Hydrate','Sleep','Balance','Strength','Form'],
+    cmd:{name:'Stable Owner',role:'Every operation runs on a schedule. Every horse, every jockey, every feed protocol logged.',badge:'THE STABLE',bc:C.amber,col:C.amber,sp:1.9,amp:20,channels:[{l:'Jockey roster',c:C.green},{l:'Horse portfolio',c:C.amber}]},
+    team:[
+      {name:'Veterinarian',role:'Medical Authority',badge:'THE DOC',bc:C.teal,col:C.teal},
+      {name:'Exercise Rider',role:'Morning Gallops',badge:'THE STABLE',bc:C.green,col:C.green},
+      {name:'Groom',role:'Barn Handler',badge:'Javier',bc:C.gray,col:C.gray},
+      {name:'Race Vet',role:'Track Medical',badge:'THE DOC',bc:C.teal,col:'#085041'},
+      {name:'Owner/Investor',role:'Principal',badge:'THE ROSTER',bc:C.amber,col:C.amber}
+    ]
+  },
+  family:{
+    tier:'Tier 0 · Personal / Family · Individual Sovereign · No commander layer',accent:C.teal,
+    feat:[
+      {name:'Primary Adult',sub:'Account Holder · Full personal truth',badge:'Javier',bc:C.teal,col:C.teal,hr:64,sp:2.2,amp:24,bands:[78,62,72,35,80,74,65,70,75,72]},
+      {name:'Partner / Spouse',sub:'Family Member · Consent share',badge:'Javier',bc:C.teal,col:'#0F6E56',hr:61,sp:2.1,amp:23,bands:[75,58,74,32,78,72,68,72,73,70]}
+    ],
+    eql:['Wellness','Energy','Sleep','Stress','Nutrition','Hydrate','Activity','Focus','Recover','Balance'],
+    cmd:{name:'No commander layer',role:'You are the sovereign. Your data stays yours unless you choose to share it.',badge:'Javier',bc:C.teal,col:C.teal,sp:2.0,amp:22,channels:[{l:'Family link',c:C.teal},{l:'Physician share',c:C.gray}]},
+    team:[
+      {name:'Child Profile',role:'Age-gated',badge:'Javier',bc:C.teal,col:C.teal},
+      {name:'Family K9',role:'Dog biosignal',badge:'Javier',bc:C.amber,col:C.amber},
+      {name:'Physician',role:'Opt-in share',badge:'THE DOC',bc:C.gray,col:C.gray},
+      {name:'Extended Fam',role:'Guest access',badge:'Javier',bc:C.teal,col:'#0F6E56'},
+      {name:'Pets',role:'Animal baseline',badge:'Javier',bc:C.amber,col:'#854F0B'}
+    ]
+  }
+};
+
+let active='ferrari', rafId=null, ekgIs=[], eqIvls=[];
+
+function hex2rgba(hex,a){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return `rgba(${r},${g},${b},${a})`;}
+
+function renderF(p,idx,labels){
+  return `<div class="pcard" style="border-color:${hex2rgba(p.col,.2)};background:${hex2rgba(p.col,.04)}">
+    <div class="ch-hdr">
+      <div><div class="pname">${p.name}</div><div class="prole">${p.sub}</div></div>
+      <span class="badge" style="background:${hex2rgba(p.bc,.15)};color:${p.bc}">${p.badge}</span>
+    </div>
+    <div class="live-r"><div class="ldot" style="background:${p.col}"></div>LIVE · HR ${p.hr} bpm</div>
+    <div class="ekg-wrap" style="background:${hex2rgba(p.col,.06)}">
+      <canvas id="ek-f${idx}" data-col="${p.col}" data-sp="${p.sp}" data-amp="${p.amp}" width="280" height="50" style="width:100%;height:50px"></canvas>
+    </div>
+    <div class="eq-row" id="eq-f${idx}">
+      ${p.bands.map((v)=>`<div class="eq-bar" style="height:${v}%;background:${p.col};opacity:.75" data-t="${v}"></div>`).join('')}
+    </div>
+    <div class="eq-labels">${labels.map(l=>`<div class="eql">${l}</div>`).join('')}</div>
+  </div>`;
+}
+
+function renderCmd(c){
+  const noCmd=c.name.startsWith('No');
+  return `<div class="cmd-card" style="border-color:${hex2rgba(c.col,.25)};background:${hex2rgba(c.col,.04)}">
+    <div class="ch-hdr">
+      <div><div class="cmd-name">${c.name}</div><div class="cmd-role" style="font-style:italic">${c.role}</div></div>
+      <span class="badge" style="background:${hex2rgba(c.bc,.15)};color:${c.bc}">${c.badge}</span>
+    </div>
+    ${noCmd?'':`<div class="live-r"><div class="ldot" style="background:${c.col}"></div>LIVE · Master bus active</div>
+    <div class="ekg-wrap" style="background:${hex2rgba(c.col,.06)}">
+      <canvas id="ek-cmd" data-col="${c.col}" data-sp="${c.sp}" data-amp="${c.amp}" width="560" height="38" style="width:100%;height:38px"></canvas>
+    </div>`}
+    <div class="channels">${c.channels.map(ch=>`<div class="ch" style="border-color:${hex2rgba(ch.c,.25)};background:${hex2rgba(ch.c,.05)}"><div class="ch-dot" style="background:${ch.c}"></div>${ch.l}</div>`).join('')}</div>
+  </div>`;
+}
+
+function renderTeam(members){
+  return members.map(m=>`<div class="tcard" style="border-color:${hex2rgba(m.col,.2)};background:${hex2rgba(m.col,.04)}">
+    <div class="tn">${m.name}</div>
+    <div class="tr">${m.role}</div>
+    <span class="tbadge" style="background:${hex2rgba(m.bc,.15)};color:${m.bc}">${m.badge}</span>
+    <div class="ekg-wrap" style="background:${hex2rgba(m.col,.06)}">
+      <canvas class="ek-team" data-col="${m.col}" data-sp="1.6" data-amp="11" width="100" height="26" style="width:100%;height:26px"></canvas>
+    </div>
+  </div>`).join('');
+}
+
+function renderTab(key){
+  const d=D[key];
+  document.getElementById('tier').textContent=d.tier;
+  document.getElementById('drivers').innerHTML=d.feat.map((p,i)=>renderF(p,i,d.eql)).join('');
+  document.getElementById('cmd').innerHTML=renderCmd(d.cmd);
+  document.getElementById('tgrid').innerHTML=renderTeam(d.team);
+  startAnim();
+}
+
+function startAnim(){
+  if(rafId)cancelAnimationFrame(rafId);
+  eqIvls.forEach(id=>clearInterval(id));
+  ekgIs=[]; eqIvls=[];
+  document.querySelectorAll('canvas[data-col]').forEach(canvas=>{
+    const sp=parseFloat(canvas.dataset.sp);
+    const amp=parseFloat(canvas.dataset.amp);
+    const col=canvas.dataset.col;
+    if(sp>0) ekgIs.push({canvas,ctx:canvas.getContext('2d'),offset:Math.random()*130,sp,amp,col});
+  });
+  document.querySelectorAll('.eq-row').forEach(row=>{
+    const bars=[...row.querySelectorAll('.eq-bar')];
+    const ivl=setInterval(()=>{
+      bars.forEach(bar=>{
+        const cur=parseFloat(bar.style.height)||50;
+        const tgt=15+Math.random()*78;
+        bar.style.height=(cur+(tgt-cur)*0.1)+'%';
+      });
+    },400);
+    eqIvls.push(ivl);
+  });
+  function tick(){
+    ekgIs.forEach(inst=>{
+      const{canvas,ctx,offset,sp,amp,col}=inst;
+      const W=canvas.width,H=canvas.height,mid=H/2,CL=130;
+      ctx.clearRect(0,0,W,H);
+      ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.lineCap='round';
+      for(let x=0;x<W;x++){const t=((x+inst.offset)%CL)/CL;const y=mid-ekgY(t)*amp;x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+      ctx.stroke();
+      const tipT=((W-1+inst.offset)%CL)/CL;const tipY=mid-ekgY(tipT)*amp;
+      ctx.beginPath();ctx.arc(W-1,tipY,2,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();
+      inst.offset+=sp;
+    });
+    rafId=requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+function initTabs(){
+  document.getElementById('tabs').innerHTML=TABS.map(t=>`<button class="tab${t.k==='ferrari'?' active':''}" data-k="${t.k}" onclick="switchTab('${t.k}')" style="${t.k==='ferrari'?`background:${t.color};color:#fff;border-color:${t.color}`:''}"> ${t.label}</button>`).join('');
+}
+
+function switchTab(key){
+  active=key;
+  document.querySelectorAll('.tab').forEach(b=>{
+    const on=b.dataset.k===key;
+    b.classList.toggle('active',on);
+    const col=TABS.find(t=>t.k===key).color;
+    b.style.background=on?col:'';b.style.color=on?'#fff':'';b.style.borderColor=on?col:'';
+  });
+  renderTab(key);
+}
+
+initTabs();
+renderTab('ferrari');
+</script>

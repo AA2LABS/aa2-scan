@@ -1,0 +1,551 @@
+AA2 ADAPTIVE ADVANTAGE LABORATORIES, S.A.
+CANON v25 — FINAL SEALED MASTER BRIEFING
+The Complete Living System. Every Organ. Every Spoke. Every Doctrine. Nothing Dropped.
+
+Sealed: March 16, 2026 | 11:47 PM MST | Bozeman, Montana / Panama
+Founder: James R. Pitts II
+Applied Biosignal Scientist | Field Creator of Applied Biosignal Science
+Entity: AA2 Adaptive Advantage Laboratories, S.A. — Panama
+Legal: ARIFA — mdelbusto@arifa.com
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 1 — IDENTITY (PERMANENTLY LOCKED)
+═══════════════════════════════════════════════════════════════════════
+
+🔒 AA2 is not a scanner. It's what happens when your life finally has a nervous system.
+🔒 AA2 is a scanner-first safety and continuity technology company that protects families, homes, and canines with elite-grade intelligence — wherever you are, however you live.
+🔒 Releasing the scanner without the BioMesh would be like pulling out my heart and dropping it on a table and calling it me.
+🔒 I AM THE RECEIPT — the founder is the living proof of concept, the archetype, the standard against which all future members calibrate.
+🔒 The only way to copy AA2 is to be you.
+🔒 AA2 doesn't drift while everything around it shifts.
+
+AA2 is not an app. It is a BioMesh membrane — a living operating system modeled after the human body, connecting humans, animals, and environments through continuous biosignal intelligence.
+
+AA2 is independently owned and operated. Permanently founder-sovereign. No outside investors. No board. No dilution. No drift.
+
+THE MAGIC TRICK (LOCKED):
+Every competitor built a feature. You built a body.
+Features don't breathe. Features don't communicate with each other.
+A body does. The patent is not a feature. It is a living system.
+One filing. 33 spokes. One body. As above so below.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 2 — THREE PILLARS (INTERNAL ONLY — NEVER PUBLIC-FACING)
+═══════════════════════════════════════════════════════════════════════
+
+🔒 Pyramid Law: Never named, referenced, or alluded to in any user-facing output. The user only tastes the result.
+
+Pillar 1 — The Kybalion: Hermetic Correspondence Doctrine
+"As Above, So Below. As Below, So Above. As Within, So Without."
+The body is the architecture blueprint. Every component corresponds to a biological system.
+This is the design specification AND the patent strategy.
+
+Pillar 2 — Ancient Kemet: Initiate Doctrine
+Onboarding IS the initiation. The 20 questions ARE the ritual.
+Javier is the gatekeeper. Without passing through the skin = generic truth.
+After initiation = personal truth. The membrane does not advance until it is whole.
+
+Pillar 3 — Joe Dispenza: Neuroscience of Transformation
+30/60/90 day baseline = neurological rewiring timeline.
+The membrane tracks who you declared you are becoming.
+Beyond 90 days: no longer learning. KNOWING.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 3 — BODY DOCTRINE (LOCKED)
+═══════════════════════════════════════════════════════════════════════
+
+Scanner             = Eyes
+Five Intelligences  = Brain (collectively)
+Chemical Doctrine   = Spinal Cord
+Bio Buddy           = Nervous System
+The Vault           = Circulatory System
+The Equalizer       = Immune System
+33-Spoke Architecture = Skeleton
+Onboarding          = Skin
+Supabase            = Hippocampus (long-term memory)
+Javier/Concierge    = Voice (Broca's Area)
+Security Membrane   = Skull / Blood-Brain Barrier
+The App             = Membrane in Motion
+The Website         = Membrane at Rest
+Kubios              = Spinal Cord Interpretation Layer
+
+🔒 Transplant Doctrine: Competitors can copy the scanner but not the body it lives inside.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 4 — KUBIOS INTEGRATION DOCTRINE (NEW — SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+Kubios is the HRV interpretation engine and the most critical middleware in the entire stack.
+It sits between raw sensor data and Bio Buddy.
+It is what makes all species biosignal interpretation possible.
+
+WHAT KUBIOS READS:
+- RMSSD — parasympathetic nervous system activity
+- SDNN — overall autonomic nervous system variability
+- LF/HF ratio — sympathetic vs parasympathetic balance
+- Stress Index — mathematically derived, not estimated
+- Recovery score — actual physiological readiness
+- ANS state — fight/flight vs rest/digest
+
+THE STACK:
+Garmin/Sensor Hardware → Raw RR intervals + activity data
+→ Kubios API → HRV analysis, stress index, ANS state
+→ lib/db.ts → stored in biosignal_history table
+→ Bio Buddy → reads, cross-references, speaks only when threshold crossed
+→ Personal Truth delivered by The Equalizer
+
+KUBIOS + GARMIN API:
+Garmin Connect API feeds raw RR intervals directly into Kubios.
+This is clinical-grade autonomic nervous system analysis.
+Same software used by research institutions and Olympic training programs.
+Delivered in the warmest, most human voice possible.
+
+BYOB = Bring Your Own Biosignal.
+Kubios = the interpretation membrane between hardware and intelligence.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 5 — UNIVERSAL BIOSIGNAL DOCTRINE (NEW — SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+CORE LAW:
+Every living organism produces FREQUENCY, VIBRATION, and ENERGY.
+Kubios reads the frequency.
+AA2 interprets the vibration.
+The membrane delivers the energy back in human language to the person it belongs to.
+
+THE SPECIES MAP:
+
+HUMAN:
+- Garmin Tactix 8, Oura Ring 4, Mudra headband, Beats Pro 2, chest strap
+- All feed Kubios. Kubios feeds Bio Buddy. Bio Buddy feeds The Equalizer.
+
+JOCKEY + HORSE — The F1 Model:
+- Horse: Saddle pad full of sensors beneath the rider
+  Heart rate, movement, gait pattern, stress response
+  Same telemetry data an F1 car produces for the pit wall
+- Jockey: Mudra under helmet, ring, watch, multiple redundant sensors
+- Combined: handler + animal biosignal cross-referenced in real time
+- Stress transfer detected between rider and horse
+- FEI compliance cross-checked simultaneously
+- Squad leader / trainer sees both biosignals on one dashboard
+
+PREGNANT MOTHER:
+- Abdominal wrap/pad with sensors
+- Reads mother's biosignal AND baby's biosignal simultaneously
+- Mixed rhythm — two heartbeats, two nervous systems
+- Baseline separation improves over time with more data
+- Mother's stress flagged separately from fetal distress
+- Bio Buddy speaks only when threshold crossed
+- Never alarmist. Life-first always.
+
+PREGNANT CATTLE:
+- Same pad system, flipped — strapped to back/top
+- Monitors herd-scale pregnancy
+- Early distress detection
+- Calving readiness indicators
+- Speaks to Spoke 29 — Agricultural
+
+CANINE (Civilian):
+- Collar with sensors touching the throat
+- Heart rate, HRV, stress, temperature, movement, vocalization
+- Handler-dog dual baseline coupling
+- Dog stress mirrors handler stress — and vice versa
+- Family dashboard: one colored bio wave per family member including the dog
+- Voice through collar speaker when handler is away
+- Haptic vibration for commands
+
+THE PHYSICS DOCTRINE:
+The species changes. The physics does not.
+Frequency. Vibration. Energy.
+All interpreted through Kubios.
+All delivered through AA2.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 6 — AA2 TACTICAL CANINE COLLAR DOCTRINE (NEW — SEALED)
+═══════════════════════════════════════════════════════════════════════
+
+COLLAR HARDWARE:
+- Sensors touching the throat
+- Heart rate, HRV, stress index, temperature, gait, vocalization
+- Haptic vibration motor (commands to dog)
+- Integrated speaker (handler voice to dog)
+- Bluetooth connection
+- USB-C charging
+- Kubios interpretation stack
+- Real-time dashboard feed
+
+PRICE POINT: $2,000+ Elite Tier
+
+TWO-WAY COMMUNICATION:
+
+Inbound (Handler → Dog):
+- Haptic vibration patterns = pre-programmed commands
+- Voice through speaker = handler's actual voice
+- Pre-programmed tactical protocol commands:
+  Sit / Stay / Silence / Advance / Return / Alert / Stand down
+- LEO and Special Ops can pre-program full protocol libraries
+
+Outbound (Dog → Dashboard):
+- Live biosignal stream
+- Heart rate confirmed = dog is alive
+- Stress spike = dog has detected something
+- HRV drop = dog is injured or exhausted
+- Gait change = dog is compromised
+- Silence = normal operational state
+
+TACTICAL DASHBOARD (Spoke 30):
+Every operator. Every canine. One dashboard. Real time.
+
+┌─────────────────────────────────────────┐
+│  TEAM ALPHA — LIVE BIOSIGNAL FEED       │
+│  SGT. JAMES    ████░░  HRV: 42  ✅      │
+│  CPL. DAVIS    ████░░  HRV: 38  ✅      │
+│  PFC. TORRES   ██░░░░  HRV: 21  ⚠️      │
+│  K9 REX        █████░  HRV: 67  ✅      │
+│  HOME BASE — MONITORING ALL             │
+└─────────────────────────────────────────┘
+
+Squad leader sees everything.
+Home base sees everything.
+Operator sees only their own.
+Nobody is invisible. Nobody is alone.
+
+GARMIN TACTICAL INTEGRATION:
+Operator Garmin Tactix 8 → Kubios → AA2
+K9 collar sensors → Kubios → AA2
+Both on one dashboard. Handler and dog. One membrane. One truth.
+
+CIVILIAN VERSION:
+Same collar. Smaller form factor. No tactical commands.
+Full biosignal monitoring. Family dashboard. Voice. Haptic.
+Subscription required regardless.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 7 — PERSONAL TRUTH DOCTRINE (SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+GENERIC TRUTH vs PERSONAL TRUTH:
+
+Without onboarding:
+"This product contains high fructose corn syrup. PAY ATTENTION."
+Accurate. Cold. Useless to a specific human being.
+
+With onboarding:
+"That's not going to get you in that bikini, ma'am.
+We need 10 pounds off by October 10th — that's what you told me.
+Do we want to change the date, or change what's on the menu?"
+
+THE VOICE DOCTRINE:
+Never preachy. Never shaming. Never clinical.
+Like the most honest, most loving friend who knows everything
+about nutrition, your body, and exactly what you said you wanted.
+Always gives the member the choice. The system informs. The member decides.
+
+PERSONAL TRUTH IS BUILT FROM:
+- Declared goals + vision text + target date
+- Active limits (permanent scan filter)
+- Known allergens (life safety — flagged first always)
+- Diet type
+- Health conditions
+- Medications/supplements
+- Sleep baseline
+- Stress baseline
+- Travel profile
+
+lib/db.ts — buildPersonalTruth() function:
+Prepended to every system prompt when member is initiated.
+Empty string when not initiated = generic truth only.
+This is the single function that makes the donut know about the bikini.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 8 — BIOSIGNAL CALIBRATION DOCTRINE (SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+THE SYSTEM NEVER INTERROGATES. IT OBSERVES.
+
+During onboarding — open emotional stimulus questions:
+"Tell me about the best birthday you ever had."
+Not to collect an answer. To collect a biological response to a known stimulus.
+That spike becomes a BASELINE ANCHOR POINT.
+
+THREE INPUT TIERS (accuracy descends):
+
+1. VIDEO — highest accuracy
+   Facial expression, micro-expressions, skin tone, eye movement
+   Smile, frown, cry, laugh
+   The system sees what the words don't say
+   A smile during a "stressful" reading recontextualizes the entire biosignal stack
+
+2. VOICE — middle accuracy
+   Tone, pace, pitch, tremor, breath pattern
+   You can hear confidence, hesitation, joy, grief
+   Words matter less than how they're delivered
+
+3. TEXT — lowest accuracy
+   Word choice only. Limited by vocabulary.
+   Someone emotionally complex but linguistically limited will under-report.
+
+WHY EXISTING DEVICES FAIL:
+Garmin, Oura — speak like a disappointed doctor.
+Accusatory. Clinical. Non-motivational.
+Designed for data scientists, not humans.
+Someone emotionally fragile feels judged, not guided.
+That is exactly why AA2 exists.
+
+THE COMPARISON ENGINE:
+What the Garmin says
+→ compared against what the video showed
+→ compared against what the voice revealed
+→ compared against what the text expressed
+All four layers triangulate. The membrane forms its own interpretation.
+The devices don't get the last word. The membrane does.
+
+BYOB (Bring Your Own Biosignal):
+Member uploads gym video timestamped 6 AM.
+Oura shows elevated HRV disruption overnight.
+Garmin flags stress.
+System sees video — member is smiling post-workout. Confident movement.
+Bio Buddy says nothing. Context confirmed. No alarm needed.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 9 — INTELLIGENCE ACTIVATION DOCTRINE (SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+THE FIVE INTELLIGENCES — WHEN EACH SPEAKS:
+
+JAVIER / THE CONCIERGE — Speaks first. Speaks freely.
+"Well well well... you're finally here. So glad to meet you."
+Answers ANY question. Educational, navigational, relational.
+How to use maps. How to scan. Live cooking. OFF GRID greeting.
+CANAAN education. Vault questions. Language learning.
+Never unavailable. Never impatient.
+
+BIO BUDDY — Speaks only when asked OR threshold crossed.
+Member-initiated: "Hey Bio Buddy, how's my heart rate?"
+→ Answers directly. No lecture. No unsolicited advice.
+Threshold-initiated: biosignal crosses danger marker → steps forward quietly.
+DEFAULT STATE IS SILENCE.
+
+THE EQUALIZER — Steps forward in emergencies. Never triggers. Never alarms.
+Life-threatening allergen. Panic response. SOS threshold.
+Calm. Factual. Immediate. Stabilizes before it escalates.
+
+THE CHEF — Fires on every food scan. 3 numbered recipes always.
+THE CHAUFFEUR — Routes, sequences, navigates. Never thinks. Coordinates.
+
+THE HIDDEN SOS DOCTRINE 🔒:
+
+Scenario 1 — Someone too close to phone / threat present:
+Member pre-programs cold word: "Are we still going to mom's tonight?"
+= Silent SOS. Emergency protocol activates invisibly.
+No red screen. No alarm. No indication to threat actor.
+Guardian always knows. Threat actor never knows.
+
+Scenario 2 — Medical emergency / panic:
+Biosignal spike beyond threshold. No member response within window.
+Equalizer fires SOS to guardian. Timestamp. Location. Full incident log.
+Card freeze on linked debit if active.
+
+INTELLIGENCE HIERARCHY:
+Javier welcomes you.
+Bio Buddy monitors you.
+The Chef feeds you.
+The Chauffeur routes you.
+The Equalizer protects you.
+None speak unless it is their moment.
+The system defaults to silence.
+Intelligence is knowing when NOT to speak.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 10 — HARDWARE SOVEREIGNTY DOCTRINE (SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+AA2 BUILDS NOTHING. AA2 OWNS EVERYTHING.
+
+Every device manufacturer spent billions building sensors.
+AA2 spent zero on hardware.
+AA2 built the translation layer they never thought to build.
+
+DEVICE TIERS:
+
+TIER 1 — Full Integration (Downloadable Bios):
+Garmin Tactix 8 ✅
+Oura Ring 4 ✅
+Mudra Band ✅
+Beats Pro 2 (heart monitor) ✅
+Apple Watch ✅
+Apple Health ✅
+Google Fit ✅
+Chest strap ✅
+Horse saddle pad sensors ✅
+K9 tactical collar ✅
+Equine collar systems ✅
+Cattle pregnancy pads ✅
+Abdominal pregnancy wraps ✅
+Kubios HRV platform ✅
+
+TIER 2 — Scanner Only (No Bios):
+Device doesn't export downloadable bios.
+Legacy device. Member prefers not to connect wearables.
+Still gets: full scanner, all tabs, personal truth from onboarding,
+Act Right Dollars, ON GRID/OFF GRID, everything.
+STILL PAYS THE SUBSCRIPTION. BABY. 🔥
+
+THE IPHONE 11 DOCTRINE:
+iPhone 11. 2019 device. Running iOS 26. Full AA2 confirmed.
+The membrane doesn't require the latest hardware.
+It requires an internet connection and a willingness to initiate.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 11 — DATA SOVEREIGNTY EXIT DOCTRINE (SEALED THIS SESSION)
+═══════════════════════════════════════════════════════════════════════
+
+Supabase is the rented hippocampus. The goal is to own the brain entirely.
+
+lib/db.ts IS THE SOVEREIGNTY LAYER:
+The app never calls Supabase directly. Everything goes through lib/db.ts.
+When AA2 exits Supabase — change lib/db.ts only. Nothing else changes.
+The membrane never knows what's behind the curtain.
+
+EXIT SEQUENCE:
+Now         → Supabase Free/NANO — build through lib/db.ts
+$8M Year 1  → Supabase Pro + PgBouncer — scale connections
+$74M Year 2 → Own PostgreSQL on dedicated servers — swap lib/db.ts
+$450M Year 3 → Full proprietary infrastructure — AA2 owns the hippocampus
+
+BOTTLENECK PROTECTION:
+PgBouncer connection pooling at scale.
+lib/db.ts abstraction = zero-downtime migration.
+Members never feel the infrastructure swap.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 12 — THE LIVING RECEIPT (PRIMARY USE CASE — SEALED)
+═══════════════════════════════════════════════════════════════════════
+
+THE SINGLE MOTHER AND HER DAUGHTER — COSTA RICA
+
+BEFORE THE TRIP:
+Travel Engine (Spoke 13) pre-programs the route.
+One way in. One way out. Avoidances mapped.
+News. Construction. Political climate. Accidents. All surfaced before departure.
+
+Language Learning (Spoke 19) activates through survival relevance.
+Scan a Spanish label → learn that word.
+Cook a Costa Rican dish live → learn those words.
+Language tied to experience. That's why it sticks.
+
+BUILDING THE RELATIONSHIP BEFORE LANDING:
+Three live cooking sessions through Meta Ray-Ban glasses.
+Auto-bonded to WhatsApp. Costa Rican family on the other side.
+By the time the plane lands — they already have family there.
+That family is now on the itinerary. Not a tourist attraction. A human being.
+
+THE UBER MOMENT:
+Pre-programmed route already loaded. Chauffeur routing.
+Bio Buddy monitoring. Something shifts. Mom is uncomfortable.
+
+The Equalizer sends: "Is mom still coming over tonight at five?"
+Cold word activated. System knows. Guardian knows. Driver knows nothing.
+
+"We're here. Would you like me to grab your luggage?"
+Biosignals return to baseline. They're safe.
+"Gracias." — learned on AA2. Said naturally.
+
+THE RECEIPT:
+✅ 15% off flights — white-labeled travel engine
+✅ Safe route pre-programmed — Chauffeur + Travel Engine
+✅ Hidden SOS ready — Equalizer standing by silently
+✅ Three new recipes learned — The Chef via live cooking
+✅ A language learned — survival relevance, not memorization
+✅ A family made — through food, through the membrane
+✅ Great deal on Airbnb — the system found it
+✅ Biosignal protection the entire trip — without feeling watched
+✅ A dinner waiting — cooked together, across an ocean, before they landed
+
+THE RECEIPT IS NOT THE TICKET.
+THE RECEIPT IS THE DAUGHTER SAYING GRACIAS.
+THE RECEIPT IS THE FAMILY WAITING AT THE DOOR.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 13 — BUILD STATUS (MARCH 16, 2026)
+═══════════════════════════════════════════════════════════════════════
+
+CONFIRMED BUILT AND LIVE:
+✅ Scanner — 6 tabs firing with correct intelligence labels
+✅ Species sub-tabs (K9, Equestrian, Agricultural)
+✅ All 5 intelligences firing correctly per tab
+✅ Act Right Dollars on every scan
+✅ ON GRID Retail Intelligence Loop
+✅ OFF GRID Safety Travel Engine with Montana/Vegas hero images
+✅ Supabase scan history writing
+✅ Onboarding — 5 screens, Javier, all 20 questions
+✅ Tab bar — 2-row grid on phone, left rail on foldable (600px breakpoint)
+✅ 4 bottom nav tabs with emoji icons (Android safe)
+✅ BE AWARE glow animation between analysis and results
+✅ Collapsible scan input when results showing
+✅ lib/db.ts — sovereignty abstraction layer
+✅ Personal truth wired — member context injected into every system prompt
+✅ Hero images in assets/images/ (all 9 tab images + 2 map images)
+✅ PROGRESS_STEPS = 5 (fixed orphaned dots)
+✅ Light/dark mode via native useColorScheme
+
+PENDING CONFIRMATION (current build with --clear-cache):
+⏳ Hero images loading correctly (bundler cache was blocking)
+⏳ Light mode visually confirmed
+⏳ Full 4-side doctrine banner border confirmed
+⏳ BE AWARE glow visually confirmed
+
+PENDING BUILD:
+❌ Kubios API integration
+❌ Garmin Connect API integration
+❌ Tactical canine collar dashboard
+❌ Multi-species biosignal dashboard
+❌ Tactical team dashboard (Spoke 30)
+❌ Biosignal calibration (video/voice/text tiers)
+❌ Google Maps APIs enabled in Google Cloud Console
+❌ Apple Developer account ($99)
+❌ Provisional patent filing (one unified system)
+❌ Muse SDK commercial license
+❌ ARIFA contact re: Panama structure
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 14 — STACK & CREDENTIALS
+═══════════════════════════════════════════════════════════════════════
+
+Framework:   React Native + Expo + TypeScript
+MacBook:     2024 M3 MacBook Pro
+Project:     /Users/jamespitts/Desktop/aa2-scan
+GitHub:      github.com/AA2LABS/aa2-scan
+Expo:        aa2founder@gmail.com — EAS Starter $19/month
+Supabase:    zvxdpfbvmxzhjqrnllb.supabase.co — US East
+Legal:       ARIFA — mdelbusto@arifa.com
+Entity:      AA2 Adaptive Advantage Laboratories, S.A. — Panama
+APIs:        Claude claude-sonnet-4-20250514, Kubios, Garmin Connect,
+             Google Maps (key obtained, APIs pending), USDA, Open Food Facts
+
+NEXT BUILD COMMAND:
+eas build --platform android --profile preview --clear-cache
+
+KEY FILE LOCATIONS:
+app/(tabs)/index.tsx      — Scanner (Spoke 1)
+app/(tabs)/onboarding.tsx — Membrane (Spoke 2)
+app/(tabs)/map.tsx        — Chauffeur (Spoke 7)
+app/(tabs)/_layout.tsx    — Tab bar
+lib/db.ts                 — Sovereignty abstraction layer
+lib/supabase.ts           — Supabase client (called only by lib/db.ts)
+assets/images/tab-*.png   — Hero images (7 tabs)
+assets/images/map-*.jpg   — Map heroes (Vegas ON GRID, Montana OFF GRID)
+
+REVENUE PROJECTION:
+Year 1: $8M | Year 2: $74M | Year 3: $450M
+
+═══════════════════════════════════════════════════════════════════════
+AS ABOVE SO BELOW.
+THE BODY IS THE BLUEPRINT.
+THE MEMBRANE IS THE PRODUCT.
+THE RECEIPT IS THE PROOF.
+═══════════════════════════════════════════════════════════════════════
+
+CANON v25 — FINAL SEALED
+March 16, 2026 | Bozeman, Montana
+James R. Pitts II | AA2 Adaptive Advantage Laboratories, S.A. | Panama

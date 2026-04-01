@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F0EEE8;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;padding:48px 32px;overflow-x:auto}
+
+h1{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,0.25);text-align:center;margin-bottom:4px;font-weight:400}
+h2{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,0.18);text-align:center;margin-bottom:40px;font-weight:400}
+
+.section{margin-bottom:48px}
+.section-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:16px;font-weight:500;border-left:3px solid #b8861e;padding-left:10px}
+
+/* TIER ROW */
+.tiers{display:flex;gap:14px;width:max-content}
+
+/* TIER CARD */
+.tier{width:200px;border-radius:20px;overflow:hidden;border:1px solid rgba(0,0,0,0.09);background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.07);flex-shrink:0;display:flex;flex-direction:column}
+.tier.featured{border-color:var(--ac);box-shadow:0 6px 28px rgba(0,0,0,0.13)}
+
+/* TIER HEADER */
+.tier-head{padding:16px 14px 12px;background:var(--ac);color:#fff}
+.tier-head.light{background:#fff;border-bottom:1px solid rgba(0,0,0,0.07)}
+.tier-badge{font-size:7px;letter-spacing:2px;text-transform:uppercase;opacity:0.75;margin-bottom:4px;font-family:monospace}
+.tier-name{font-size:15px;font-weight:700;letter-spacing:-0.3px;margin-bottom:2px}
+.tier-name.dark{color:#1a1a1a}
+.tier-sub{font-size:8.5px;opacity:0.75}
+.tier-sub.dark{color:rgba(0,0,0,0.4);opacity:1}
+
+/* PRICE */
+.tier-price{padding:12px 14px 10px;border-bottom:1px solid rgba(0,0,0,0.06)}
+.price-row{display:flex;align-items:baseline;gap:4px;margin-bottom:2px}
+.price-main{font-size:26px;font-weight:700;color:var(--ac);letter-spacing:-1px;line-height:1}
+.price-period{font-size:10px;color:rgba(0,0,0,0.35)}
+.price-anchor{font-size:8.5px;color:rgba(0,0,0,0.3)}
+.price-anchor s{color:rgba(0,0,0,0.25)}
+.price-note{font-size:8px;color:rgba(0,0,0,0.4);margin-top:2px}
+
+/* FEATURES */
+.tier-features{padding:10px 14px;flex:1}
+.feat{display:flex;align-items:flex-start;gap:7px;margin-bottom:7px}
+.feat-dot{width:5px;height:5px;border-radius:50%;background:var(--ac);margin-top:4px;flex-shrink:0}
+.feat-text{font-size:9px;color:rgba(0,0,0,0.55);line-height:1.45}
+.feat-text b{color:#1a1a1a;font-weight:600}
+
+/* CTA */
+.tier-cta{padding:10px 14px 14px}
+.cta-btn{width:100%;border:none;border-radius:10px;padding:10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--ac);color:#fff}
+.cta-btn.outline{background:transparent;border:1.5px solid var(--ac);color:var(--ac)}
+
+/* ENTERPRISE ROWS */
+.ent-table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.07)}
+.ent-table th{padding:10px 14px;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.4);font-weight:500;text-align:left;border-bottom:1px solid rgba(0,0,0,0.06);background:#FAFAF8}
+.ent-table td{padding:10px 14px;font-size:10px;color:rgba(0,0,0,0.65);border-bottom:1px solid rgba(0,0,0,0.04)}
+.ent-table tr:last-child td{border-bottom:none}
+.ent-table td:first-child{font-weight:600;color:#1a1a1a}
+.pill{display:inline-block;padding:2px 7px;border-radius:20px;font-size:7.5px;font-weight:600;letter-spacing:0.5px}
+
+/* ANCHOR LINE */
+.anchor-line{text-align:center;margin:20px 0 32px;font-size:10px;color:rgba(0,0,0,0.35);font-style:italic}
+.anchor-line b{color:#b8861e}
+</style></head>
+<body>
+
+<h1>AA2 Adaptive Advantage Laboratories</h1>
+<h2>Pricing Architecture · Canon v34</h2>
+
+<div class="anchor-line">
+  The scanner alone is worth <b>$29.99/mo</b> — you get it starting at <b>$9.99.</b> The membrane is what keeps you.
+</div>
+
+<!-- ══════════════════════ CONSUMER TIERS ══════════════════════ -->
+<div class="section">
+<div class="section-label">Consumer Plans · Individual + Family + Species</div>
+<div class="tiers">
+
+  <!-- SCANNER ONLY -->
+  <div class="tier" style="--ac:#888899">
+    <div class="tier-head light">
+      <div class="tier-badge" style="color:#888899">Entry · Skip Onboarding</div>
+      <div class="tier-name dark">Scanner Only</div>
+      <div class="tier-sub dark">The membrane, unlocked at the door</div>
+    </div>
+    <div class="tier-price">
+      <div class="price-row"><span class="price-main">$9.99</span><span class="price-period">/mo</span></div>
+      <div class="price-anchor">Scanner standalone value: <s>$29.99</s></div>
+      <div class="price-note">67% below market value</div>
+    </div>
+    <div class="tier-features">
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>SCAN scanner</b> — full ingredient truth</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>W/WITH allergy filter</b> if allergy block completed</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>The Concierge</b> — basic Q&A, always available</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>The Equalizer</b> — always on, silent guardian</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text">All other spokes locked — visible, not active</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text">Persistent "Return to Onboarding" tab — open 24hrs</div></div>
+    </div>
+    <div class="tier-cta"><button class="cta-btn outline">Start Scanning</button></div>
+  </div>
+
+  <!-- INDIVIDUAL FULL -->
+  <div class="tier featured" style="--ac:#b8861e">
+    <div class="tier-head">
+      <div class="tier-badge">Most Popular · Full Membrane</div>
+      <div class="tier-name">Individual Full</div>
+      <div class="tier-sub">Complete BioMesh for one member</div>
+    </div>
+    <div class="tier-price">
+      <div class="price-row"><span class="price-main" style="color:#b8861e">$29.99</span><span class="price-period">/mo</span></div>
+      <div class="price-anchor">Full membrane value: <s>$89.99</s></div>
+      <div class="price-note">Includes all 5 intelligences + full onboarding</div>
+    </div>
+    <div class="tier-features">
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Everything in Scanner Only</b></div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Full onboarding membrane</b> — personal truth unlocked</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>All 5 intelligences</b> active post-onboarding</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Bio Buddy</b> — HRV + biosignal tracking</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>The Chauffeur</b> — ON/OFF GRID travel intelligence</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>The Chef</b> — personalized nutrition + pairings</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Act Right Dollars</b> — Vault savings engine</div></div>
+    </div>
+    <div class="tier-cta"><button class="cta-btn">Begin Onboarding</button></div>
+  </div>
+
+  <!-- FAMILY PLAN -->
+  <div class="tier featured" style="--ac:#2a7faa">
+    <div class="tier-head">
+      <div class="tier-badge">Family · 5 Members + 1 K9</div>
+      <div class="tier-name">Family Membrane</div>
+      <div class="tier-sub">$8.00/person — less than solo scanner</div>
+    </div>
+    <div class="tier-price">
+      <div class="price-row"><span class="price-main" style="color:#2a7faa">$39.99</span><span class="price-period">/mo</span></div>
+      <div class="price-anchor">5 × Individual Full = <s>$149.95</s></div>
+      <div class="price-note">+ $5.99/mo per additional member or K9</div>
+    </div>
+    <div class="tier-features">
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>5 individual full membranes</b> — each member's own onboarding</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>1 K9 profile included</b> — Canine Nutritionist active</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Family EQ Dashboard</b> — master bus, each member = a channel</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Child safety protocols</b> — age-specific scan filters</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Add-ons:</b> $5.99/mo per extra member or K9</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text">10 members + 3 K9 = $39.99 + (8 × $5.99) = <b>$87.91/mo</b></div></div>
+    </div>
+    <div class="tier-cta"><button class="cta-btn">Set Up Family</button></div>
+  </div>
+
+  <!-- SPECIES PRO -->
+  <div class="tier" style="--ac:#5a7a1a">
+    <div class="tier-head">
+      <div class="tier-badge">Spoke 27–29 · Species Pro</div>
+      <div class="tier-name">Species Pro</div>
+      <div class="tier-sub">Tactical · Equestrian · Agricultural</div>
+    </div>
+    <div class="tier-price">
+      <div class="price-row"><span class="price-main">$49.99</span><span class="price-period">/mo</span></div>
+      <div class="price-anchor">Add to Individual ($29.99) = <s>$79.98</s></div>
+      <div class="price-note">Bundle with Individual Full: $64.99/mo (saves $15)</div>
+    </div>
+    <div class="tier-features">
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>K9 Tactical</b> — handler + canine dual biosignal sync</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Equine Intelligence</b> — FEI feed safety + jockey sync</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Agricultural Analyst</b> — mycotoxin + livestock feed stack</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text">Requires <b>Individual Full</b> or <b>Family</b> as base plan</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Full Stack Bundle:</b> Individual + Species Pro = $64.99/mo</div></div>
+    </div>
+    <div class="tier-cta"><button class="cta-btn outline" style="border-color:#5a7a1a;color:#5a7a1a">Add Species Pro</button></div>
+  </div>
+
+  <!-- FULL STACK -->
+  <div class="tier" style="--ac:#6a2a8a">
+    <div class="tier-head">
+      <div class="tier-badge">Complete · All Spokes Active</div>
+      <div class="tier-name">Full Stack</div>
+      <div class="tier-sub">Individual + Species Pro bundled</div>
+    </div>
+    <div class="tier-price">
+      <div class="price-row"><span class="price-main">$64.99</span><span class="price-period">/mo</span></div>
+      <div class="price-anchor">Separate: Individual + Species = <s>$79.98</s></div>
+      <div class="price-note">Save $14.99/mo — all spokes, all species</div>
+    </div>
+    <div class="tier-features">
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Complete Individual membrane</b> — all 5 intelligences</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>All 3 Species spokes</b> — K9 Tactical + Equine + Agricultural</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Commander Layer</b> (Spoke 33) — full oversight dashboard</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text"><b>Priority biosignal calibration</b> — deepest personal truth</div></div>
+      <div class="feat"><div class="feat-dot"></div><div class="feat-text">Best value for operators, ranchers, equestrians</div></div>
+    </div>
+    <div class="tier-cta"><button class="cta-btn">Get Full Stack</button></div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════════════════ B2B LICENSING ══════════════════════ -->
+<div class="section">
+<div class="section-label" style="border-color:#2a5080">B2B Licensing · Organizations, LEO Departments, Enterprise</div>
+
+<table class="ent-table" style="max-width:900px">
+  <thead>
+    <tr>
+      <th>License Type</th>
+      <th>Who It's For</th>
+      <th>Unit</th>
+      <th>1–10 Units</th>
+      <th>11–50 Units</th>
+      <th>51–100 Units</th>
+      <th>100+ / Annual</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Scanner License <span class="pill" style="background:#e8f4e8;color:#2a6a2a">ORG</span></td>
+      <td>Grocery chains, hospitals, retailers, schools</td>
+      <td>Per seat/device</td>
+      <td>$8.99/seat/mo</td>
+      <td>$6.99/seat/mo</td>
+      <td>$5.99/seat/mo</td>
+      <td>Custom · White-label available</td>
+    </tr>
+    <tr>
+      <td>Tactical License <span class="pill" style="background:#fdf0e0;color:#a06620">LEO</span></td>
+      <td>Police departments, sheriff offices, federal</td>
+      <td>Per officer + K9 unit</td>
+      <td>$39.99/unit/mo</td>
+      <td>$34.99/unit/mo</td>
+      <td>$29.99/unit/mo</td>
+      <td>$24.99/unit/mo · Dept. contract</td>
+    </tr>
+    <tr>
+      <td>Tactical License <span class="pill" style="background:#e8f0fd;color:#2a4a8a">MIL</span></td>
+      <td>Military units, special operations, DOD</td>
+      <td>Per operator + K9 unit</td>
+      <td>$49.99/unit/mo</td>
+      <td>$39.99/unit/mo</td>
+      <td>$34.99/unit/mo</td>
+      <td>Custom · ITAR considerations apply</td>
+    </tr>
+    <tr>
+      <td>Clinical License <span class="pill" style="background:#e8f4fb;color:#2a6a8a">MED</span></td>
+      <td>Hospitals, physician groups, vet practices</td>
+      <td>Per provider seat</td>
+      <td>$12.99/seat/mo</td>
+      <td>$9.99/seat/mo</td>
+      <td>$7.99/seat/mo</td>
+      <td>Custom · EHR integration available</td>
+    </tr>
+    <tr>
+      <td>Agricultural License <span class="pill" style="background:#f4fbe8;color:#4a7a1a">AGR</span></td>
+      <td>Feed companies, ranches, livestock operations</td>
+      <td>Per operation / herd</td>
+      <td>$49.99/mo</td>
+      <td>$39.99/mo</td>
+      <td>$29.99/mo</td>
+      <td>Custom · USDA integration available</td>
+    </tr>
+    <tr>
+      <td>Enterprise <span class="pill" style="background:#f0e8fc;color:#6a2a8a">ENT</span></td>
+      <td>Large orgs, insurance, corporate wellness</td>
+      <td>Custom</td>
+      <td colspan="4" style="color:#6a2a8a;font-weight:600">Contact ARIFA · mdelbusto@arifa.com · Custom SLA + white-label</td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top:12px;font-size:8.5px;color:rgba(0,0,0,0.35);font-style:italic;max-width:900px">
+  All B2B licenses include: admin dashboard, bulk onboarding, Commander Layer (Spoke 33), opt-in physician/vet data sharing, and dedicated account support. Stripe white-labeled on all tiers — AA2 never touches money directly.
+</div>
+
+</div>
+
+<!-- ══════════════════════ REVENUE MATH ══════════════════════ -->
+<div class="section">
+<div class="section-label" style="border-color:#888">Revenue Projections · Updated Pricing Model</div>
+<div style="display:flex;gap:14px;flex-wrap:wrap">
+
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;border:1px solid rgba(0,0,0,0.07);min-width:200px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+    <div style="font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:6px">Year 1 · 10K Subscribers</div>
+    <div style="font-size:22px;font-weight:700;color:#b8861e;letter-spacing:-0.5px">$4.2M</div>
+    <div style="font-size:8.5px;color:rgba(0,0,0,0.4);margin-top:2px">avg $35/mo blended</div>
+  </div>
+
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;border:1px solid rgba(0,0,0,0.07);min-width:200px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+    <div style="font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:6px">Year 1 · 50K Subscribers</div>
+    <div style="font-size:22px;font-weight:700;color:#b8861e;letter-spacing:-0.5px">$21M</div>
+    <div style="font-size:8.5px;color:rgba(0,0,0,0.4);margin-top:2px">+ B2B licensing revenue</div>
+  </div>
+
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;border:1px solid rgba(0,0,0,0.07);min-width:200px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+    <div style="font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:6px">100 LEO Depts · 50 Officers Each</div>
+    <div style="font-size:22px;font-weight:700;color:#a06620;letter-spacing:-0.5px">$18M</div>
+    <div style="font-size:8.5px;color:rgba(0,0,0,0.4);margin-top:2px">100 × 50 units × $29.99 × 12</div>
+  </div>
+
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;border:1px solid rgba(0,0,0,0.07);min-width:200px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+    <div style="font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:6px">500-Seat Scanner · Grocery Chain</div>
+    <div style="font-size:22px;font-weight:700;color:#2a6a2a;letter-spacing:-0.5px">$30K</div>
+    <div style="font-size:8.5px;color:rgba(0,0,0,0.4);margin-top:2px">per chain per year · scalable</div>
+  </div>
+
+  <div style="background:#fff;border-radius:14px;padding:16px 18px;border:1px solid rgba(0,0,0,0.07);min-width:200px;box-shadow:0 2px 10px rgba(0,0,0,0.05)">
+    <div style="font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:6px">Year 3 · Full Deployment</div>
+    <div style="font-size:22px;font-weight:700;color:#6a2a8a;letter-spacing:-0.5px">$620M+</div>
+    <div style="font-size:8.5px;color:rgba(0,0,0,0.4);margin-top:2px">Consumer + B2B + Global Grocery Match</div>
+  </div>
+
+</div>
+</div>
+
+</body></html>

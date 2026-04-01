@@ -1,13 +1,21 @@
 import { supabase } from '@/lib/supabase';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { parseGarminExport } from '@/lib/garminImport';
 import {
-  Dimensions, Modal, NativeSyntheticEvent, NativeScrollEvent,
+  computeOuraBaselines,
+  fetchOuraLast30Days,
+  validateOuraToken,
+} from '@/lib/ouraSync';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Dimensions, Linking, Modal, NativeSyntheticEvent, NativeScrollEvent,
   Platform, ScrollView, StyleSheet, Text, TextInput,
   TouchableOpacity, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Fonts } from '@/constants/theme';
+import * as DocumentPicker from 'expo-document-picker';
 
 // ─── CONSTANTS ───────────────────────────────────────────────────────────────
 const SANCTUARY = { gold: '#C49A2A', darkBg: '#0A0804', lightBg: '#FAF7F2', mutedLight: '#8a7a6a' };
@@ -183,6 +191,20 @@ const STACK_TIER_LABELS: Record<StackTier, { name: string; description: string }
   full:          { name: 'Full Stack',           description: 'Complete membrane — everything, at full depth' },
 };
 
+/** Q18 BYOH — hardware_connected (multi-select). */
+const Q18_HARDWARE_OPTS = [
+  'Garmin Watch',
+  'Oura Ring',
+  'Apple Watch',
+  'Whoop',
+  'Fitbit',
+  'CGM/Glucose Monitor',
+  'Blood Pressure Cuff',
+  'Meta Glasses',
+  'Beats Pro',
+  'None yet',
+] as const;
+
 // ─── NUM SCREENS ─────────────────────────────────────────────────────────────
 // S0: Welcome / Javier
 // S1: Hardware Discovery
@@ -215,7 +237,6 @@ export default function OnboardingScreen() {
   // ── Hardware state
   const [hardware,       setHardware]       = useState<string[]>([]);
   const [activePanel,    setActivePanel]    = useState<string | null>(null);
-  const stackTier = computeStackTier(hardware);
 
   // ── Identity (Block 1)
   const [preferredName,  setPreferredName]  = useState('');
@@ -250,6 +271,23 @@ export default function OnboardingScreen() {
   const [animalNotes,    setAnimalNotes]    = useState('');
   const [biosignalNote,  setBiosignalNote]  = useState('');
 
+  // ── Q18 BYOH hardware tracking (multi-select, merged into device_connections on submit)
+  const [trackingHardware, setTrackingHardware] = useState<string[]>([]);
+  const [ouraToken, setOuraToken] = useState('');
+  const [ouraBusy, setOuraBusy] = useState(false);
+  const [ouraConnected, setOuraConnected] = useState(false);
+  const [ouraErr, setOuraErr] = useState<string | null>(null);
+  const [garminApiKey, setGarminApiKey] = useState('');
+  const [garminConsumerSecret, setGarminConsumerSecret] = useState('');
+  const [garminMsg, setGarminMsg] = useState<string | null>(null);
+  const [garminBusy, setGarminBusy] = useState(false);
+
+  const mergedHardware = useMemo(() => {
+    const raw = [...hardware, ...trackingHardware].filter(x => x !== 'None yet');
+    return [...new Set(raw)];
+  }, [hardware, trackingHardware]);
+  const stackTier = computeStackTier(mergedHardware);
+
   // ── Submit state
   const [submitting,   setSubmitting]   = useState(false);
   const [submitError,  setSubmitError]  = useState<string | null>(null);
@@ -273,6 +311,134 @@ export default function OnboardingScreen() {
   const toggleChip = (v: string, list: string[], setter: (n: string[]) => void) =>
     setter(list.includes(v) ? list.filter(x => x !== v) : [...list, v]);
 
+  const toggleTrackingHardware = (v: string) => {
+    setTrackingHardware(prev => {
+      if (v === 'None yet') return ['None yet'];
+      const withoutNone = prev.filter(x => x !== 'None yet');
+      return withoutNone.includes(v) ? withoutNone.filter(x => x !== v) : [...withoutNone, v];
+    });
+  };
+
+  const onConnectOura = useCallback(async () => {
+    const tok = ouraToken.trim();
+    if (!tok) {
+      setOuraErr('Paste your personal access token first.');
+      return;
+    }
+    setOuraBusy(true);
+    setOuraErr(null);
+    try {
+      const ok = await validateOuraToken(tok);
+      if (!ok) {
+        setOuraErr(
+          'Token not recognized — check cloud.ouraring.com/personal-access-tokens and try again'
+        );
+        return;
+      }
+      const rows = await fetchOuraLast30Days(tok);
+      const baselines = computeOuraBaselines(rows);
+      const { data: { user }, error: ue } = await supabase.auth.getUser();
+      if (ue || !user) throw ue ?? new Error('Not signed in');
+      const payload = rows.map(r => ({
+        member_id: user.id,
+        source: 'oura' as const,
+        reading_date: r.reading_date,
+        hrv_rmssd: r.hrv_rmssd,
+        sleep_score: r.sleep_score,
+        readiness_score: r.readiness_score,
+        activity_score: r.activity_score,
+        stress_level: r.stress_level,
+      }));
+      if (payload.length) {
+        const { error: e1 } = await supabase.from('biosignal_readings').upsert(payload, {
+          onConflict: 'member_id,reading_date,source',
+        });
+        if (e1) throw e1;
+      }
+      const { error: e2 } = await supabase.from('member_profiles').upsert(
+        {
+          member_id: user.id,
+          oura_token: tok,
+          hrv_baseline_30d: baselines.hrv_baseline_30d,
+          readiness_baseline_30d: baselines.readiness_baseline_30d,
+        },
+        { onConflict: 'member_id' }
+      );
+      if (e2) throw e2;
+      setOuraConnected(true);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Connection failed';
+      setOuraErr(msg);
+    } finally {
+      setOuraBusy(false);
+    }
+  }, [ouraToken]);
+
+  const onGarminUpload = useCallback(async () => {
+    setGarminBusy(true);
+    setGarminMsg(null);
+    try {
+      const res = await DocumentPicker.getDocumentAsync({
+        copyToCacheDirectory: true,
+        multiple: false,
+      });
+      if (res.canceled || !res.assets?.[0]) return;
+      const asset = res.assets[0];
+      const name = asset.name ?? 'export';
+      const parsed = await parseGarminExport(asset.uri, name);
+      const { data: { user }, error: ue } = await supabase.auth.getUser();
+      if (ue || !user) throw ue ?? new Error('Not signed in');
+      const n = parsed.daysImported;
+      if (n <= 0) {
+        setGarminMsg(parsed.summary);
+        return;
+      }
+      const end = new Date();
+      const payload = Array.from({ length: n }, (_, i) => {
+        const d = new Date(end);
+        d.setDate(d.getDate() - i);
+        return {
+          member_id: user.id,
+          source: 'garmin' as const,
+          reading_date: d.toISOString().slice(0, 10),
+          hrv_rmssd: null as number | null,
+          sleep_score: null as number | null,
+          readiness_score: null as number | null,
+          activity_score: null as number | null,
+          stress_level: null as number | null,
+        };
+      });
+      const { error } = await supabase.from('biosignal_readings').upsert(payload, {
+        onConflict: 'member_id,reading_date,source',
+      });
+      if (error) throw error;
+      setGarminMsg(`Garmin data loaded — ${n} days of history imported. ${parsed.summary}`);
+    } catch (e: unknown) {
+      setGarminMsg(e instanceof Error ? e.message : 'Import failed');
+    } finally {
+      setGarminBusy(false);
+    }
+  }, []);
+
+  const saveGarminCredentials = useCallback(async () => {
+    try {
+      const { data: { user }, error: ue } = await supabase.auth.getUser();
+      if (ue || !user) throw ue ?? new Error('Not signed in');
+      const { error } = await supabase.from('member_profiles').upsert(
+        {
+          member_id: user.id,
+          garmin_api_key: garminApiKey.trim() || null,
+          garmin_consumer_secret: garminConsumerSecret.trim() || null,
+        },
+        { onConflict: 'member_id' }
+      );
+      if (error) throw error;
+      setGarminMsg('Garmin API credentials saved.');
+    } catch (e: unknown) {
+      setGarminMsg(e instanceof Error ? e.message : 'Save failed');
+    }
+  }, [garminApiKey, garminConsumerSecret]);
+
   const toggleHardware = (device: string) => {
     setHardware(prev =>
       prev.includes(device) ? prev.filter(d => d !== device) : [...prev, device]
@@ -293,6 +459,8 @@ export default function OnboardingScreen() {
           member_id: id, name: preferredName || null, age: ageNotes || null,
           species_protected: protecting, delivery_mode: deliveryMode,
           color_mode: colorMode, stack_tier: stackTier, onboarding_complete: true,
+          garmin_api_key: garminApiKey.trim() || null,
+          garmin_consumer_secret: garminConsumerSecret.trim() || null,
         }, { onConflict: 'member_id' }),
         supabase.from('goal_profiles').upsert({
           member_id: id, primary_goal: primaryGoals, vision_text: visionText || null,
@@ -314,7 +482,7 @@ export default function OnboardingScreen() {
           member_id: id, travel_frequency: travelFrequency,
         }, { onConflict: 'member_id' }),
         supabase.from('device_connections').upsert({
-          member_id: id, hardware, stack_tier: stackTier,
+          member_id: id, hardware: mergedHardware, stack_tier: stackTier,
         }, { onConflict: 'member_id' }),
       ]);
 
@@ -341,15 +509,15 @@ export default function OnboardingScreen() {
     currentIndex, preferredName, ageNotes, protecting, deliveryMode, colorMode,
     stackTier, primaryGoals, visionText, foodAllergens, suspectedSensitivities,
     personalCareAllergens, environmentalTriggers, conditions, activeLimits,
-    medications, dietTypes, sleepScore, stressLevel, travelFrequency, hardware,
-    animalNotes, biosignalNote,
+    medications, dietTypes, sleepScore, stressLevel, travelFrequency, mergedHardware,
+    animalNotes, biosignalNote, garminApiKey, garminConsumerSecret,
   ]);
 
   // ── UI Components
   const inp = [styles.textInput, {
     color: textPrim, borderColor: gold + '88',
     backgroundColor: isLight ? 'rgba(255,255,255,0.9)' : 'rgba(10,10,10,0.7)',
-  }] as const;
+  }];
 
   const Chip = ({ label, active, onPress, dashed }: {
     label: string; active: boolean; onPress: () => void; dashed?: boolean;
@@ -725,10 +893,133 @@ export default function OnboardingScreen() {
                 sel={travelFrequency} tog={v => toggleChip(v, travelFrequency, setTravelFrequency)} />
             </Q>
 
-            <Q lbl="Q18 · HARDWARE — ANYTHING ELSE TO ADD?"
-              helper="You can always go back and connect more from the Hardware screen.">
-              <Chips opts={['Chest Strap · Polar H10', 'Wahoo TICKR', 'Whoop', 'Samsung Galaxy Watch']}
-                sel={hardware} tog={v => toggleChip(v, hardware, setHardware)} extra />
+            <Q lbl="Q18 · WHAT HARDWARE IS ALREADY TRACKING YOU?"
+              helper="Connect your devices and the membrane gets smarter about you immediately. The more hardware — the more personal your truth becomes.">
+              <View style={styles.chips}>
+                {Q18_HARDWARE_OPTS.map(o => (
+                  <Chip
+                    key={o}
+                    label={o}
+                    active={trackingHardware.includes(o)}
+                    onPress={() => toggleTrackingHardware(o)}
+                  />
+                ))}
+                <Chip label="+ Add" active={false} onPress={() => {}} dashed />
+              </View>
+
+              {trackingHardware.includes('Oura Ring') && (
+                <View style={[styles.hwConnectCard, { borderColor: gold + '66', backgroundColor: gold + '0d' }]}>
+                  <Text style={[styles.hwConnectTitle, { color: gold }]}>
+                    CONNECT OURA RING 4
+                  </Text>
+                  <Text style={[styles.hwConnectSub, { color: textMuted }]}>
+                    Oura gives you a free personal access token. Paste it here and your HRV, sleep, and readiness
+                    data flows into your membrane immediately.
+                  </Text>
+                  <TextInput
+                    value={ouraToken}
+                    onChangeText={t => { setOuraToken(t); setOuraErr(null); setOuraConnected(false); }}
+                    placeholder="Paste your Oura personal access token"
+                    placeholderTextColor={textMuted}
+                    style={inp}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                  />
+                  <Text style={[styles.hwMonoHint, { color: textMuted }]}>
+                    Get your token at cloud.ouraring.com/personal-access-tokens — takes 2 minutes
+                  </Text>
+                  <TouchableOpacity
+                    style={[styles.hwConnectBtn, { backgroundColor: gold, opacity: ouraBusy ? 0.7 : 1 }]}
+                    onPress={onConnectOura}
+                    disabled={ouraBusy}
+                    activeOpacity={0.85}>
+                    {ouraBusy ? (
+                      <ActivityIndicator color="#03050a" />
+                    ) : (
+                      <Text style={styles.hwConnectBtnTxt}>CONNECT OURA →</Text>
+                    )}
+                  </TouchableOpacity>
+                  {ouraErr && (
+                    <Text style={[styles.hwErr, { color: '#CC4444' }]}>{ouraErr}</Text>
+                  )}
+                  {ouraConnected && !ouraErr && (
+                    <Text style={[styles.hwOk, { color: '#2C7A50' }]}>
+                      ✓ Oura Ring 4 connected — your 30-day HRV baseline is LIVE in the membrane.
+                    </Text>
+                  )}
+                </View>
+              )}
+
+              {trackingHardware.includes('Garmin Watch') && (
+                <View style={[styles.hwConnectCard, { borderColor: gold + '66', backgroundColor: gold + '0d' }]}>
+                  <Text style={[styles.hwConnectTitle, { color: gold }]}>
+                    CONNECT GARMIN TACTIX 8
+                  </Text>
+                  <Text style={[styles.hwConnectSub, { color: textMuted }]}>
+                    Two ways to bring your Garmin data in:
+                  </Text>
+                  <View style={styles.hwGarminRow}>
+                    <TouchableOpacity
+                      style={[styles.hwGarminOpt, { borderColor: gold + '88' }]}
+                      onPress={onGarminUpload}
+                      disabled={garminBusy}
+                      activeOpacity={0.85}>
+                      {garminBusy ? (
+                        <ActivityIndicator color={gold} />
+                      ) : (
+                        <>
+                          <Text style={[styles.hwGarminOptTitle, { color: textPrim }]}>📁 Upload Garmin Export</Text>
+                          <Text style={[styles.hwGarminOptBody, { color: textMuted }]}>
+                            .fit · .json · .zip from Garmin Connect or connect.garmin.com → Data Export
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.hwGarminOpt, { borderColor: gold + '88' }]}
+                      onPress={() => Linking.openURL('https://developer.garmin.com/health-api')}
+                      activeOpacity={0.85}>
+                      <Text style={[styles.hwGarminOptTitle, { color: textPrim }]}>🔗 Apply for Garmin API</Text>
+                      <Text style={[styles.hwGarminOptBody, { color: textMuted }]}>
+                        Opens developer.garmin.com — approval in 2–5 days.
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={[styles.hwInfoCard, { borderColor: textMuted + '44' }]}>
+                    <Text style={[styles.hwInfoCardTxt, { color: textMuted }]}>
+                      Garmin Health API is free for approved developers. When approved, paste your credentials below.
+                    </Text>
+                  </View>
+                  <TextInput
+                    value={garminApiKey}
+                    onChangeText={setGarminApiKey}
+                    placeholder="API Key (when approved)"
+                    placeholderTextColor={textMuted}
+                    style={inp}
+                    autoCapitalize="none"
+                  />
+                  <TextInput
+                    value={garminConsumerSecret}
+                    onChangeText={setGarminConsumerSecret}
+                    placeholder="Consumer Secret (when approved)"
+                    placeholderTextColor={textMuted}
+                    style={inp}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity
+                    style={[styles.hwConnectBtn, { backgroundColor: gold + '44', borderWidth: 1, borderColor: gold }]}
+                    onPress={saveGarminCredentials}
+                    activeOpacity={0.85}>
+                    <Text style={[styles.hwConnectBtnTxt, { color: textPrim }]}>Save Garmin API credentials</Text>
+                  </TouchableOpacity>
+                  <Text style={[styles.hwMonoHint, { color: textMuted }]}>
+                    Not sure how to export? In Garmin Connect: More → Garmin Devices → Your Device → Export Your Data
+                  </Text>
+                  {garminMsg && (
+                    <Text style={[styles.hwOk, { color: gold }]}>{garminMsg}</Text>
+                  )}
+                </View>
+              )}
             </Q>
 
             <Q lbl="Q19 · ANIMAL IN YOUR CARE?">
@@ -841,4 +1132,18 @@ const styles = StyleSheet.create({
   modalUnlocks:   { borderWidth: 1, borderRadius: 12, padding: 16, gap: 8 },
   modalUnlocksTitle: { fontFamily: Fonts.mono, fontSize: 10, letterSpacing: 2, fontWeight: '700', marginBottom: 4 },
   modalUnlockItem: { fontFamily: Fonts.sans, fontSize: 14, lineHeight: 22 },
+  hwConnectCard: { marginTop: 14, borderWidth: 1, borderRadius: 12, padding: 16, gap: 10 },
+  hwConnectTitle:   { fontFamily: Fonts.mono, fontSize: 13, fontWeight: '800', letterSpacing: 1.2 },
+  hwConnectSub:      { fontFamily: Fonts.sans, fontSize: 13, lineHeight: 20, marginBottom: 4 },
+  hwMonoHint:        { fontFamily: Fonts.mono, fontSize: 10, lineHeight: 16 },
+  hwConnectBtn:      { paddingVertical: 14, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  hwConnectBtnTxt:   { fontFamily: Fonts.sans, fontSize: 13, fontWeight: '800', letterSpacing: 0.5, color: '#03050a' },
+  hwErr:             { fontFamily: Fonts.sans, fontSize: 12, marginTop: 4 },
+  hwOk:              { fontFamily: Fonts.sans, fontSize: 12, marginTop: 4, lineHeight: 18 },
+  hwGarminRow:       { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
+  hwGarminOpt:       { flex: 1, minWidth: 140, borderWidth: 1, borderRadius: 10, padding: 12 },
+  hwGarminOptTitle:  { fontFamily: Fonts.sans, fontSize: 13, fontWeight: '700', marginBottom: 6 },
+  hwGarminOptBody:   { fontFamily: Fonts.sans, fontSize: 11, lineHeight: 16 },
+  hwInfoCard:        { borderWidth: 1, borderRadius: 8, padding: 10, marginVertical: 4 },
+  hwInfoCardTxt:     { fontFamily: Fonts.sans, fontSize: 12, lineHeight: 18 },
 });

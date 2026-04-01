@@ -1,0 +1,723 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans, sans-serif); }
+
+  .wrap { padding: 24px 0; display: flex; flex-direction: column; gap: 24px; }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-secondary);
+    color: var(--color-text-secondary);
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: #0A0804;
+    color: #C49A2A;
+    border-color: #C49A2A;
+  }
+
+  .view { display: none; flex-direction: column; gap: 16px; }
+  .view.active { display: flex; }
+
+  /* ── Flow diagram ── */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .flow-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--color-text-secondary);
+    writing-mode: horizontal-tb;
+    padding: 6px 10px;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    border-right: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary);
+    border-radius: 8px 0 0 8px;
+    border: 0.5px solid var(--color-border-tertiary);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .flow-nodes {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .node {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+  }
+  .node:hover { border-color: var(--color-border-primary); }
+
+  .node-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+  }
+  .node-sub {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+  .node-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 2px;
+  }
+
+  .tag-video { background: rgba(74,158,255,0.12); color: #4a9eff; }
+  .tag-voice { background: rgba(46,207,179,0.12); color: #2ecfb3; }
+  .tag-text  { background: rgba(196,154,42,0.12); color: #C49A2A; }
+  .tag-hw    { background: rgba(176,106,191,0.12); color: #b06abf; }
+  .tag-db    { background: rgba(224,82,82,0.12); color: #e05252; }
+  .tag-out   { background: rgba(46,207,179,0.15); color: #2ecfb3; border: 0.5px solid rgba(46,207,179,0.3); }
+
+  .arrow-down {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6px 0;
+    color: var(--color-text-secondary);
+    font-size: 16px;
+  }
+  .arrow-label {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  .section-divider {
+    height: 0.5px;
+    background: var(--color-border-tertiary);
+    margin: 4px 0;
+  }
+
+  /* ── Phone mockup ── */
+  .phone-wrap {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .phone {
+    width: 260px;
+    min-height: 480px;
+    background: #0A0804;
+    border-radius: 28px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  .phone-label {
+    font-size: 8px;
+    color: rgba(196,154,42,0.7);
+    letter-spacing: 2px;
+    font-weight: 700;
+  }
+
+  .upload-block {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .upload-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
+  }
+
+  .upload-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px dashed rgba(255,255,255,0.12);
+    margin-bottom: 6px;
+    cursor: pointer;
+  }
+  .upload-row:hover { border-color: rgba(255,255,255,0.25); }
+
+  .upload-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .upload-info { flex: 1; }
+  .upload-name {
+    font-size: 10px;
+    color: #fff;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .upload-desc {
+    font-size: 9px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.4;
+  }
+
+  .accuracy-bar {
+    height: 3px;
+    border-radius: 2px;
+    margin-top: 4px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+  }
+  .accuracy-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .db-block {
+    background: rgba(224,82,82,0.06);
+    border: 1px solid rgba(224,82,82,0.2);
+    border-radius: 8px;
+    padding: 8px 10px;
+  }
+  .db-title { font-size: 9px; color: #e05252; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 6px; }
+  .db-field { font-size: 9px; color: rgba(255,255,255,0.45); font-family: monospace; line-height: 1.8; }
+
+  .annotation {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 200px;
+  }
+
+  .anno-card {
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .anno-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .anno-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+  }
+  .anno-body {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  .accuracy-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .acc-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .acc-label {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    min-width: 40px;
+  }
+  .acc-bar-wrap {
+    flex: 1;
+    height: 6px;
+    background: var(--color-background-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 0.5px solid var(--color-border-tertiary);
+  }
+  .acc-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+  .acc-pct {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .table-doc {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .table-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary);
+  }
+  .table-name {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    min-width: 160px;
+    flex-shrink: 0;
+  }
+  .table-desc {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+  .table-source {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="showView('flow')">Full input flow</div>
+    <div class="tab" onclick="showView('screen')">Onboarding screen</div>
+    <div class="tab" onclick="showView('accuracy')">Accuracy tiers</div>
+    <div class="tab" onclick="showView('tables')">Supabase tables</div>
+  </div>
+
+  <!-- VIEW 1: Full flow -->
+  <div class="view active" id="view-flow">
+
+    <div class="flow">
+
+      <!-- Row: Input sources -->
+      <div class="flow-row" style="margin-bottom: 8px;">
+        <div class="flow-label">INPUT SOURCES</div>
+        <div class="flow-nodes">
+          <div class="node">
+            <div class="node-tag tag-video">VIDEO</div>
+            <div class="node-title">Camera recording</div>
+            <div class="node-sub">Facial expression, micro-expressions, skin tone, eye movement</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-voice">VOICE</div>
+            <div class="node-title">Microphone</div>
+            <div class="node-sub">Tone, pace, pitch, tremor, breath pattern</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-text">TEXT</div>
+            <div class="node-title">Typed responses</div>
+            <div class="node-sub">Word choice, emotional density, vocabulary range</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-hw">BYOB / BYOH</div>
+            <div class="node-title">Hardware upload</div>
+            <div class="node-sub">Garmin, Oura, Apple Health, Google Fit — raw RR intervals</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓</div>
+      <div class="arrow-label">During onboarding — Q20 BYOB + Javier's emotional stimulus questions</div>
+
+      <!-- Row: Trigger mechanism -->
+      <div class="flow-row" style="margin: 8px 0;">
+        <div class="flow-label">TRIGGER MECHANISM</div>
+        <div class="flow-nodes">
+          <div class="node" style="flex: 3;">
+            <div class="node-title">Javier's emotional stimulus questions</div>
+            <div class="node-sub" style="margin-top: 4px;">
+              <strong style="color: var(--color-text-primary); font-size: 11px;">Positive:</strong> "Tell me about the best birthday you ever had."<br>
+              <strong style="color: var(--color-text-primary); font-size: 11px;">Stress:</strong> "Tell me about a moment you had to make a hard call."<br>
+              <strong style="color: var(--color-text-primary); font-size: 11px;">Neutral:</strong> "Read this ingredient list aloud."
+            </div>
+            <div class="node-tag tag-text" style="margin-top: 6px;">NOT collecting answers — collecting biological response to known stimulus</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓</div>
+      <div class="arrow-label">Biosignal response captured simultaneously across all active input tiers</div>
+
+      <!-- Row: Processing layer -->
+      <div class="flow-row" style="margin: 8px 0;">
+        <div class="flow-label">PROCESSING LAYER</div>
+        <div class="flow-nodes">
+          <div class="node">
+            <div class="node-tag tag-hw">KUBIOS API</div>
+            <div class="node-title">HRV interpretation</div>
+            <div class="node-sub">RMSSD, SDNN, LF/HF ratio, Stress Index, ANS state, Recovery score</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-video">Video analysis</div>
+            <div class="node-title">Expression layer</div>
+            <div class="node-sub">Smile / frown / cry / laugh recontextualizes the entire biosignal stack</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-voice">Voice analysis</div>
+            <div class="node-title">Acoustic layer</div>
+            <div class="node-sub">Confidence, hesitation, joy, grief detectable before words are processed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓</div>
+      <div class="arrow-label">Four-layer triangulation — all inputs cross-referenced simultaneously</div>
+
+      <!-- Row: Comparison engine -->
+      <div class="flow-row" style="margin: 8px 0;">
+        <div class="flow-label">COMPARISON ENGINE</div>
+        <div class="flow-nodes">
+          <div class="node" style="flex: 4; background: rgba(196,154,42,0.04); border-color: rgba(196,154,42,0.2);">
+            <div class="node-title" style="color: #C49A2A;">The membrane forms its own interpretation</div>
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 100px; padding: 8px; background: rgba(74,158,255,0.06); border-radius: 6px; border: 0.5px solid rgba(74,158,255,0.2);">
+                <div style="font-size: 9px; color: #4a9eff; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">GARMIN SAYS</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Elevated HRV disruption overnight</div>
+              </div>
+              <div style="flex: 1; min-width: 100px; padding: 8px; background: rgba(74,158,255,0.06); border-radius: 6px; border: 0.5px solid rgba(74,158,255,0.2);">
+                <div style="font-size: 9px; color: #4a9eff; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">VIDEO SHOWS</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Member smiling post-workout. Confident movement.</div>
+              </div>
+              <div style="flex: 1; min-width: 100px; padding: 8px; background: rgba(46,207,179,0.06); border-radius: 6px; border: 0.5px solid rgba(46,207,179,0.2);">
+                <div style="font-size: 9px; color: #2ecfb3; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">RESULT</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.5);">Bio Buddy stays silent. Context confirmed. Devices don't get last word. Membrane does.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓</div>
+      <div class="arrow-label">Anchor points confirmed after 3 consistent readings — stored to Supabase</div>
+
+      <!-- Row: Storage -->
+      <div class="flow-row" style="margin: 8px 0;">
+        <div class="flow-label">STORAGE (lib/db.ts)</div>
+        <div class="flow-nodes">
+          <div class="node">
+            <div class="node-tag tag-db">biosignal_baselines</div>
+            <div class="node-title">Anchor point table</div>
+            <div class="node-sub">stimulus_type · input_tier · rmssd_response · sdnn_response · stress_index · anchor_confirmed</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-db">biosignal_history</div>
+            <div class="node-title">Uploaded file / note</div>
+            <div class="node-sub">Garmin export, Oura CSV, Apple Health XML, or text note from Q20</div>
+          </div>
+          <div class="node">
+            <div class="node-tag tag-db">baseline_profiles</div>
+            <div class="node-title">Subjective baseline</div>
+            <div class="node-sub">sleep_score · stress_level — from Q15 and Q16 in onboarding</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓</div>
+      <div class="arrow-label">30/60/90 day Dispenza refinement — Learning → Calibration → Confirmation → KNOWING</div>
+
+      <!-- Row: Output -->
+      <div class="flow-row" style="margin: 8px 0;">
+        <div class="flow-label">OUTPUT TO SCANNER</div>
+        <div class="flow-nodes">
+          <div class="node" style="flex: 4; border-color: rgba(46,207,179,0.3); background: rgba(46,207,179,0.04);">
+            <div class="node-tag tag-out">buildPersonalTruth(profile) — lib/db.ts</div>
+            <div class="node-title" style="color: #2ecfb3; margin-top: 4px;">Personal truth prepended to every system prompt</div>
+            <div class="node-sub" style="margin-top: 6px;">Every scan now knows: allergens · active limits · goals · sleep baseline · stress baseline · hardware connected · species in care. The Equalizer speaks to this specific person, not a population average.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- VIEW 2: Onboarding screen Q20 -->
+  <div class="view" id="view-screen">
+    <div class="phone-wrap">
+      <div class="phone">
+        <div class="phone-label">SPOKE 02 · THE MEMBRANE — SCREEN 5 OF 5</div>
+        <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px;">Blocks 5 + 6 + 7</div>
+        <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 12px;">Baseline + World + Animals</div>
+
+        <!-- Q18 Hardware -->
+        <div class="upload-block" style="border-color: rgba(176,106,191,0.3);">
+          <div class="upload-title" style="color: #b06abf;">Q18 · HARDWARE CONNECTING? BYOH</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <div style="padding: 5px 10px; border-radius: 20px; border: 1px solid #b06abf; background: rgba(176,106,191,0.12); font-size: 10px; color: #b06abf; font-weight: 700;">Garmin ✓</div>
+            <div style="padding: 5px 10px; border-radius: 20px; border: 1px solid #b06abf; background: rgba(176,106,191,0.12); font-size: 10px; color: #b06abf; font-weight: 700;">Oura ✓</div>
+            <div style="padding: 5px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); font-size: 10px; color: rgba(255,255,255,0.4);">Meta Glasses</div>
+            <div style="padding: 5px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); font-size: 10px; color: rgba(255,255,255,0.4);">Mudra</div>
+            <div style="padding: 5px 10px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); font-size: 10px; color: rgba(255,255,255,0.4);">+ Add</div>
+          </div>
+          <div style="font-size: 9px; color: rgba(176,106,191,0.6); margin-top: 8px;">Selected hardware feeds raw RR intervals → Kubios → biosignal_history</div>
+        </div>
+
+        <!-- Q20 BYOB -->
+        <div class="upload-block" style="border-color: rgba(74,158,255,0.3);">
+          <div class="upload-title" style="color: #4a9eff;">Q20 · BIOSIGNAL HISTORY UPLOAD · BYOB</div>
+
+          <div class="upload-row" style="border-color: rgba(74,158,255,0.2);">
+            <div class="upload-icon" style="background: rgba(74,158,255,0.12);">🎥</div>
+            <div class="upload-info">
+              <div class="upload-name" style="color: #4a9eff;">Upload video</div>
+              <div class="upload-desc">Gym recording, morning check-in, any timestamped clip</div>
+            </div>
+            <div style="font-size: 9px; color: rgba(74,158,255,0.6); font-weight: 700;">HIGHEST</div>
+          </div>
+          <div class="accuracy-bar"><div class="accuracy-fill" style="width: 95%; background: #4a9eff;"></div></div>
+
+          <div class="upload-row" style="border-color: rgba(46,207,179,0.2); margin-top: 8px;">
+            <div class="upload-icon" style="background: rgba(46,207,179,0.12);">🎤</div>
+            <div class="upload-info">
+              <div class="upload-name" style="color: #2ecfb3;">Record voice</div>
+              <div class="upload-desc">Voice memo, call recording, morning journal</div>
+            </div>
+            <div style="font-size: 9px; color: rgba(46,207,179,0.6); font-weight: 700;">MID</div>
+          </div>
+          <div class="accuracy-bar"><div class="accuracy-fill" style="width: 65%; background: #2ecfb3;"></div></div>
+
+          <div class="upload-row" style="border-color: rgba(196,154,42,0.2); margin-top: 8px;">
+            <div class="upload-icon" style="background: rgba(196,154,42,0.12);">📎</div>
+            <div class="upload-info">
+              <div class="upload-name" style="color: #C49A2A;">Upload file</div>
+              <div class="upload-desc">Garmin export, Oura CSV, Apple Health XML, Google Fit</div>
+            </div>
+            <div style="font-size: 9px; color: rgba(196,154,42,0.6); font-weight: 700;">HRV DATA</div>
+          </div>
+          <div class="accuracy-bar"><div class="accuracy-fill" style="width: 85%; background: #C49A2A;"></div></div>
+
+          <div style="margin-top: 10px; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.07);">
+            <div style="font-size: 9px; color: rgba(255,255,255,0.35); margin-bottom: 4px; letter-spacing: 1px;">OR ADD A TEXT NOTE</div>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.25); font-style: italic;">Optional note or link to exported data...</div>
+          </div>
+          <div style="font-size: 9px; color: rgba(74,158,255,0.5); margin-top: 8px;">All uploads → biosignal_history table via lib/db.ts</div>
+        </div>
+      </div>
+
+      <div class="annotation">
+        <div class="anno-card">
+          <div class="anno-label">WHERE VIDEO GOES</div>
+          <div class="anno-title">Facial + expression analysis</div>
+          <div class="anno-body">Video is analyzed for micro-expressions, skin tone shifts, eye movement patterns, and smile/frown/cry/laugh signals. A smile during a "stressful" Javier question recontextualizes the Garmin HRV reading — Bio Buddy may stay silent even if hardware shows stress. Stored as anchor point in <code>biosignal_baselines</code>.</div>
+        </div>
+        <div class="anno-card">
+          <div class="anno-label">WHERE VOICE GOES</div>
+          <div class="anno-title">Acoustic baseline layer</div>
+          <div class="anno-body">Voice recordings are analyzed for tone, pace, pitch, tremor, and breath pattern. Words matter less than delivery. Hesitation and confidence are audible before the conscious mind has language for them. Stored in <code>biosignal_baselines</code> as stimulus_type + input_tier = VOICE.</div>
+        </div>
+        <div class="anno-card">
+          <div class="anno-label">WHERE BYOB FILES GO</div>
+          <div class="anno-title">biosignal_history table</div>
+          <div class="anno-body">Garmin exports, Oura CSVs, Apple Health XMLs upload through Q20. Raw RR interval data passes through Kubios API for clinical HRV interpretation. RMSSD, SDNN, LF/HF ratio, Stress Index, Recovery score — all stored. This is what makes the baseline clinical-grade, not estimated.</div>
+        </div>
+        <div class="anno-card">
+          <div class="anno-label">WHERE TEXT GOES</div>
+          <div class="anno-title">Lowest accuracy — word choice only</div>
+          <div class="anno-body">Text answers to Javier's questions are the floor tier. Word choice and vocabulary are captured. Emotionally complex members with limited vocabulary will under-report — which is exactly why video and voice exist. Text alone never builds a complete baseline.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 3: Accuracy tiers -->
+  <div class="view" id="view-accuracy">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary);">Three input tiers — accuracy descends</div>
+      <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 4px;">Canon doctrine: all four layers (hardware + video + voice + text) triangulate simultaneously. The membrane forms its own interpretation. The devices don't get the last word. The membrane does.</div>
+
+      <div class="accuracy-row">
+        <div class="acc-item">
+          <div class="acc-label" style="color: #4a9eff; font-weight: 600; min-width: 100px; font-size: 12px;">VIDEO</div>
+          <div class="acc-bar-wrap">
+            <div class="acc-fill" style="width: 95%; background: #4a9eff;"></div>
+          </div>
+          <div class="acc-pct">Highest</div>
+        </div>
+        <div style="font-size: 11px; color: var(--color-text-secondary); padding-left: 108px; line-height: 1.5; margin-top: -4px; margin-bottom: 8px;">Facial expression, micro-expressions, skin tone, eye movement, smile/frown/cry/laugh — the system sees what the words don't say</div>
+
+        <div class="acc-item">
+          <div class="acc-label" style="color: #C49A2A; font-weight: 600; min-width: 100px; font-size: 12px;">BYOB HRV</div>
+          <div class="acc-bar-wrap">
+            <div class="acc-fill" style="width: 85%; background: #C49A2A;"></div>
+          </div>
+          <div class="acc-pct">Clinical</div>
+        </div>
+        <div style="font-size: 11px; color: var(--color-text-secondary); padding-left: 108px; line-height: 1.5; margin-top: -4px; margin-bottom: 8px;">Kubios-interpreted RR intervals from Garmin/Oura/Apple Health — same software used by Olympic training programs and research institutions</div>
+
+        <div class="acc-item">
+          <div class="acc-label" style="color: #2ecfb3; font-weight: 600; min-width: 100px; font-size: 12px;">VOICE</div>
+          <div class="acc-bar-wrap">
+            <div class="acc-fill" style="width: 65%; background: #2ecfb3;"></div>
+          </div>
+          <div class="acc-pct">Mid</div>
+        </div>
+        <div style="font-size: 11px; color: var(--color-text-secondary); padding-left: 108px; line-height: 1.5; margin-top: -4px; margin-bottom: 8px;">Tone, pace, pitch, tremor, breath pattern — words matter less than how they're delivered</div>
+
+        <div class="acc-item">
+          <div class="acc-label" style="color: var(--color-text-secondary); font-weight: 600; min-width: 100px; font-size: 12px;">TEXT</div>
+          <div class="acc-bar-wrap">
+            <div class="acc-fill" style="width: 35%; background: var(--color-border-secondary);"></div>
+          </div>
+          <div class="acc-pct">Floor</div>
+        </div>
+        <div style="font-size: 11px; color: var(--color-text-secondary); padding-left: 108px; line-height: 1.5; margin-top: -4px; margin-bottom: 8px;">Word choice only — someone emotionally complex but linguistically limited will under-report. Text alone never builds a complete baseline.</div>
+      </div>
+
+      <div style="height: 0.5px; background: var(--color-border-tertiary); margin: 8px 0;"></div>
+
+      <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">30 / 60 / 90 day refinement</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 0.5px solid rgba(74,158,255,0.3); background: rgba(74,158,255,0.04);">
+          <div style="font-size: 10px; font-weight: 700; color: #4a9eff; letter-spacing: 1px; margin-bottom: 6px;">DAY 1–30 · LEARNING</div>
+          <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.5;">Baseline being established. Javier communicates: "I'm still learning how you respond." Leans on stated goals + allergens more than biosignal.</div>
+        </div>
+        <div style="flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 0.5px solid rgba(196,154,42,0.3); background: rgba(196,154,42,0.04);">
+          <div style="font-size: 10px; font-weight: 700; color: #C49A2A; letter-spacing: 1px; margin-bottom: 6px;">DAY 31–60 · CALIBRATION</div>
+          <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.5;">Pattern recognition active. Bio Buddy begins speaking more precisely. The Chef adjusts to actual metabolic response, not just stated goals.</div>
+        </div>
+        <div style="flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 0.5px solid rgba(46,207,179,0.3); background: rgba(46,207,179,0.04);">
+          <div style="font-size: 10px; font-weight: 700; color: #2ecfb3; letter-spacing: 1px; margin-bottom: 6px;">DAY 61–90 · CONFIRMATION</div>
+          <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.5;">Baseline solidified. Anomalies detected faster. Javier: "I know you now. This is personal truth."</div>
+        </div>
+        <div style="flex: 1; min-width: 140px; padding: 12px; border-radius: 8px; border: 0.5px solid rgba(224,82,82,0.3); background: rgba(224,82,82,0.04);">
+          <div style="font-size: 10px; font-weight: 700; color: #e05252; letter-spacing: 1px; margin-bottom: 6px;">BEYOND 90 · KNOWING</div>
+          <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.5;">No longer learning. The membrane doesn't ask. It anticipates. The receipt is no longer reactive — it is prophylactic.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW 4: Tables -->
+  <div class="view" id="view-tables">
+    <div class="table-doc">
+      <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px;">Supabase tables — where every input lands</div>
+      <div style="font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 8px;">All writes go through <code style="font-size: 11px;">lib/db.ts</code> — the sovereignty layer. The app never calls Supabase directly.</div>
+
+      <div class="table-row">
+        <div class="table-name">biosignal_baselines</div>
+        <div class="table-desc">Stimulus anchor points from Javier's emotional questions. Fields: member_id · stimulus_type (POSITIVE/STRESS/NEUTRAL) · input_tier (VIDEO/VOICE/TEXT) · rmssd_response · sdnn_response · stress_index · anchor_confirmed · created_at</div>
+        <div class="table-source" style="background: rgba(74,158,255,0.1); color: #4a9eff;">Video · Voice · Kubios</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">biosignal_history</div>
+        <div class="table-desc">Raw biosignal uploads from Q20 BYOB. Garmin exports, Oura CSVs, Apple Health XMLs, Google Fit data, voice memos, video uploads, or optional text notes. Field: uploaded_file (path or note)</div>
+        <div class="table-source" style="background: rgba(196,154,42,0.1); color: #C49A2A;">BYOB / BYOH files</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">baseline_profiles</div>
+        <div class="table-desc">Subjective baseline from Q15 (sleep_score 1–5) and Q16 (stress_level: Low/Moderate/High/Unpredictable). These are the member's self-reported starting point before hardware data refines them.</div>
+        <div class="table-source" style="background: rgba(46,207,179,0.1); color: #2ecfb3;">Q15 · Q16 text answers</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">allergy_profiles</div>
+        <div class="table-desc">Food allergens · suspected sensitivities · personal care allergens · environmental triggers. Flagged first in every scan. Permanent. Never expires.</div>
+        <div class="table-source" style="background: rgba(224,82,82,0.1); color: #e05252;">Q7–Q10 chips</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">health_profiles</div>
+        <div class="table-desc">Conditions · active_limits (permanent scan filter) · medications · diet_types. Active limits run silently on every scan forever.</div>
+        <div class="table-source" style="background: rgba(74,158,255,0.1); color: #4a9eff;">Q11–Q14 chips</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">member_profiles</div>
+        <div class="table-desc">name · age · species_protected · delivery_mode (VIDEO/VOICE/TEXT) · color_mode · onboarding_complete. The delivery_mode here is what the member chose in Screen 1 — how Javier speaks to them.</div>
+        <div class="table-source" style="background: rgba(196,154,42,0.1); color: #C49A2A;">Screen 1 + Q1–Q4</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">goal_profiles</div>
+        <div class="table-desc">primary_goal array · vision_text. These feed buildPersonalTruth() so every scan verdict references what the member said they're trying to achieve.</div>
+        <div class="table-source" style="background: rgba(46,207,179,0.1); color: #2ecfb3;">Q5–Q6 text</div>
+      </div>
+
+      <div class="table-row">
+        <div class="table-name">device_connections</div>
+        <div class="table-desc">hardware array (Garmin, Oura, Apple Watch, etc). Determines which BYOH devices are active and routing data through Kubios.</div>
+        <div class="table-source" style="background: rgba(176,106,191,0.1); color: #b06abf;">Q18 BYOH chips</div>
+      </div>
+
+      <div style="height: 0.5px; background: var(--color-border-tertiary); margin: 4px 0;"></div>
+
+      <div style="padding: 12px; background: rgba(46,207,179,0.04); border: 0.5px solid rgba(46,207,179,0.2); border-radius: 8px;">
+        <div style="font-size: 11px; font-weight: 500; color: #2ecfb3; margin-bottom: 6px;">buildPersonalTruth(profile) — the output of all 8 tables</div>
+        <div style="font-size: 11px; color: var(--color-text-secondary); line-height: 1.6;">When a member scans, <code style="font-size: 10px;">loadMemberProfile()</code> reads all 8 tables. The assembled profile passes into <code style="font-size: 10px;">buildPersonalTruth()</code> which prepends context to every system prompt. The Equalizer now knows everything. Personal truth fires. Generic truth is gone.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>

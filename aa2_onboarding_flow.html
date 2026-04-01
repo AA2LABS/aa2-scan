@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080808;padding:40px 24px;font-family:-apple-system,sans-serif;overflow-x:auto}
+h1{color:rgba(255,255,255,0.15);font-size:10px;letter-spacing:3px;text-transform:uppercase;text-align:center;margin-bottom:30px;font-weight:400}
+.row{display:flex;gap:20px;justify-content:flex-start;align-items:flex-start;width:max-content;margin:0 auto}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px}
+.col-label{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2)}
+.phone{width:240px;height:520px;border-radius:36px;overflow:hidden;border:6px solid #111;background:#060606;box-shadow:0 20px 60px rgba(0,0,0,0.9);display:flex;flex-direction:column;flex-shrink:0}
+
+/* SHARED */
+.phead{padding:16px 16px 10px;flex-shrink:0}
+.progress-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.prog-bar{flex:1;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px}
+.prog-label{font-size:8px;color:rgba(255,255,255,0.25);white-space:nowrap;font-family:monospace}
+.q-tag{font-size:7px;letter-spacing:2px;text-transform:uppercase;font-family:monospace;margin-bottom:5px}
+.q-text{font-size:13px;font-weight:700;color:#fff;line-height:1.35;letter-spacing:-0.2px;margin-bottom:3px}
+.q-sub{font-size:9px;color:rgba(255,255,255,0.28);line-height:1.4}
+
+.body{flex:1;overflow:hidden;padding:0 14px;display:flex;flex-direction:column;gap:8px}
+
+/* CHIPS */
+.chip-grid{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:5px 10px;border-radius:20px;font-size:9px;font-weight:600;letter-spacing:0.3px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.55);transition:all .15s;user-select:none}
+.chip.on{color:#fff;border-color:var(--accent)}
+.chip.on.goals{background:rgba(212,168,75,0.15);border-color:#d4a84b;color:#d4a84b}
+.chip.on.diet{background:rgba(196,114,42,0.15);border-color:#c4722a;color:#c4722a}
+.chip.on.allergy{background:rgba(220,60,60,0.15);border-color:#dc4444;color:#dc4444}
+.chip.on.health{background:rgba(74,159,212,0.15);border-color:#4a9fd4;color:#4a9fd4}
+.expand-btn{font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;padding:4px 0;cursor:pointer;border:none;background:none;text-align:left}
+
+/* DIVIDER */
+.divider{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.div-line{flex:1;height:1px;background:rgba(255,255,255,0.06)}
+.div-label{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,0.2);white-space:nowrap}
+
+/* TEXT INPUT */
+.text-row{display:flex;gap:6px;flex-shrink:0}
+.mini-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:8px 10px;font-size:10px;color:rgba(255,255,255,0.5);font-family:inherit}
+
+/* UPLOAD PILL */
+.upload-pill{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);cursor:pointer;flex-shrink:0}
+.upload-icon{width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.upload-icon svg{width:13px;height:13px}
+.upload-text{flex:1}
+.upload-name{font-size:10px;font-weight:600;color:rgba(255,255,255,0.6)}
+.upload-sub{font-size:8px;color:rgba(255,255,255,0.25)}
+
+/* HEALTH BLOCKS */
+.health-block{border-radius:10px;padding:8px 10px;border:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.03)}
+.hb-label{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(74,159,212,0.6);margin-bottom:6px;font-family:monospace}
+.hb-chips{display:flex;flex-wrap:wrap;gap:4px}
+.hb-chip{padding:4px 8px;border-radius:20px;font-size:8.5px;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:rgba(255,255,255,0.45)}
+.hb-chip.on{background:rgba(74,159,212,0.12);border-color:#4a9fd4;color:#4a9fd4}
+
+/* CTA */
+.cta-wrap{padding:8px 14px 14px;flex-shrink:0}
+.cta{width:100%;border:none;border-radius:10px;padding:11px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.3px}
+
+/* save bar */
+.save-bar{padding:6px 14px;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.sdot{width:4px;height:4px;border-radius:50%;background:#4aaa4a;animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:0.3}}
+.stxt{font-size:7.5px;color:rgba(255,255,255,0.2)}
+</style></head>
+<body>
+<h1>AA2 · Onboarding Flow · Goals → Diet → Allergies → Health Reality</h1>
+<div class="row">
+
+<!-- ══════════════════════════════════ -->
+<!-- SCREEN 1: GOALS                   -->
+<!-- ══════════════════════════════════ -->
+<div class="col">
+<div class="phone" style="background:#07060a">
+  <div class="phead">
+    <div class="progress-row">
+      <div class="prog-bar"><div class="prog-fill" style="width:10%;background:#d4a84b"></div></div>
+      <span class="prog-label" style="color:#d4a84b">1 / 4</span>
+    </div>
+    <div class="q-tag" style="color:#d4a84b">Block 01 · Goals</div>
+    <div class="q-text">What are you optimizing for?</div>
+    <div class="q-sub">Select all that apply. Be honest — the system calibrates to your truth.</div>
+  </div>
+  <div class="body">
+    <div class="chip-grid">
+      <div class="chip on goals">Weight Loss</div>
+      <div class="chip">Longevity</div>
+      <div class="chip on goals">Focus</div>
+      <div class="chip">Recovery</div>
+      <div class="chip on goals">Energy</div>
+      <div class="chip">Sleep Quality</div>
+      <div class="chip">Muscle Gain</div>
+      <div class="chip">Gut Health</div>
+      <div class="chip">Hormone Balance</div>
+      <div class="chip">Mental Clarity</div>
+      <div class="chip">Inflammation</div>
+      <div class="chip">Stress Reduction</div>
+      <div class="chip">Athletic Performance</div>
+      <div class="chip">Family Health</div>
+    </div>
+    <button class="expand-btn">+ More goals ↓</button>
+  </div>
+  <div class="save-bar"><div class="sdot"></div><span class="stxt">Saves automatically</span></div>
+  <div class="cta-wrap">
+    <button class="cta" style="background:#d4a84b;color:#1a0900">Next · Diet →</button>
+  </div>
+</div>
+<div class="col-label">Goals</div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SCREEN 2: DIET                    -->
+<!-- ══════════════════════════════════ -->
+<div class="col">
+<div class="phone" style="background:#080600">
+  <div class="phead">
+    <div class="progress-row">
+      <div class="prog-bar"><div class="prog-fill" style="width:35%;background:#c4722a"></div></div>
+      <span class="prog-label" style="color:#c4722a">2 / 4</span>
+    </div>
+    <div class="q-tag" style="color:#c4722a">Block 02 · Diet</div>
+    <div class="q-text">How do you eat?</div>
+    <div class="q-sub">Select your primary diet. The Chef calibrates to this baseline.</div>
+  </div>
+  <div class="body">
+    <div class="chip-grid">
+      <div class="chip on diet">Mediterranean</div>
+      <div class="chip">Carnivore</div>
+      <div class="chip">Vegan</div>
+      <div class="chip">Vegetarian</div>
+      <div class="chip">Keto</div>
+      <div class="chip">Gluten-Free</div>
+      <div class="chip">Halal</div>
+      <div class="chip">Kosher</div>
+      <div class="chip">Paleo</div>
+      <div class="chip">Low Sodium</div>
+    </div>
+    <button class="expand-btn">+ More diets ↓</button>
+    <div class="divider"><div class="div-line"></div><div class="div-label">Also eating</div><div class="div-line"></div></div>
+    <div class="chip-grid">
+      <div class="chip on diet">Dairy-Free</div>
+      <div class="chip">Low Carb</div>
+      <div class="chip">Intermittent Fasting</div>
+      <div class="chip on diet">Whole Foods</div>
+      <div class="chip">Raw</div>
+      <div class="chip">High Protein</div>
+    </div>
+  </div>
+  <div class="save-bar"><div class="sdot"></div><span class="stxt">Saves automatically</span></div>
+  <div class="cta-wrap">
+    <button class="cta" style="background:#c4722a;color:#fff">Next · Allergies →</button>
+  </div>
+</div>
+<div class="col-label">Diet</div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SCREEN 3: ALLERGIES               -->
+<!-- ══════════════════════════════════ -->
+<div class="col">
+<div class="phone" style="background:#0a0505">
+  <div class="phead">
+    <div class="progress-row">
+      <div class="prog-bar"><div class="prog-fill" style="width:62%;background:#dc4444"></div></div>
+      <span class="prog-label" style="color:#dc4444">3 / 4</span>
+    </div>
+    <div class="q-tag" style="color:#dc4444">Block 03 · BYAR</div>
+    <div class="q-text">Any allergies or sensitivities?</div>
+    <div class="q-sub">The Equalizer uses this as your permanent scan filter.</div>
+  </div>
+  <div class="body">
+    <div class="chip-grid">
+      <div class="chip on allergy">Peanuts</div>
+      <div class="chip on allergy">Tree Nuts</div>
+      <div class="chip">Shellfish</div>
+      <div class="chip">Fish</div>
+      <div class="chip">Milk</div>
+      <div class="chip on allergy">Gluten / Wheat</div>
+      <div class="chip">Eggs</div>
+      <div class="chip">Soy</div>
+      <div class="chip">Sesame</div>
+      <div class="chip">Sulfites</div>
+      <div class="chip">Corn</div>
+      <div class="chip">Latex</div>
+    </div>
+    <div class="divider"><div class="div-line"></div><div class="div-label">Add custom</div><div class="div-line"></div></div>
+    <div class="text-row">
+      <div class="mini-input">Type allergen name...</div>
+    </div>
+    <div class="divider"><div class="div-line"></div><div class="div-label">Bring your records</div><div class="div-line"></div></div>
+    <div class="upload-pill">
+      <div class="upload-icon" style="background:rgba(220,68,68,0.1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#dc4444" stroke-width="1.8" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="upload-text">
+        <div class="upload-name">Upload Allergy Records</div>
+        <div class="upload-sub">PDF, photo, or lab report · Optional</div>
+      </div>
+    </div>
+  </div>
+  <div class="save-bar"><div class="sdot"></div><span class="stxt">Saves automatically</span></div>
+  <div class="cta-wrap">
+    <button class="cta" style="background:#dc4444;color:#fff">Next · Health Reality →</button>
+  </div>
+</div>
+<div class="col-label">Allergies</div>
+</div>
+
+<!-- ══════════════════════════════════ -->
+<!-- SCREEN 4: HEALTH REALITY (BYOH)   -->
+<!-- ══════════════════════════════════ -->
+<div class="col">
+<div class="phone" style="background:#020810">
+  <div class="phead">
+    <div class="progress-row">
+      <div class="prog-bar"><div class="prog-fill" style="width:90%;background:#4a9fd4"></div></div>
+      <span class="prog-label" style="color:#4a9fd4">4 / 4</span>
+    </div>
+    <div class="q-tag" style="color:#4a9fd4">Block 04 · BYOH</div>
+    <div class="q-text">Your health reality.</div>
+    <div class="q-sub">No judgment. Bio Buddy needs this to serve you precisely.</div>
+  </div>
+  <div class="body">
+
+    <div class="health-block">
+      <div class="hb-label">Diagnosed Conditions</div>
+      <div class="hb-chips">
+        <div class="hb-chip on">Diabetes T2</div>
+        <div class="hb-chip">Hypertension</div>
+        <div class="hb-chip">Thyroid</div>
+        <div class="hb-chip">IBS / Crohn's</div>
+        <div class="hb-chip">Asthma</div>
+        <div class="hb-chip">Anxiety / Depression</div>
+        <div class="hb-chip">Heart Disease</div>
+        <div class="hb-chip">None</div>
+      </div>
+    </div>
+
+    <div class="health-block">
+      <div class="hb-label">Current Medications</div>
+      <div class="hb-chips">
+        <div class="hb-chip">Metformin</div>
+        <div class="hb-chip on">Blood Pressure</div>
+        <div class="hb-chip">Statins</div>
+        <div class="hb-chip">Antidepressants</div>
+        <div class="hb-chip">Thyroid Meds</div>
+        <div class="hb-chip">None</div>
+      </div>
+    </div>
+
+    <div class="health-block">
+      <div class="hb-label">Recent Surgeries / Injuries</div>
+      <div class="hb-chips">
+        <div class="hb-chip">Joint / Orthopedic</div>
+        <div class="hb-chip">Cardiac</div>
+        <div class="hb-chip">Abdominal</div>
+        <div class="hb-chip">None / Healing well</div>
+      </div>
+    </div>
+
+    <div class="health-block">
+      <div class="hb-label">Family Planning</div>
+      <div class="hb-chips">
+        <div class="hb-chip">Pregnant</div>
+        <div class="hb-chip on">Trying to conceive</div>
+        <div class="hb-chip">Postpartum</div>
+        <div class="hb-chip">Not applicable</div>
+      </div>
+    </div>
+
+  </div>
+  <div class="save-bar"><div class="sdot"></div><span class="stxt">Saves automatically</span></div>
+  <div class="cta-wrap">
+    <button class="cta" style="background:#4a9fd4;color:#fff">Complete Setup →</button>
+  </div>
+</div>
+<div class="col-label">Health Reality</div>
+</div>
+
+</div>
+</body></html>

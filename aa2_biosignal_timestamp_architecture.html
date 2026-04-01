@@ -1,0 +1,321 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans, sans-serif); }
+.wrap { padding: 24px 0; display: flex; flex-direction: column; gap: 20px; }
+
+.tab-bar { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab {
+  padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  cursor: pointer; border: 0.5px solid var(--color-border-secondary);
+  background: var(--color-background-secondary); color: var(--color-text-secondary);
+  transition: all 0.2s;
+}
+.tab.active { background: #0A0804; color: #C49A2A; border-color: #C49A2A; }
+
+.view { display: none; flex-direction: column; gap: 16px; }
+.view.active { display: flex; }
+
+.card {
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.card-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 6px; }
+.card-body { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+
+.stack-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.layer {
+  flex: 1;
+  min-width: 140px;
+  border-radius: 10px;
+  border: 0.5px solid var(--color-border-tertiary);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.layer-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+  margin-bottom: 4px;
+}
+.layer-title { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+.layer-sub { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; }
+.layer-badge {
+  font-size: 9px; font-weight: 700; padding: 2px 8px;
+  border-radius: 4px; display: inline-block; width: fit-content;
+  margin-top: 4px;
+}
+
+.arrow-col {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 4px; min-width: 24px;
+}
+.arrow-down-sm { font-size: 18px; color: var(--color-text-secondary); }
+.arrow-lbl { font-size: 9px; color: var(--color-text-secondary); text-align: center; max-width: 60px; }
+
+.timestamp-box {
+  background: #0A0804;
+  border: 1px solid rgba(196,154,42,0.4);
+  border-radius: 10px;
+  padding: 14px;
+}
+.ts-header { font-size: 10px; font-weight: 700; color: #C49A2A; letter-spacing: 1.5px; margin-bottom: 10px; }
+
+.ts-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.06);
+}
+.ts-row:last-child { border-bottom: none; }
+
+.ts-time {
+  font-family: monospace;
+  font-size: 10px;
+  color: rgba(196,154,42,0.7);
+  min-width: 76px;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+.ts-source {
+  font-size: 9px; font-weight: 700; padding: 2px 6px;
+  border-radius: 4px; min-width: 52px; text-align: center;
+  flex-shrink: 0;
+}
+.ts-data { font-size: 10px; color: rgba(255,255,255,0.55); line-height: 1.5; flex: 1; }
+.ts-link {
+  font-size: 9px; color: rgba(46,207,179,0.7);
+  font-family: monospace; white-space: nowrap;
+}
+
+.match-box {
+  background: rgba(46,207,179,0.06);
+  border: 1px solid rgba(46,207,179,0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 10px;
+}
+.match-title { font-size: 10px; font-weight: 700; color: #2ecfb3; letter-spacing: 1px; margin-bottom: 6px; }
+.match-body { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+.sdk-table { display: flex; flex-direction: column; gap: 8px; }
+.sdk-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px; border-radius: 8px;
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-secondary);
+}
+.sdk-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); min-width: 160px; flex-shrink: 0; }
+.sdk-info { flex: 1; font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; }
+.sdk-status {
+  font-size: 9px; font-weight: 700; padding: 3px 8px;
+  border-radius: 4px; flex-shrink: 0; white-space: nowrap;
+}
+
+.divider { height: 0.5px; background: var(--color-border-tertiary); }
+</style>
+
+<div class="wrap">
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="showView('sdk')">SDK stack locked</div>
+    <div class="tab" onclick="showView('timestamp')">Timestamp correlation</div>
+    <div class="tab" onclick="showView('flow')">How it fires live</div>
+  </div>
+
+  <!-- VIEW 1: SDK Stack -->
+  <div class="view active" id="view-sdk">
+
+    <div class="card" style="border-color: rgba(196,154,42,0.3); background: rgba(196,154,42,0.04);">
+      <div class="card-title" style="color: #C49A2A;">Canon lock — free cross-platform SDK stack</div>
+      <div class="card-body">Every SDK below runs on both Android and iOS. Zero pay-per-use. AA2 owns the interpretation layer — not the vendor.</div>
+    </div>
+
+    <div class="sdk-table">
+
+      <div class="sdk-row">
+        <div class="sdk-name">
+          <div style="font-size: 10px; color: #4a9eff; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">FACIAL EXPRESSION</div>
+          Google ML Kit<br>
+          <span style="font-family: monospace; font-size: 10px; color: var(--color-text-secondary);">react-native-vision-camera<br>+ mlkit-face-detection</span>
+        </div>
+        <div class="sdk-info">
+          Detects smile probability, eye-open probability, face landmarks, head rotation. Fires during Javier's questions — camera stays open, ML Kit reads the face in real time. When Javier asks "Tell me about the best birthday you ever had" — the smile delta before vs during the question becomes the POSITIVE stimulus anchor point.<br><br>
+          <strong style="color: var(--color-text-primary);">What it reads:</strong> Smile probability (0.0–1.0) · Left/right eye open · Face bounding box · Euler angles (head tilt, turn, look-up/down)
+        </div>
+        <div class="sdk-status" style="background: rgba(52,199,89,0.12); color: #34C759;">FREE · BOTH PLATFORMS</div>
+      </div>
+
+      <div class="sdk-row">
+        <div class="sdk-name">
+          <div style="font-size: 10px; color: #2ecfb3; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">VOICE ANALYSIS</div>
+          Expo Speech / @react-native-voice<br>
+          <span style="font-family: monospace; font-size: 10px; color: var(--color-text-secondary);">Device-native STT<br>→ Claude API interprets</span>
+        </div>
+        <div class="sdk-info">
+          Device-native speech-to-text (Apple Speech on iOS, Android SpeechRecognizer on Android) transcribes what the member says in real time. Claude API then interprets the transcript for emotional density, word choice, hesitation patterns, pace changes. Free because the transcription uses the device's built-in engine — no third-party API call needed for that layer.<br><br>
+          <strong style="color: var(--color-text-primary);">What it reads:</strong> Transcript · Confidence score · Partial results (catches hesitation mid-sentence)
+        </div>
+        <div class="sdk-status" style="background: rgba(52,199,89,0.12); color: #34C759;">FREE · BOTH PLATFORMS</div>
+      </div>
+
+      <div class="sdk-row">
+        <div class="sdk-name">
+          <div style="font-size: 10px; color: #C49A2A; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">HRV / BIOSIGNAL</div>
+          Kubios HRV API<br>
+          <span style="font-family: monospace; font-size: 10px; color: var(--color-text-secondary);">Clinical interpretation<br>from BYOB upload</span>
+        </div>
+        <div class="sdk-info">
+          Garmin, Oura, Apple Health, Google Fit exports upload through Q20 BYOB. Kubios interprets RMSSD, SDNN, LF/HF ratio, Stress Index, ANS state. This is the same software used by Olympic training programs and research institutions. The Kubios API has a free tier for development. Commercial license required at scale.<br><br>
+          <strong style="color: var(--color-text-primary);">What it reads:</strong> RMSSD · SDNN · LF/HF ratio · Stress Index · Recovery score · ANS state
+        </div>
+        <div class="sdk-status" style="background: rgba(255,149,0,0.12); color: #FF9500;">FREE DEV TIER</div>
+      </div>
+
+      <div class="sdk-row">
+        <div class="sdk-name">
+          <div style="font-size: 10px; color: #b06abf; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;">INTERPRETATION</div>
+          Claude API<br>
+          <span style="font-family: monospace; font-size: 10px; color: var(--color-text-secondary);">claude-sonnet-4-20250514<br>already in the stack</span>
+        </div>
+        <div class="sdk-info">
+          All three layers — ML Kit face data, device STT transcript, Kubios HRV output — feed into Claude API which forms the cross-referenced interpretation. This is the Comparison Engine. Claude sees all inputs simultaneously and decides what the body is actually saying vs what the words claim. Already built. Already paid for through existing API key.
+        </div>
+        <div class="sdk-status" style="background: rgba(74,158,255,0.12); color: #4a9eff;">ALREADY IN STACK</div>
+      </div>
+
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="card">
+      <div class="card-title">Why not Whisper, AWS Rekognition, or Azure?</div>
+      <div class="card-body">Whisper is pay-per-minute — device-native STT is free and accurate enough for the baseline use case. AWS Rekognition adds emotion percentage confidence scores but costs per API call. For the delta measurement AA2 needs — did the face respond to this stimulus — ML Kit's smile probability is sufficient and costs nothing. Pay-per-use becomes worth it at real-time continuous monitoring scale, which is a future layer.</div>
+    </div>
+
+  </div>
+
+  <!-- VIEW 2: Timestamp Correlation -->
+  <div class="view" id="view-timestamp">
+
+    <div class="card" style="border-color: rgba(224,82,82,0.3); background: rgba(224,82,82,0.04);">
+      <div class="card-title" style="color: #e05252;">This is the most critical architectural requirement</div>
+      <div class="card-body">Video, voice, and HRV data are only meaningful when they share the same timestamp and are linked to the same Javier stimulus question. The <code>stimulus_id</code> is the binding key. Without it, the comparison engine has no way to know that the smile happened during the stress question — not after it.</div>
+    </div>
+
+    <div class="timestamp-box">
+      <div class="ts-header">EXAMPLE — Javier asks Q: "Tell me about a hard decision you made."</div>
+
+      <div class="ts-row">
+        <div class="ts-time">10:14:32.000</div>
+        <div class="ts-source" style="background: rgba(196,154,42,0.12); color: #C49A2A;">SYSTEM</div>
+        <div class="ts-data">Javier fires stimulus question — type: STRESS</div>
+        <div class="ts-link">stimulus_id: stim_001</div>
+      </div>
+
+      <div class="ts-row">
+        <div class="ts-time">10:14:32.120</div>
+        <div class="ts-source" style="background: rgba(74,158,255,0.12); color: #4a9eff;">ML KIT</div>
+        <div class="ts-data">Face detected. Smile probability: 0.82 → drops to 0.12 within 400ms. Left brow lowers. Head tilt changes 6°.</div>
+        <div class="ts-link">stimulus_id: stim_001</div>
+      </div>
+
+      <div class="ts-row">
+        <div class="ts-time">10:14:33.400</div>
+        <div class="ts-source" style="background: rgba(46,207,179,0.12); color: #2ecfb3;">VOICE STT</div>
+        <div class="ts-data">"Um... yeah there was this one time..." — hesitation detected. Pace 40% slower than baseline. Pitch drops.</div>
+        <div class="ts-link">stimulus_id: stim_001</div>
+      </div>
+
+      <div class="ts-row">
+        <div class="ts-time">10:14:32.000</div>
+        <div class="ts-source" style="background: rgba(176,106,191,0.12); color: #b06abf;">GARMIN</div>
+        <div class="ts-data">HRV dip logged at this timestamp in Garmin export. Kubios reads: RMSSD drops 18ms from 42 → 24. Stress Index spikes.</div>
+        <div class="ts-link">stimulus_id: stim_001</div>
+      </div>
+
+      <div class="match-box">
+        <div class="match-title">COMPARISON ENGINE OUTPUT</div>
+        <div class="match-body">All three inputs — face drop, voice hesitation, HRV spike — confirm STRESS response to this stimulus at the same timestamp. Anchor point stored as: stimulus_type = STRESS, anchor_confirmed = true, rmssd_response = −18, smile_delta = −0.70, voice_confidence = 0.3. This becomes the member's personal STRESS baseline. Future scans that cause a similar physiological signature will be cross-referenced against this moment.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">How Garmin data gets matched after the fact</div>
+      <div class="card-body">Garmin doesn't stream live during onboarding — the member uploads the export file in Q20 BYOB. The export contains timestamped RR intervals. The system matches the Garmin timestamp window (±30 seconds) against the stored <code>stimulus_id</code> captured_at time. If a Garmin reading exists within that window — it gets linked. If not — the anchor is confirmed from video + voice alone and marked as hardware_unconfirmed until the next upload.</div>
+    </div>
+
+  </div>
+
+  <!-- VIEW 3: How it fires live -->
+  <div class="view" id="view-flow">
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+
+      <div class="layer" style="border-color: rgba(196,154,42,0.3); background: rgba(196,154,42,0.04);">
+        <div class="layer-label" style="color: #C49A2A;">STEP 1 — JAVIER FIRES STIMULUS</div>
+        <div class="layer-title">Question triggers simultaneous capture</div>
+        <div class="layer-sub">The moment Javier's question plays — the system generates a <code>stimulus_id</code> with a precise timestamp and opens three capture channels simultaneously: ML Kit face detection, device speech recognition, and a timestamp bookmark for HRV matching.</div>
+        <div class="layer-badge" style="background: rgba(196,154,42,0.1); color: #C49A2A;">stimulus_id generated · captured_at locked</div>
+      </div>
+
+      <div style="text-align: center; color: var(--color-text-secondary); font-size: 18px;">↓</div>
+
+      <div class="stack-row">
+        <div class="layer" style="border-color: rgba(74,158,255,0.3); background: rgba(74,158,255,0.04);">
+          <div class="layer-label" style="color: #4a9eff;">CHANNEL 1 — FACE</div>
+          <div class="layer-title">ML Kit reads in real time</div>
+          <div class="layer-sub">Smile probability, eye state, brow position sampled every 100ms. Delta from pre-question baseline is the anchor signal — not the absolute value.</div>
+        </div>
+        <div class="layer" style="border-color: rgba(46,207,179,0.3); background: rgba(46,207,179,0.04);">
+          <div class="layer-label" style="color: #2ecfb3;">CHANNEL 2 — VOICE</div>
+          <div class="layer-title">Device STT transcribes live</div>
+          <div class="layer-sub">Partial results capture hesitation mid-sentence. Final transcript + confidence score sent to Claude API for emotional interpretation.</div>
+        </div>
+        <div class="layer" style="border-color: rgba(176,106,191,0.3); background: rgba(176,106,191,0.04);">
+          <div class="layer-label" style="color: #b06abf;">CHANNEL 3 — HRV</div>
+          <div class="layer-title">Timestamp bookmarked</div>
+          <div class="layer-sub">If Garmin is live — HRV sampled now. If upload-only — timestamp stored for post-upload matching via Kubios. Either path produces the same anchor output.</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; color: var(--color-text-secondary); font-size: 18px;">↓</div>
+
+      <div class="layer" style="border-color: rgba(224,82,82,0.3); background: rgba(224,82,82,0.04);">
+        <div class="layer-label" style="color: #e05252;">STEP 3 — CLAUDE API COMPARISON ENGINE</div>
+        <div class="layer-title">All three channels cross-referenced simultaneously</div>
+        <div class="layer-sub">ML Kit face data + STT transcript + Kubios HRV output all go into one Claude API call. Claude forms the interpretation: what did the body actually say vs what the words claimed? The membrane gets the last word — not any individual device.</div>
+        <div class="layer-badge" style="background: rgba(224,82,82,0.1); color: #e05252;">Garmin said X · Video showed Y · Voice revealed Z → Membrane concludes</div>
+      </div>
+
+      <div style="text-align: center; color: var(--color-text-secondary); font-size: 18px;">↓</div>
+
+      <div class="layer" style="border-color: rgba(46,207,179,0.3); background: rgba(46,207,179,0.04);">
+        <div class="layer-label" style="color: #2ecfb3;">STEP 4 — STORED TO SUPABASE via lib/db.ts</div>
+        <div class="layer-title">biosignal_baselines — anchor point confirmed</div>
+        <div class="layer-sub">stimulus_id · stimulus_type · input_tier · rmssd_response · sdnn_response · stress_index · smile_delta · voice_confidence · anchor_confirmed · captured_at. Three consistent readings = anchor locked. This becomes the member's personal baseline. Every future scan compares against this moment.</div>
+        <div class="layer-badge" style="background: rgba(46,207,179,0.1); color: #2ecfb3;">All writes through lib/db.ts — sovereignty layer</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>

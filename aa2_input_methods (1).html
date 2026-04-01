@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080808;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,sans-serif;gap:24px}
+.label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.2)}
+.row{display:flex;gap:24px;align-items:flex-start}
+.phone{width:280px;height:580px;border-radius:40px;overflow:hidden;border:7px solid #111;background:#060606;box-shadow:0 30px 80px rgba(0,0,0,0.9);display:flex;flex-direction:column;flex-shrink:0}
+
+/* SHARED HEADER */
+.phead{padding:18px 18px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.back-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.back-btn svg{width:12px;height:12px}
+.head-text{flex:1}
+.head-title{font-size:13px;font-weight:700;color:#fff;letter-spacing:-0.2px}
+.head-sub{font-size:9px;color:rgba(255,255,255,0.3);margin-top:1px}
+
+/* ═══════════════════════════════ */
+/* VIDEO SCREEN                   */
+/* ═══════════════════════════════ */
+.video-viewfinder{flex:1;position:relative;background:#0a0a0a;overflow:hidden;margin:0 14px;border-radius:16px}
+.vf-inner{width:100%;height:100%;background:linear-gradient(135deg,#0d1a0d 0%,#060e06 100%);position:relative;display:flex;align-items:center;justify-content:center}
+
+/* face outline guide */
+.face-guide{width:110px;height:140px;border:1.5px solid rgba(212,168,75,0.4);border-radius:60px;position:relative}
+.face-corner{position:absolute;width:16px;height:16px;border-color:#d4a84b;border-style:solid;border-width:0}
+.face-corner.tl{top:-1px;left:-1px;border-top-width:2px;border-left-width:2px;border-radius:4px 0 0 0}
+.face-corner.tr{top:-1px;right:-1px;border-top-width:2px;border-right-width:2px;border-radius:0 4px 0 0}
+.face-corner.bl{bottom:-1px;left:-1px;border-bottom-width:2px;border-left-width:2px;border-radius:0 0 0 4px}
+.face-corner.br{bottom:-1px;right:-1px;border-bottom-width:2px;border-right-width:2px;border-radius:0 0 4px 0}
+
+/* scan line animation */
+.scan-line{position:absolute;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,#d4a84b,transparent);animation:scan 2.5s ease-in-out infinite;opacity:0.6}
+@keyframes scan{0%{top:10%}100%{top:90%}}
+
+/* detection tags */
+.vf-tag{position:absolute;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:#d4a84b;font-family:monospace;background:rgba(0,0,0,0.6);padding:2px 6px;border-radius:4px;border:1px solid rgba(212,168,75,0.3)}
+.vf-indicators{position:absolute;bottom:10px;left:10px;right:10px;display:flex;gap:6px}
+.vf-ind{flex:1;background:rgba(0,0,0,0.6);border:1px solid rgba(212,168,75,0.2);border-radius:6px;padding:4px 6px;text-align:center}
+.vf-ind-label{font-size:6px;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:2px}
+.vf-ind-val{font-size:9px;color:#d4a84b;font-weight:600;font-family:monospace}
+
+/* record btn */
+.video-controls{padding:12px 14px 10px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.rec-btn{width:56px;height:56px;border-radius:50%;background:#d4a84b;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(212,168,75,0.15)}
+.rec-btn svg{width:20px;height:20px}
+.rec-hint{font-size:9px;color:rgba(255,255,255,0.3);text-align:center;letter-spacing:0.3px}
+.mic-active{display:flex;align-items:center;gap:5px;margin-top:2px}
+.mic-dot{width:5px;height:5px;border-radius:50%;background:#4aaa4a;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.mic-label{font-size:8px;color:rgba(74,170,74,0.8);letter-spacing:0.5px}
+
+/* ═══════════════════════════════ */
+/* VOICE SCREEN                   */
+/* ═══════════════════════════════ */
+.voice-vis{flex:1;margin:0 14px;border-radius:16px;background:#02080f;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.waveform{display:flex;align-items:center;justify-content:center;gap:3px;height:60px;margin-bottom:16px}
+.bar{width:4px;border-radius:2px;background:#4a9fd4;transform-origin:center;animation:wave 0s ease-in-out infinite}
+.waveform .bar:nth-child(1){animation-duration:0.9s;animation-delay:0s}
+.waveform .bar:nth-child(2){animation-duration:0.7s;animation-delay:0.1s}
+.waveform .bar:nth-child(3){animation-duration:1.1s;animation-delay:0.2s}
+.waveform .bar:nth-child(4){animation-duration:0.8s;animation-delay:0.05s}
+.waveform .bar:nth-child(5){animation-duration:0.6s;animation-delay:0.15s}
+.waveform .bar:nth-child(6){animation-duration:1.0s;animation-delay:0.25s}
+.waveform .bar:nth-child(7){animation-duration:0.75s;animation-delay:0.1s}
+.waveform .bar:nth-child(8){animation-duration:0.95s;animation-delay:0.3s}
+.waveform .bar:nth-child(9){animation-duration:0.65s;animation-delay:0.05s}
+.waveform .bar:nth-child(10){animation-duration:1.05s;animation-delay:0.2s}
+.waveform .bar:nth-child(11){animation-duration:0.85s;animation-delay:0.12s}
+.waveform .bar:nth-child(12){animation-duration:0.72s;animation-delay:0.08s}
+@keyframes wave{0%,100%{height:8px;opacity:0.4}50%{height:var(--h,40px);opacity:1}}
+.waveform .bar:nth-child(1){--h:20px}
+.waveform .bar:nth-child(2){--h:35px}
+.waveform .bar:nth-child(3){--h:50px}
+.waveform .bar:nth-child(4){--h:42px}
+.waveform .bar:nth-child(5){--h:28px}
+.waveform .bar:nth-child(6){--h:55px}
+.waveform .bar:nth-child(7){--h:48px}
+.waveform .bar:nth-child(8){--h:38px}
+.waveform .bar:nth-child(9){--h:22px}
+.waveform .bar:nth-child(10){--h:44px}
+.waveform .bar:nth-child(11){--h:32px}
+.waveform .bar:nth-child(12){--h:18px}
+
+.voice-question{font-size:11px;color:rgba(255,255,255,0.7);text-align:center;padding:0 16px;line-height:1.5;font-style:italic}
+.voice-detecting{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;justify-content:center;padding:0 10px}
+.vd-tag{font-size:7px;letter-spacing:0.8px;text-transform:uppercase;padding:2px 7px;border-radius:20px;background:rgba(74,159,212,0.1);color:#4a9fd4;border:1px solid rgba(74,159,212,0.2)}
+
+.voice-controls{padding:12px 14px 10px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.voice-btn{width:56px;height:56px;border-radius:50%;background:#4a9fd4;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 4px rgba(74,159,212,0.15);animation:mic-pulse 1.5s ease-in-out infinite}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 4px rgba(74,159,212,0.15)}50%{box-shadow:0 0 0 10px rgba(74,159,212,0.06)}}
+.voice-btn svg{width:22px;height:22px}
+.voice-hint{font-size:9px;color:rgba(255,255,255,0.3);text-align:center}
+
+/* ═══════════════════════════════ */
+/* TEXT SCREEN                    */
+/* ═══════════════════════════════ */
+.text-area{flex:1;margin:0 14px;border-radius:16px;background:#08080f;display:flex;flex-direction:column;overflow:hidden}
+.text-question-wrap{padding:14px 14px 10px;flex-shrink:0}
+.text-q-label{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(136,136,153,0.6);margin-bottom:6px;font-family:monospace}
+.text-q{font-size:11.5px;color:#fff;line-height:1.5;font-weight:500}
+.text-input-wrap{flex:1;padding:0 14px 10px;display:flex;flex-direction:column}
+.text-input{flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(136,136,153,0.25);border-radius:12px;padding:12px;font-size:11px;color:#fff;resize:none;font-family:-apple-system,sans-serif;line-height:1.6;outline:none}
+.text-input::placeholder{color:rgba(255,255,255,0.2)}
+.text-input:focus{border-color:rgba(138,138,153,0.5)}
+.text-actions{display:flex;gap:6px;margin-top:8px;flex-shrink:0;padding:0 14px}
+.mic-toggle{width:36px;height:36px;border-radius:50%;background:rgba(138,138,153,0.1);border:1px solid rgba(138,138,153,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.mic-toggle svg{width:15px;height:15px}
+.text-send{flex:1;height:36px;border:none;border-radius:10px;background:#8a8a99;color:#fff;font-size:11px;font-weight:700;cursor:pointer}
+
+/* KEYBOARD SIMULATION */
+.keyboard{flex-shrink:0;background:#1a1a22;padding:6px 4px 8px}
+.kb-row{display:flex;justify-content:center;gap:4px;margin-bottom:4px}
+.key{height:28px;border-radius:5px;background:#2a2a36;border:none;color:rgba(255,255,255,0.75);font-size:10px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:22px;flex:1;max-width:26px}
+.key.wide{max-width:38px;min-width:34px;font-size:9px}
+.key.space{max-width:120px;flex:3}
+.key.dark{background:#1a1a24;color:rgba(255,255,255,0.5)}
+</style></head>
+<body>
+
+<div class="label">AA2 · Onboarding Input Methods</div>
+<div class="row">
+
+  <!-- ── VIDEO ── -->
+  <div>
+    <div class="phone">
+      <div class="phead">
+        <div class="back-btn"><svg viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"><polyline points="8,2 4,6 8,10"/></svg></div>
+        <div class="head-text">
+          <div class="head-title">Video Setup</div>
+          <div class="head-sub" style="color:rgba(212,168,75,0.7)">● Recording · Calibrating baseline</div>
+        </div>
+      </div>
+
+      <div class="video-viewfinder">
+        <div class="vf-inner">
+          <div class="face-guide">
+            <div class="face-corner tl"></div>
+            <div class="face-corner tr"></div>
+            <div class="face-corner bl"></div>
+            <div class="face-corner br"></div>
+          </div>
+          <div class="scan-line"></div>
+          <div class="vf-tag" style="top:10px;left:10px">FACE · DETECTED</div>
+          <div class="vf-tag" style="top:10px;right:10px">MIC · LIVE</div>
+          <div class="vf-indicators">
+            <div class="vf-ind"><div class="vf-ind-label">HRV Est.</div><div class="vf-ind-val">--</div></div>
+            <div class="vf-ind"><div class="vf-ind-label">Tone</div><div class="vf-ind-val">--</div></div>
+            <div class="vf-ind"><div class="vf-ind-label">Baseline</div><div class="vf-ind-val">SET</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="video-controls">
+        <button class="rec-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a0900" stroke-width="2" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2" fill="#1a0900"/></svg>
+        </button>
+        <div class="rec-hint">Speak naturally — answer the question above</div>
+        <div class="mic-active">
+          <div class="mic-dot"></div>
+          <span class="mic-label">Mic + Camera Active</span>
+        </div>
+      </div>
+    </div>
+    <div class="label" style="text-align:center;margin-top:10px">Video</div>
+  </div>
+
+  <!-- ── VOICE ── -->
+  <div>
+    <div class="phone">
+      <div class="phead">
+        <div class="back-btn"><svg viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"><polyline points="8,2 4,6 8,10"/></svg></div>
+        <div class="head-text">
+          <div class="head-title">Voice Setup</div>
+          <div class="head-sub" style="color:rgba(74,159,212,0.7)">● Listening · Detecting patterns</div>
+        </div>
+      </div>
+
+      <div class="voice-vis">
+        <div class="waveform">
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
+        <div class="voice-question">"Tell me a little about what brought you here today."</div>
+        <div class="voice-detecting">
+          <span class="vd-tag">Tone · Detecting</span>
+          <span class="vd-tag">Cadence · Live</span>
+          <span class="vd-tag">Stress · Analyzing</span>
+          <span class="vd-tag">Baseline · Building</span>
+        </div>
+      </div>
+
+      <div class="voice-controls">
+        <button class="voice-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>
+        </button>
+        <div class="voice-hint">Tap to pause · Mic is live</div>
+      </div>
+    </div>
+    <div class="label" style="text-align:center;margin-top:10px">Voice</div>
+  </div>
+
+  <!-- ── TEXT ── -->
+  <div>
+    <div class="phone">
+      <div class="phead">
+        <div class="back-btn"><svg viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round"><polyline points="8,2 4,6 8,10"/></svg></div>
+        <div class="head-text">
+          <div class="head-title">Text Setup</div>
+          <div class="head-sub" style="color:rgba(138,138,153,0.7)">Question 1 of 20</div>
+        </div>
+      </div>
+
+      <div class="text-area">
+        <div class="text-question-wrap">
+          <div class="text-q-label">The Concierge asks —</div>
+          <div class="text-q">"Tell me a little about what brought you here today."</div>
+        </div>
+        <div class="text-input-wrap">
+          <textarea class="text-input" placeholder="Type your answer here, or tap the mic to speak it..."></textarea>
+        </div>
+        <div class="text-actions">
+          <div class="mic-toggle">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#8a8a99" stroke-width="1.8" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+          </div>
+          <button class="text-send">Send →</button>
+        </div>
+      </div>
+
+      <!-- simulated keyboard -->
+      <div class="keyboard">
+        <div class="kb-row">
+          <div class="key">q</div><div class="key">w</div><div class="key">e</div><div class="key">r</div><div class="key">t</div><div class="key">y</div><div class="key">u</div><div class="key">i</div><div class="key">o</div><div class="key">p</div>
+        </div>
+        <div class="kb-row">
+          <div class="key">a</div><div class="key">s</div><div class="key">d</div><div class="key">f</div><div class="key">g</div><div class="key">h</div><div class="key">j</div><div class="key">k</div><div class="key">l</div>
+        </div>
+        <div class="kb-row">
+          <div class="key dark wide">⇧</div><div class="key">z</div><div class="key">x</div><div class="key">c</div><div class="key">v</div><div class="key">b</div><div class="key">n</div><div class="key">m</div><div class="key dark wide">⌫</div>
+        </div>
+        <div class="kb-row">
+          <div class="key dark wide">123</div><div class="key space"></div><div class="key dark wide" style="max-width:46px;background:#4a9fd4;color:#fff">→</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="label" style="text-align:center;margin-top:10px">Text</div>
+  </div>
+
+</div>
+</body></html>

@@ -1,0 +1,235 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.wrap{padding:0 0 2rem}
+.hero{padding:1.5rem 1.25rem 1rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.hero-tag{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-tertiary);margin-bottom:.4rem}
+.hero-title{font-size:22px;font-weight:500;color:var(--color-text-primary);line-height:1.25;margin-bottom:.35rem}
+.hero-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.receipt{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-text-tertiary);border:0.5px solid var(--color-border-secondary);padding:3px 10px;border-radius:99px;margin-top:.6rem}
+.verticals{display:flex;gap:8px;flex-wrap:wrap;padding:1rem 1.25rem;border-bottom:0.5px solid var(--color-border-tertiary)}
+.vbtn{font-size:12px;font-weight:500;padding:6px 14px;border-radius:99px;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary);cursor:pointer;transition:all .15s}
+.vbtn:hover{background:var(--color-background-secondary)}
+.vbtn.active{color:#fff;border-color:transparent}
+.section-label{font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-tertiary);padding:.75rem 1.25rem .4rem}
+.commander-card{margin:0 1.25rem .75rem;padding:1rem 1.25rem;border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-secondary)}
+.cmd-org{font-size:15px;font-weight:500;margin-bottom:2px}
+.cmd-person{font-size:13px;color:var(--color-text-secondary);margin-bottom:.5rem}
+.cmd-quote{font-size:13px;line-height:1.6;font-style:italic;color:var(--color-text-secondary);border-left:2px solid var(--color-border-secondary);padding-left:.75rem}
+.roles-grid{display:grid;grid-template-columns:1fr;gap:6px;padding:0 1.25rem}
+.role-row{display:grid;grid-template-columns:140px 1fr 120px;gap:8px;align-items:stretch}
+.role-cell{padding:8px 12px;border-radius:var(--border-radius-md);border:0.5px solid transparent;font-size:12px}
+.role-name{font-weight:500;font-size:12px;margin-bottom:2px}
+.role-sub{font-size:11px;opacity:.75}
+.role-conc{font-weight:500;font-size:12px;margin-bottom:2px}
+.role-sees{font-size:11px;opacity:.75;line-height:1.4}
+.col-header{font-size:11px;font-weight:500;color:var(--color-text-tertiary);padding:0 12px .3rem}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:.5rem 1.25rem 0}
+.pillar{padding:.75rem 1rem;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.pillar-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+.pillar-val{font-size:12px;color:var(--color-text-secondary);line-height:1.4}
+.footer-strip{margin:1rem 1.25rem 0;padding:.75rem 1rem;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.footer-text{font-size:12px;color:var(--color-text-secondary)}
+.footer-lock{font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--color-text-tertiary)}
+</style>
+
+<div class="wrap">
+<div class="hero">
+  <div class="hero-tag">AA2 · Adaptive Advantage Laboratories</div>
+  <div class="hero-title">One membrane.<br>Every role. Every profession.</div>
+  <div class="hero-sub">The world's first living decision system — deployed to your exact chain of command. Every person sees their intelligence. No one sees what they shouldn't.</div>
+  <div class="receipt">I AM THE RECEIPT</div>
+</div>
+
+<div class="verticals" id="verticals"></div>
+
+<div class="section-label">Commander layer</div>
+<div class="commander-card" id="cmd-card"></div>
+
+<div style="display:grid;grid-template-columns:140px 1fr 120px;gap:8px;padding:0 1.25rem .3rem">
+  <div class="col-header">Role</div>
+  <div class="col-header">Concierge</div>
+  <div class="col-header">Dashboard</div>
+</div>
+<div class="roles-grid" id="roles-grid"></div>
+
+<div class="section-label">Locked across every deployment</div>
+<div class="pillars">
+  <div class="pillar"><div class="pillar-label">Identity</div><div class="pillar-val">Face · voice · BYAR — three recognition layers before the first question</div></div>
+  <div class="pillar"><div class="pillar-label">Spine</div><div class="pillar-val">33-spoke BioMesh · same architecture · every tier · every species</div></div>
+  <div class="pillar"><div class="pillar-label">Sovereignty</div><div class="pillar-val">No raw data stored · consent layer always active · AA2 stores interpretation only</div></div>
+</div>
+
+<div class="footer-strip">
+  <div class="footer-text">Same membrane. Different lens. Different voice. Different stakes.</div>
+  <div class="footer-lock">AA2 · Canon v30</div>
+</div>
+</div>
+
+<script>
+const C = {
+  amber: {bg:'#FAEEDA',border:'#854F0B',text:'#633806',sub:'#854F0B',btn:'#BA7517'},
+  red:   {bg:'#FCEBEB',border:'#A32D2D',text:'#791F1F',sub:'#A32D2D',btn:'#E24B4A'},
+  purple:{bg:'#EEEDFE',border:'#534AB7',text:'#3C3489',sub:'#534AB7',btn:'#7F77DD'},
+  blue:  {bg:'#E6F1FB',border:'#185FA5',text:'#0C447C',sub:'#185FA5',btn:'#378ADD'},
+  teal:  {bg:'#E1F5EE',border:'#0F6E56',text:'#085041',sub:'#0F6E56',btn:'#1D9E75'},
+  green: {bg:'#EAF3DE',border:'#3B6D11',text:'#27500A',sub:'#3B6D11',btn:'#639922'},
+  coral: {bg:'#FAECE7',border:'#993C1D',text:'#712B13',sub:'#993C1D',btn:'#D85A30'},
+  pink:  {bg:'#FBEAF0',border:'#993556',text:'#72243E',sub:'#993556',btn:'#D4537E'},
+  gray:  {bg:'#F1EFE8',border:'#5F5E5A',text:'#444441',sub:'#5F5E5A',btn:'#888780'},
+};
+
+const VERTICALS = [
+  {
+    id:'ferrari', label:'Ferrari F1', accent:'red',
+    org:'Scuderia Ferrari — Tier 2 enterprise',
+    commander:'Fred Vasseur · Team Principal',
+    quote:'"Lewis, this system is yours — not the team\'s. Your data stays yours unless you choose to share it. Build your baseline. Everything else this season starts here."',
+    roles:[
+      {role:'Driver #1',name:'Lewis Hamilton',  conc:'THE COACH',  sees:'Solo cockpit view · full depth',     accent:'red'},
+      {role:'Driver #2',name:'Charles Leclerc', conc:'THE COACH',  sees:'Solo cockpit view · full depth',     accent:'red'},
+      {role:'Race engineer',name:'Riccardo Adami', conc:'THE DATA', sees:'Bio overlay + car telemetry',        accent:'purple'},
+      {role:'Perf. coach',name:"Antti Vierula",   conc:'THE COACH', sees:'Load curve · race calendar',        accent:'blue'},
+      {role:'Team doctor',name:'Medical staff',   conc:'THE DOC',   sees:'Full medical · both drivers',       accent:'teal'},
+      {role:'Nutritionist',name:'Team nutritionist',conc:'THE COACH',sees:'Scan history · meal compliance',   accent:'green'},
+      {role:'Engineers + crew',name:'~60 personnel',conc:'Javier',  sees:'Personal only · travel safety',    accent:'gray'},
+    ]
+  },
+  {
+    id:'nba', label:'NBA Franchise', accent:'blue',
+    org:'NBA Franchise — Tier 2 enterprise',
+    commander:'Head Coach / General Manager',
+    quote:'"Every player on this roster runs through this system. Your baseline is your currency. The training staff sees your load. Your doctor sees your history. You own everything else."',
+    roles:[
+      {role:'Point guard',    name:'Starting roster',    conc:'THE COACH', sees:'Game readiness · load curve',      accent:'blue'},
+      {role:'All positions',  name:'15-man roster',      conc:'THE COACH', sees:'Personal + consent shares',        accent:'blue'},
+      {role:'Athletic trainer',name:'Lead trainer',      conc:'THE COACH', sees:'Load mgmt · back-to-backs',        accent:'amber'},
+      {role:'Team physician', name:'Medical director',   conc:'THE DOC',   sees:'Full medical · clearance layer',   accent:'teal'},
+      {role:'Performance analyst',name:'Analytics staff',conc:'THE DATA',  sees:'Aggregate trends · no individual', accent:'purple'},
+      {role:'Nutritionist',   name:'Team nutritionist',  conc:'THE COACH', sees:'Nutrition compliance · scan log',  accent:'green'},
+      {role:'Front office',   name:'GM + ops staff',     conc:'Javier',    sees:'Personal only · no player data',  accent:'gray'},
+    ]
+  },
+  {
+    id:'fire', label:'CA Fire Dept', accent:'coral',
+    org:'California Fire Dept Station 7 — Tier 4 license',
+    commander:'Station Commander / Fire Chief',
+    quote:'"I am the Commander responsible for getting you locked, loaded, and ready to send it down range. Get through this onboarding. Your biosignal baseline is your operational edge."',
+    roles:[
+      {role:'Firefighter',    name:'Engine company',     conc:'COMMAND',   sees:'Personal readiness · exposure log', accent:'coral'},
+      {role:'Captain',        name:'Company officer',    conc:'COMMAND',   sees:'Unit readiness · environmental',    accent:'coral'},
+      {role:'Paramedic / EMT',name:'Medical response',   conc:'THE DOC',   sees:'Crew health trends · triage flags', accent:'teal'},
+      {role:'K9 handler',     name:'Search + rescue',    conc:'COMMAND',   sees:'Handler + dog dual baseline',       accent:'amber'},
+      {role:'Battalion chief', name:'Command staff',     conc:'THE ROSTER',sees:'Station-wide readiness · no medical',accent:'red'},
+      {role:'Admin / support', name:'Station support',   conc:'Javier',    sees:'Personal only · civilian baseline', accent:'gray'},
+    ]
+  },
+  {
+    id:'panama', label:'Gov. Panama', accent:'pink',
+    org:'Republic of Panama — Tier 5 sovereign license',
+    commander:'Ministry of Health designee',
+    quote:'"By order of the Ministry, all personnel operating under this license are required to complete baseline calibration. This system serves the Republic."',
+    roles:[
+      {role:'Field personnel',name:'Ministry staff',     conc:'THE BRIEF', sees:'Personal baseline · field safety',  accent:'pink'},
+      {role:'Medical officer', name:'Public health',     conc:'THE DOC',   sees:'Population trends · no individual', accent:'teal'},
+      {role:'Customs / border',name:'Border authority',  conc:'THE BRIEF', sees:'Environmental · travel exposure',   accent:'pink'},
+      {role:'Military health', name:'Armed forces med',  conc:'COMMAND',   sees:'Operational readiness · unit load', accent:'coral'},
+      {role:'Ministry admin',  name:'Government ops',    conc:'THE BRIEF', sees:'Aggregate data · policy layer',     accent:'purple'},
+      {role:'Civilian program',name:'Public enrollees',  conc:'Javier',    sees:'Personal only · family protection', accent:'gray'},
+    ]
+  },
+  {
+    id:'equestrian', label:'Racing Stable', accent:'green',
+    org:'Thoroughbred Racing Stable — Tier 3 license',
+    commander:'Stable Owner / Head Trainer',
+    quote:'"Every operation runs on a schedule. Every horse, every jockey, every feed protocol — logged. Your baseline is set before the first gallop. Let\'s build it."',
+    roles:[
+      {role:'Jockey',         name:'Riding roster',      conc:'THE STABLE',sees:'Race weight · cut timeline · WADA', accent:'green'},
+      {role:'Exercise rider', name:'Morning gallops',     conc:'THE STABLE',sees:'Load · recovery · feed compliance',accent:'green'},
+      {role:'Head trainer',   name:'Training staff',      conc:'THE STABLE',sees:'Horse portfolio · race calendar',  accent:'amber'},
+      {role:'Veterinarian',   name:'Track + barn vet',    conc:'THE DOC',   sees:'Full medical · both horse + rider',accent:'teal'},
+      {role:'Groom / handler',name:'Barn staff',          conc:'Javier',    sees:'Personal + horse dual biosignal',  accent:'gray'},
+      {role:'Owner / investor',name:'Principal owners',   conc:'THE ROSTER',sees:'Portfolio view · no medical detail',accent:'purple'},
+    ]
+  },
+  {
+    id:'civilian', label:'Family / Civilian', accent:'teal',
+    org:'Personal / Family — Tier 0 subscription',
+    commander:'No commander layer — individual sovereign',
+    quote:'"Before we go anywhere, I need to know who I\'m working with. Not your name — your life. Your goals. Who you\'re protecting. Let\'s start there."',
+    roles:[
+      {role:'Primary adult',  name:'Account holder',     conc:'Javier',    sees:'Full personal truth · all spokes',  accent:'teal'},
+      {role:'Partner / spouse',name:'Family member',     conc:'Javier',    sees:'Full personal truth · consent share',accent:'teal'},
+      {role:'Child profile',  name:'Age-gated access',   conc:'Javier',    sees:'Parental filter · allergen guard',  accent:'blue'},
+      {role:'K9 companion',   name:'Family dog',         conc:'Javier',    sees:'Canine dual baseline · toxicology', accent:'amber'},
+      {role:'Physician share', name:'Opt-in only',       conc:'THE DOC',   sees:'Structured insight · no raw data',  accent:'gray'},
+    ]
+  },
+];
+
+let active = 0;
+
+function cellStyle(accent, type) {
+  const c = C[accent];
+  if(type==='role') return `background:${c.bg};border-color:${c.border}`;
+  if(type==='conc') return `background:${c.bg};border-color:${c.border}`;
+  if(type==='sees') return `background:var(--color-background-secondary);border-color:var(--color-border-tertiary)`;
+  return '';
+}
+function textStyle(accent) {
+  const c = C[accent];
+  return `color:${c.text}`;
+}
+function subStyle(accent) {
+  const c = C[accent];
+  return `color:${c.sub}`;
+}
+
+function render() {
+  const v = VERTICALS[active];
+  const ac = C[v.accent];
+
+  document.querySelectorAll('.vbtn').forEach((b,i)=>{
+    b.classList.toggle('active',i===active);
+    if(i===active) b.style.background = ac.btn;
+    else b.style.background='';
+  });
+
+  document.getElementById('cmd-card').style.borderColor = ac.border;
+  document.getElementById('cmd-card').style.background = ac.bg;
+  document.getElementById('cmd-card').innerHTML = `
+    <div class="cmd-org" style="color:${ac.text}">${v.org}</div>
+    <div class="cmd-person" style="color:${ac.sub}">${v.commander}</div>
+    <div class="cmd-quote">${v.quote}</div>
+  `;
+
+  document.getElementById('roles-grid').innerHTML = v.roles.map(r=>`
+    <div class="role-row">
+      <div class="role-cell" style="${cellStyle(r.accent,'role')}">
+        <div class="role-name" style="${textStyle(r.accent)}">${r.role}</div>
+        <div class="role-sub" style="${subStyle(r.accent)}">${r.name}</div>
+      </div>
+      <div class="role-cell" style="${cellStyle(r.accent,'conc')}">
+        <div class="role-conc" style="${textStyle(r.accent)}">${r.conc}</div>
+        <div class="role-sees" style="${subStyle(r.accent)}">${r.sees}</div>
+      </div>
+      <div class="role-cell" style="${cellStyle(r.accent,'sees')}; display:flex;align-items:center;">
+        <div style="width:8px;height:8px;border-radius:50%;background:${ac.btn};margin-right:8px;flex-shrink:0"></div>
+        <div style="font-size:11px;color:var(--color-text-secondary);line-height:1.4">${r.conc === 'Javier' ? 'Personal only' : r.conc === 'THE ROSTER' ? 'Aggregate view' : r.conc === 'THE DATA' ? 'Signal layer' : r.conc === 'THE DOC' ? 'Medical layer' : r.conc === 'COMMAND' ? 'Tactical layer' : r.conc === 'THE BRIEF' ? 'Sovereign layer' : 'Performance layer'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+const vEl = document.getElementById('verticals');
+VERTICALS.forEach((v,i)=>{
+  const b = document.createElement('button');
+  b.className = 'vbtn';
+  b.textContent = v.label;
+  b.onclick = ()=>{ active=i; render(); };
+  vEl.appendChild(b);
+});
+
+render();
+</script>

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F0EEE8;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;padding:48px 32px;overflow-x:auto}
+
+h1{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,0.25);text-align:center;margin-bottom:4px;font-weight:400}
+h2{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,0,0,0.18);text-align:center;margin-bottom:36px;font-weight:400}
+.section-label{font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:16px;font-weight:500;border-left:3px solid #b8861e;padding-left:10px}
+
+/* BILLING TOGGLE */
+.toggle-wrap{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:36px}
+.toggle-label{font-size:11px;font-weight:600;color:rgba(0,0,0,0.4);cursor:pointer;transition:color .2s}
+.toggle-label.active{color:#1a1a1a}
+.toggle-track{width:48px;height:26px;border-radius:13px;background:#d8d4ce;cursor:pointer;position:relative;transition:background .2s;border:1px solid rgba(0,0,0,0.1)}
+.toggle-track.on{background:#b8861e}
+.toggle-thumb{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:3px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)}
+.toggle-track.on .toggle-thumb{left:23px}
+.save-badge{font-size:8.5px;font-weight:700;color:#fff;background:#2a882a;padding:2px 8px;border-radius:20px;letter-spacing:0.5px}
+
+/* HARDWARE TIERS ROW */
+.hw-row{display:flex;gap:16px;width:max-content;margin-bottom:48px}
+
+/* HARDWARE CARD */
+.hw-card{width:230px;border-radius:20px;overflow:hidden;border:1px solid rgba(0,0,0,0.09);background:#fff;box-shadow:0 4px 20px rgba(0,0,0,0.07);flex-shrink:0;display:flex;flex-direction:column;position:relative}
+.hw-card.featured{border-color:var(--ac);box-shadow:0 8px 32px rgba(0,0,0,0.13)}
+
+/* FILL INDICATOR */
+.fill-bar-wrap{padding:14px 14px 0}
+.fill-label{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:5px;font-family:monospace;display:flex;justify-content:space-between}
+.fill-track{height:6px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden}
+.fill-fill{height:100%;border-radius:3px;background:linear-gradient(to right,var(--ac),var(--ac2,var(--ac)));transition:width .4s}
+
+/* HEADER */
+.hw-head{padding:12px 14px 10px}
+.hw-badge{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:var(--ac);font-family:monospace;margin-bottom:4px}
+.hw-name{font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:-0.3px;margin-bottom:2px}
+.hw-devices{font-size:8.5px;color:rgba(0,0,0,0.4);margin-bottom:0}
+
+/* PRICE */
+.hw-price{padding:10px 14px;border-top:1px solid rgba(0,0,0,0.06);border-bottom:1px solid rgba(0,0,0,0.06);display:flex;align-items:baseline;gap:4px}
+.p-main{font-size:26px;font-weight:700;color:var(--ac);letter-spacing:-1px;line-height:1}
+.p-orig{font-size:13px;font-weight:400;color:rgba(0,0,0,0.3);text-decoration:line-through;margin-left:2px}
+.p-per{font-size:10px;color:rgba(0,0,0,0.35)}
+.p-save{font-size:8px;font-weight:700;color:#2a882a;background:#eaf7ea;padding:2px 6px;border-radius:10px;margin-left:auto}
+
+/* HARDWARE ICONS */
+.devices-wrap{padding:10px 14px 8px;display:flex;gap:8px;border-bottom:1px solid rgba(0,0,0,0.05)}
+.device-item{display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.25}
+.device-item.active{opacity:1}
+.device-icon{width:30px;height:30px;border-radius:9px;background:rgba(0,0,0,0.04);border:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center}
+.device-icon svg{width:16px;height:16px}
+.device-icon.lit{background:var(--ac)18;border-color:var(--ac)44}
+.device-name{font-size:6.5px;letter-spacing:0.5px;text-transform:uppercase;color:rgba(0,0,0,0.4);text-align:center}
+
+/* MIRROR CAPACITY */
+.mirror-section{padding:10px 14px 8px;border-bottom:1px solid rgba(0,0,0,0.05)}
+.mirror-label{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:7px;font-family:monospace}
+.signal-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.sig-name{font-size:9px;color:rgba(0,0,0,0.5);width:90px;flex-shrink:0}
+.sig-bar-track{flex:1;height:4px;background:rgba(0,0,0,0.06);border-radius:2px;overflow:hidden}
+.sig-bar{height:100%;border-radius:2px;background:var(--ac)}
+.sig-val{font-size:8px;font-family:monospace;color:var(--ac);width:28px;text-align:right;flex-shrink:0}
+.sig-locked{font-size:8px;color:rgba(0,0,0,0.2);flex:1;font-style:italic}
+
+/* WHAT UNLOCKS */
+.unlocks-section{padding:10px 14px;flex:1}
+.unlocks-label{font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:7px;font-family:monospace}
+.unlock-item{display:flex;align-items:flex-start;gap:7px;margin-bottom:6px}
+.u-dot{width:5px;height:5px;border-radius:50%;background:var(--ac);margin-top:4px;flex-shrink:0}
+.u-dot.locked{background:rgba(0,0,0,0.12)}
+.u-text{font-size:8.5px;color:rgba(0,0,0,0.55);line-height:1.4}
+.u-text b{color:#1a1a1a;font-weight:600}
+.u-text.dim{color:rgba(0,0,0,0.25);font-style:italic}
+
+/* CTA */
+.hw-cta{padding:10px 14px 14px}
+.cta-btn{width:100%;border:none;border-radius:10px;padding:10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--ac);color:#fff}
+.cta-btn.outline{background:transparent;border:1.5px solid var(--ac);color:var(--ac)}
+
+/* BILLING TABLE */
+.billing-row{display:flex;gap:16px;width:max-content}
+.bill-card{width:180px;border-radius:16px;background:#fff;border:1px solid rgba(0,0,0,0.08);box-shadow:0 4px 16px rgba(0,0,0,0.06);padding:14px;flex-shrink:0}
+.bill-plan{font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:4px;font-family:monospace}
+.bill-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+.bill-prices{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.bill-col{background:rgba(0,0,0,0.02);border-radius:8px;padding:7px 8px;border:1px solid rgba(0,0,0,0.06)}
+.bill-col.yearly{background:#fdf8f0;border-color:#e8c96033}
+.bill-type{font-size:6.5px;letter-spacing:1px;text-transform:uppercase;color:rgba(0,0,0,0.3);margin-bottom:3px}
+.bill-price{font-size:16px;font-weight:700;color:#1a1a1a;letter-spacing:-0.5px;line-height:1}
+.bill-price.gold{color:#b8861e}
+.bill-sub{font-size:7.5px;color:rgba(0,0,0,0.35);margin-top:1px}
+.bill-saving{font-size:8px;font-weight:700;color:#2a882a;background:#eaf7ea;padding:2px 6px;border-radius:10px;text-align:center}
+</style></head>
+<body>
+
+<h1>AA2 Adaptive Advantage Laboratories</h1>
+<h2>Hardware Stack · The More You Bring, The More The Mirror Reflects Back</h2>
+
+<!-- BILLING TOGGLE -->
+<div class="toggle-wrap">
+  <span class="toggle-label active" id="lbl-mo" onclick="setBilling('mo')">Monthly</span>
+  <div class="toggle-track" id="toggle" onclick="flipToggle()">
+    <div class="toggle-thumb"></div>
+  </div>
+  <span class="toggle-label" id="lbl-yr" onclick="setBilling('yr')">Annual</span>
+  <span class="save-badge">Save 10%</span>
+</div>
+
+<!-- HARDWARE TIER CARDS -->
+<div class="section-label">Hardware Stack · Signal Depth · Mirror Capacity</div>
+<div class="hw-row">
+
+  <!-- 1/4 STACK — Phone Only -->
+  <div class="hw-card" style="--ac:#888899">
+    <div class="fill-bar-wrap">
+      <div class="fill-label"><span>Mirror Capacity</span><span style="color:#888899">25%</span></div>
+      <div class="fill-track"><div class="fill-fill" style="width:25%"></div></div>
+    </div>
+    <div class="hw-head">
+      <div class="hw-badge">1/4 Stack · Entry</div>
+      <div class="hw-name">Phone Only</div>
+      <div class="hw-devices">Camera · Microphone · GPS · Manual Input</div>
+    </div>
+    <div class="hw-price">
+      <span class="p-main" data-mo="9.99" data-yr="9.00">$9.99</span>
+      <span class="p-per">/mo</span>
+      <span class="p-save yearly-badge" style="display:none">10% off</span>
+    </div>
+    <div class="devices-wrap">
+      <div class="device-item active">
+        <div class="device-icon lit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888899" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+        </div>
+        <div class="device-name">Phone</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </div>
+        <div class="device-name">Watch</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="device-name">Ring</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+        <div class="device-name">EEG</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><path d="M2 8h20M4 8v10a2 2 0 002 2h12a2 2 0 002-2V8"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
+        </div>
+        <div class="device-name">Glasses</div>
+      </div>
+    </div>
+    <div class="mirror-section">
+      <div class="mirror-label">Signals Available to Mirror</div>
+      <div class="signal-row"><span class="sig-name">Ingredient Truth</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%"></div></div><span class="sig-val">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Allergen Filter</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%"></div></div><span class="sig-val">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Location Context</span><div class="sig-bar-track"><div class="sig-bar" style="width:80%"></div></div><span class="sig-val">80%</span></div>
+      <div class="signal-row"><span class="sig-name">HRV / Heart Rate</span><span class="sig-locked">Requires Watch</span></div>
+      <div class="signal-row"><span class="sig-name">Sleep Quality</span><span class="sig-locked">Requires Ring/Watch</span></div>
+      <div class="signal-row"><span class="sig-name">Brain State</span><span class="sig-locked">Requires EEG</span></div>
+    </div>
+    <div class="unlocks-section">
+      <div class="unlocks-label">What The Mirror Can Reflect</div>
+      <div class="unlock-item"><div class="u-dot"></div><div class="u-text"><b>Ingredient truth</b> — full scan + W/WITH verdict</div></div>
+      <div class="unlock-item"><div class="u-dot"></div><div class="u-text"><b>Allergy + sensitivity</b> filter active</div></div>
+      <div class="unlock-item"><div class="u-dot"></div><div class="u-text"><b>Location-aware</b> retail intelligence</div></div>
+      <div class="unlock-item"><div class="u-dot locked"></div><div class="u-text dim">Biosignal context — locked</div></div>
+      <div class="unlock-item"><div class="u-dot locked"></div><div class="u-text dim">Sleep + recovery correlation — locked</div></div>
+    </div>
+    <div class="hw-cta"><button class="cta-btn outline">Start with Phone</button></div>
+  </div>
+
+  <!-- 2/4 STACK — Phone + Watch -->
+  <div class="hw-card" style="--ac:#2a7faa">
+    <div class="fill-bar-wrap">
+      <div class="fill-label"><span>Mirror Capacity</span><span style="color:#2a7faa">50%</span></div>
+      <div class="fill-track"><div class="fill-fill" style="width:50%"></div></div>
+    </div>
+    <div class="hw-head">
+      <div class="hw-badge">2/4 Stack · Standard</div>
+      <div class="hw-name">Phone + Watch</div>
+      <div class="hw-devices">Camera · GPS · HRV · Heart Rate · Steps · Sleep</div>
+    </div>
+    <div class="hw-price">
+      <span class="p-main" data-mo="29.99" data-yr="26.99">$29.99</span>
+      <span class="p-per">/mo</span>
+      <span class="p-save yearly-badge" style="display:none">10% off</span>
+    </div>
+    <div class="devices-wrap">
+      <div class="device-item active">
+        <div class="device-icon lit" style="--ac:#2a7faa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2a7faa" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+        </div>
+        <div class="device-name">Phone</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon lit" style="--ac:#2a7faa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2a7faa" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </div>
+        <div class="device-name">Watch</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="device-name">Ring</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <div class="device-name">EEG</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><path d="M2 8h20M4 8v10a2 2 0 002 2h12a2 2 0 002-2V8"/><path d="M8 8V6a4 4 0 018 0v2"/></svg></div>
+        <div class="device-name">Glasses</div>
+      </div>
+    </div>
+    <div class="mirror-section">
+      <div class="mirror-label">Signals Available to Mirror</div>
+      <div class="signal-row"><span class="sig-name">Ingredient Truth</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#2a7faa"></div></div><span class="sig-val" style="color:#2a7faa">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Allergen Filter</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#2a7faa"></div></div><span class="sig-val" style="color:#2a7faa">100%</span></div>
+      <div class="signal-row"><span class="sig-name">HRV / Heart Rate</span><div class="sig-bar-track"><div class="sig-bar" style="width:85%;background:#2a7faa"></div></div><span class="sig-val" style="color:#2a7faa">85%</span></div>
+      <div class="signal-row"><span class="sig-name">Sleep / Recovery</span><div class="sig-bar-track"><div class="sig-bar" style="width:60%;background:#2a7faa"></div></div><span class="sig-val" style="color:#2a7faa">60%</span></div>
+      <div class="signal-row"><span class="sig-name">Stress Load</span><div class="sig-bar-track"><div class="sig-bar" style="width:70%;background:#2a7faa"></div></div><span class="sig-val" style="color:#2a7faa">70%</span></div>
+      <div class="signal-row"><span class="sig-name">Brain State</span><span class="sig-locked">Requires EEG</span></div>
+    </div>
+    <div class="unlocks-section">
+      <div class="unlocks-label">What The Mirror Can Reflect</div>
+      <div class="unlock-item"><div class="u-dot" style="background:#2a7faa"></div><div class="u-text"><b>Everything in Phone Only</b></div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#2a7faa"></div><div class="u-text"><b>HRV baseline</b> — Bio Buddy activates fully</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#2a7faa"></div><div class="u-text"><b>Stress correlation</b> — scan results cross-referenced with current state</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#2a7faa"></div><div class="u-text"><b>Sleep + recovery</b> — The Chef adjusts recommendations</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#2a7faa"></div><div class="u-text"><b>Activity context</b> — nutrition advice shifts with training load</div></div>
+      <div class="unlock-item"><div class="u-dot locked"></div><div class="u-text dim">Core temperature + SpO2 precision — locked</div></div>
+    </div>
+    <div class="hw-cta"><button class="cta-btn" style="background:#2a7faa">Add a Watch</button></div>
+  </div>
+
+  <!-- 3/4 STACK — Phone + Watch + Ring -->
+  <div class="hw-card featured" style="--ac:#b8861e">
+    <div class="fill-bar-wrap">
+      <div class="fill-label"><span>Mirror Capacity</span><span style="color:#b8861e">75%</span></div>
+      <div class="fill-track"><div class="fill-fill" style="width:75%;background:linear-gradient(to right,#2a7faa,#b8861e)"></div></div>
+    </div>
+    <div class="hw-head">
+      <div class="hw-badge">3/4 Stack · Recommended</div>
+      <div class="hw-name">Phone + Watch + Ring</div>
+      <div class="hw-devices">Full passive biosignal · 24/7 baseline · SpO2 · Temp</div>
+    </div>
+    <div class="hw-price">
+      <span class="p-main" data-mo="49.99" data-yr="44.99">$49.99</span>
+      <span class="p-per">/mo</span>
+      <span class="p-save yearly-badge" style="display:none">10% off</span>
+    </div>
+    <div class="devices-wrap">
+      <div class="device-item active">
+        <div class="device-icon" style="background:#b8861e18;border-color:#b8861e44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#b8861e" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+        </div>
+        <div class="device-name">Phone</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon" style="background:#b8861e18;border-color:#b8861e44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#b8861e" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </div>
+        <div class="device-name">Watch</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon" style="background:#b8861e18;border-color:#b8861e44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#b8861e" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="device-name">Ring</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/><circle cx="12" cy="12" r="4"/></svg></div>
+        <div class="device-name">EEG</div>
+      </div>
+      <div class="device-item">
+        <div class="device-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round"><path d="M2 8h20M4 8v10a2 2 0 002 2h12a2 2 0 002-2V8"/><path d="M8 8V6a4 4 0 018 0v2"/></svg></div>
+        <div class="device-name">Glasses</div>
+      </div>
+    </div>
+    <div class="mirror-section">
+      <div class="mirror-label">Signals Available to Mirror</div>
+      <div class="signal-row"><span class="sig-name">Ingredient Truth</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#b8861e"></div></div><span class="sig-val" style="color:#b8861e">100%</span></div>
+      <div class="signal-row"><span class="sig-name">HRV / Heart Rate</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#b8861e"></div></div><span class="sig-val" style="color:#b8861e">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Sleep / Recovery</span><div class="sig-bar-track"><div class="sig-bar" style="width:95%;background:#b8861e"></div></div><span class="sig-val" style="color:#b8861e">95%</span></div>
+      <div class="signal-row"><span class="sig-name">Core Temp / SpO2</span><div class="sig-bar-track"><div class="sig-bar" style="width:90%;background:#b8861e"></div></div><span class="sig-val" style="color:#b8861e">90%</span></div>
+      <div class="signal-row"><span class="sig-name">Stress + Cortisol Est.</span><div class="sig-bar-track"><div class="sig-bar" style="width:85%;background:#b8861e"></div></div><span class="sig-val" style="color:#b8861e">85%</span></div>
+      <div class="signal-row"><span class="sig-name">Brain State</span><span class="sig-locked">Requires EEG</span></div>
+    </div>
+    <div class="unlocks-section">
+      <div class="unlocks-label">What The Mirror Can Reflect</div>
+      <div class="unlock-item"><div class="u-dot" style="background:#b8861e"></div><div class="u-text"><b>Everything in 2/4 Stack</b></div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#b8861e"></div><div class="u-text"><b>Passive 24/7 monitoring</b> — ring reads while you sleep</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#b8861e"></div><div class="u-text"><b>Core temperature trends</b> — inflammation patterns visible</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#b8861e"></div><div class="u-text"><b>SpO2 tracking</b> — respiratory health context added to scans</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#b8861e"></div><div class="u-text"><b>Cortisol estimate</b> — stress hormones inform nutrition advice</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#b8861e"></div><div class="u-text"><b>30/60/90 day baseline</b> — neurological rewiring timeline active</div></div>
+    </div>
+    <div class="hw-cta"><button class="cta-btn">Most Recommended</button></div>
+  </div>
+
+  <!-- 4/4 STACK — Full -->
+  <div class="hw-card" style="--ac:#6a2a8a;--ac2:#b8861e">
+    <div class="fill-bar-wrap">
+      <div class="fill-label"><span>Mirror Capacity</span><span style="color:#6a2a8a">100%</span></div>
+      <div class="fill-track"><div class="fill-fill" style="width:100%;background:linear-gradient(to right,#2a7faa,#b8861e,#6a2a8a)"></div></div>
+    </div>
+    <div class="hw-head">
+      <div class="hw-badge">4/4 Stack · Full Mirror</div>
+      <div class="hw-name">Full Stack</div>
+      <div class="hw-devices">Phone + Watch + Ring + EEG + Glasses</div>
+    </div>
+    <div class="hw-price">
+      <span class="p-main" data-mo="69.99" data-yr="62.99">$69.99</span>
+      <span class="p-per">/mo</span>
+      <span class="p-save yearly-badge" style="display:none">10% off</span>
+    </div>
+    <div class="devices-wrap">
+      <div class="device-item active">
+        <div class="device-icon" style="background:#6a2a8a18;border-color:#6a2a8a44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6a2a8a" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+        </div>
+        <div class="device-name">Phone</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon" style="background:#6a2a8a18;border-color:#6a2a8a44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6a2a8a" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="4" width="12" height="16" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/></svg>
+        </div>
+        <div class="device-name">Watch</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon" style="background:#6a2a8a18;border-color:#6a2a8a44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6a2a8a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div class="device-name">Ring</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon" style="background:#6a2a8a18;border-color:#6a2a8a44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6a2a8a" stroke-width="1.8" stroke-linecap="round"><path d="M2 12h4M18 12h4M12 2v4M12 18v4"/><circle cx="12" cy="12" r="4"/></svg>
+        </div>
+        <div class="device-name">EEG</div>
+      </div>
+      <div class="device-item active">
+        <div class="device-icon" style="background:#6a2a8a18;border-color:#6a2a8a44">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6a2a8a" stroke-width="1.8" stroke-linecap="round"><path d="M2 8h20M4 8v10a2 2 0 002 2h12a2 2 0 002-2V8"/><path d="M8 8V6a4 4 0 018 0v2"/></svg>
+        </div>
+        <div class="device-name">Glasses</div>
+      </div>
+    </div>
+    <div class="mirror-section">
+      <div class="mirror-label">Signals Available to Mirror</div>
+      <div class="signal-row"><span class="sig-name">Ingredient Truth</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#6a2a8a"></div></div><span class="sig-val" style="color:#6a2a8a">100%</span></div>
+      <div class="signal-row"><span class="sig-name">HRV + Vitals</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#6a2a8a"></div></div><span class="sig-val" style="color:#6a2a8a">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Sleep + Recovery</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#6a2a8a"></div></div><span class="sig-val" style="color:#6a2a8a">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Brain State / Focus</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#6a2a8a"></div></div><span class="sig-val" style="color:#6a2a8a">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Visual Environment</span><div class="sig-bar-track"><div class="sig-bar" style="width:100%;background:#6a2a8a"></div></div><span class="sig-val" style="color:#6a2a8a">100%</span></div>
+      <div class="signal-row"><span class="sig-name">Emotional Load Est.</span><div class="sig-bar-track"><div class="sig-bar" style="width:95%;background:#6a2a8a"></div></div><span class="sig-val" style="color:#6a2a8a">95%</span></div>
+    </div>
+    <div class="unlocks-section">
+      <div class="unlocks-label">What The Mirror Can Reflect</div>
+      <div class="unlock-item"><div class="u-dot" style="background:#6a2a8a"></div><div class="u-text"><b>Everything in 3/4 Stack</b></div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#6a2a8a"></div><div class="u-text"><b>Brain state at scan time</b> — EEG tells the system if you're stressed, focused, or depleted</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#6a2a8a"></div><div class="u-text"><b>Visual environment</b> — Glasses see what you see. Retail loop fires in-store automatically</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#6a2a8a"></div><div class="u-text"><b>Emotional load estimation</b> — decisions correlated with mental state at time of scan</div></div>
+      <div class="unlock-item"><div class="u-dot" style="background:#6a2a8a"></div><div class="u-text"><b>Deepest personal truth</b> — the membrane knows you at every layer simultaneously</div></div>
+    </div>
+    <div class="hw-cta"><button class="cta-btn" style="background:linear-gradient(135deg,#6a2a8a,#b8861e)">Unlock Full Mirror</button></div>
+  </div>
+
+</div>
+
+<!-- MONTHLY VS ANNUAL BILLING -->
+<div class="section-label" style="border-color:#2a882a">Monthly vs Annual · 10% Off Every Plan</div>
+<div class="billing-row">
+
+  <div class="bill-card">
+    <div class="bill-plan">Entry · 1/4 Stack</div>
+    <div class="bill-name">Scanner Only</div>
+    <div class="bill-prices">
+      <div class="bill-col"><div class="bill-type">Monthly</div><div class="bill-price">$9.99</div><div class="bill-sub">/mo · $119.88/yr</div></div>
+      <div class="bill-col yearly"><div class="bill-type">Annual</div><div class="bill-price gold">$9.00</div><div class="bill-sub">/mo · $107.88/yr</div></div>
+    </div>
+    <div class="bill-saving">Save $12/yr on annual</div>
+  </div>
+
+  <div class="bill-card">
+    <div class="bill-plan">Individual · 2/4 Stack</div>
+    <div class="bill-name">Individual Full</div>
+    <div class="bill-prices">
+      <div class="bill-col"><div class="bill-type">Monthly</div><div class="bill-price">$29.99</div><div class="bill-sub">/mo · $359.88/yr</div></div>
+      <div class="bill-col yearly"><div class="bill-type">Annual</div><div class="bill-price gold">$26.99</div><div class="bill-sub">/mo · $323.88/yr</div></div>
+    </div>
+    <div class="bill-saving">Save $36/yr on annual</div>
+  </div>
+
+  <div class="bill-card">
+    <div class="bill-plan">Family · 5 Members + K9</div>
+    <div class="bill-name">Family Membrane</div>
+    <div class="bill-prices">
+      <div class="bill-col"><div class="bill-type">Monthly</div><div class="bill-price">$39.99</div><div class="bill-sub">/mo · $479.88/yr</div></div>
+      <div class="bill-col yearly"><div class="bill-type">Annual</div><div class="bill-price gold">$35.99</div><div class="bill-sub">/mo · $431.88/yr</div></div>
+    </div>
+    <div class="bill-saving">Save $48/yr on annual</div>
+  </div>
+
+  <div class="bill-card">
+    <div class="bill-plan">Species · Spokes 27–29</div>
+    <div class="bill-name">Species Pro</div>
+    <div class="bill-prices">
+      <div class="bill-col"><div class="bill-type">Monthly</div><div class="bill-price">$49.99</div><div class="bill-sub">/mo · $599.88/yr</div></div>
+      <div class="bill-col yearly"><div class="bill-type">Annual</div><div class="bill-price gold">$44.99</div><div class="bill-sub">/mo · $539.88/yr</div></div>
+    </div>
+    <div class="bill-saving">Save $60/yr on annual</div>
+  </div>
+
+  <div class="bill-card">
+    <div class="bill-plan">Recommended · 3/4 Stack</div>
+    <div class="bill-name">Full Stack Bundle</div>
+    <div class="bill-prices">
+      <div class="bill-col"><div class="bill-type">Monthly</div><div class="bill-price">$64.99</div><div class="bill-sub">/mo · $779.88/yr</div></div>
+      <div class="bill-col yearly"><div class="bill-type">Annual</div><div class="bill-price gold">$58.49</div><div class="bill-sub">/mo · $701.88/yr</div></div>
+    </div>
+    <div class="bill-saving">Save $78/yr on annual</div>
+  </div>
+
+  <div class="bill-card">
+    <div class="bill-plan">Complete · 4/4 Stack</div>
+    <div class="bill-name">Full Mirror</div>
+    <div class="bill-prices">
+      <div class="bill-col"><div class="bill-type">Monthly</div><div class="bill-price">$69.99</div><div class="bill-sub">/mo · $839.88/yr</div></div>
+      <div class="bill-col yearly"><div class="bill-type">Annual</div><div class="bill-price gold">$62.99</div><div class="bill-sub">/mo · $755.88/yr</div></div>
+    </div>
+    <div class="bill-saving">Save $84/yr on annual</div>
+  </div>
+
+</div>
+
+<script>
+var mode = 'mo';
+
+function setBilling(m){
+  mode = m;
+  var isYr = m === 'yr';
+  document.getElementById('toggle').classList.toggle('on', isYr);
+  document.getElementById('lbl-mo').classList.toggle('active', !isYr);
+  document.getElementById('lbl-yr').classList.toggle('active', isYr);
+  document.querySelectorAll('.p-main').forEach(function(el){
+    el.textContent = '$' + (isYr ? el.dataset.yr : el.dataset.mo);
+  });
+  document.querySelectorAll('.yearly-badge').forEach(function(el){
+    el.style.display = isYr ? 'inline-block' : 'none';
+  });
+}
+
+function flipToggle(){
+  setBilling(mode === 'mo' ? 'yr' : 'mo');
+}
+</script>
+</body></html>

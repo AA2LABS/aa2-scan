@@ -1,0 +1,180 @@
+AA2 ADAPTIVE ADVANTAGE LABORATORIES, S.A.
+CANON v23 — MASTER BRIEFING
+Sealed: March 16, 2026 | Founder: James R. Pitts II | Bozeman, Montana / Panama
+
+═══════════════════════════════════════════════════════
+SECTION 1 — IDENTITY (UNCHANGED)
+═══════════════════════════════════════════════════════
+
+🔒 AA2 is not a scanner. It's what happens when your life finally has a nervous system.
+🔒 AA2 is a scanner-first safety and continuity technology company that protects families, homes, and canines with elite-grade intelligence — wherever you are, however you live.
+🔒 Releasing the scanner without the BioMesh would be like pulling out my heart and dropping it on a table and calling it me.
+🔒 I AM THE RECEIPT — the founder is the living proof of concept, the archetype, the standard.
+
+═══════════════════════════════════════════════════════
+SECTION 2 — SESSION LOG (March 16, 2026)
+═══════════════════════════════════════════════════════
+
+WHAT WAS BUILT THIS SESSION:
+
+1. ONBOARDING (Spoke 2 / Membrane tab)
+   - Full rewrite: show/hide architecture (no horizontal ScrollView — Android safe)
+   - 5 screens, PROGRESS_STEPS = 5 (was 7, fixed orphaned dots)
+   - Light/dark mode reactive via useColorScheme
+   - Color selector (Light/System/Dark) + Delivery selector (Video/Voice/Text)
+   - All 9 Supabase table writes wired on Enter Membrane submission
+   - Javier canonical quote live on Screen 1
+   - I AM THE RECEIPT on every screen
+   - Back/Next navigation working
+   - Still pending: scanner integration post-onboarding (personal truth vs generic truth)
+
+2. SCANNER (index.tsx — Spoke 1)
+   - 2-row tab grid on single-pane phones (3 tabs per row)
+   - Left vertical rail on foldable/tablet (width ≥ 600px) via useWindowDimensions
+   - Full light/dark mode via React Native native useColorScheme (not custom hook)
+   - Doctrine banner: full 4-side colored border (borderColor: accentColor, borderWidth: 2)
+   - Scan input collapses to thin "SCAN ANOTHER" bar when results showing
+   - BE AWARE red glow animation fires between analysis completing and results appearing
+   - Hero images wired to empty state (below READY TO SCAN text):
+     · SCAN tab: lightning bolt emoji (no photo)
+     · PRODUCE: produce market photo
+     · MEAT: raw meats spread photo
+     · PERSONAL CARE: woman with lotion bottles photo
+     · GROWN FOLKS: spirits/bottles photo
+     · K9/PET: dog eating photo
+     · EQUESTRIAN: horse eating photo
+     · AGRICULTURAL: cattle/cow photo
+
+3. MAP (map.tsx — Chauffeur)
+   - Compact horizontal toggle (ON GRID / OFF GRID side by side)
+   - Input cards collapse to thin bar when results showing
+   - Hero images wired below input forms:
+     · ON GRID: Las Vegas aerial (city grid = inside a store)
+     · OFF GRID: Montana wilderness (open road = leaving)
+
+4. TAB BAR (_layout.tsx)
+   - Emoji icons replacing SF Symbols (Android compatible)
+   - 4 tabs: Home ⚡, Explore ▶, Membrane 🧬, Map 🗺
+
+═══════════════════════════════════════════════════════
+SECTION 3 — CURRENT BUILD STATUS
+═══════════════════════════════════════════════════════
+
+CONFIRMED LIVE (Canon v22, March 15 2026):
+- All 6 scanner tabs firing: SCAN, PRODUCE, MEAT, PERSONAL CARE, GROWN FOLKS, SPECIES
+- The Chef fires on every food scan with 3 numbered recipes
+- The Sommelier fires on GROWN FOLKS tab
+- Cosmo Chemist fires on PERSONAL CARE tab
+- Canine Nutritionist fires on K9/Pet species scans
+- Equine Nutritionist fires on Equestrian species scans
+- Agricultural Analyst fires on Agricultural species scans
+- Act Right Dollars fires with Vault language on every scan
+- ON GRID Retail Intelligence Loop firing with real alternatives and prices
+- OFF GRID Safety Travel Engine firing with full route briefs
+- Supabase scan history writing confirmed
+- Circular capture button confirmed
+- Cancel/restart button confirmed
+
+PENDING BUGS (still open):
+- Barcode variable name mismatch — Scan Error popup in saveToSupabase call
+- Databases Consulted section must never appear — still showing occasionally
+- Personal Care barcode scanning inconsistent
+- Light mode on scanner not confirmed working yet (native useColorScheme fix in latest build)
+- Full border on doctrine banner not confirmed working yet (borderColor fix in latest build)
+
+CURRENT BUILD IN PROGRESS:
+- All fixes from March 16 session
+- Hero images wired to all tabs
+- Map images wired to ON GRID / OFF GRID
+- Awaiting APK install and screenshot confirmation
+
+═══════════════════════════════════════════════════════
+SECTION 4 — FILE ARCHITECTURE (CURRENT)
+═══════════════════════════════════════════════════════
+
+app/(tabs)/
+  index.tsx          — Scanner (Spoke 1) — 6 tabs + species subs
+  onboarding.tsx     — Membrane (Spoke 2) — 5 screens, Javier
+  map.tsx            — Chauffeur — ON GRID + OFF GRID
+  explore.tsx        — Explore tab
+  _layout.tsx        — Tab bar (4 tabs, emoji icons)
+
+assets/images/
+  tab-care.png       — Personal Care hero
+  tab-grownfolks.png — Grown Folks hero
+  tab-k9.png         — K9/Pet hero
+  tab-horse.jpg      — Equestrian hero
+  tab-meat.png       — Meat hero
+  tab-produce.png    — Produce hero
+  tab-agri.png       — Agricultural hero
+  map-ongrid.jpg     — Las Vegas aerial (ON GRID)
+  map-offgrid.jpg    — Montana wilderness (OFF GRID)
+
+lib/supabase.ts      — Supabase client
+hooks/use-color-scheme.ts — Custom hook (DO NOT use for light/dark — use RN native useColorScheme directly)
+
+═══════════════════════════════════════════════════════
+SECTION 5 — STACK & CREDENTIALS
+═══════════════════════════════════════════════════════
+
+Framework:    React Native + Expo + TypeScript
+MacBook:      2024 M3 MacBook Pro
+Project:      /Users/jamespitts/Desktop/aa2-scan
+GitHub:       github.com/AA2LABS/aa2-scan
+Expo:         aa2founder@gmail.com — EAS Starter $19/month
+Supabase:     zvxdpfbvmxzhjqrnllb.supabase.co — US East
+Legal:        ARIFA — mdelbusto@arifa.com
+Entity:       AA2 Adaptive Advantage Laboratories, S.A. — Panama
+APIs:         Claude claude-sonnet-4-20250514, Google Maps (key obtained, APIs pending), USDA
+Two-Brain:    Claude.ai = strategic brain | Cursor = surgical hands
+
+═══════════════════════════════════════════════════════
+SECTION 6 — IMMEDIATE NEXT SESSION PRIORITIES
+═══════════════════════════════════════════════════════
+
+In exact order:
+
+1. Confirm current build — light mode, full border, BE AWARE glow, hero images
+2. Fix 3 scanner bugs: barcode mismatch, Databases Consulted, Personal Care
+3. Wire allergy_profiles + health_profiles active_limits to scanner (personal truth)
+4. Enable Google Maps APIs in Google Cloud Console (Places API, Maps SDK Android, Geolocation)
+5. Enroll Apple Developer account — $99/year
+6. File provisional patent (unified system — one filing covering entire BioMesh)
+7. Contact ARIFA re: Panama legal structure
+
+═══════════════════════════════════════════════════════
+SECTION 7 — INTELLIGENCE LABELS (LOCKED v22)
+═══════════════════════════════════════════════════════
+
+SCAN tab          — The Equalizer (verdict) + AA2 Insight
+PRODUCE tab       — The Equalizer + The Chef
+MEAT tab          — The Equalizer + The Chef
+PERSONAL CARE tab — The Equalizer + Cosmo Chemist
+GROWN FOLKS tab   — The Sommelier
+SPECIES / K9      — Canine Nutritionist
+SPECIES / Horse   — Equine Nutritionist
+SPECIES / Agri    — Agricultural Analyst
+
+🔒 The Chef label is BANNED from Species and Personal Care tabs permanently.
+🔒 Intelligence names never appear in scan results after onboarding — only color-coded glow cards.
+🔒 Database source names are internal only — never displayed to user.
+
+═══════════════════════════════════════════════════════
+SECTION 8 — DOCTRINE (LOCKED)
+═══════════════════════════════════════════════════════
+
+Body Doctrine:      Every component maps to a biological system.
+Transplant Doctrine: Competitors can copy the scanner but not the body it lives inside.
+Pyramid Law:        Philosophical foundation is internal only — never public-facing.
+Data Sovereignty:   AA2 stores only AA2's interpretation of voluntarily shared data.
+Doctrine Before Code: Slow down to build doctrine first — prevents premature builds.
+No Negative Zone:   No politics, no shame, no advertising, no ratchet content.
+Color Doctrine:     Electric blue, molten orange-gold, teal, pure white convergence.
+Font System:        Bebas Neue, Cormorant Garamond, DM Mono, DM Sans.
+UI:                 Glassmorphism.
+
+═══════════════════════════════════════════════════════
+CANON v23 — SEALED
+March 16, 2026 | Bozeman, Montana
+James R. Pitts II | AA2 Adaptive Advantage Laboratories, S.A. | Panama
+═══════════════════════════════════════════════════════
