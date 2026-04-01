@@ -320,7 +320,7 @@ export default function OnboardingScreen() {
   };
 
   const onConnectOura = useCallback(async () => {
-    const tok = ouraToken.trim();
+    const tok = ouraToken.trim().replace(/[^A-Za-z0-9]/g, '');
     if (!tok) {
       setOuraErr('Paste your personal access token first.');
       return;
@@ -328,6 +328,8 @@ export default function OnboardingScreen() {
     setOuraBusy(true);
     setOuraErr(null);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { await supabase.auth.signInAnonymously(); }
       const ok = await validateOuraToken(tok);
       if (!ok) {
         setOuraErr(
@@ -761,7 +763,7 @@ export default function OnboardingScreen() {
           <ScrollView style={styles.inner} contentContainerStyle={styles.innerContent}
             showsVerticalScrollIndicator={false}>
             <Text style={[styles.blockTitle, { color: textPrim }]}>Block 1 · Identity</Text>
-            <Q lbl="Q1 · WHAT NAME SHOULD JAVIER CALL YOU?">
+            <Q lbl="Q1 · WHAT NAME SHOULD THE CONCIERGE CALL YOU?">
               <TextInput value={preferredName} onChangeText={setPreferredName}
                 placeholder="First name, nickname, handle..." placeholderTextColor={textMuted} style={inp} />
             </Q>
