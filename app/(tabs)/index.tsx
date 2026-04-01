@@ -549,7 +549,7 @@ const s = StyleSheet.create({
   subTabLabel:     {fontSize:9,fontWeight:'800',letterSpacing:0.5},
   body:            {flex:1},
   heroWrap:        {position:'relative'},
-  heroImage:       {width:'100%',height:200},
+  heroImage:       {width:'100%',height:280},
   heroOverlay:     {position:'absolute',bottom:0,left:0,right:0,padding:14},
   heroTabLabel:    {fontSize:13,fontWeight:'900',letterSpacing:3},
   heroSubLabel:    {fontSize:9,letterSpacing:2,marginTop:2},
