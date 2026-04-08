@@ -1,0 +1,295 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;padding:8px 0}
+.col{display:flex;flex-direction:column;gap:8px;align-items:center}
+.section-tag{font-size:9px;letter-spacing:2px;color:var(--color-text-tertiary);font-weight:500;text-align:center;padding:0 0 6px}
+.phone{width:200px;background:#0A0804;border-radius:28px;border:1.5px solid #2E2208;overflow:hidden}
+.sb{display:flex;justify-content:space-between;padding:8px 14px 3px;font-size:9px;color:rgba(255,255,255,0.25)}
+.tabs{display:flex;background:#0D0A04;border-bottom:0.5px solid #2E2208;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:6px 10px;font-size:8.5px;letter-spacing:1px;color:rgba(255,255,255,0.3);font-weight:700;text-transform:uppercase;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.on{color:#C49A2A;border-bottom-color:#C49A2A}
+.tab.grn{color:#3B6D11;border-bottom-color:#3B6D11}
+.tab.forest{color:#1D9E75;border-bottom-color:#1D9E75}
+.hero-band{width:100%;height:80px;background:#0f1a0a;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.hero-icon{width:32px;height:32px;border-radius:50%;background:rgba(29,158,117,0.2);border:1px solid rgba(29,158,117,0.4);display:flex;align-items:center;justify-content:center}
+.hero-icon svg{width:16px;height:16px;fill:none;stroke:#1D9E75;stroke-width:1.5;stroke-linecap:round}
+.hero-label{font-size:9px;letter-spacing:2px;color:#1D9E75;font-weight:700}
+.scan-zone{margin:8px 10px;border:1px dashed rgba(29,158,117,0.4);border-radius:10px;padding:10px;display:flex;align-items:center;gap:8px}
+.scan-text{font-size:10px;color:rgba(255,255,255,0.45);line-height:1.4}
+.scan-dot{width:5px;height:5px;border-radius:50%;background:#1D9E75;flex-shrink:0}
+.result-card{margin:0 10px 8px;background:#0f1a0a;border:0.5px solid rgba(29,158,117,0.3);border-radius:12px;overflow:hidden}
+.rc-header{display:flex;align-items:center;gap:8px;padding:10px}
+.rc-icon{width:36px;height:36px;border-radius:8px;background:#152b15;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rc-name{font-size:13px;color:#fff;font-weight:500}
+.rc-sci{font-size:10px;color:#1D9E75;font-style:italic}
+.rc-div{height:0.5px;background:rgba(29,158,117,0.2);margin:0 10px}
+.rc-pills{display:flex;flex-wrap:wrap;gap:4px;padding:7px 10px}
+.pill{font-size:9px;padding:2px 7px;border-radius:20px;font-weight:600;letter-spacing:0.3px}
+.pill.eat{background:rgba(99,153,34,0.15);color:#3B6D11;border:0.5px solid rgba(99,153,34,0.3)}
+.pill.warn{background:rgba(226,75,74,0.1);color:#A32D2D;border:0.5px solid rgba(226,75,74,0.2)}
+.pill.raw{background:rgba(196,154,42,0.12);color:#854F0B;border:0.5px solid rgba(196,154,42,0.25)}
+.rc-row{display:flex;justify-content:space-between;padding:4px 10px}
+.rc-lbl{font-size:10px;color:rgba(255,255,255,0.35)}
+.rc-val{font-size:10px;color:rgba(255,255,255,0.7);text-align:right;max-width:110px;line-height:1.3}
+.signal{margin:6px 10px 10px;background:#0A0804;border-radius:7px;padding:6px 8px;display:flex;align-items:center;gap:6px}
+.sig-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.sig-txt{font-size:9.5px;color:rgba(255,255,255,0.5);flex:1;line-height:1.3}
+.sig-val{font-size:10px;font-weight:600}
+
+.chef-hero{width:100%;height:70px;background:#1a0f05;display:flex;align-items:center;justify-content:center}
+.chef-title{padding:8px 10px 3px;font-size:13px;color:#fff;font-weight:500}
+.chef-sub{padding:0 10px 6px;font-size:10px;color:#C49A2A}
+.inner-tabs{display:flex;background:#150e05;border-bottom:0.5px solid #2E2208}
+.itab{flex:1;padding:6px 4px;font-size:9px;letter-spacing:0.8px;color:rgba(255,255,255,0.3);font-weight:700;text-transform:uppercase;text-align:center;border-bottom:2px solid transparent}
+.itab.on{color:#C49A2A;border-bottom-color:#C49A2A}
+.itab.apo{color:#1D9E75;border-bottom-color:#1D9E75}
+.ing-list{padding:0 10px}
+.ing{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid #1A1408}
+.ing-n{font-size:11px;color:rgba(255,255,255,0.75)}
+.ing-p{font-size:9px;padding:2px 6px;border-radius:20px;font-weight:600}
+.ing-p.sub{background:rgba(29,158,117,0.15);color:#0F6E56;border:0.5px solid rgba(29,158,117,0.3)}
+.ing-p.ok{background:rgba(99,153,34,0.1);color:#27500A;border:0.5px solid rgba(99,153,34,0.2)}
+.apo-strip{margin:7px 10px 10px;background:#0f1a0a;border:0.5px solid rgba(29,158,117,0.3);border-radius:8px;padding:7px 9px}
+.apo-head{font-size:9px;letter-spacing:1.5px;color:#1D9E75;font-weight:700;margin-bottom:5px}
+.apo-item{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
+.apo-dot2{width:4px;height:4px;border-radius:50%;background:#1D9E75;flex-shrink:0;margin-top:4px}
+.apo-detail{font-size:10px;color:rgba(255,255,255,0.6);line-height:1.4}
+.apo-strong{color:#1D9E75;font-size:10px}
+
+.map-hero{width:100%;height:110px;background:#0f1a10;position:relative;overflow:hidden}
+.map-grid-line{position:absolute;background:rgba(29,158,117,0.08)}
+.map-pin{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px}
+.pin-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid}
+.pin-label{font-size:8px;font-weight:700;letter-spacing:0.3px;background:#0A0804;padding:1px 4px;border-radius:3px}
+.map-tag{position:absolute;top:8px;left:10px;font-size:8px;letter-spacing:1.5px;color:#1D9E75;font-weight:700}
+.map-tag2{position:absolute;top:8px;right:10px;font-size:8px;letter-spacing:1.5px;color:rgba(226,75,74,0.8);font-weight:700}
+.wild-strip{padding:0 10px}
+.wild-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid #1A1408}
+.wild-left{display:flex;align-items:center;gap:7px}
+.wild-icon{width:28px;height:28px;border-radius:7px;background:#0f1a0a;border:0.5px solid rgba(29,158,117,0.25);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.wild-name{font-size:11px;color:rgba(255,255,255,0.8)}
+.wild-sub{font-size:9px;color:rgba(255,255,255,0.35)}
+.wild-pill{font-size:9px;padding:2px 6px;border-radius:20px;font-weight:600}
+.wild-pill.free{background:rgba(29,158,117,0.12);color:#085041;border:0.5px solid rgba(29,158,117,0.25)}
+.wild-pill.buy{background:rgba(196,154,42,0.1);color:#633806;border:0.5px solid rgba(196,154,42,0.2)}
+.map-bottom{margin:6px 10px 10px;background:#1A1408;border-radius:8px;padding:7px 9px;display:flex;align-items:center;gap:7px}
+.mb-dot{width:6px;height:6px;border-radius:50%;background:#1D9E75;flex-shrink:0}
+.mb-txt{font-size:10px;color:rgba(255,255,255,0.5);line-height:1.4}
+.mb-val{font-size:10px;color:#1D9E75;font-weight:500;white-space:nowrap}
+</style>
+
+<div class="wrap">
+
+  <div class="col">
+    <div class="section-tag">Spoke 35 · Forager tab</div>
+    <div class="phone">
+      <div class="sb"><span>9:41</span><span>S.C.A.N.</span></div>
+      <div class="tabs">
+        <div class="tab">Scan</div>
+        <div class="tab">Produce</div>
+        <div class="tab">Apothecary</div>
+        <div class="tab forest on">Forager</div>
+      </div>
+      <div class="hero-band">
+        <div class="hero-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2a9 9 0 00-9 9c0 4.17 2.84 7.67 6.69 8.69L12 22l2.31-2.31C18.16 18.67 21 15.17 21 11a9 9 0 00-9-9z"/><path d="M12 8v4M10 10l2 2 2-2"/></svg>
+        </div>
+        <div class="hero-label">Forager · Spoke 35</div>
+      </div>
+      <div class="scan-zone">
+        <div class="scan-dot"></div>
+        <div class="scan-text">Point at any wild plant, mushroom, berry, or leaf to identify it</div>
+      </div>
+      <div class="result-card">
+        <div class="rc-header">
+          <div class="rc-icon">🍄</div>
+          <div>
+            <div class="rc-name">Hen of the Woods</div>
+            <div class="rc-sci">Grifola frondosa</div>
+          </div>
+        </div>
+        <div class="rc-div"></div>
+        <div class="rc-pills">
+          <div class="pill eat">Edible</div>
+          <div class="pill raw">Cook first</div>
+          <div class="pill eat">K9 safe</div>
+        </div>
+        <div class="rc-div"></div>
+        <div class="rc-row">
+          <div class="rc-lbl">Season</div>
+          <div class="rc-val">Sept — Nov</div>
+        </div>
+        <div class="rc-row">
+          <div class="rc-lbl">Found near</div>
+          <div class="rc-val">Base of oaks, old stumps</div>
+        </div>
+        <div class="rc-row">
+          <div class="rc-lbl">Lookalike risk</div>
+          <div class="rc-val">Low — distinct shape</div>
+        </div>
+        <div class="rc-row">
+          <div class="rc-lbl">Preparation</div>
+          <div class="rc-val">Sauté, roast, dry</div>
+        </div>
+        <div class="signal">
+          <div class="sig-dot" style="background:#1D9E75"></div>
+          <div class="sig-txt">Matches your region · in season now</div>
+          <div class="sig-val" style="color:#1D9E75">Forage</div>
+        </div>
+      </div>
+      <div class="result-card" style="border-color:rgba(226,75,74,0.3)">
+        <div class="rc-header">
+          <div class="rc-icon">🍄</div>
+          <div>
+            <div class="rc-name">Death Cap</div>
+            <div class="rc-sci">Amanita phalloides</div>
+          </div>
+        </div>
+        <div class="rc-div"></div>
+        <div class="rc-pills">
+          <div class="pill warn">TOXIC · Fatal</div>
+          <div class="pill warn">K9 · Fatal</div>
+        </div>
+        <div class="signal" style="background:#1a0808">
+          <div class="sig-dot" style="background:#E24B4A"></div>
+          <div class="sig-txt">Equalizer hard stop — do not consume</div>
+          <div class="sig-val" style="color:#E24B4A">Stop</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="section-tag">Apothecary inside Chef recipes</div>
+    <div class="phone">
+      <div class="sb"><span>9:41</span><span>S.C.A.N.</span></div>
+      <div class="tabs">
+        <div class="tab on">Scan</div>
+        <div class="tab">Produce</div>
+        <div class="tab">Meat</div>
+        <div class="tab">Grown Folks</div>
+      </div>
+      <div class="chef-hero">
+        <div style="font-size:9px;letter-spacing:2px;color:#C49A2A;font-weight:700">The Chef · Recipe</div>
+      </div>
+      <div class="chef-title">Anti-inflammatory broth</div>
+      <div class="chef-sub">Matched to your HRV baseline</div>
+      <div class="inner-tabs">
+        <div class="itab on">Ingredients</div>
+        <div class="itab">Method</div>
+        <div class="itab apo">Apothecary</div>
+      </div>
+      <div class="ing-list">
+        <div class="ing">
+          <div class="ing-n">Turmeric</div>
+          <div class="ing-p sub">Wild sub available</div>
+        </div>
+        <div class="ing">
+          <div class="ing-n">Bone broth</div>
+          <div class="ing-p ok">On profile</div>
+        </div>
+        <div class="ing">
+          <div class="ing-n">Ginger root</div>
+          <div class="ing-p sub">Wild sub available</div>
+        </div>
+        <div class="ing">
+          <div class="ing-n">Black pepper</div>
+          <div class="ing-p ok">On profile</div>
+        </div>
+        <div class="ing">
+          <div class="ing-n">Garlic</div>
+          <div class="ing-p ok">On profile</div>
+        </div>
+      </div>
+      <div class="apo-strip">
+        <div class="apo-head">Apothecary alternatives</div>
+        <div class="apo-item">
+          <div class="apo-dot2"></div>
+          <div class="apo-detail"><span class="apo-strong">Turmeric</span> — wild Curcuma longa or dried root from forager tab. Same curcumin load. Skip mass-produced powder.</div>
+        </div>
+        <div class="apo-item">
+          <div class="apo-dot2"></div>
+          <div class="apo-detail"><span class="apo-strong">Ginger</span> — wild Zingiber officinale root. Higher gingerol concentration than store ground.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="section-tag">Apothecary on ON GRID / OFF GRID map</div>
+    <div class="phone">
+      <div class="sb"><span>9:41</span><span>S.C.A.N.</span></div>
+      <div class="tabs">
+        <div class="tab">Home</div>
+        <div class="tab">Explore</div>
+        <div class="tab">Membrane</div>
+        <div class="tab on">Map</div>
+      </div>
+      <div class="map-hero">
+        <div class="map-grid-line" style="left:0;right:0;top:33%;height:0.5px"></div>
+        <div class="map-grid-line" style="left:0;right:0;top:66%;height:0.5px"></div>
+        <div class="map-grid-line" style="top:0;bottom:0;left:33%;width:0.5px"></div>
+        <div class="map-grid-line" style="top:0;bottom:0;left:66%;width:0.5px"></div>
+        <div class="map-tag">ON GRID</div>
+        <div class="map-tag2">OFF GRID</div>
+        <div class="map-pin" style="top:35%;left:22%">
+          <div class="pin-dot" style="background:#1D9E75;border-color:#1D9E75"></div>
+          <div class="pin-label" style="color:#1D9E75">Wild Thyme</div>
+        </div>
+        <div class="map-pin" style="top:55%;left:58%">
+          <div class="pin-dot" style="background:#1D9E75;border-color:#1D9E75"></div>
+          <div class="pin-label" style="color:#1D9E75">Elder flower</div>
+        </div>
+        <div class="map-pin" style="top:20%;left:70%">
+          <div class="pin-dot" style="background:#C49A2A;border-color:#C49A2A"></div>
+          <div class="pin-label" style="color:#C49A2A">Co-op · herbs</div>
+        </div>
+        <div class="map-pin" style="top:65%;left:30%">
+          <div class="pin-dot" style="background:#E24B4A;border-color:#E24B4A"></div>
+          <div class="pin-label" style="color:#E24B4A">Nightshade zone</div>
+        </div>
+      </div>
+      <div style="padding:6px 10px 4px;font-size:8.5px;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-weight:700">Wild herb substitutes near you</div>
+      <div class="wild-strip">
+        <div class="wild-item">
+          <div class="wild-left">
+            <div class="wild-icon">🌿</div>
+            <div>
+              <div class="wild-name">Wild thyme</div>
+              <div class="wild-sub">0.3 mi · in season</div>
+            </div>
+          </div>
+          <div class="wild-pill free">Free · forage</div>
+        </div>
+        <div class="wild-item">
+          <div class="wild-left">
+            <div class="wild-icon">🌸</div>
+            <div>
+              <div class="wild-name">Elderflower</div>
+              <div class="wild-sub">0.7 mi · peak bloom</div>
+            </div>
+          </div>
+          <div class="wild-pill free">Free · forage</div>
+        </div>
+        <div class="wild-item">
+          <div class="wild-left">
+            <div class="wild-icon">🌱</div>
+            <div>
+              <div class="wild-name">Dried turmeric</div>
+              <div class="wild-sub">Mountain co-op · 1.2 mi</div>
+            </div>
+          </div>
+          <div class="wild-pill buy">Buy · clean source</div>
+        </div>
+      </div>
+      <div class="map-bottom">
+        <div class="mb-dot"></div>
+        <div class="mb-txt">3 wild substitutes for your recipe in range. Mass-produced alternatives flagged.</div>
+        <div class="mb-val">View all</div>
+      </div>
+    </div>
+  </div>
+
+</div>

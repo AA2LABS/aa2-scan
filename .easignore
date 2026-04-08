@@ -1,0 +1,16 @@
+# Loose image files in project root — not needed for build
+/*.jpg
+/*.jpeg
+/*.png
+/*.webp
+/*.avif
+/*.gif
+
+# Canon camera folder
+Canon/
+
+# Zip files in root
+/*.zip
+
+# Export output
+dist/

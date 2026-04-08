@@ -6,6 +6,8 @@ import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
+const TEAL = '#1D9E75';
+
 const TabIcon = ({ emoji, color }: { emoji: string; color: string }) => (
   <Text style={{ fontSize: 22, color }}>{emoji}</Text>
 );
@@ -26,6 +28,16 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <TabIcon emoji="⚡" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="apothecary"
+        options={{
+          title: 'The Equalizer',
+          tabBarActiveTintColor: TEAL,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon emoji="⚗" color={focused ? TEAL : color} />
+          ),
         }}
       />
       <Tabs.Screen

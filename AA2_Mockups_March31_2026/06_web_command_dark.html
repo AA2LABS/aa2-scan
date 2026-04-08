@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 Web Command Center — Dark</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A0A;font-family:system-ui,sans-serif;min-height:100vh;padding:20px}
+.wrap{background:#0F0F11;border-radius:12px;overflow:hidden;border:0.5px solid #E8E0D0;min-height:600px}
+.topbar{background:#141414;border-bottom:0.5px solid #2C2C2E;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:Georgia,serif;font-size:16px;color:#B8860B;font-style:italic;margin-right:20px}
+.nav-items{display:flex;gap:16px}
+.nav-item{font-family:monospace;font-size:9px;letter-spacing:2px;color:#555;cursor:pointer;padding:4px 0;border-bottom:1.5px solid transparent;text-decoration:none}
+.nav-item.active{color:#F2F2F7;border-bottom-color:#B8860B}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.member-name{font-family:monospace;font-size:9px;color:#555;letter-spacing:1px}
+.mirror-badge{background:#0A1A0A;border-radius:20px;padding:3px 10px;display:flex;align-items:center;gap:5px;border:0.5px solid #2A5A2A}
+.mirror-dot{width:5px;height:5px;background:#4CAF82;border-radius:50%}
+.mirror-label{font-family:monospace;font-size:8px;color:#4CAF82;letter-spacing:1px}
+.layout{display:grid;grid-template-columns:220px 1fr 240px;min-height:548px}
+.left-rail{background:#141414;border-right:0.5px solid #E8E0D0;padding:16px 0}
+.rail-label{font-family:monospace;font-size:8px;letter-spacing:2px;color:#B8860B;padding:8px 16px 4px}
+.rail-item{padding:7px 16px;display:flex;align-items:center;gap:8px;cursor:pointer;border-left:2px solid transparent}
+.rail-item:hover{background:#2C2C2E}
+.rail-item.active{background:#1A1500;border-left-color:#B8860B}
+.rail-icon{width:14px;height:14px;background:#2C2C2E;border-radius:3px;flex-shrink:0}
+.rail-icon.gold{background:#F0E0A0}
+.rail-icon.green{background:#C0E0C0}
+.rail-icon.blue{background:#C0D8F0}
+.rail-text{font-size:11px;color:#888}
+.rail-item.active .rail-text{color:#F2F2F7;font-weight:500}
+.rail-count{font-family:monospace;font-size:9px;color:#444;margin-left:auto}
+.main-area{padding:20px}
+.main-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:16px}
+.main-title{font-family:Georgia,serif;font-size:22px;color:#1A1A1A;font-weight:400}
+.main-sub{font-family:monospace;font-size:9px;color:#AAA;letter-spacing:1.5px;margin-top:2px}
+.feed-cols-row{display:flex;gap:6px;align-items:center}
+.feed-col-label{padding:3px 8px;border-radius:4px;cursor:pointer;border:0.5px solid #E8E0D0;font-family:monospace;font-size:9px;color:#888}
+.feed-col-label.active{background:#1A1A1A;color:#FAF7F2;border-color:#1A1A1A}
+.board-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.board-col-header{font-family:monospace;font-size:8px;letter-spacing:2px;color:#888;margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid #E8E0D0;display:flex;align-items:center;gap:5px}
+.col-dot{width:5px;height:5px;border-radius:50%}
+.col-dot.pub{background:#4CAF82}
+.col-dot.mem{background:#4A8ACA}
+.col-dot.priv{background:#B8860B}
+.tile{background:#141414;border:0.5px solid #2C2C2E;border-radius:10px;padding:10px;margin-bottom:8px;cursor:grab}
+.tile:hover{border-color:#B8860B}
+.tile-type{font-family:monospace;font-size:8px;letter-spacing:1.5px;color:#AAA;margin-bottom:4px}
+.tile-name{font-size:12px;color:#F2F2F7;font-weight:500;line-height:1.3;margin-bottom:4px}
+.tile-meta{font-family:monospace;font-size:8px;color:#444;display:flex;gap:8px}
+.tile.cookbook{border-left:2px solid #B8860B}
+.tile.vision{border-left:2px solid #4CAF82}
+.tile.travel{border-left:2px solid #4A8ACA}
+.tile.language{border-left:2px solid #9B59B6}
+.drop-zone{border:1px dashed #E8E0D0;border-radius:10px;padding:14px;text-align:center;margin-bottom:8px}
+.drop-zone span{font-family:monospace;font-size:8px;color:#333;letter-spacing:1px}
+.right-panel{background:#141414;border-left:0.5px solid #E8E0D0;padding:16px}
+.panel-section{margin-bottom:16px;padding-bottom:16px;border-bottom:0.5px solid #1E1E1E}
+.panel-section:last-child{border-bottom:none}
+.panel-label{font-family:monospace;font-size:8px;letter-spacing:2px;color:#B8860B;margin-bottom:8px}
+.debit-mini{background:#1A1A0A;border-radius:10px;padding:10px;border:0.5px solid #B8860B}
+.dm-brand{font-family:monospace;font-size:8px;color:#B8860B;letter-spacing:2px}
+.dm-amt{font-family:monospace;font-size:18px;color:#B8860B;margin:4px 0 2px}
+.dm-label{font-family:monospace;font-size:7px;color:#555;letter-spacing:1px}
+.stat-row{display:flex;justify-content:space-between}
+.stat-item{text-align:center;flex:1}
+.stat-num{font-family:monospace;font-size:14px;color:#F2F2F7;font-weight:500}
+.stat-label{font-family:monospace;font-size:7px;color:#AAA;letter-spacing:1px;display:block;margin-top:1px}
+.travel-mini{background:#0A1020;border-radius:8px;padding:8px;border:0.5px solid #1A2A40;margin-bottom:6px}
+.tm-dest{font-size:11px;color:#F2F2F7;font-weight:500}
+.tm-track{background:#1A2A40;border-radius:3px;height:3px;margin:5px 0 2px}
+.tm-fill{background:#4A8ACA;border-radius:3px;height:3px;width:34%}
+.tm-meta{display:flex;justify-content:space-between;font-family:monospace;font-size:7px;color:#888}
+.phone-mirror{display:flex;align-items:center;gap:6px;background:#0A1A0A;border-radius:8px;padding:6px 8px;border:0.5px solid #2A4A2A}
+.pm-icon{width:14px;height:20px;background:#1A3A1A;border-radius:2px;border:0.5px solid #2A5A2A;flex-shrink:0}
+.pm-text{font-family:monospace;font-size:8px;color:#4CAF82;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div style="display:flex;align-items:center">
+      <div class="logo">AA2</div>
+      <div class="nav-items">
+        <a class="nav-item active">Vault</a>
+        <a class="nav-item">Scanner</a>
+        <a class="nav-item">Cookbook</a>
+        <a class="nav-item">Travel</a>
+        <a class="nav-item">Community</a>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="member-name">JAMES R. PITTS II</div>
+      <div class="mirror-badge"><div class="mirror-dot"></div><div class="mirror-label">PHONE SYNCED</div></div>
+    </div>
+  </div>
+  <div class="layout">
+    <div class="left-rail">
+      <div class="rail-label">MY VAULT</div>
+      <div class="rail-item active"><div class="rail-icon gold"></div><span class="rail-text">Vision Board</span></div>
+      <div class="rail-item"><div class="rail-icon blue"></div><span class="rail-text">Travel My Planet</span><span class="rail-count">2</span></div>
+      <div class="rail-item"><div class="rail-icon gold"></div><span class="rail-text">Act Right Dollars</span></div>
+      <div class="rail-item"><div class="rail-icon"></div><span class="rail-text">AA2 Debit Card</span></div>
+      <div class="rail-label">CONTENT</div>
+      <div class="rail-item"><div class="rail-icon gold"></div><span class="rail-text">Intl. Lives Cookbook</span><span class="rail-count">3</span></div>
+      <div class="rail-item"><div class="rail-icon green"></div><span class="rail-text">Live Cooking</span></div>
+      <div class="rail-item"><div class="rail-icon"></div><span class="rail-text">Language Learning</span></div>
+      <div class="rail-item"><div class="rail-icon"></div><span class="rail-text">Scan History</span></div>
+      <div class="rail-label">COMMUNITY</div>
+      <div class="rail-item"><div class="rail-icon green"></div><span class="rail-text">My Feed</span></div>
+      <div class="rail-item"><div class="rail-icon"></div><span class="rail-text">Live Sessions</span></div>
+      <div class="rail-item"><div class="rail-icon"></div><span class="rail-text">Find Cook Partner</span></div>
+    </div>
+    <div class="main-area">
+      <div class="main-header">
+        <div><div class="main-title">Vision Board &amp; Feed</div><div class="main-sub">DRAG TILES TO MANAGE WHERE THEY APPEAR</div></div>
+        <div class="feed-cols-row">
+          <div class="feed-col-label active">Public</div>
+          <div class="feed-col-label">Members</div>
+          <div class="feed-col-label">Private</div>
+        </div>
+      </div>
+      <div class="board-cols">
+        <div>
+          <div class="board-col-header"><div class="col-dot pub"></div>PUBLIC FEED</div>
+          <div class="tile cookbook"><div class="tile-type">COOKBOOK · 🇮🇹→🇺🇸</div><div class="tile-name">Meatballs &amp; Spaghetti with Famiglia Ricci</div><div class="tile-meta"><span>47 min session</span><span>+120 pts</span></div></div>
+          <div class="tile language"><div class="tile-type">LANGUAGE MILESTONE</div><div class="tile-name">Italian Level 2 complete</div><div class="tile-meta"><span>🇮🇹 Italiano</span><span>+200 pts</span></div></div>
+          <div class="drop-zone"><span>DRAG TILES HERE → PUBLIC</span></div>
+        </div>
+        <div>
+          <div class="board-col-header"><div class="col-dot mem"></div>MEMBERS ONLY</div>
+          <div class="tile travel"><div class="tile-type">TRAVEL MY PLANET</div><div class="tile-name">Costa Rica · San José</div><div class="tile-meta"><span>34% funded</span><span>$312 earned</span></div></div>
+          <div class="tile vision"><div class="tile-type">VISION · DECLARATION</div><div class="tile-name">"Building a body that runs at 75 and feels like 45"</div><div class="tile-meta"><span>47-day streak</span></div></div>
+          <div class="drop-zone"><span>DRAG TILES HERE → MEMBERS</span></div>
+        </div>
+        <div>
+          <div class="board-col-header"><div class="col-dot priv"></div>PRIVATE · VAULT ONLY</div>
+          <div class="tile cookbook"><div class="tile-type">COOKBOOK · 🇨🇷→🇺🇸</div><div class="tile-name">Gallo Pinto with Costa Rican family</div><div class="tile-meta"><span>62 min session</span><span>+120 pts</span></div></div>
+          <div class="tile vision"><div class="tile-type">HORIZON PHOTO</div><div class="tile-name">Costa Rica family dinner — trip goal</div><div class="tile-meta"><span>personal</span></div></div>
+          <div class="drop-zone"><span>DRAG TILES HERE → PRIVATE</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="panel-section">
+        <div class="panel-label">ACT RIGHT DOLLARS</div>
+        <div class="debit-mini"><div class="dm-brand">AA2 · ACT RIGHT</div><div class="dm-amt">$312.00</div><div class="dm-label">AVAILABLE BALANCE</div></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-label">THIS MONTH</div>
+        <div class="stat-row">
+          <div class="stat-item"><div class="stat-num">47</div><span class="stat-label">DAY STREAK</span></div>
+          <div class="stat-item"><div class="stat-num">23</div><span class="stat-label">BLOCKS</span></div>
+          <div class="stat-item"><div class="stat-num">3</div><span class="stat-label">SESSIONS</span></div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-label">TRAVEL MY PLANET</div>
+        <div class="travel-mini"><div class="tm-dest">🇨🇷 San José, Costa Rica</div><div class="tm-track"><div class="tm-fill"></div></div><div class="tm-meta"><span>$312 of $920</span><span>34%</span></div></div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-label">PHONE MIRROR</div>
+        <div class="phone-mirror"><div class="pm-icon"></div><div class="pm-text">Everything here mirrors to your phone in real time. One membrane. Two surfaces.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="text-align:center;margin-top:12px;font-family:monospace;font-size:9px;color:#888;letter-spacing:2px">I AM THE RECEIPT · AA2 CANON v35 · MARCH 31 2026</div>
+</body>
+</html>

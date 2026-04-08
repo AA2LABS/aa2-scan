@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 International Lives Cookbook — Light</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F0EDE8;display:flex;justify-content:center;padding:40px 20px;font-family:system-ui,sans-serif}
+.phone{width:340px;background:#F5F5F7;border-radius:44px;overflow:hidden;border:1px solid #D1D1D6;box-shadow:0 2px 24px rgba(0,0,0,0.08)}
+.statusbar{background:#FAF7F2;padding:14px 24px 6px;display:flex;justify-content:space-between;border-bottom:0.5px solid #E8E0D0}
+.statusbar span{color:#1A1A1A;font-size:11px;font-weight:500}
+.screen{background:#FAF7F2;min-height:720px}
+.page-header{padding:20px 20px 12px;border-bottom:0.5px solid #E8E0D0;background:#FFFDF9}
+.header-eyebrow{font-family:monospace;font-size:9px;letter-spacing:2.5px;color:#B8860B;margin-bottom:4px}
+.header-title{font-family:Georgia,serif;font-size:22px;color:#1A1A1A;font-weight:400}
+.header-sub{font-size:11px;color:#888;margin-top:4px}
+.chef-assembling{display:flex;align-items:center;gap:6px;margin-top:8px;background:#FFF8EC;border-radius:8px;padding:6px 10px;border:0.5px solid #E8D5A0}
+.chef-dot{width:6px;height:6px;background:#B8860B;border-radius:50%}
+.chef-status{font-family:monospace;font-size:9px;color:#B8860B;letter-spacing:1px}
+.session-card{margin:14px 16px 0;background:#FFFDF9;border-radius:16px;border:0.5px solid #E8E0D0;overflow:hidden}
+.session-top{padding:14px 16px;border-bottom:0.5px solid #F0E8D8;display:flex;justify-content:space-between;align-items:flex-start}
+.session-flags{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.flag-pill{background:#F5F0E8;border-radius:20px;padding:2px 8px;display:flex;align-items:center;gap:4px}
+.flag-pill .flag-label{font-family:monospace;font-size:9px;color:#888}
+.session-name{font-family:Georgia,serif;font-size:16px;color:#1A1A1A}
+.session-date{font-family:monospace;font-size:9px;color:#AAA;margin-top:2px}
+.vault-badge{background:#FFF8EC;border-radius:8px;padding:4px 8px;border:0.5px solid #E8D5A0;text-align:center}
+.vault-badge .vb-label{font-family:monospace;font-size:8px;color:#B8860B}
+.recipe-lang-row{display:flex;border-bottom:0.5px solid #F0E8D8}
+.lang-tab{flex:1;padding:8px 12px;text-align:center;cursor:pointer;border-right:0.5px solid #F0E8D8}
+.lang-tab:last-child{border-right:none}
+.lang-tab.active{background:#FFF8EC}
+.lang-tab .lt-flag{font-size:13px;display:block;margin-bottom:1px}
+.lang-tab .lt-label{font-family:monospace;font-size:8px;color:#888}
+.lang-tab.active .lt-label{color:#B8860B}
+.recipe-title-section{padding:12px 16px;border-bottom:0.5px solid #F0E8D8}
+.recipe-title{font-family:Georgia,serif;font-size:15px;color:#1A1A1A;font-style:italic}
+.recipe-serves{font-family:monospace;font-size:9px;color:#AAA;margin-top:2px}
+.ingredient-list{padding:8px 0}
+.ingredient-row{padding:8px 16px;border-bottom:0.5px solid #F5F0E8;display:flex;align-items:flex-start;gap:12px}
+.ingredient-row:last-child{border-bottom:none}
+.ing-amount{font-family:monospace;font-size:11px;color:#B8860B;min-width:44px;font-weight:500;padding-top:1px}
+.ing-detail{flex:1}
+.ing-name{font-family:Georgia,serif;font-size:13px;color:#1A1A1A;font-style:italic}
+.ing-translation{font-size:10px;color:#888;margin-top:1px}
+.ing-benefit{font-size:10px;color:#3A7A3A;margin-top:3px;line-height:1.4;padding:4px 8px;background:#F5FDF5;border-radius:5px;border-left:2px solid #8AB88A}
+.ing-scan-btn{background:#FFF8EC;border:0.5px solid #E8D5A0;border-radius:6px;padding:3px 7px;font-family:monospace;font-size:8px;color:#B8860B;cursor:pointer;margin-top:4px;display:inline-block}
+.share-section{margin:10px 16px 14px;background:#FFFDF9;border-radius:12px;border:0.5px solid #E8E0D0;overflow:hidden}
+.share-header{padding:10px 14px;border-bottom:0.5px solid #F0E8D8;display:flex;justify-content:space-between}
+.share-title{font-family:monospace;font-size:9px;color:#888;letter-spacing:2px}
+.chef-mark{font-family:Georgia,serif;font-size:10px;color:#B8860B;font-style:italic}
+.share-preview{padding:10px 14px;border-bottom:0.5px solid #F0E8D8}
+.preview-text{font-family:Georgia,serif;font-size:11px;color:#666;line-height:1.6;font-style:italic}
+.share-actions{padding:8px 14px;display:flex;gap:8px}
+.share-btn{flex:1;padding:7px;text-align:center;border-radius:8px;font-family:monospace;font-size:9px;cursor:pointer;border:0.5px solid}
+.share-btn.primary{background:#1A1A1A;color:#FAF7F2;border-color:#1A1A1A}
+.share-btn.secondary{background:transparent;color:#888;border-color:#DDD}
+.acquisition-note{padding:6px 14px 10px;font-size:9px;color:#AAA;font-style:italic;text-align:center}
+.homeind{background:#F5F5F7;padding:10px;display:flex;justify-content:center}
+.homeind div{width:120px;height:4px;background:#1A1A1A;border-radius:2px;opacity:0.15}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="page-header">
+      <div class="header-eyebrow">THE VAULT · INTERNATIONAL LIVES COOKBOOK</div>
+      <div class="header-title">Your Cookbook</div>
+      <div class="header-sub">3 sessions · 3 cultures · 3 bonds</div>
+      <div class="chef-assembling"><div class="chef-dot"></div><div class="chef-status">THE CHEF IS ASSEMBLING THIS ENTRY · IN PROGRESS</div></div>
+    </div>
+    <div class="session-card">
+      <div class="session-top">
+        <div>
+          <div class="session-flags">
+            <div class="flag-pill"><span>🇮🇹</span><span class="flag-label">ITALY</span></div>
+            <span style="color:#CCC">→</span>
+            <div class="flag-pill"><span>🇺🇸</span><span class="flag-label">USA</span></div>
+          </div>
+          <div class="session-name">Meatballs &amp; Spaghetti</div>
+          <div class="session-date">MARCH 31, 2026 · LIVE SESSION · 47 MIN</div>
+        </div>
+        <div class="vault-badge"><div style="font-size:14px;text-align:center">▶</div><div class="vb-label">VAULT</div></div>
+      </div>
+      <div class="recipe-lang-row">
+        <div class="lang-tab active"><span class="lt-flag">🇮🇹</span><span class="lt-label">ITALIANO</span></div>
+        <div class="lang-tab"><span class="lt-flag">🇺🇸</span><span class="lt-label">ENGLISH</span></div>
+      </div>
+      <div class="recipe-title-section">
+        <div class="recipe-title">Polpette al sugo con spaghetti</div>
+        <div class="recipe-serves">PER 4 PERSONE · SHARED PRE-SESSION BY FAMIGLIA RICCI</div>
+      </div>
+      <div class="ingredient-list">
+        <div class="ingredient-row">
+          <div class="ing-amount">500g</div>
+          <div class="ing-detail">
+            <div class="ing-name">Aglio · garlic</div>
+            <div class="ing-translation">3 cloves, minced</div>
+            <div class="ing-benefit">Antimicrobial &amp; cardiovascular support. Reduces LDL. Anti-inflammatory compounds active when crushed.</div>
+            <div class="ing-scan-btn">SCAN BEFORE BUYING →</div>
+          </div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ing-amount">400g</div>
+          <div class="ing-detail">
+            <div class="ing-name">Pomodori · tomatoes</div>
+            <div class="ing-translation">San Marzano, crushed</div>
+            <div class="ing-benefit">Lycopene antioxidant. Reduces oxidative stress. Higher bioavailability when cooked with olive oil.</div>
+            <div class="ing-scan-btn">SCAN BEFORE BUYING →</div>
+          </div>
+        </div>
+        <div class="ingredient-row">
+          <div class="ing-amount">2</div>
+          <div class="ing-detail">
+            <div class="ing-name">Peperone verde · green pepper</div>
+            <div class="ing-translation">Diced fine</div>
+            <div class="ing-benefit">More vitamin C than an orange. Immune support. Low calorie. Antioxidant-rich capsicum compounds.</div>
+            <div class="ing-scan-btn">SCAN BEFORE BUYING →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="share-section">
+      <div class="share-header"><div class="share-title">THE CHEF'S FORMAT · SHAREABLE</div><div class="chef-mark">The Chef</div></div>
+      <div class="share-preview"><div class="preview-text">"Famiglia Ricci's meatballs begin with San Marzano tomatoes — crushed, never blended. Garlic goes in cold oil. The secret is patience. Here is everything you need, and what every ingredient does for you..."</div></div>
+      <div class="share-actions">
+        <div class="share-btn primary">SHARE RECIPE →</div>
+        <div class="share-btn secondary">TEXT · EMAIL</div>
+      </div>
+      <div class="acquisition-note">Recipients without AA2 see the full recipe + health data. AA2 mark at the bottom.</div>
+    </div>
+  </div>
+  <div class="homeind"><div></div></div>
+</div>
+</body>
+</html>

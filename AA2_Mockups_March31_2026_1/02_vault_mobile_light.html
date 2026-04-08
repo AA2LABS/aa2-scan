@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 Vault — Mobile Light Mode</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#F0EDE8;display:flex;justify-content:center;padding:40px 20px;font-family:system-ui,sans-serif}
+.phone{width:340px;background:#F5F5F7;border-radius:44px;overflow:hidden;border:1px solid #D1D1D6;box-shadow:0 2px 24px rgba(0,0,0,0.08)}
+.statusbar{background:#FAF7F2;padding:14px 24px 6px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid #E8E0D0}
+.statusbar span{color:#1A1A1A;font-size:11px;font-weight:500}
+.screen{background:#FAF7F2;min-height:680px}
+.vault-header{padding:20px 20px 12px;border-bottom:0.5px solid #E8E0D0;background:#FFFDF9}
+.header-eyebrow{font-family:monospace;font-size:9px;letter-spacing:2.5px;color:#B8860B;margin-bottom:4px}
+.header-title{font-family:Georgia,serif;font-size:22px;color:#1A1A1A;font-weight:400}
+.header-sub{font-family:system-ui,sans-serif;font-size:11px;color:#888;margin-top:4px}
+.chef-assembling{display:flex;align-items:center;gap:6px;margin-top:8px;background:#FFF8EC;border-radius:8px;padding:6px 10px;border:0.5px solid #E8D5A0}
+.chef-dot{width:6px;height:6px;background:#B8860B;border-radius:50%}
+.chef-status{font-family:monospace;font-size:9px;color:#B8860B;letter-spacing:1px}
+.section-label{color:#B8860B;font-size:9px;font-family:monospace;letter-spacing:2px;padding:10px 16px 5px}
+.vb-card{margin:0 12px 10px;background:#FFFDF9;border-radius:16px;border:0.5px solid #E8E0D0;overflow:hidden}
+.vb-zone{padding:12px 14px;border-bottom:0.5px solid #F0E8D8}
+.vb-zone:last-child{border-bottom:none}
+.zone-tag{font-size:9px;color:#888;font-family:monospace;letter-spacing:1.5px;margin-bottom:4px}
+.declaration-text{font-size:12px;color:#D4A843;font-style:italic;line-height:1.4;margin-top:4px;font-family:Georgia,serif}
+.evidence-row{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ev-chip{background:#F5F0E8;border-radius:8px;padding:4px 8px}
+.ev-chip .ev-num{color:#B8860B;font-size:13px;font-weight:500;font-family:monospace}
+.ev-chip .ev-label{color:#888;font-size:9px;display:block;font-family:monospace}
+.horizon-row{display:flex;gap:6px;margin-top:6px}
+.horizon-tile{flex:1;background:#F5F0E8;border-radius:8px;height:52px;display:flex;align-items:center;justify-content:center;border:0.5px solid #E8E0D0}
+.horizon-tile.filled{background:#F0FFF4;border:0.5px solid #8AB88A}
+.horizon-tile.filled span{color:#3A7A3A;font-size:10px;text-align:center;padding:0 4px;line-height:1.3}
+.horizon-tile.empty{border:0.5px dashed #DDD}
+.travel-card{margin:0 12px 10px;background:#FFFDF9;border-radius:16px;border:0.5px solid #E8E0D0;overflow:hidden}
+.travel-dest{padding:12px 14px;border-bottom:0.5px solid #F0E8D8;display:flex;justify-content:space-between;align-items:center}
+.dest-name{color:#1A1A1A;font-size:13px;font-weight:500}
+.dest-country{color:#888;font-size:10px;font-family:monospace}
+.dest-badge{background:#F0F8FF;border-radius:8px;padding:3px 8px;text-align:right;border:0.5px solid #C0D8F0}
+.dest-badge .badge-amt{color:#4A8ACA;font-size:12px;font-weight:500;font-family:monospace}
+.dest-badge .badge-label{color:#7AAAD0;font-size:9px;display:block;font-family:monospace}
+.progress-bar-wrap{padding:10px 14px 8px}
+.pb-label{display:flex;justify-content:space-between;margin-bottom:4px}
+.pb-label span{color:#888;font-size:9px;font-family:monospace}
+.pb-label .pb-pct{color:#B8860B}
+.pb-track{background:#E8E0D0;border-radius:4px;height:5px}
+.pb-fill{background:#B8860B;border-radius:4px;height:5px;width:34%}
+.live-cook-card{margin:0 12px 10px;background:#FFFDF9;border-radius:16px;border:0.5px solid #E8E0D0;overflow:hidden}
+.lc-header{padding:10px 14px 8px;border-bottom:0.5px solid #F0E8D8;display:flex;justify-content:space-between;align-items:center}
+.lc-title{color:#1A1A1A;font-size:13px;font-weight:500}
+.lc-pts{background:#F0FFF4;border-radius:6px;padding:2px 8px;border:0.5px solid #8AB88A}
+.lc-pts span{color:#3A7A3A;font-size:10px;font-family:monospace}
+.lc-modes{display:flex;gap:6px;padding:10px 14px}
+.lc-mode{flex:1;background:#F5F0E8;border-radius:10px;padding:10px 8px;text-align:center;border:0.5px solid #E8E0D0}
+.lc-mode.primary{background:#F0F5FF;border:0.5px solid #C0D0F0}
+.lc-mode-icon{width:28px;height:28px;background:#E8E0D0;border-radius:8px;margin:0 auto 5px;display:flex;align-items:center;justify-content:center}
+.lc-mode.primary .lc-mode-icon{background:#D0E0FF}
+.lc-mode-label{color:#888;font-size:9px;font-family:monospace;line-height:1.3}
+.lc-mode.primary .lc-mode-label{color:#4A6ABA}
+.lc-history{padding:0 14px 10px;display:flex;gap:6px}
+.lc-hist-chip{background:#F5F0E8;border-radius:8px;padding:4px 8px;font-size:9px;color:#888;font-family:monospace}
+.debit-card{margin:0 12px 14px;background:#1A1A0A;border-radius:16px;border:0.5px solid #B8860B;padding:14px}
+.dc-top{display:flex;justify-content:space-between;align-items:flex-start}
+.dc-brand{color:#B8860B;font-size:10px;font-family:monospace;letter-spacing:2px}
+.dc-chip{width:22px;height:16px;background:#B8860B;border-radius:3px;opacity:0.7}
+.dc-balance{margin-top:12px}
+.dc-balance-label{color:#666;font-size:9px;font-family:monospace;letter-spacing:1px}
+.dc-balance-amt{color:#B8860B;font-size:22px;font-weight:500;font-family:monospace;margin-top:1px}
+.dc-num{color:#444;font-size:11px;font-family:monospace;margin-top:8px;letter-spacing:2px}
+.dc-bottom{display:flex;justify-content:space-between;margin-top:6px}
+.dc-bottom span{color:#555;font-size:9px;font-family:monospace}
+.homeind{background:#F5F5F7;padding:10px;display:flex;justify-content:center}
+.homeind div{width:120px;height:4px;background:#1A1A1A;border-radius:2px;opacity:0.15}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+  <div class="screen">
+    <div class="vault-header">
+      <div class="header-eyebrow">THE VAULT</div>
+      <div class="header-title">James R. Pitts II</div>
+      <div class="header-sub">Private · Choose what to share</div>
+    </div>
+    <div class="section-label">VISION BOARD</div>
+    <div class="vb-card">
+      <div class="vb-zone">
+        <div class="zone-tag">ZONE 01 · THE DECLARATION</div>
+        <div class="declaration-text">"I am building a body that runs at 75 and feels like 45."</div>
+        <div class="declaration-text">"My family scans before they buy. Always."</div>
+      </div>
+      <div class="vb-zone">
+        <div class="zone-tag">ZONE 02 · THE EVIDENCE</div>
+        <div class="evidence-row">
+          <div class="ev-chip"><span class="ev-num">47</span><span class="ev-label">day streak</span></div>
+          <div class="ev-chip"><span class="ev-num">$312</span><span class="ev-label">act right</span></div>
+          <div class="ev-chip"><span class="ev-num">23</span><span class="ev-label">blocks</span></div>
+          <div class="ev-chip"><span class="ev-num">↑</span><span class="ev-label">30d HRV</span></div>
+        </div>
+      </div>
+      <div class="vb-zone">
+        <div class="zone-tag">ZONE 03 · THE HORIZON</div>
+        <div class="horizon-row">
+          <div class="horizon-tile filled"><span>Costa Rica family dinner</span></div>
+          <div class="horizon-tile filled"><span>Spanish Level 2</span></div>
+          <div class="horizon-tile empty"><span style="color:#CCC;font-size:18px">+</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="section-label">TRAVEL MY PLANET</div>
+    <div class="travel-card">
+      <div class="travel-dest">
+        <div><div class="dest-name">San José, Costa Rica</div><div class="dest-country">DESTINATION · DRAGGED FROM TRAVEL ENGINE</div></div>
+        <div class="dest-badge"><div class="badge-amt">$312</div><div class="badge-label">earned</div></div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="pb-label"><span>$312 of $920 ticket price</span><span class="pb-pct">34% there</span></div>
+        <div class="pb-track"><div class="pb-fill"></div></div>
+      </div>
+    </div>
+    <div class="section-label">LIVE COOKING</div>
+    <div class="live-cook-card">
+      <div class="lc-header">
+        <div class="lc-title">Start a live session</div>
+        <div class="lc-pts"><span>+50 pts · full stack</span></div>
+      </div>
+      <div class="lc-modes">
+        <div class="lc-mode primary">
+          <div class="lc-mode-icon">👓</div>
+          <div class="lc-mode-label">Meta glasses + WhatsApp</div>
+        </div>
+        <div class="lc-mode">
+          <div class="lc-mode-icon">📷</div>
+          <div class="lc-mode-label">Phone camera direct</div>
+        </div>
+      </div>
+      <div class="lc-history">
+        <div class="lc-hist-chip">🇨🇷 Costa Rica family</div>
+        <div class="lc-hist-chip">🇮🇹 Italian chef</div>
+      </div>
+    </div>
+    <div class="section-label">AA2 DEBIT CARD</div>
+    <div class="debit-card">
+      <div class="dc-top"><div class="dc-brand">AA2 · ACT RIGHT</div><div class="dc-chip"></div></div>
+      <div class="dc-balance"><div class="dc-balance-label">ACT RIGHT BALANCE</div><div class="dc-balance-amt">$312.00</div></div>
+      <div class="dc-num">•••• •••• •••• 4821</div>
+      <div class="dc-bottom"><span>JAMES R. PITTS II</span><span>STRIPE · WHITE LABELED</span></div>
+    </div>
+  </div>
+  <div class="homeind"><div></div></div>
+</div>
+</body>
+</html>
