@@ -84,7 +84,7 @@ const SCREENS: Screen[] = [
   },
   {
     tag: 'INTELLIGENCE 0X03',
-    image: require('../assets/images/image-1769604372662.webp'),
+    image: require('../assets/images/Gemini_Generated_Image_iwymiiwymiiwymii.jpg'),
     name: 'Bio Buddy',
     role: 'Biometric Intelligence · Signal Reader · Threshold Guard',
     without: 'Body signals go unread. Patterns invisible. Thresholds unknown.',

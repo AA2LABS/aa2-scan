@@ -576,12 +576,14 @@ export default function ScannerScreen() {
     if (activeTab==='fish') return 'FISH & PESCATARIAN';
     if (activeTab==='species' && speciesSub==='feline') return 'K9 / FELINE';
     if (activeTab==='species' && speciesSub==='k9') return 'K9 / PET';
+    if (activeTab==='species' && speciesSub==='agricultural') return 'AGRICULTURAL';
     return currentTab.label;
   };
 
   const heroSubLabel = () => {
     if (activeTab==='fish') return 'THE EQUALIZER · FORAGER LAYER';
     if (activeTab==='species' && speciesSub==='feline') return 'FELINE NUTRITIONIST · ASPCA FELINE THRESHOLDS ACTIVE';
+    if (activeTab==='species' && speciesSub==='agricultural') return 'AGRICULTURAL ANALYST · USDA FEED SAFETY ACTIVE';
     return '9 DATABASES STANDING BY';
   };
 
