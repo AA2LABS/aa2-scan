@@ -48,6 +48,7 @@ const TAB_HEROES: Record<string, any> = {
   scan:       require('../../assets/images/tab-scan.jpg'),
   produce:    require('../../assets/images/tab-produce.jpg'),
   meat:       require('../../assets/images/tab-meat.jpg'),
+  fish:       require('../../assets/images/fish_hero.jpg'),
   care:       require('../../assets/images/tab-care.jpg'),
   grownfolks: require('../../assets/images/tab-grownfolks.jpg'),
   k9:         require('../../assets/images/tab-k9.jpg'),
@@ -267,7 +268,7 @@ export default function ScannerScreen() {
     ? (SPECIES_SUBS.find(s => s.id===speciesSub)?.color ?? F.blue)
     : currentTab.color;
   const heroKey   = activeTab==='species' ? speciesSub : activeTab;
-  const heroImage = activeTab==='fish' ? null : (TAB_HEROES[heroKey] ?? null);
+  const heroImage = TAB_HEROES[heroKey] ?? null;
 
   useEffect(() => { loadMemberProfile().then(setMemberProfile); }, []);
 
@@ -671,26 +672,13 @@ export default function ScannerScreen() {
       ):(
         <ScrollView style={s.body} contentContainerStyle={{paddingBottom:80}}>
 
-          {/* FISH HERO */}
-          {activeTab==='fish'&&(
-            <View style={[s.heroWrap,{height:220,backgroundColor:'#020A14',justifyContent:'flex-end'}]}>
-              <View style={{position:'absolute',top:0,left:0,right:0,bottom:0,justifyContent:'center',alignItems:'center'}}>
-                <Text style={{fontSize:56,opacity:0.18}}>🐟</Text>
-              </View>
-              <View style={[s.heroOverlay,{backgroundColor:'transparent'}]}>
-                <Text style={[s.heroTabLabel,{color:F.fishBlue}]}>FISH</Text>
-                <Text style={[s.heroSubLabel,{color:F.dimWhite}]}>THE EQUALIZER · FORAGER LAYER</Text>
-              </View>
-            </View>
-          )}
-
           {/* IMAGE HERO */}
           {heroImage&&(
             <View style={s.heroWrap}>
               <Image source={heroImage} style={s.heroImage} resizeMode="cover"/>
               <View style={[s.heroOverlay,{backgroundColor:P.bg+'CC'}]}>
-                <Text style={[s.heroTabLabel,{color:accentColor}]}>{currentTab.label}</Text>
-                <Text style={[s.heroSubLabel,{color:F.dimWhite}]}>9 DATABASES STANDING BY</Text>
+                <Text style={[s.heroTabLabel,{color:accentColor}]}>{activeTab==='fish'?'FISH & PESCATARIAN':currentTab.label}</Text>
+                <Text style={[s.heroSubLabel,{color:F.dimWhite}]}>{activeTab==='fish'?'THE EQUALIZER · FORAGER LAYER':'9 DATABASES STANDING BY'}</Text>
               </View>
             </View>
           )}
@@ -1135,7 +1123,7 @@ export default function ScannerScreen() {
           )}
 
           {/* EMPTY */}
-          {!result&&!loading&&!heroImage&&activeTab!=='fish'&&(
+          {!result&&!loading&&!heroImage&&(
             <View style={s.emptyState}>
               <Text style={{fontSize:48,marginBottom:16}}>{currentTab.icon}</Text>
               <Text style={[s.emptyLabel,{color:F.dimWhite}]}>READY TO SCAN</Text>
