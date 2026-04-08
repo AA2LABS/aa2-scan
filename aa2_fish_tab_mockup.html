@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 — Fish & Pescatarian Tab Mockup</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@400;500&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  background:#0A0A0C;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  gap:32px;
+  padding:40px 20px;
+  font-family:'DM Mono',monospace;
+  min-height:100vh;
+  flex-wrap:wrap;
+}
+
+/* ── PHONE SHELL ── */
+.phone{
+  width:375px;
+  background:#0D0E10;
+  border-radius:48px;
+  overflow:hidden;
+  border:1px solid #222;
+  box-shadow:0 0 0 1px #111, 0 40px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04);
+  flex-shrink:0;
+}
+
+.statusbar{
+  background:#0D0E10;
+  padding:14px 28px 8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.statusbar span{color:#666;font-size:11px}
+
+.screen{background:#0D0E10;min-height:780px;position:relative;overflow:hidden}
+
+/* ── HEADER ── */
+.tab-header{
+  padding:16px 20px 12px;
+  border-bottom:0.5px solid #1A1C1F;
+  background:#0D0E10;
+}
+.receipt-line{
+  font-family:'DM Mono',monospace;
+  font-size:8px;
+  letter-spacing:3px;
+  color:rgba(255,255,255,0.25);
+  margin-bottom:4px;
+}
+.intelligence-line{
+  font-family:'DM Mono',monospace;
+  font-size:9px;
+  letter-spacing:2px;
+  color:#1BB8FF;
+  padding:3px 8px;
+  border:0.5px solid #1BB8FF33;
+  border-radius:4px;
+  display:inline-block;
+}
+
+/* ── TAB BAR ── */
+.tab-bar{
+  display:flex;
+  border-bottom:0.5px solid #1A1C1F;
+  overflow-x:auto;
+  scrollbar-width:none;
+  background:#0D0E10;
+}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-item{
+  flex-shrink:0;
+  padding:10px 14px 9px;
+  text-align:center;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  opacity:0.4;
+  transition:all 0.2s;
+}
+.tab-item.active{opacity:1;border-bottom-color:#1BB8FF}
+.tab-icon{font-size:14px;display:block;margin-bottom:2px}
+.tab-label{font-size:7px;letter-spacing:1.5px;color:#fff}
+.tab-item.active .tab-label{color:#1BB8FF}
+
+/* ── HERO IMAGE ── */
+.hero{
+  width:100%;
+  height:200px;
+  background:linear-gradient(180deg,#0A1520 0%,#0D1C2E 50%,#071018 100%);
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.hero-bg-pattern{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 60%, rgba(27,184,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 60% at 20% 80%, rgba(0,80,120,0.15) 0%, transparent 60%);
+}
+.hero-fish-silhouette{
+  font-size:72px;
+  opacity:0.12;
+  filter:blur(1px);
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+}
+.hero-content{
+  position:relative;
+  text-align:center;
+}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:38px;
+  font-style:italic;
+  color:#fff;
+  letter-spacing:1px;
+  line-height:1;
+  margin-bottom:6px;
+}
+.hero-sub{
+  font-size:8px;
+  letter-spacing:3px;
+  color:rgba(27,184,255,0.7);
+}
+.hero-badge{
+  position:absolute;
+  bottom:12px;right:14px;
+  background:rgba(27,184,255,0.1);
+  border:0.5px solid rgba(27,184,255,0.3);
+  border-radius:6px;
+  padding:4px 8px;
+  font-size:7px;
+  letter-spacing:1.5px;
+  color:#1BB8FF;
+}
+
+/* ── MODE SELECTOR ── */
+.mode-row{
+  display:flex;
+  gap:8px;
+  padding:14px 16px 0;
+}
+.mode-btn{
+  flex:1;
+  padding:10px 8px;
+  border-radius:10px;
+  border:1px solid #1E2125;
+  background:#111316;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.mode-btn.active{
+  border-color:#1BB8FF44;
+  background:rgba(27,184,255,0.06);
+}
+.mode-btn-icon{font-size:16px;display:block;margin-bottom:4px}
+.mode-btn-label{font-size:8px;letter-spacing:1.5px;color:#666}
+.mode-btn.active .mode-btn-label{color:#1BB8FF}
+
+/* ── SCAN AREA ── */
+.scan-area{
+  margin:14px 16px 0;
+  border-radius:14px;
+  border:1px solid #1BB8FF33;
+  background:rgba(27,184,255,0.04);
+  overflow:hidden;
+}
+.scan-viewfinder{
+  height:180px;
+  background:linear-gradient(135deg,#071018 0%,#0A1825 100%);
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.corner{
+  position:absolute;
+  width:20px;height:20px;
+  border-color:#1BB8FF;
+  border-style:solid;
+  border-width:0;
+}
+.corner.tl{top:12px;left:12px;border-top-width:2px;border-left-width:2px}
+.corner.tr{top:12px;right:12px;border-top-width:2px;border-right-width:2px}
+.corner.bl{bottom:12px;left:12px;border-bottom-width:2px;border-left-width:2px}
+.corner.br{bottom:12px;right:12px;border-bottom-width:2px;border-right-width:2px}
+.scan-instruction{
+  text-align:center;
+}
+.scan-icon{font-size:32px;margin-bottom:8px;display:block;opacity:0.6}
+.scan-text{font-size:9px;letter-spacing:2px;color:rgba(27,184,255,0.6)}
+.scan-sub{font-size:8px;color:#333;margin-top:4px}
+.scan-footer{
+  padding:10px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  border-top:0.5px solid #1A1C1F;
+}
+.scan-footer-label{font-size:8px;letter-spacing:1.5px;color:#444}
+.upload-btn{
+  background:rgba(27,184,255,0.1);
+  border:0.5px solid rgba(27,184,255,0.3);
+  border-radius:6px;
+  padding:5px 10px;
+  font-size:8px;
+  letter-spacing:1px;
+  color:#1BB8FF;
+  cursor:pointer;
+}
+
+/* ── MANUAL SEARCH ── */
+.manual-section{margin:12px 16px 0}
+.section-label{
+  font-size:8px;
+  letter-spacing:2px;
+  color:#444;
+  margin-bottom:8px;
+}
+.search-row{
+  display:flex;
+  gap:8px;
+}
+.search-input{
+  flex:1;
+  background:#111316;
+  border:0.5px solid #1E2125;
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:11px;
+  font-family:'DM Mono',monospace;
+  color:#fff;
+  outline:none;
+}
+.search-input::placeholder{color:#333}
+.search-btn{
+  background:#1BB8FF;
+  border:none;
+  border-radius:8px;
+  padding:10px 14px;
+  font-size:9px;
+  letter-spacing:1px;
+  color:#000;
+  cursor:pointer;
+  font-family:'DM Mono',monospace;
+  font-weight:500;
+}
+
+/* ── RESULT CARD ── */
+.result-card{
+  margin:14px 16px;
+  background:#0F1214;
+  border-radius:14px;
+  border:0.5px solid #1A2A35;
+  overflow:hidden;
+}
+.result-verdict{
+  padding:12px 14px;
+  background:linear-gradient(135deg,rgba(27,184,255,0.08),rgba(0,40,60,0.3));
+  border-bottom:0.5px solid #1A2A35;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.verdict-glow{
+  width:10px;height:10px;
+  background:#1BB8FF;
+  border-radius:50%;
+  box-shadow:0 0 8px #1BB8FF, 0 0 16px rgba(27,184,255,0.4);
+  flex-shrink:0;
+}
+.verdict-text{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  color:#1BB8FF;
+}
+.verdict-sub{
+  font-size:8px;
+  color:rgba(27,184,255,0.5);
+  margin-top:1px;
+}
+.result-species{
+  padding:12px 14px 8px;
+  border-bottom:0.5px solid #1A2A35;
+}
+.species-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;
+  font-style:italic;
+  color:#fff;
+  margin-bottom:2px;
+}
+.species-scientific{
+  font-size:9px;
+  color:#444;
+  letter-spacing:1px;
+}
+.species-tags{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
+  flex-wrap:wrap;
+}
+.tag{
+  padding:3px 8px;
+  border-radius:4px;
+  font-size:8px;
+  letter-spacing:1px;
+}
+.tag.safe{background:rgba(27,184,255,0.1);color:#1BB8FF;border:0.5px solid rgba(27,184,255,0.2)}
+.tag.native{background:rgba(40,180,100,0.1);color:#28B464;border:0.5px solid rgba(40,180,100,0.2)}
+.tag.season{background:rgba(200,160,40,0.1);color:#C8A028;border:0.5px solid rgba(200,160,40,0.2)}
+
+.result-rows{padding:4px 0}
+.result-row{
+  padding:9px 14px;
+  border-bottom:0.5px solid #111416;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+}
+.result-row:last-child{border-bottom:none}
+.row-label{
+  font-size:8px;
+  letter-spacing:1.5px;
+  color:#444;
+  min-width:70px;
+  padding-top:1px;
+  flex-shrink:0;
+}
+.row-value{
+  font-size:10px;
+  color:#aaa;
+  line-height:1.5;
+  flex:1;
+}
+.row-value.highlight{color:#1BB8FF}
+.row-value.warn{color:#C8A028}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{
+  position:absolute;
+  bottom:0;left:0;right:0;
+  background:#0D0E10;
+  border-top:0.5px solid #1A1C1F;
+  display:flex;
+  padding:10px 0 20px;
+}
+.nav-item{
+  flex:1;
+  text-align:center;
+  cursor:pointer;
+  padding:4px 0;
+}
+.nav-icon{font-size:18px;display:block;margin-bottom:2px}
+.nav-label{font-size:7px;letter-spacing:1px;color:#444}
+.nav-item.active .nav-label{color:#1BB8FF}
+
+/* ── SECOND PHONE — RESULT STATE ── */
+.phone-label{
+  text-align:center;
+  font-size:9px;
+  letter-spacing:2px;
+  color:#444;
+  margin-bottom:12px;
+}
+
+/* ── PANEL LABEL OUTSIDE ── */
+.panel-wrap{text-align:center}
+.panel-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;
+  font-style:italic;
+  color:#fff;
+  margin-bottom:4px;
+}
+.panel-sub{
+  font-size:8px;
+  letter-spacing:3px;
+  color:#444;
+  margin-bottom:20px;
+}
+
+/* ── DOCTRINE NOTE ── */
+.doctrine{
+  max-width:800px;
+  margin:0 auto;
+  padding:32px 20px;
+  border-top:0.5px solid #1A1C1F;
+  text-align:left;
+}
+.doc-title{
+  font-family:'DM Mono',monospace;
+  font-size:8px;
+  letter-spacing:3px;
+  color:#1BB8FF;
+  margin-bottom:16px;
+}
+.doc-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+.doc-item{}
+.doc-item-label{
+  font-size:8px;
+  letter-spacing:2px;
+  color:#444;
+  margin-bottom:6px;
+}
+.doc-item-value{
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;
+  color:#888;
+  line-height:1.5;
+}
+
+/* ── PAGE FRAME ── */
+.page{width:100%}
+.phones-row{
+  display:flex;
+  justify-content:center;
+  gap:32px;
+  flex-wrap:wrap;
+  margin-bottom:40px;
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <div style="text-align:center;margin-bottom:32px">
+    <div class="panel-title">Fish & Pescatarian Intelligence</div>
+    <div class="panel-sub">AA2 SPOKE EXPANSION · PREVIEW MOCKUP · NOT YET BUILT</div>
+  </div>
+
+  <div class="phones-row">
+
+    <!-- PHONE 1: SCAN STATE -->
+    <div>
+      <div class="phone-label">SCAN / IDENTIFY STATE</div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen">
+          <div class="tab-header">
+            <div class="receipt-line">I AM THE RECEIPT</div>
+            <div class="intelligence-line">THE EQUALIZER · FORAGER LAYER</div>
+          </div>
+
+          <div class="tab-bar">
+            <div class="tab-item"><span class="tab-icon">⚡</span><span class="tab-label">SCAN</span></div>
+            <div class="tab-item"><span class="tab-icon">🌿</span><span class="tab-label">PRODUCE</span></div>
+            <div class="tab-item"><span class="tab-icon">🥩</span><span class="tab-label">MEAT</span></div>
+            <div class="tab-item active"><span class="tab-icon">🐟</span><span class="tab-label">FISH</span></div>
+            <div class="tab-item"><span class="tab-icon">🧴</span><span class="tab-label">CARE</span></div>
+            <div class="tab-item"><span class="tab-icon">🍷</span><span class="tab-label">SPIRITS</span></div>
+            <div class="tab-item"><span class="tab-icon">🐾</span><span class="tab-label">SPECIES</span></div>
+          </div>
+
+          <div class="hero">
+            <div class="hero-bg-pattern"></div>
+            <div class="hero-fish-silhouette">🐟</div>
+            <div class="hero-content">
+              <div class="hero-title">Fish & Water</div>
+              <div class="hero-sub">WILD · MARKET · PESCATARIAN</div>
+            </div>
+            <div class="hero-badge">OFF GRID READY</div>
+          </div>
+
+          <div class="mode-row">
+            <div class="mode-btn active">
+              <span class="mode-btn-icon">📷</span>
+              <div class="mode-btn-label">IDENTIFY</div>
+            </div>
+            <div class="mode-btn">
+              <span class="mode-btn-icon">🔬</span>
+              <div class="mode-btn-label">SCAN LABEL</div>
+            </div>
+            <div class="mode-btn">
+              <span class="mode-btn-icon">🗺</span>
+              <div class="mode-btn-label">WATER BODY</div>
+            </div>
+          </div>
+
+          <div class="scan-area">
+            <div class="scan-viewfinder">
+              <div class="corner tl"></div>
+              <div class="corner tr"></div>
+              <div class="corner bl"></div>
+              <div class="corner br"></div>
+              <div class="scan-instruction">
+                <span class="scan-icon">🐟</span>
+                <div class="scan-text">POINT AT FISH</div>
+                <div class="scan-sub">Caught · Market · Tank · Illustration</div>
+              </div>
+            </div>
+            <div class="scan-footer">
+              <span class="scan-footer-label">OR UPLOAD PHOTO</span>
+              <div class="upload-btn">↑ FROM CAMERA ROLL</div>
+            </div>
+          </div>
+
+          <div class="manual-section">
+            <div class="section-label">— OR TYPE IT —</div>
+            <div class="search-row">
+              <input class="search-input" placeholder="e.g. Rainbow trout, Walleye..." readonly>
+              <div class="search-btn">IDENTIFY</div>
+            </div>
+          </div>
+
+          <div style="height:80px"></div>
+
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Home</span></div>
+            <div class="nav-item active"><span class="nav-icon">⚗️</span><span class="nav-label">The Equalizer</span></div>
+            <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-label">Explore</span></div>
+            <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-label">Membrane</span></div>
+            <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-label">Map</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHONE 2: RESULT STATE -->
+    <div>
+      <div class="phone-label">IDENTIFICATION RESULT STATE</div>
+      <div class="phone">
+        <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+        <div class="screen">
+          <div class="tab-header">
+            <div class="receipt-line">I AM THE RECEIPT</div>
+            <div class="intelligence-line">THE EQUALIZER · FORAGER LAYER</div>
+          </div>
+
+          <div class="tab-bar">
+            <div class="tab-item"><span class="tab-icon">⚡</span><span class="tab-label">SCAN</span></div>
+            <div class="tab-item"><span class="tab-icon">🌿</span><span class="tab-label">PRODUCE</span></div>
+            <div class="tab-item"><span class="tab-icon">🥩</span><span class="tab-label">MEAT</span></div>
+            <div class="tab-item active"><span class="tab-icon">🐟</span><span class="tab-label">FISH</span></div>
+            <div class="tab-item"><span class="tab-icon">🧴</span><span class="tab-label">CARE</span></div>
+            <div class="tab-item"><span class="tab-icon">🍷</span><span class="tab-label">SPIRITS</span></div>
+            <div class="tab-item"><span class="tab-icon">🐾</span><span class="tab-label">SPECIES</span></div>
+          </div>
+
+          <div class="result-card" style="margin-top:14px">
+            <div class="result-verdict">
+              <div class="verdict-glow"></div>
+              <div>
+                <div class="verdict-text">ALL CLEAR · EDIBLE</div>
+                <div class="verdict-sub">Identified with high confidence</div>
+              </div>
+            </div>
+
+            <div class="result-species">
+              <div class="species-name">Rainbow Trout</div>
+              <div class="species-scientific">Oncorhynchus mykiss · Salmonidae</div>
+              <div class="species-tags">
+                <span class="tag safe">SAFE TO EAT</span>
+                <span class="tag native">NATIVE · MT</span>
+                <span class="tag season">IN SEASON</span>
+              </div>
+            </div>
+
+            <div class="result-rows">
+              <div class="result-row">
+                <span class="row-label">HABITAT</span>
+                <span class="row-value">Cold, clear mountain streams and rivers. Yellowstone drainage. Thrives in Montana's Clark Fork and Flathead systems.</span>
+              </div>
+              <div class="result-row">
+                <span class="row-label">EDIBILITY</span>
+                <span class="row-value highlight">Excellent. Mild, clean flavor. Best pan-fried, smoked, or grilled over open flame within 24 hours of catch.</span>
+              </div>
+              <div class="result-row">
+                <span class="row-label">NUTRITION</span>
+                <span class="row-value">High Omega-3 (1.9g/100g). 20g protein. Low mercury. Vitamin D, B12, selenium — bioavailable and dense.</span>
+              </div>
+              <div class="result-row">
+                <span class="row-label">REGULATIONS</span>
+                <span class="row-value warn">Montana FWP: 5 fish/day limit. Check local water restrictions. License required.</span>
+              </div>
+              <div class="result-row">
+                <span class="row-label">PREP NOTE</span>
+                <span class="row-value">The Chef: gut and clean immediately. Cold stream water rinse. No need to scale if pan-frying skin-side down in cast iron.</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:80px"></div>
+
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-label">Home</span></div>
+            <div class="nav-item active"><span class="nav-icon">⚗️</span><span class="nav-label">The Equalizer</span></div>
+            <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-label">Explore</span></div>
+            <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-label">Membrane</span></div>
+            <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-label">Map</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end phones-row -->
+
+  <!-- DOCTRINE NOTE -->
+  <div class="doctrine">
+    <div class="doc-title">FISH TAB — ARCHITECTURE NOTES · PRE-BUILD DOCTRINE</div>
+    <div class="doc-grid">
+      <div class="doc-item">
+        <div class="doc-item-label">INTELLIGENCE LAYER</div>
+        <div class="doc-item-value">The Equalizer + Forager Layer. The Chef handles prep and pairing. Never overlap.</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-item-label">THREE MODES</div>
+        <div class="doc-item-value">IDENTIFY (photo/camera) · SCAN LABEL (store fish) · WATER BODY (location-based species list)</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-item-label">OFF GRID USE CASE</div>
+        <div class="doc-item-value">Montana wildcaught. Snap photo → species ID → safe/edible/regulated. No internet required for cached species.</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-item-label">DATA SOURCES</div>
+        <div class="doc-item-value">iNaturalist · GBIF · FishBase · EPA mercury database · State FWP regulations · USDA nutrition</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-item-label">PESCATARIAN LAYER</div>
+        <div class="doc-item-value">Onboarding answer feeds the membrane. Fish tab becomes primary protein tab. Chef recipes adapt automatically.</div>
+      </div>
+      <div class="doc-item">
+        <div class="doc-item-label">SPOKE NUMBER</div>
+        <div class="doc-item-value">Internal only — never shown. Feeds from the same 9-database stack. ASPCA covers aquatic toxicology for K9 handlers.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

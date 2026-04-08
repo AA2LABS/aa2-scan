@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 // ─── FLAG ─────────────────────────────────────────────────────────────────────
-export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_complete';
+export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_v2';
 
 async function markArrivalDone(): Promise<void> {
   try {

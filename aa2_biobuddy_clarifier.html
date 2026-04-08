@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 — Bio Buddy Clarifier · Customer #1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050506;display:flex;flex-direction:column;align-items:center;padding:40px 16px 80px;font-family:'DM Mono',monospace}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-style:italic;color:#fff;text-align:center;margin-bottom:5px}
+.page-sub{font-size:8px;letter-spacing:3px;color:#222;text-align:center;margin-bottom:8px}
+.page-note{font-size:10px;color:#444;text-align:center;max-width:860px;line-height:1.7;margin-bottom:40px;font-family:'DM Sans',sans-serif}
+
+.phones-row{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;align-items:flex-start;max-width:1500px;width:100%}
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:7px}
+.step-tag{font-size:7px;letter-spacing:2px;border-radius:20px;padding:3px 10px;text-align:center}
+.screen-desc{font-size:7px;letter-spacing:1px;color:#222;text-align:center;max-width:290px;line-height:1.5}
+
+.phone{width:300px;background:#080A0C;border-radius:40px;overflow:hidden;border:1px solid #141618;box-shadow:0 0 0 1px #060607,0 24px 48px rgba(0,0,0,0.95)}
+.statusbar{background:#080A0C;padding:11px 20px 5px;display:flex;justify-content:space-between}
+.statusbar span{color:#333;font-size:9px}
+
+/* HEADER */
+.dash-header{padding:10px 14px 9px;border-bottom:0.5px solid #0E1014;display:flex;justify-content:space-between;align-items:center}
+.receipt{font-size:5px;letter-spacing:3px;color:rgba(255,255,255,0.1)}
+.member-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#F0F0F2}
+.live-badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 7px;border:0.5px solid}
+.live-dot{width:4px;height:4px;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.live-text{font-size:5px;letter-spacing:1.5px}
+
+/* SPIKE EVENT CARD */
+.spike-card{margin:10px 12px 0;border-radius:12px;overflow:hidden;border:0.5px solid}
+.spike-top{padding:9px 11px;display:flex;align-items:flex-start;gap:9px}
+.spike-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.spike-body{flex:1}
+.spike-intel{font-size:6px;letter-spacing:1.5px;margin-bottom:3px}
+.spike-title{font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:#fff;margin-bottom:2px}
+.spike-time{font-size:6px;color:#333;letter-spacing:1px}
+.spike-devices{padding:6px 11px;border-top:0.5px solid;display:flex;gap:5px;flex-wrap:wrap}
+.device-tag{display:flex;align-items:center;gap:3px;background:#0C0E12;border-radius:4px;padding:3px 6px}
+.dtag-dot{width:4px;height:4px;border-radius:50%}
+.dtag-label{font-size:6px;letter-spacing:0.5px;color:#555}
+.dtag-val{font-size:6px;font-weight:600}
+
+/* CLARIFIER QUESTION */
+.clarifier-q{margin:7px 12px 0;background:rgba(27,184,255,0.05);border:0.5px solid rgba(27,184,255,0.15);border-radius:11px;padding:10px 12px}
+.bb-row{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.bb-icon{width:18px;height:18px;background:rgba(27,184,255,0.1);border:0.5px solid rgba(27,184,255,0.2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px}
+.bb-label{font-size:6px;letter-spacing:1.5px;color:#1BB8FF}
+.clarifier-text{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#AAA;line-height:1.5;margin-bottom:8px}
+.clarifier-btns{display:flex;gap:6px}
+.cBtn-yes{flex:1;background:rgba(27,184,255,0.1);border:0.5px solid rgba(27,184,255,0.25);border-radius:7px;padding:7px;text-align:center;font-size:6px;letter-spacing:1.5px;color:#1BB8FF}
+.cBtn-no{flex:1;background:#0C0E12;border:0.5px solid #1A1C20;border-radius:7px;padding:7px;text-align:center;font-size:6px;letter-spacing:1px;color:#444}
+
+/* TEXT INPUT RESPONSE */
+.clarifier-response{margin:7px 12px 0;background:#0C0E12;border:0.5px solid #1A1C20;border-radius:11px;padding:10px 12px}
+.cr-prompt{font-size:6px;letter-spacing:1.5px;color:#333;margin-bottom:6px}
+.cr-input{background:#080A0C;border:0.5px solid rgba(27,184,255,0.2);border-radius:7px;padding:8px 10px;min-height:52px}
+.cr-text{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#888;line-height:1.5}
+.cr-cursor{color:#1BB8FF;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cr-submit{margin-top:6px;background:rgba(27,184,255,0.1);border:0.5px solid rgba(27,184,255,0.25);border-radius:7px;padding:7px;text-align:center;font-size:6px;letter-spacing:1.5px;color:#1BB8FF}
+
+/* LOGGED CONFIRMATION */
+.logged-card{margin:7px 12px 0;background:rgba(29,158,117,0.05);border:0.5px solid rgba(29,158,117,0.2);border-radius:11px;padding:10px 12px}
+.logged-top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.logged-check{width:16px;height:16px;background:rgba(29,158,117,0.15);border:0.5px solid rgba(29,158,117,0.3);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#1D9E75}
+.logged-label{font-size:6px;letter-spacing:1.5px;color:#1D9E75}
+.logged-quote{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#1D9E75;line-height:1.4;margin-bottom:7px}
+.logged-adjustments{display:flex;flex-direction:column;gap:4px}
+.adj-row{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#0C0E12;border-radius:6px;border:0.5px solid #141618}
+.adj-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.adj-text{font-size:6px;color:#555;line-height:1.4;letter-spacing:0.3px}
+
+/* BASELINE IMPACT */
+.impact-card{margin:7px 12px 0;background:#0C0E12;border:0.5px solid #141618;border-radius:11px;overflow:hidden}
+.impact-top{padding:7px 11px;border-bottom:0.5px solid #0E1014;display:flex;justify-content:space-between;align-items:center}
+.impact-label{font-size:6px;letter-spacing:2px;color:#222}
+.impact-badge{font-size:5px;letter-spacing:1px;color:#C49A2A;background:rgba(196,154,42,0.08);border:0.5px solid rgba(196,154,42,0.18);border-radius:3px;padding:1px 5px}
+.impact-rows{padding:5px 0}
+.impact-row{padding:5px 11px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid #0A0C0F}
+.impact-row:last-child{border-bottom:none}
+.ir-name{font-size:7px;color:#555}
+.ir-change{font-size:7px}
+.ir-before{color:#333;margin-right:6px}
+.ir-after-up{color:#1D9E75}
+.ir-after-same{color:#1BB8FF}
+.ir-arrow{color:#333;margin:0 4px;font-size:8px}
+
+/* HISTORY VIEW */
+.history-list{margin:8px 12px 0}
+.hist-label{font-size:6px;letter-spacing:2px;color:#1E2028;margin-bottom:6px;display:flex;justify-content:space-between}
+.hist-all{font-size:5px;color:#C49A2A;letter-spacing:1px}
+.hist-item{background:#0C0E12;border:0.5px solid #141618;border-radius:9px;padding:8px 10px;margin-bottom:5px}
+.hist-top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.hist-type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.hist-product{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#888}
+.hist-meta{font-size:5px;color:#1E2028;margin-top:1px}
+.hist-clarification{font-size:7px;color:#1D9E75;margin-top:4px;padding:4px 7px;background:rgba(29,158,117,0.05);border-radius:5px;border:0.5px solid rgba(29,158,117,0.12)}
+.hist-status{font-size:5px;letter-spacing:1px}
+
+/* TABLE VIEW */
+.table-section{margin:8px 12px 0;background:#0C0E12;border-radius:10px;border:0.5px solid #141618;overflow:hidden}
+.table-hdr{padding:7px 10px;border-bottom:0.5px solid #0E1014;display:flex;justify-content:space-between}
+.th-label{font-size:6px;letter-spacing:2px;color:#1E2028}
+.th-count{font-size:6px;color:#1BB8FF;letter-spacing:1px}
+.table-row{padding:7px 10px;border-bottom:0.5px solid #0A0C0F;display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;align-items:center}
+.table-row:last-child{border-bottom:none}
+.tr-time{font-size:6px;color:#444;letter-spacing:0.5px}
+.tr-signal{font-size:6px;padding:2px 5px;border-radius:3px;text-align:center}
+.sig-stress{color:#D43C28;background:rgba(212,60,40,0.08);border:0.5px solid rgba(212,60,40,0.2)}
+.sig-excitement{color:#1D9E75;background:rgba(29,158,117,0.08);border:0.5px solid rgba(29,158,117,0.2)}
+.sig-confirmed{color:#555;background:#0E1014;border:0.5px solid #141618}
+.tr-clarification{font-size:6px;color:#555;letter-spacing:0.3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* BOTTOM NAV */
+.bottom-nav{background:#080A0C;border-top:0.5px solid #0E1014;display:flex;padding:8px 0 18px}
+.nav-item{flex:1;text-align:center}
+.nav-icon{font-size:14px;display:block;margin-bottom:1px}
+.nav-lbl{font-size:5px;letter-spacing:0.8px;color:#1E2028}
+
+/* DOCTRINE */
+.doctrine{max-width:1200px;width:100%;margin-top:48px;padding:28px 24px;background:#0C0D10;border-radius:16px;border:0.5px solid #141618}
+.doc-title{font-size:7px;letter-spacing:3px;color:#C49A2A;margin-bottom:20px}
+.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.doc-lbl{font-size:5px;letter-spacing:2px;color:#1E2028;margin-bottom:5px}
+.doc-val{font-family:'Cormorant Garamond',serif;font-size:12px;color:#444;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="page-title">Bio Buddy Clarifier</div>
+<div class="page-sub">BASELINE TRUE-UP SYSTEM · CUSTOMER #1 VIEW</div>
+<div class="page-note">
+  When Garmin and Oura detect a biosignal spike, Bio Buddy fires a clarifier tied to that exact device timestamp. The member's explanation is stored and the baseline adjusts accordingly. Over 90 days, this produces a membrane that understands not just what the body did — but why.
+</div>
+
+<div class="phones-row">
+
+<!-- ═══════════════ SCREEN 1 — SPIKE DETECTED ═══════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#D43C28;background:rgba(212,60,40,0.06);border:0.5px solid rgba(212,60,40,0.15)">STEP 01 · SPIKE DETECTED</div>
+  <div class="screen-desc">Garmin + Oura detect elevated cortisol pattern. Bio Buddy surfaces the clarifier.</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>2:47 PM</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">James Pitts</div>
+      </div>
+      <div class="live-badge" style="background:rgba(27,184,255,0.06);border-color:rgba(27,184,255,0.18)">
+        <div class="live-dot" style="background:#1BB8FF"></div>
+        <span class="live-text" style="color:#1BB8FF">MEMBRANE LIVE</span>
+      </div>
+    </div>
+
+    <!-- SPIKE EVENT -->
+    <div class="spike-card" style="border-color:rgba(212,60,40,0.2);background:rgba(212,60,40,0.04)">
+      <div class="spike-top">
+        <div class="spike-icon" style="background:rgba(212,60,40,0.1);border:0.5px solid rgba(212,60,40,0.2)">⚡</div>
+        <div class="spike-body">
+          <div class="spike-intel" style="color:#D43C28">BIO BUDDY · BIOSIGNAL EVENT</div>
+          <div class="spike-title">Elevated Stress Pattern Detected</div>
+          <div class="spike-time">TODAY · 2:47 PM · 18 MINUTES AGO</div>
+        </div>
+      </div>
+      <div class="spike-devices" style="border-color:rgba(212,60,40,0.1)">
+        <div class="device-tag">
+          <div class="dtag-dot" style="background:#1BB8FF"></div>
+          <span class="dtag-label">Garmin</span>
+          <span class="dtag-val" style="color:#1BB8FF">HR 118bpm</span>
+        </div>
+        <div class="device-tag">
+          <div class="dtag-dot" style="background:#1D9E75"></div>
+          <span class="dtag-label">Oura</span>
+          <span class="dtag-val" style="color:#1D9E75">Stress 74</span>
+        </div>
+        <div class="device-tag">
+          <div class="dtag-dot" style="background:#C49A2A"></div>
+          <span class="dtag-label">Strava</span>
+          <span class="dtag-val" style="color:#C49A2A">No activity</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BIO BUDDY CLARIFIER -->
+    <div class="clarifier-q">
+      <div class="bb-row">
+        <div class="bb-icon">🧠</div>
+        <span class="bb-label">BIO BUDDY · CLARIFIER</span>
+      </div>
+      <div class="clarifier-text">"Bios reported as stress via your current hardware stack at 2:47 PM. Is that accurate, or would you like to clarify?"</div>
+      <div class="clarifier-btns">
+        <div class="cBtn-yes">YES · LOG AS STRESS</div>
+        <div class="cBtn-no">I'D LIKE TO CLARIFY</div>
+      </div>
+    </div>
+
+    <div style="margin:6px 12px 0;font-size:6px;color:#1E2028;text-align:center;letter-spacing:1px">Garmin logged 2:47:03 PM · Oura confirmed 2:49 PM</div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">🧠</span><span class="nav-lbl" style="color:#1BB8FF">Bio Buddy</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCREEN 2 — MEMBER CLARIFIES ═══════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#1BB8FF;background:rgba(27,184,255,0.06);border:0.5px solid rgba(27,184,255,0.15)">STEP 02 · MEMBER CLARIFIES</div>
+  <div class="screen-desc">Member taps "I'd like to clarify." Bio Buddy opens a text input tied to the device timestamp.</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>2:51 PM</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">James Pitts</div>
+      </div>
+      <div class="live-badge" style="background:rgba(27,184,255,0.06);border-color:rgba(27,184,255,0.18)">
+        <div class="live-dot" style="background:#1BB8FF"></div>
+        <span class="live-text" style="color:#1BB8FF">MEMBRANE LIVE</span>
+      </div>
+    </div>
+
+    <!-- ORIGINAL SPIKE — collapsed -->
+    <div style="margin:10px 12px 0;background:#0C0E12;border:0.5px solid #141618;border-radius:9px;padding:7px 10px;display:flex;align-items:center;gap:8px">
+      <div style="width:5px;height:5px;border-radius:50%;background:#D43C28;box-shadow:0 0 4px rgba(212,60,40,0.4);flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-size:6px;color:#555;letter-spacing:0.5px">SPIKE AT 2:47 PM · HR 118 · STRESS 74</div>
+      </div>
+      <div style="font-size:5px;color:#D43C28;letter-spacing:1px">CLARIFYING</div>
+    </div>
+
+    <!-- CLARIFIER INPUT -->
+    <div class="clarifier-response">
+      <div class="cr-prompt">TELL BIO BUDDY WHAT WAS ACTUALLY HAPPENING</div>
+      <div class="cr-input">
+        <div class="cr-text">That is not stress. I just got promoted at my job and got approved for my new house. That's excitement.<span class="cr-cursor">|</span></div>
+      </div>
+      <div style="margin-top:5px;font-size:5px;color:#1E2028;letter-spacing:1px;text-align:right">Tied to Garmin timestamp 2:47:03 PM</div>
+      <div class="cr-submit">LOG THIS CLARIFICATION →</div>
+    </div>
+
+    <!-- BIO BUDDY RESPONSE PREVIEW -->
+    <div class="clarifier-q" style="margin-top:7px">
+      <div class="bb-row">
+        <div class="bb-icon">🧠</div>
+        <span class="bb-label">BIO BUDDY · CONFIRMING</span>
+      </div>
+      <div class="clarifier-text">"Got it. Logging this as excitement — positive life event. This will not count toward your stress baseline. Your membrane is learning the difference."</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">🧠</span><span class="nav-lbl" style="color:#1BB8FF">Bio Buddy</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCREEN 3 — LOGGED + BASELINE ADJUSTED ═══════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#1D9E75;background:rgba(29,158,117,0.06);border:0.5px solid rgba(29,158,117,0.15)">STEP 03 · LOGGED · BASELINE ADJUSTING</div>
+  <div class="screen-desc">Clarification stored with device timestamp. Baseline true-up applied. Membrane learns.</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>2:53 PM</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">James Pitts</div>
+      </div>
+      <div class="live-badge" style="background:rgba(29,158,117,0.06);border-color:rgba(29,158,117,0.18)">
+        <div class="live-dot" style="background:#1D9E75"></div>
+        <span class="live-text" style="color:#1D9E75">MEMBRANE LIVE</span>
+      </div>
+    </div>
+
+    <!-- CONFIRMED LOG -->
+    <div class="logged-card">
+      <div class="logged-top">
+        <div class="logged-check">✓</div>
+        <span class="logged-label">CLARIFICATION LOGGED · 2:53 PM</span>
+      </div>
+      <div class="logged-quote">"That is not stress. I just got promoted and got approved for my new house. That's excitement."</div>
+      <div class="logged-adjustments">
+        <div class="adj-row">
+          <div class="adj-dot" style="background:#D43C28"></div>
+          <span class="adj-text">Garmin HR spike at 2:47:03 PM — reclassified from STRESS → EXCITEMENT</span>
+        </div>
+        <div class="adj-row">
+          <div class="adj-dot" style="background:#1D9E75"></div>
+          <span class="adj-text">Oura stress score 74 at 2:49 PM — excluded from stress baseline</span>
+        </div>
+        <div class="adj-row">
+          <div class="adj-dot" style="background:#1BB8FF"></div>
+          <span class="adj-text">Positive life event logged — membrane context updated</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BASELINE IMPACT -->
+    <div class="impact-card">
+      <div class="impact-top">
+        <span class="impact-label">BASELINE TRUE-UP · 90D WINDOW</span>
+        <span class="impact-badge">DAY 23 OF 90</span>
+      </div>
+      <div class="impact-rows">
+        <div class="impact-row">
+          <span class="ir-name">Stress baseline</span>
+          <div><span class="ir-before">28</span><span class="ir-arrow">→</span><span class="ir-after-up">24</span></div>
+          <span style="font-size:5px;color:#1D9E75;letter-spacing:0.5px">↓ more accurate</span>
+        </div>
+        <div class="impact-row">
+          <span class="ir-name">Excitement events</span>
+          <div><span class="ir-before">0</span><span class="ir-arrow">→</span><span class="ir-after-same">1</span></div>
+          <span style="font-size:5px;color:#1BB8FF;letter-spacing:0.5px">new category</span>
+        </div>
+        <div class="impact-row">
+          <span class="ir-name">HRV reading</span>
+          <div><span class="ir-before">excluded</span></div>
+          <span style="font-size:5px;color:#1D9E75;letter-spacing:0.5px">not penalized</span>
+        </div>
+        <div class="impact-row">
+          <span class="ir-name">Clarifications</span>
+          <div><span class="ir-before">0</span><span class="ir-arrow">→</span><span class="ir-after-same">1</span></div>
+          <span style="font-size:5px;color:#C49A2A;letter-spacing:0.5px">membrane learning</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin:7px 12px 0;background:rgba(27,184,255,0.04);border:0.5px solid rgba(27,184,255,0.1);border-radius:9px;padding:8px 11px">
+      <div style="font-size:6px;letter-spacing:1.5px;color:#1BB8FF;margin-bottom:4px">BIO BUDDY · BASELINE NOTE</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#555;line-height:1.5">"The more you clarify, the more precisely your membrane reflects you — not the population average."</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">🧠</span><span class="nav-lbl" style="color:#1D9E75">Bio Buddy</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SCREEN 4 — CLARIFICATION HISTORY ═══════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#C49A2A;background:rgba(196,154,42,0.06);border:0.5px solid rgba(196,154,42,0.15)">STEP 04 · 90D CLARIFICATION HISTORY</div>
+  <div class="screen-desc">All clarifications timestamped against device data. The membrane's learning log.</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>9:41 AM</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">James Pitts</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:6px;letter-spacing:1.5px;color:#C49A2A">DAY 23 OF 90</div>
+        <div style="font-size:5px;color:#1E2028;margin-top:2px">BASELINE TRUE-UP ACTIVE</div>
+      </div>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div style="margin:10px 12px 0;background:#0C0E12;border-radius:9px;border:0.5px solid #141618;padding:9px 11px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:6px;letter-spacing:2px;color:#1E2028">90-DAY BASELINE BUILD</span>
+        <span style="font-size:7px;color:#C49A2A">23 / 90 days</span>
+      </div>
+      <div style="background:#0E1014;border-radius:3px;height:3px;margin-bottom:5px">
+        <div style="width:25.5%;height:3px;background:linear-gradient(90deg,#1D9E75,#1BB8FF);border-radius:3px"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:5px;color:#333">4 clarifications logged</span>
+        <span style="font-size:5px;color:#1D9E75">baseline improving</span>
+      </div>
+    </div>
+
+    <!-- TABLE HEADER -->
+    <div class="table-section">
+      <div class="table-hdr">
+        <span class="th-label">CLARIFICATION LOG · DEVICE TIMESTAMPS</span>
+        <span class="th-count">4 LOGGED</span>
+      </div>
+      <div class="table-row">
+        <span class="tr-time">Apr 7 · 2:47 PM</span>
+        <span class="tr-signal sig-excitement">EXCITEMENT</span>
+        <span class="tr-clarification">Promotion + house approval</span>
+      </div>
+      <div class="table-row">
+        <span class="tr-time">Apr 5 · 11:22 PM</span>
+        <span class="tr-signal sig-stress">CONFIRMED STRESS</span>
+        <span class="tr-clarification">Deadline pressure, work</span>
+      </div>
+      <div class="table-row">
+        <span class="tr-time">Apr 3 · 6:14 AM</span>
+        <span class="tr-signal sig-excitement">EXCITEMENT</span>
+        <span class="tr-clarification">First morning trail run in months</span>
+      </div>
+      <div class="table-row">
+        <span class="tr-time">Mar 29 · 8:55 PM</span>
+        <span class="tr-signal sig-confirmed">GRIEF · RECLASSIFIED</span>
+        <span class="tr-clarification">Anniversary of father's passing</span>
+      </div>
+    </div>
+
+    <!-- PENDING -->
+    <div style="margin:7px 12px 0;background:rgba(27,184,255,0.04);border:0.5px dashed rgba(27,184,255,0.12);border-radius:9px;padding:8px 11px;display:flex;align-items:center;gap:7px">
+      <div style="width:5px;height:5px;border-radius:50%;background:#1BB8FF;flex-shrink:0;animation:pulse 2s infinite"></div>
+      <div>
+        <div style="font-size:6px;letter-spacing:1.5px;color:#1BB8FF;margin-bottom:2px">2 CLARIFIERS PENDING</div>
+        <div style="font-size:6px;color:#333">Apr 6 · 4:31 PM and Apr 2 · 9:17 AM</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">🧠</span><span class="nav-lbl" style="color:#C49A2A">Bio Buddy</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- phones-row -->
+
+<!-- DOCTRINE -->
+<div class="doctrine">
+  <div class="doc-title">BIO BUDDY CLARIFIER — ARCHITECTURE DOCTRINE · PRE-BUILD LOCK</div>
+  <div class="doc-grid">
+    <div><div class="doc-lbl">THE TIMESTAMP IS THE KEY</div><div class="doc-val">Every clarifier is fired against the exact Garmin and Oura device timestamp. The member's explanation is permanently tied to that moment in time — not an approximation. This is what makes it architecturally accurate.</div></div>
+    <div><div class="doc-lbl">WHY VIDEO CANNOT DO THIS</div><div class="doc-val">A video upload has no reliable device timestamp correlation. The clarifier works because Bio Buddy triggers the question from the hardware event itself. The timestamp match is automatic and exact.</div></div>
+    <div><div class="doc-lbl">SUPABASE TABLE NEEDED</div><div class="doc-val">New table: baseline_clarifications. Fields: member_id, device_timestamp (from biosignal_readings), signal_type, raw_signal_value, member_clarification (text), adjustment_type: "exclude" | "reclassify" | "confirm", created_at.</div></div>
+    <div><div class="doc-lbl">THREE ADJUSTMENT TYPES</div><div class="doc-val">CONFIRM — signal was accurate, counts toward baseline. RECLASSIFY — signal was real but misread (stress was excitement, grief, pride). EXCLUDE — signal was anomalous, remove from baseline calculation entirely.</div></div>
+    <div><div class="doc-lbl">FEEDS buildPersonalTruth()</div><div class="doc-val">Confirmed clarifications update the personalTruth string passed to every scan. After 90 days, the system knows not just James's baseline — it knows his emotional vocabulary. Promotion = excitement. Trail run = positive stress. Anniversary = grief.</div></div>
+    <div><div class="doc-lbl">OVER 90 DAYS</div><div class="doc-val">The membrane accumulates meaning, not just data. By day 90, the Equalizer running a scan for James is not comparing him to a population. It is comparing him to himself — with context no other system has ever captured.</div></div>
+  </div>
+</div>
+
+</body>
+</html>

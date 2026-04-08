@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 × Garmin Tactix 8 — Watch Face Concept</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Orbitron:wght@400;500;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at center,#0A0C12 0%,#040406 70%);
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;min-height:100vh;
+  padding:40px 20px 60px;
+  font-family:'DM Mono',monospace;
+}
+.title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:4px;color:#222;text-align:center;margin-bottom:48px}
+
+.watch-wrap{position:relative;display:flex;justify-content:center;align-items:center}
+
+.watch-body{
+  width:360px;height:360px;
+  background:radial-gradient(ellipse at 35% 25%,#16181F 0%,#0A0C0F 55%,#060709 100%);
+  border-radius:50%;
+  border:2.5px solid #1C1E26;
+  box-shadow:
+    0 0 0 1px #252830,
+    0 0 0 9px #0C0E12,
+    0 0 0 11px #181A22,
+    0 0 0 13px #0A0C0F,
+    0 0 80px rgba(0,0,0,0.9),
+    inset 0 1px 3px rgba(255,255,255,0.04),
+    inset 0 -2px 6px rgba(0,0,0,0.6);
+  position:relative;overflow:hidden;
+}
+
+.watch-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+/* SONAR PULSES */
+@keyframes sonar-pulse{
+  0%{opacity:0.25;transform:translate(-50%,-50%) scale(0.94)}
+  50%{opacity:0.06;transform:translate(-50%,-50%) scale(1.0)}
+  100%{opacity:0.25;transform:translate(-50%,-50%) scale(0.94)}
+}
+.sonar{position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid;transform:translate(-50%,-50%)}
+
+/* CENTER TIME */
+.watch-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:10}
+.time-main{font-family:'Orbitron',monospace;font-size:56px;font-weight:700;color:#fff;letter-spacing:-3px;line-height:1;text-shadow:0 0 30px rgba(27,184,255,0.25)}
+.time-sec{font-family:'Orbitron',monospace;font-size:16px;font-weight:400;color:#1BB8FF;letter-spacing:2px;margin-top:2px}
+.date-line{font-size:7px;letter-spacing:3px;color:#2A2D38;margin-top:8px}
+.aa2-line{font-size:6px;letter-spacing:4px;color:rgba(27,184,255,0.35);margin-top:3px}
+
+/* STAT POSITIONS */
+.stat{position:absolute;text-align:center;z-index:10}
+.stat-val{font-family:'Orbitron',monospace;font-weight:700;line-height:1}
+.stat-unit{font-size:7px;opacity:0.55;letter-spacing:1px;display:block}
+.stat-lbl{font-size:5px;letter-spacing:2px;color:#252830;margin-top:2px;display:block}
+
+/* BUTTONS */
+.btn{position:absolute;background:linear-gradient(180deg,#1A1D24,#10121A);border:0.5px solid #2A2D38;border-radius:2px}
+
+/* BELOW WATCH */
+.info-row{display:flex;gap:6px;margin-top:20px;flex-wrap:wrap;justify-content:center;max-width:420px}
+.chip{background:#0C0E14;border:0.5px solid #1A1C24;border-radius:6px;padding:5px 9px;display:flex;align-items:center;gap:5px}
+.chip-dot{width:5px;height:5px;border-radius:50%}
+.chip-lbl{font-size:6px;letter-spacing:1px;color:#383840}
+.chip-val{font-size:7px;margin-left:2px}
+
+.legend{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.leg{display:flex;align-items:center;gap:4px}
+.leg-dot{width:6px;height:6px;border-radius:50%}
+.leg-lbl{font-size:6px;letter-spacing:1px;color:#303038}
+</style>
+</head>
+<body>
+<div class="title">AA2 × GARMIN TACTIX 8 · BIOSIGNAL WATCH FACE CONCEPT</div>
+
+<div class="watch-wrap">
+<div class="watch-body">
+
+  <canvas class="watch-canvas" id="wc" width="360" height="360"></canvas>
+
+  <!-- SONAR RINGS -->
+  <div class="sonar" style="width:290px;height:290px;border-color:rgba(27,184,255,0.05);animation:sonar-pulse 5s ease-in-out infinite"></div>
+  <div class="sonar" style="width:265px;height:265px;border-color:rgba(29,158,117,0.04);animation:sonar-pulse 5s ease-in-out 1.5s infinite"></div>
+  <div class="sonar" style="width:240px;height:240px;border-color:rgba(170,68,255,0.04);animation:sonar-pulse 5s ease-in-out 3s infinite"></div>
+
+  <!-- TIME -->
+  <div class="watch-center">
+    <div class="time-main">09:41</div>
+    <div class="time-sec">:22</div>
+    <div class="date-line">TUE · APR 7 · 2026</div>
+    <div class="aa2-line">AA2 · BIOMESH</div>
+  </div>
+
+  <!-- TOP: READINESS -->
+  <div class="stat" style="top:38px;left:50%;transform:translateX(-50%)">
+    <div class="stat-val" style="color:#1BB8FF;font-size:20px">74<span style="font-size:10px;opacity:0.6">%</span></div>
+    <span class="stat-lbl">READINESS</span>
+  </div>
+
+  <!-- BOTTOM: STEPS -->
+  <div class="stat" style="bottom:42px;left:50%;transform:translateX(-50%)">
+    <div class="stat-val" style="color:#00FF88;font-size:14px">8,420</div>
+    <span class="stat-lbl">STEPS</span>
+  </div>
+
+  <!-- LEFT: HRV -->
+  <div class="stat" style="left:22px;top:50%;transform:translateY(-50%)">
+    <div class="stat-val" style="color:#1D9E75;font-size:18px">42</div>
+    <span class="stat-unit" style="color:#1D9E75">ms</span>
+    <span class="stat-lbl">HRV</span>
+  </div>
+
+  <!-- RIGHT: HEART RATE -->
+  <div class="stat" style="right:22px;top:50%;transform:translateY(-50%)">
+    <div class="stat-val" style="color:#FF6B00;font-size:18px">58</div>
+    <span class="stat-unit" style="color:#FF6B00">bpm</span>
+    <span class="stat-lbl">HEART</span>
+  </div>
+
+  <!-- UPPER LEFT: SLEEP -->
+  <div class="stat" style="left:58px;top:76px">
+    <div class="stat-val" style="color:#AA44FF;font-size:13px">6h42</div>
+    <span class="stat-lbl">SLEEP</span>
+  </div>
+
+  <!-- UPPER RIGHT: STRESS -->
+  <div class="stat" style="right:58px;top:76px">
+    <div class="stat-val" style="color:#FF4040;font-size:13px">28</div>
+    <span class="stat-lbl">STRESS</span>
+  </div>
+
+  <!-- LOWER LEFT: SPO2 -->
+  <div class="stat" style="left:58px;bottom:76px">
+    <div class="stat-val" style="color:#00D4FF;font-size:13px">97<span style="font-size:8px;opacity:0.6">%</span></div>
+    <span class="stat-lbl">SPO2</span>
+  </div>
+
+  <!-- LOWER RIGHT: BODY BATTERY -->
+  <div class="stat" style="right:58px;bottom:76px">
+    <div class="stat-val" style="color:#FFE000;font-size:13px">61</div>
+    <span class="stat-lbl">BATTERY</span>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="btn" style="right:-14px;top:26%;width:10px;height:28px"></div>
+  <div class="btn" style="right:-14px;top:53%;width:10px;height:20px"></div>
+  <div class="btn" style="right:-18px;top:43%;width:14px;height:12px;border-radius:3px;background:linear-gradient(180deg,#22252E,#141720)"></div>
+
+</div><!-- watch-body -->
+</div><!-- watch-wrap -->
+
+<div class="info-row">
+  <div class="chip"><div class="chip-dot" style="background:#1BB8FF;box-shadow:0 0 4px #1BB8FF"></div><span class="chip-lbl">GARMIN</span><span class="chip-val" style="color:#1BB8FF">LIVE</span></div>
+  <div class="chip"><div class="chip-dot" style="background:#1D9E75;box-shadow:0 0 4px #1D9E75"></div><span class="chip-lbl">OURA SYNC</span><span class="chip-val" style="color:#1D9E75">2m ago</span></div>
+  <div class="chip"><div class="chip-dot" style="background:#C49A2A;box-shadow:0 0 4px #C49A2A"></div><span class="chip-lbl">AA2 BASELINE</span><span class="chip-val" style="color:#C49A2A">90D ACTIVE</span></div>
+  <div class="chip"><div class="chip-dot" style="background:#00FF88;box-shadow:0 0 4px #00FF88"></div><span class="chip-lbl">STRAVA</span><span class="chip-val" style="color:#00FF88">SYNCED</span></div>
+</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:#1BB8FF"></div><span class="leg-lbl">READINESS</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div><span class="leg-lbl">HRV</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#FF6B00"></div><span class="leg-lbl">HEART RATE</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#AA44FF"></div><span class="leg-lbl">SLEEP</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#FF4040"></div><span class="leg-lbl">STRESS</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#00D4FF"></div><span class="leg-lbl">SPO2</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#FFE000"></div><span class="leg-lbl">BODY BATTERY</span></div>
+  <div class="leg"><div class="leg-dot" style="background:#00FF88"></div><span class="leg-lbl">ACTIVITY</span></div>
+</div>
+
+<script>
+const canvas = document.getElementById('wc');
+const ctx = canvas.getContext('2d');
+const cx = 180, cy = 180;
+
+const COLORS = {
+  readiness: '#1BB8FF',
+  sleep:     '#AA44FF',
+  hrv:       '#1D9E75',
+  battery:   '#FFE000',
+  activity:  '#00FF88',
+  heart:     '#FF6B00',
+  stress:    '#FF4040',
+  spo2:      '#00D4FF',
+};
+
+const vals = {
+  readiness: 0.74,
+  sleep:     0.68,
+  hrv:       0.62,
+  battery:   0.61,
+  activity:  0.52,
+  heart:     0.58,
+  stress:    0.28,
+  spo2:      0.97,
+};
+
+function arc(r, col, val, startDeg, spanDeg, w, alpha) {
+  const s = (startDeg - 90) * Math.PI / 180;
+  const full = spanDeg * Math.PI / 180;
+  // track
+  ctx.save();
+  ctx.globalAlpha = 0.07;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, s, s + full);
+  ctx.strokeStyle = col;
+  ctx.lineWidth = w;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  // fill
+  ctx.globalAlpha = alpha || 0.9;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, s, s + full * val);
+  ctx.stroke();
+  // glow tip
+  const tipAngle = s + full * val;
+  ctx.globalAlpha = 0.7;
+  ctx.shadowColor = col;
+  ctx.shadowBlur = 10;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, tipAngle - 0.01, tipAngle + 0.01);
+  ctx.lineWidth = w + 3;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function ticks() {
+  for (let i = 0; i < 60; i++) {
+    const a = (i / 60) * Math.PI * 2 - Math.PI / 2;
+    const isCard = i % 15 === 0;
+    const isMaj  = i % 5 === 0;
+    const r1 = 168;
+    const r2 = isCard ? 154 : isMaj ? 160 : 163;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+    ctx.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2);
+    ctx.strokeStyle = isCard ? '#1BB8FF' : isMaj ? '#252830' : '#141618';
+    ctx.lineWidth = isCard ? 2 : 1;
+    ctx.stroke();
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, 360, 360);
+
+  ticks();
+
+  // Five concentric arc rings — full 360
+  arc(152, COLORS.readiness, vals.readiness, 0,   360, 5);
+  arc(141, COLORS.sleep,     vals.sleep,     0,   360, 5);
+  arc(130, COLORS.hrv,       vals.hrv,       0,   360, 5);
+  arc(119, COLORS.battery,   vals.battery,   0,   360, 4);
+  arc(108, COLORS.activity,  vals.activity,  0,   360, 4);
+
+  // Three partial arcs outer ring — HR (top right), Stress (bottom), SPO2 (left)
+  arc(163, COLORS.heart,  vals.heart,  -60,  100, 3);
+  arc(163, COLORS.stress, vals.stress, 150,  80,  3);
+  arc(163, COLORS.spo2,   vals.spo2,  -180, 80,  3);
+
+  // Center dark circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 94, 0, Math.PI * 2);
+  const grad = ctx.createRadialGradient(cx, cy-20, 0, cx, cy, 94);
+  grad.addColorStop(0, 'rgba(18,20,26,0.85)');
+  grad.addColorStop(1, 'rgba(6,7,9,0.95)');
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+draw();
+
+// Animate rings with subtle breathing
+let phase = 0;
+function animate() {
+  phase += 0.008;
+  // Slight readiness pulse — cosmetic only
+  ctx.clearRect(0, 0, 360, 360);
+  draw();
+  requestAnimationFrame(animate);
+}
+// Only animate on hover to save battery
+canvas.addEventListener('mouseenter', () => requestAnimationFrame(animate));
+draw();
+</script>
+</body>
+</html>

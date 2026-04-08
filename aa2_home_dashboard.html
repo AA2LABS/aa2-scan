@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 — Home Dashboard · Customer #1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#080809;
+  display:flex;flex-direction:column;align-items:center;
+  padding:40px 16px 80px;
+  font-family:'DM Mono',monospace;
+}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-style:italic;color:#fff;text-align:center;margin-bottom:5px}
+.page-sub{font-size:8px;letter-spacing:3px;color:#383838;text-align:center;margin-bottom:40px}
+
+.phones-row{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;align-items:flex-start;max-width:1200px;width:100%}
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.step-tag{font-size:7px;letter-spacing:2px;color:#1D9E75;background:rgba(29,158,117,0.07);border:0.5px solid rgba(29,158,117,0.18);border-radius:20px;padding:3px 10px}
+.screen-desc{font-size:7px;letter-spacing:1px;color:#383838;text-align:center;max-width:310px;line-height:1.5}
+
+/* PHONE */
+.phone{width:340px;background:#0C0D0F;border-radius:44px;overflow:hidden;border:1px solid #181A1E;box-shadow:0 0 0 1px #090909,0 28px 56px rgba(0,0,0,0.9)}
+.statusbar{background:#0C0D0F;padding:12px 24px 6px;display:flex;justify-content:space-between}
+.statusbar span{color:#444;font-size:10px}
+
+/* HEADER */
+.dash-header{
+  padding:14px 16px 10px;
+  border-bottom:0.5px solid #141618;
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+.header-left{}
+.receipt{font-size:6px;letter-spacing:3px;color:rgba(255,255,255,0.15);margin-bottom:3px}
+.member-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:#fff}
+.header-right{text-align:right}
+.live-badge{
+  display:flex;align-items:center;gap:5px;
+  background:rgba(29,158,117,0.08);
+  border:0.5px solid rgba(29,158,117,0.2);
+  border-radius:20px;padding:3px 8px;
+}
+.live-dot{width:5px;height:5px;background:#1D9E75;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.live-text{font-size:6px;letter-spacing:1.5px;color:#1D9E75}
+.date-text{font-size:6px;color:#383838;margin-top:4px;text-align:right}
+
+/* BASELINE CARD — THE MONEY CARD */
+.baseline-card{
+  margin:12px 14px 0;
+  background:linear-gradient(135deg,rgba(29,158,117,0.08),rgba(29,158,117,0.03));
+  border:0.5px solid rgba(29,158,117,0.2);
+  border-radius:14px;
+  overflow:hidden;
+}
+.baseline-header{
+  padding:8px 12px 6px;
+  border-bottom:0.5px solid rgba(29,158,117,0.1);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.baseline-title{font-size:7px;letter-spacing:2px;color:#1D9E75}
+.baseline-source{font-size:6px;color:#383838;letter-spacing:1px}
+.baseline-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  padding:10px 12px;gap:10px;
+}
+.baseline-stat{}
+.bs-value{
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;font-style:italic;color:#fff;
+  line-height:1;margin-bottom:2px;
+}
+.bs-unit{font-size:8px;color:#1D9E75;margin-left:2px}
+.bs-label{font-size:6px;letter-spacing:1.5px;color:#444}
+.bs-delta{font-size:7px;margin-top:2px}
+.delta-up{color:#1D9E75}
+.delta-down{color:#C49A2A}
+
+/* EQ VISUALIZER */
+.eq-section{margin:10px 14px 0}
+.eq-label{font-size:6px;letter-spacing:2px;color:#383838;margin-bottom:6px}
+.eq-bars-wrap{
+  background:#0F1114;
+  border-radius:10px;
+  border:0.5px solid #1A1C20;
+  padding:10px 10px 6px;
+}
+.eq-bars{display:flex;align-items:flex-end;gap:3px;height:40px}
+.eq-b{
+  flex:1;border-radius:2px 2px 0 0;
+  transition:height 0.3s ease;
+}
+.eq-band-labels{display:flex;gap:3px;margin-top:4px}
+.eq-bl{flex:1;font-size:5px;color:#2A2D32;text-align:center;letter-spacing:0;overflow:hidden}
+.center-line{
+  position:relative;margin-top:2px;
+  border-top:0.5px dashed #1A2A1A;
+  display:flex;justify-content:flex-end;
+}
+.center-label{font-size:5px;color:#1D9E75;letter-spacing:1px;padding-top:2px}
+
+/* HARDWARE STACK */
+.hw-section{
+  margin:10px 14px 0;
+  background:#0F1114;
+  border-radius:12px;
+  border:0.5px solid #1A1C20;
+  overflow:hidden;
+}
+.hw-header{
+  padding:7px 12px;
+  border-bottom:0.5px solid #141618;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.hw-title{font-size:7px;letter-spacing:2px;color:#444}
+.hw-stack-badge{
+  font-size:6px;letter-spacing:1px;color:#C49A2A;
+  background:rgba(196,154,42,0.08);
+  border:0.5px solid rgba(196,154,42,0.2);
+  border-radius:3px;padding:2px 5px;
+}
+.hw-devices{display:flex;padding:8px 12px;gap:8px;flex-wrap:wrap}
+.hw-device{
+  display:flex;align-items:center;gap:5px;
+  background:#141618;
+  border:0.5px solid #1E2025;
+  border-radius:6px;padding:4px 8px;
+}
+.hw-dot{width:5px;height:5px;border-radius:50%}
+.hw-dot.active{background:#1D9E75;box-shadow:0 0 4px #1D9E75}
+.hw-device-name{font-size:7px;color:#888;letter-spacing:0.5px}
+
+/* RECENT SCANS */
+.scans-section{margin:10px 14px 0}
+.scans-label{font-size:7px;letter-spacing:2px;color:#383838;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.scans-see-all{font-size:6px;color:#C49A2A;letter-spacing:1px}
+.scan-item{
+  background:#0F1114;
+  border-radius:9px;
+  border:0.5px solid #1A1C20;
+  padding:8px 10px;
+  margin-bottom:5px;
+  display:flex;align-items:center;gap:10px;
+}
+.scan-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.scan-dot.clear{background:#1D9E75;box-shadow:0 0 4px rgba(29,158,117,0.4)}
+.scan-dot.notice{background:#C49A2A;box-shadow:0 0 4px rgba(196,154,42,0.4)}
+.scan-dot.attention{background:#D43C28;box-shadow:0 0 4px rgba(212,60,40,0.4)}
+.scan-body{flex:1}
+.scan-name{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#aaa}
+.scan-meta{font-size:6px;color:#383838;margin-top:1px;letter-spacing:0.5px}
+.scan-verdict{font-size:6px;letter-spacing:1.5px}
+.verdict-clear{color:#1D9E75}
+.verdict-notice{color:#C49A2A}
+.verdict-attention{color:#D43C28}
+
+/* ACT RIGHT */
+.act-right-card{
+  margin:10px 14px 0;
+  background:linear-gradient(135deg,rgba(196,154,42,0.08),rgba(196,154,42,0.03));
+  border:0.5px solid rgba(196,154,42,0.2);
+  border-radius:12px;
+  padding:10px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.ar-left{}
+.ar-label{font-size:6px;letter-spacing:2px;color:#C49A2A;margin-bottom:4px}
+.ar-amount{
+  font-family:'Cormorant Garamond',serif;
+  font-size:28px;font-style:italic;color:#C49A2A;
+}
+.ar-sub{font-size:6px;color:#555;margin-top:2px}
+.ar-right{text-align:right}
+.ar-card-mini{
+  background:#1A1A0A;
+  border-radius:8px;
+  border:0.5px solid rgba(196,154,42,0.3);
+  padding:6px 10px;
+}
+.ar-card-brand{font-size:6px;letter-spacing:1.5px;color:#C49A2A}
+.ar-card-num{font-size:8px;color:#555;letter-spacing:1px;margin-top:2px}
+
+/* QUICK ACTIONS */
+.quick-actions{
+  margin:10px 14px 12px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+.qa-btn{
+  background:#0F1114;
+  border:0.5px solid #1A1C20;
+  border-radius:10px;
+  padding:10px 6px;
+  text-align:center;
+  cursor:pointer;
+}
+.qa-icon{font-size:18px;margin-bottom:4px}
+.qa-label{font-size:6px;letter-spacing:1px;color:#555}
+
+/* BOTTOM NAV */
+.bottom-nav{
+  background:#0C0D0F;
+  border-top:0.5px solid #141618;
+  display:flex;
+  padding:10px 0 20px;
+}
+.nav-item{flex:1;text-align:center;cursor:pointer;padding:4px 0}
+.nav-icon{font-size:18px;display:block;margin-bottom:2px}
+.nav-label{font-size:7px;letter-spacing:1px;color:#444}
+.nav-item.active .nav-label{color:#1D9E75}
+
+/* ── PHONE 2 — PHONE ONLY (NO HARDWARE) ── */
+.no-baseline-card{
+  margin:12px 14px 0;
+  background:#0F1114;
+  border:0.5px dashed #2A2D32;
+  border-radius:14px;
+  padding:14px 14px;
+  text-align:center;
+}
+.nbc-label{font-size:7px;letter-spacing:2px;color:#383838;margin-bottom:8px}
+.nbc-text{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#444;line-height:1.5;margin-bottom:10px}
+.nbc-btn{
+  background:rgba(196,154,42,0.08);
+  border:0.5px solid rgba(196,154,42,0.25);
+  border-radius:7px;padding:7px;
+  font-size:7px;letter-spacing:1.5px;color:#C49A2A;
+  display:inline-block;
+}
+
+/* DOCTRINE */
+.doctrine{max-width:1100px;width:100%;margin-top:48px;padding:28px 24px;background:#0C0D0F;border-radius:16px;border:0.5px solid #181A1E}
+.doctrine-title{font-size:7px;letter-spacing:3px;color:#C49A2A;margin-bottom:20px}
+.doctrine-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.doc-label{font-size:6px;letter-spacing:2px;color:#383838;margin-bottom:5px}
+.doc-value{font-family:'Cormorant Garamond',serif;font-size:12px;color:#555;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="page-title">AA2 Home Dashboard</div>
+<div class="page-sub">POST-ONBOARDING · MEMBER VIEW · FULL STACK vs PHONE ONLY</div>
+
+<div class="phones-row">
+
+  <!-- PHONE 1: FULL HARDWARE STACK -->
+  <div class="phone-col">
+    <div class="step-tag">FULL STACK · GARMIN + OURA + STRAVA</div>
+    <div class="screen-desc">90-day biosignal baseline loaded · Hardware connected · Dashboard active</div><br>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+
+      <!-- HEADER -->
+      <div class="dash-header">
+        <div class="header-left">
+          <div class="receipt">I AM THE RECEIPT</div>
+          <div class="member-name">James Pitts</div>
+        </div>
+        <div class="header-right">
+          <div class="live-badge">
+            <div class="live-dot"></div>
+            <span class="live-text">MEMBRANE LIVE</span>
+          </div>
+          <div class="date-text">APR 7, 2026 · BELGRADE MT</div>
+        </div>
+      </div>
+
+      <!-- BIOSIGNAL BASELINE CARD -->
+      <div class="baseline-card">
+        <div class="baseline-header">
+          <span class="baseline-title">YOUR BIOSIGNAL BASELINE · 90D</span>
+          <span class="baseline-source">GARMIN · OURA · STRAVA</span>
+        </div>
+        <div class="baseline-grid">
+          <div class="baseline-stat">
+            <div class="bs-value">74<span class="bs-unit">%</span></div>
+            <div class="bs-label">READINESS · 90D AVG</div>
+            <div class="bs-delta delta-up">↑ trending up</div>
+          </div>
+          <div class="baseline-stat">
+            <div class="bs-value">68<span class="bs-unit">%</span></div>
+            <div class="bs-label">SLEEP SCORE · 90D AVG</div>
+            <div class="bs-delta delta-down">↓ below target</div>
+          </div>
+          <div class="baseline-stat">
+            <div class="bs-value">42<span class="bs-unit">ms</span></div>
+            <div class="bs-label">HRV TREND · 90D</div>
+            <div class="bs-delta delta-up">↑ improving</div>
+          </div>
+          <div class="baseline-stat">
+            <div class="bs-value">58<span class="bs-unit">bpm</span></div>
+            <div class="bs-label">RESTING HR · 90D AVG</div>
+            <div class="bs-delta delta-up">✓ optimal range</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EQUALIZER VISUALIZER -->
+      <div class="eq-section">
+        <div class="eq-label">THE EQUALIZER · YOUR PERSONAL BASELINE</div>
+        <div class="eq-bars-wrap">
+          <div class="eq-bars">
+            <div class="eq-b" style="height:74%;background:#1D9E75;opacity:0.8"></div>
+            <div class="eq-b" style="height:68%;background:#1D9E75;opacity:0.7"></div>
+            <div class="eq-b" style="height:58%;background:#C49A2A;opacity:0.8"></div>
+            <div class="eq-b" style="height:42%;background:#C49A2A;opacity:0.7"></div>
+            <div class="eq-b" style="height:80%;background:#1D9E75;opacity:0.8"></div>
+            <div class="eq-b" style="height:72%;background:#1D9E75;opacity:0.7"></div>
+            <div class="eq-b" style="height:65%;background:#1D9E75;opacity:0.8"></div>
+            <div class="eq-b" style="height:88%;background:#1D9E75;opacity:0.9"></div>
+            <div class="eq-b" style="height:55%;background:#C49A2A;opacity:0.7"></div>
+            <div class="eq-b" style="height:70%;background:#1D9E75;opacity:0.8"></div>
+          </div>
+          <div class="center-line"><span class="center-label">YOUR BASELINE</span></div>
+          <div class="eq-band-labels">
+            <div class="eq-bl">READY</div>
+            <div class="eq-bl">SLEEP</div>
+            <div class="eq-bl">HRV</div>
+            <div class="eq-bl">STRESS</div>
+            <div class="eq-bl">ENERGY</div>
+            <div class="eq-bl">RECOVERY</div>
+            <div class="eq-bl">ACTIVITY</div>
+            <div class="eq-bl">VO2</div>
+            <div class="eq-bl">WEIGHT</div>
+            <div class="eq-bl">BALANCE</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HARDWARE STACK -->
+      <div class="hw-section">
+        <div class="hw-header">
+          <span class="hw-title">CONNECTED HARDWARE</span>
+          <span class="hw-stack-badge">FULL STACK</span>
+        </div>
+        <div class="hw-devices">
+          <div class="hw-device"><div class="hw-dot active"></div><span class="hw-device-name">Garmin Tactix 8</span></div>
+          <div class="hw-device"><div class="hw-dot active"></div><span class="hw-device-name">Oura Ring 4</span></div>
+          <div class="hw-device"><div class="hw-dot active"></div><span class="hw-device-name">Strava</span></div>
+          <div class="hw-device"><div class="hw-dot active"></div><span class="hw-device-name">Beats Pro</span></div>
+        </div>
+      </div>
+
+      <!-- RECENT SCANS -->
+      <div class="scans-section">
+        <div class="scans-label">
+          <span>RECENT SCANS</span>
+          <span class="scans-see-all">SEE ALL →</span>
+        </div>
+        <div class="scan-item">
+          <div class="scan-dot clear"></div>
+          <div class="scan-body">
+            <div class="scan-name">Barilla Spaghetti</div>
+            <div class="scan-meta">SCAN · 2h ago · Belgrade Albertsons</div>
+          </div>
+          <div class="scan-verdict verdict-clear">ALL CLEAR</div>
+        </div>
+        <div class="scan-item">
+          <div class="scan-dot notice"></div>
+          <div class="scan-body">
+            <div class="scan-name">Cento Tomato Paste</div>
+            <div class="scan-meta">SCAN · 2h ago · Belgrade Albertsons</div>
+          </div>
+          <div class="scan-verdict verdict-notice">TAKE NOTICE</div>
+        </div>
+        <div class="scan-item">
+          <div class="scan-dot clear"></div>
+          <div class="scan-body">
+            <div class="scan-name">Macallan 12</div>
+            <div class="scan-meta">WINE & SPIRITS · Yesterday</div>
+          </div>
+          <div class="scan-verdict verdict-clear">ALL CLEAR</div>
+        </div>
+      </div>
+
+      <!-- ACT RIGHT DOLLARS -->
+      <div class="act-right-card">
+        <div class="ar-left">
+          <div class="ar-label">ACT RIGHT DOLLARS</div>
+          <div class="ar-amount">$47.20</div>
+          <div class="ar-sub">Earned from smart swaps</div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-card-mini">
+            <div class="ar-card-brand">AA2 · ACT RIGHT</div>
+            <div class="ar-card-num">•••• 4821</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions">
+        <div class="qa-btn"><div class="qa-icon">⚡</div><div class="qa-label">SCAN NOW</div></div>
+        <div class="qa-btn"><div class="qa-icon">🐟</div><div class="qa-label">FISH TAB</div></div>
+        <div class="qa-btn"><div class="qa-icon">🗺</div><div class="qa-label">OFF GRID</div></div>
+      </div>
+
+      <!-- BOTTOM NAV -->
+      <div class="bottom-nav">
+        <div class="nav-item active"><span class="nav-icon">⚡</span><span class="nav-label" style="color:#1D9E75">Home</span></div>
+        <div class="nav-item"><span class="nav-icon">⚗️</span><span class="nav-label">Equalizer</span></div>
+        <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-label">Explore</span></div>
+        <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-label">Membrane</span></div>
+        <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-label">Map</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PHONE 2: PHONE ONLY -->
+  <div class="phone-col">
+    <div class="step-tag">PHONE ONLY · NO HARDWARE</div>
+    <div class="screen-desc">Base scanner active · No biosignal baseline · Upgrade prompt visible</div><br>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+
+      <div class="dash-header">
+        <div class="header-left">
+          <div class="receipt">I AM THE RECEIPT</div>
+          <div class="member-name">Sarah M.</div>
+        </div>
+        <div class="header-right">
+          <div class="live-badge" style="border-color:rgba(196,154,42,0.2);background:rgba(196,154,42,0.06)">
+            <div class="live-dot" style="background:#C49A2A;animation:none"></div>
+            <span class="live-text" style="color:#C49A2A">SCANNER ACTIVE</span>
+          </div>
+          <div class="date-text">APR 7, 2026</div>
+        </div>
+      </div>
+
+      <!-- NO BASELINE — UPGRADE PROMPT -->
+      <div class="no-baseline-card">
+        <div class="nbc-label">YOUR BIOSIGNAL BASELINE</div>
+        <div class="nbc-text">"The more of yourself you bring to this system — the more the system's mirror can reflect back to you."</div>
+        <div class="nbc-btn">CONNECT HARDWARE TO ACTIVATE →</div>
+      </div>
+
+      <!-- WHAT THEY CAN SEE — SCANNER IS STILL FULL -->
+      <div style="margin:10px 14px 0;background:#0F1114;border-radius:12px;border:0.5px solid #1A1C20;overflow:hidden">
+        <div style="padding:8px 12px;border-bottom:0.5px solid #141618;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:7px;letter-spacing:2px;color:#444">YOUR SCANNER · FULL ACCESS</span>
+          <span style="font-size:6px;color:#1D9E75;letter-spacing:1px">ACTIVE</span>
+        </div>
+        <div style="padding:10px 12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+          <div style="text-align:center;background:#141618;border-radius:8px;padding:8px 4px">
+            <div style="font-size:14px;margin-bottom:3px">⚡</div>
+            <div style="font-size:6px;color:#555;letter-spacing:0.5px">SCAN</div>
+          </div>
+          <div style="text-align:center;background:#141618;border-radius:8px;padding:8px 4px">
+            <div style="font-size:14px;margin-bottom:3px">🌿</div>
+            <div style="font-size:6px;color:#555;letter-spacing:0.5px">PRODUCE</div>
+          </div>
+          <div style="text-align:center;background:#141618;border-radius:8px;padding:8px 4px">
+            <div style="font-size:14px;margin-bottom:3px">🥩</div>
+            <div style="font-size:6px;color:#555;letter-spacing:0.5px">MEAT</div>
+          </div>
+          <div style="text-align:center;background:#141618;border-radius:8px;padding:8px 4px">
+            <div style="font-size:14px;margin-bottom:3px">🧴</div>
+            <div style="font-size:6px;color:#555;letter-spacing:0.5px">CARE</div>
+          </div>
+          <div style="text-align:center;background:#141618;border-radius:8px;padding:8px 4px">
+            <div style="font-size:14px;margin-bottom:3px">🍷</div>
+            <div style="font-size:6px;color:#555;letter-spacing:0.5px">SPIRITS</div>
+          </div>
+          <div style="text-align:center;background:#141618;border-radius:8px;padding:8px 4px">
+            <div style="font-size:14px;margin-bottom:3px">🐟</div>
+            <div style="font-size:6px;color:#555;letter-spacing:0.5px">FISH</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECENT SCANS — phone only still gets these -->
+      <div class="scans-section" style="margin-top:10px">
+        <div class="scans-label">
+          <span>RECENT SCANS</span>
+          <span class="scans-see-all">SEE ALL →</span>
+        </div>
+        <div class="scan-item">
+          <div class="scan-dot clear"></div>
+          <div class="scan-body">
+            <div class="scan-name">Tide Pods Free & Gentle</div>
+            <div class="scan-meta">PERSONAL CARE · 1h ago</div>
+          </div>
+          <div class="scan-verdict verdict-clear">ALL CLEAR</div>
+        </div>
+        <div class="scan-item">
+          <div class="scan-dot attention"></div>
+          <div class="scan-body">
+            <div class="scan-name">Nestle Pure Life</div>
+            <div class="scan-meta">SCAN · 3h ago · Costco</div>
+          </div>
+          <div class="scan-verdict verdict-attention">PAY ATTENTION</div>
+        </div>
+      </div>
+
+      <!-- ACT RIGHT — phone only still earns -->
+      <div class="act-right-card" style="margin-top:10px">
+        <div class="ar-left">
+          <div class="ar-label">ACT RIGHT DOLLARS</div>
+          <div class="ar-amount">$12.40</div>
+          <div class="ar-sub">Earned from smart swaps</div>
+        </div>
+        <div class="ar-right">
+          <div class="ar-card-mini">
+            <div class="ar-card-brand">AA2 · ACT RIGHT</div>
+            <div class="ar-card-num">•••• 7742</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions" style="margin-bottom:0">
+        <div class="qa-btn"><div class="qa-icon">⚡</div><div class="qa-label">SCAN NOW</div></div>
+        <div class="qa-btn"><div class="qa-icon">⚗️</div><div class="qa-label">APOTHECARY</div></div>
+        <div class="qa-btn"><div class="qa-icon">🧬</div><div class="qa-label">MEMBRANE</div></div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="nav-item active"><span class="nav-icon">⚡</span><span class="nav-label" style="color:#1D9E75">Home</span></div>
+        <div class="nav-item"><span class="nav-icon">⚗️</span><span class="nav-label">Equalizer</span></div>
+        <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-label">Explore</span></div>
+        <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-label">Membrane</span></div>
+        <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-label">Map</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DOCTRINE -->
+<div class="doctrine">
+  <div class="doctrine-title">HOME DASHBOARD — ARCHITECTURE DOCTRINE · PRE-BUILD LOCK</div>
+  <div class="doctrine-grid">
+    <div><div class="doc-label">FIRST SCREEN AFTER ONBOARDING</div><div class="doc-value">This dashboard is where the app lands after SEAL THE MEMBRANE. Not the scanner. The dashboard. The scanner is a tool. The dashboard is the nervous system made visible.</div></div>
+    <div><div class="doc-label">FULL STACK vs PHONE ONLY</div><div class="doc-value">Full stack shows biosignal baseline card with 90-day averages, equalizer bands, hardware connected list. Phone only shows scanner grid, recent scans, Act Right — and an upgrade prompt where the baseline card would be.</div></div>
+    <div><div class="doc-label">THE EQUALIZER BANDS</div><div class="doc-value">10 bands per member. Color: green = above baseline, gold = at or below baseline. Center line = YOUR baseline — never a population average. This is the Dashboard Visual Doctrine from Canon v25.</div></div>
+    <div><div class="doc-label">BASELINE DATA SOURCE</div><div class="doc-value">Reads from Supabase baseline_profiles: sleep_score, hrv_baseline_90d, readiness_baseline_90d, resting_heart_rate. Populated by hardware upload at onboarding. If null — shows upgrade prompt.</div></div>
+    <div><div class="doc-label">RECENT SCANS</div><div class="doc-value">Last 3 scans from scan history. Shows product name, tab, time, location if available, verdict dot color-coded. SEE ALL links to full scan history. Both tiers get this.</div></div>
+    <div><div class="doc-label">ACT RIGHT DOLLARS</div><div class="doc-value">Both tiers earn Act Right Dollars. Phone-only member at $12. Full stack member at $47. The debit card is visible on both. The balance grows with every smart swap — hardware accelerates it but doesn't gate it.</div></div>
+  </div>
+</div>
+
+</body>
+</html>

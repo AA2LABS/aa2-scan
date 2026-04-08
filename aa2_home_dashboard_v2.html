@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 — Home Dashboard · Three Panel Layout</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@400;500&family=Orbitron:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050506;display:flex;flex-direction:column;align-items:center;padding:40px 16px 80px;font-family:'DM Mono',monospace;min-height:100vh}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-style:italic;color:#fff;text-align:center;margin-bottom:5px}
+.page-sub{font-size:8px;letter-spacing:3px;color:#222;text-align:center;margin-bottom:40px}
+.phones-row{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;align-items:flex-start;max-width:1400px;width:100%}
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.step-tag{font-size:7px;letter-spacing:2px;border-radius:20px;padding:3px 10px;text-align:center}
+.screen-desc{font-size:7px;letter-spacing:1px;color:#222;text-align:center;max-width:320px;line-height:1.5}
+
+/* PHONE SHELL */
+.phone{width:340px;background:#080A0C;border-radius:44px;overflow:hidden;border:1px solid #141618;box-shadow:0 0 0 1px #060607,0 30px 60px rgba(0,0,0,0.95)}
+.statusbar{background:#080A0C;padding:12px 22px 5px;display:flex;justify-content:space-between}
+.statusbar span{color:#333;font-size:9px}
+
+/* SHARED HEADER */
+.dash-header{padding:12px 16px 10px;border-bottom:0.5px solid #0E1014;display:flex;justify-content:space-between;align-items:flex-start}
+.receipt{font-size:6px;letter-spacing:3px;color:rgba(255,255,255,0.1);margin-bottom:2px}
+.member-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-style:italic;color:#F0F0F2}
+.live-badge{display:inline-flex;align-items:center;gap:4px;border-radius:20px;padding:3px 8px}
+.live-dot{width:5px;height:5px;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.live-text{font-size:6px;letter-spacing:1.5px}
+.loc-text{font-size:6px;color:#1E2028;margin-top:3px;text-align:right;letter-spacing:0.5px}
+
+/* ═══════════════════════════════════
+   PANEL 1 — SONAR/EKG BIOSIGNAL VIEW
+═══════════════════════════════════ */
+.sonar-section{background:#060809;position:relative;border-bottom:0.5px solid #0E1014}
+.sonar-canvas-wrap{position:relative;height:200px;overflow:hidden}
+.sonar-canvas-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+/* Device labels left column */
+.device-stack{
+  position:absolute;left:0;top:0;bottom:0;
+  width:68px;
+  border-right:0.5px solid #0E1014;
+  display:flex;flex-direction:column;
+  z-index:10;
+  background:rgba(6,8,9,0.9);
+}
+.dev-row{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;padding:0 8px;
+  border-bottom:0.5px solid #0E1014;
+  cursor:pointer;
+}
+.dev-row:last-child{border-bottom:none}
+.dev-icon{font-size:11px;margin-bottom:1px}
+.dev-name{font-size:6px;letter-spacing:0.5px;line-height:1.3}
+.dev-val{font-size:8px;font-weight:500;margin-top:1px;letter-spacing:0.5px}
+.dev-ind{width:3px;height:3px;border-radius:50%;margin-top:2px}
+
+/* Value readouts right column */
+.readout-stack{
+  position:absolute;right:0;top:0;bottom:0;
+  width:44px;
+  border-left:0.5px solid #0E1014;
+  display:flex;flex-direction:column;
+  z-index:10;
+  background:rgba(6,8,9,0.9);
+}
+.readout-row{
+  flex:1;display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-end;
+  padding:0 7px;
+  border-bottom:0.5px solid #0E1014;
+}
+.readout-row:last-child{border-bottom:none}
+.ro-val{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;line-height:1}
+.ro-unit{font-size:5px;opacity:0.5;letter-spacing:0.5px}
+.ro-lbl{font-size:4px;letter-spacing:1px;color:#1E2028;margin-top:2px}
+
+/* EKG canvas area */
+.ekg-area{
+  position:absolute;left:68px;right:44px;top:0;bottom:0;
+  overflow:hidden;
+}
+.ekg-area canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+/* Baseline stat pills below sonar */
+.sonar-stats{
+  display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+  border-top:0.5px solid #0E1014;
+}
+.ss-cell{padding:8px 6px;text-align:center;border-right:0.5px solid #0E1014}
+.ss-cell:last-child{border-right:none}
+.ss-val{font-family:'Orbitron',monospace;font-size:14px;font-weight:700;line-height:1;margin-bottom:2px}
+.ss-unit{font-size:6px;opacity:0.45}
+.ss-lbl{font-size:5px;letter-spacing:1.5px;color:#1E2028;margin-top:2px}
+.ss-delta{font-size:6px;margin-top:2px}
+.d-up{color:#1D9E75}.d-dn{color:#C49A2A}.d-ok{color:#1BB8FF}
+
+/* ═══════════════════════════════════
+   PANEL 2 — FULL STACK DASHBOARD
+═══════════════════════════════════ */
+.baseline-card{
+  margin:10px 13px 0;
+  background:linear-gradient(135deg,rgba(27,184,255,0.07),rgba(27,184,255,0.02));
+  border:0.5px solid rgba(27,184,255,0.15);
+  border-radius:12px;overflow:hidden;
+}
+.bc-header{padding:7px 11px;border-bottom:0.5px solid rgba(27,184,255,0.08);display:flex;justify-content:space-between;align-items:center}
+.bc-title{font-size:6px;letter-spacing:2px;color:#1BB8FF}
+.bc-src{font-size:5px;color:#1E2028;letter-spacing:1px}
+.bc-grid{display:grid;grid-template-columns:1fr 1fr;padding:8px 11px;gap:8px}
+.bc-stat{}
+.bcv{font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:#fff;line-height:1;margin-bottom:1px}
+.bcu{font-size:7px;color:#1BB8FF;margin-left:1px}
+.bcl{font-size:5px;letter-spacing:1.5px;color:#1E2028}
+.bcd{font-size:6px;margin-top:2px}
+
+/* EQ bands */
+.eq-wrap{margin:8px 13px 0;background:#0C0E12;border-radius:9px;border:0.5px solid #141618;padding:8px 8px 5px}
+.eq-lbl{font-size:5px;letter-spacing:2px;color:#1E2028;margin-bottom:5px}
+.eq-bars{display:flex;align-items:flex-end;gap:2px;height:36px}
+.eq-b{flex:1;border-radius:1px 1px 0 0}
+.eq-cline{border-top:0.5px dashed #1A2A1A;display:flex;justify-content:flex-end;margin-top:2px}
+.eq-clbl{font-size:4px;color:#1D9E75;letter-spacing:1px;padding-top:2px}
+.eq-blabels{display:flex;gap:2px;margin-top:3px}
+.eq-bl{flex:1;font-size:4px;color:#1A1C22;text-align:center;overflow:hidden}
+
+/* HW row */
+.hw-row{margin:8px 13px 0;background:#0C0E12;border-radius:9px;border:0.5px solid #141618;overflow:hidden}
+.hw-top{padding:5px 10px;border-bottom:0.5px solid #0E1014;display:flex;justify-content:space-between;align-items:center}
+.hw-title{font-size:5px;letter-spacing:2px;color:#1E2028}
+.hw-badge{font-size:5px;letter-spacing:1px;color:#C49A2A;background:rgba(196,154,42,0.08);border:0.5px solid rgba(196,154,42,0.18);border-radius:3px;padding:1px 5px}
+.hw-devices{display:flex;padding:6px 8px;gap:5px;flex-wrap:wrap}
+.hw-dev{display:flex;align-items:center;gap:4px;background:#0E1014;border:0.5px solid #141618;border-radius:5px;padding:3px 6px}
+.hw-dot{width:4px;height:4px;border-radius:50%}
+.hw-dn{font-size:6px;color:#666;letter-spacing:0.3px}
+
+/* Scans */
+.scans-wrap{margin:8px 13px 0}
+.scans-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.scans-lbl{font-size:5px;letter-spacing:2px;color:#1E2028}
+.scans-all{font-size:5px;color:#C49A2A;letter-spacing:1px}
+.scan-item{background:#0C0E12;border:0.5px solid #141618;border-radius:8px;padding:7px 9px;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.scan-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sd-clear{background:#1D9E75;box-shadow:0 0 4px rgba(29,158,117,0.5)}
+.sd-notice{background:#C49A2A;box-shadow:0 0 4px rgba(196,154,42,0.5)}
+.sd-attn{background:#D43C28;box-shadow:0 0 4px rgba(212,60,40,0.5)}
+.scan-body{flex:1}
+.scan-name{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#AAA}
+.scan-meta{font-size:5px;color:#1E2028;margin-top:1px}
+.scan-v{font-size:5px;letter-spacing:1.5px}
+.sv-clear{color:#1D9E75}.sv-notice{color:#C49A2A}.sv-attn{color:#D43C28}
+
+/* Act Right */
+.ar-card{margin:8px 13px 0;background:linear-gradient(135deg,rgba(196,154,42,0.07),rgba(196,154,42,0.02));border:0.5px solid rgba(196,154,42,0.15);border-radius:11px;padding:9px 11px;display:flex;justify-content:space-between;align-items:center}
+.ar-lbl{font-size:5px;letter-spacing:2px;color:#C49A2A;margin-bottom:3px}
+.ar-amt{font-family:'Cormorant Garamond',serif;font-size:24px;font-style:italic;color:#C49A2A}
+.ar-sub{font-size:5px;color:#1E2028;margin-top:2px}
+.ar-debit{background:#100F00;border-radius:7px;border:0.5px solid rgba(196,154,42,0.25);padding:5px 8px}
+.ar-brand{font-size:5px;letter-spacing:1.5px;color:#C49A2A}
+.ar-num{font-size:7px;color:#3A3500;letter-spacing:1px;margin-top:1px}
+
+/* Quick actions */
+.qa-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 13px 12px}
+.qa-btn{background:#0C0E12;border:0.5px solid #141618;border-radius:9px;padding:9px 4px;text-align:center}
+.qa-icon{font-size:16px;display:block;margin-bottom:3px}
+.qa-lbl{font-size:5px;letter-spacing:0.5px;color:#1E2028}
+
+/* Bottom Nav */
+.bottom-nav{background:#080A0C;border-top:0.5px solid #0E1014;display:flex;padding:9px 0 20px}
+.nav-item{flex:1;text-align:center}
+.nav-icon{font-size:16px;display:block;margin-bottom:1px}
+.nav-lbl{font-size:6px;letter-spacing:0.8px;color:#1E2028}
+
+/* ═══════════════════════════════════
+   PANEL 3 — PHONE ONLY
+═══════════════════════════════════ */
+.no-baseline{margin:10px 13px 0;background:#0C0E12;border:0.5px dashed #1E2028;border-radius:11px;padding:14px;text-align:center}
+.nb-lbl{font-size:5px;letter-spacing:2px;color:#1E2028;margin-bottom:7px}
+.nb-quote{font-family:'Cormorant Garamond',serif;font-size:12px;font-style:italic;color:#2A2D38;line-height:1.5;margin-bottom:9px}
+.nb-cta{background:rgba(196,154,42,0.07);border:0.5px solid rgba(196,154,42,0.2);border-radius:6px;padding:6px;font-size:6px;letter-spacing:1px;color:#C49A2A}
+
+.scanner-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:8px 13px 0}
+.sg-btn{background:#0C0E12;border:0.5px solid #141618;border-radius:8px;padding:8px 4px;text-align:center}
+.sg-icon{font-size:14px;display:block;margin-bottom:2px}
+.sg-lbl{font-size:5px;letter-spacing:0.5px;color:#1E2028}
+
+/* DOCTRINE */
+.doctrine{max-width:1200px;width:100%;margin-top:48px;padding:28px 24px;background:#0C0D10;border-radius:16px;border:0.5px solid #141618}
+.doc-title{font-size:7px;letter-spacing:3px;color:#C49A2A;margin-bottom:20px}
+.doc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.doc-lbl{font-size:5px;letter-spacing:2px;color:#1E2028;margin-bottom:5px}
+.doc-val{font-family:'Cormorant Garamond',serif;font-size:12px;color:#444;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="page-title">AA2 Home Dashboard</div>
+<div class="page-sub">PANEL 01 · SONAR BIOSIGNAL VIEW &nbsp;|&nbsp; PANEL 02 · FULL STACK &nbsp;|&nbsp; PANEL 03 · PHONE ONLY</div>
+
+<div class="phones-row">
+
+<!-- ═══════════════════════════════════
+     PANEL 1 — SONAR / EKG FIRST VIEW
+═══════════════════════════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#1BB8FF;background:rgba(27,184,255,0.06);border:0.5px solid rgba(27,184,255,0.15)">PANEL 01 · SONAR BIOSIGNAL</div>
+  <div class="screen-desc">Device stack left · EKG per device · Each color unique · Tap to isolate</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">James Pitts</div>
+      </div>
+      <div style="text-align:right">
+        <div class="live-badge" style="background:rgba(27,184,255,0.06);border:0.5px solid rgba(27,184,255,0.18)">
+          <div class="live-dot" style="background:#1BB8FF"></div>
+          <span class="live-text" style="color:#1BB8FF">MEMBRANE LIVE</span>
+        </div>
+        <div class="loc-text">BELGRADE MT · APR 7</div>
+      </div>
+    </div>
+
+    <!-- SONAR EKG SECTION -->
+    <div class="sonar-section">
+      <div class="sonar-canvas-wrap">
+
+        <!-- DEVICE LABELS LEFT -->
+        <div class="device-stack">
+          <div class="dev-row">
+            <div class="dev-icon">⌚</div>
+            <div class="dev-name" style="color:#1BB8FF">Garmin</div>
+            <div class="dev-name" style="color:rgba(27,184,255,0.5);font-size:5px">Tactix 8</div>
+            <div class="dev-ind" style="background:#1BB8FF;box-shadow:0 0 3px #1BB8FF"></div>
+          </div>
+          <div class="dev-row">
+            <div class="dev-icon">💍</div>
+            <div class="dev-name" style="color:#1D9E75">Oura</div>
+            <div class="dev-name" style="color:rgba(29,158,117,0.5);font-size:5px">Ring 4</div>
+            <div class="dev-ind" style="background:#1D9E75;box-shadow:0 0 3px #1D9E75"></div>
+          </div>
+          <div class="dev-row">
+            <div class="dev-icon">🎧</div>
+            <div class="dev-name" style="color:#C49A2A">Beats</div>
+            <div class="dev-name" style="color:rgba(196,154,42,0.5);font-size:5px">Pro 2</div>
+            <div class="dev-ind" style="background:#C49A2A;box-shadow:0 0 3px #C49A2A"></div>
+          </div>
+          <div class="dev-row">
+            <div class="dev-icon">👓</div>
+            <div class="dev-name" style="color:#AA44FF">Oakley</div>
+            <div class="dev-name" style="color:rgba(170,68,255,0.5);font-size:5px">Meta HSTN</div>
+            <div class="dev-ind" style="background:#AA44FF;box-shadow:0 0 3px #AA44FF"></div>
+          </div>
+        </div>
+
+        <!-- EKG CANVAS — main waves -->
+        <div class="ekg-area">
+          <canvas id="ekgCanvas" width="228" height="200"></canvas>
+        </div>
+
+        <!-- READOUTS RIGHT -->
+        <div class="readout-stack">
+          <div class="readout-row">
+            <div class="ro-val" style="color:#1BB8FF">74</div>
+            <span class="ro-unit" style="color:#1BB8FF">%</span>
+            <span class="ro-lbl">READY</span>
+          </div>
+          <div class="readout-row">
+            <div class="ro-val" style="color:#1D9E75">68</div>
+            <span class="ro-unit" style="color:#1D9E75">%</span>
+            <span class="ro-lbl">SLEEP</span>
+          </div>
+          <div class="readout-row">
+            <div class="ro-val" style="color:#C49A2A">42</div>
+            <span class="ro-unit" style="color:#C49A2A">ms</span>
+            <span class="ro-lbl">HRV</span>
+          </div>
+          <div class="readout-row">
+            <div class="ro-val" style="color:#AA44FF">58</div>
+            <span class="ro-unit" style="color:#AA44FF">bpm</span>
+            <span class="ro-lbl">HR</span>
+          </div>
+        </div>
+
+      </div><!-- sonar-canvas-wrap -->
+
+      <!-- BASELINE STATS BELOW EKG -->
+      <div class="sonar-stats">
+        <div class="ss-cell">
+          <div class="ss-val" style="color:#1BB8FF">74<span class="ss-unit">%</span></div>
+          <div class="ss-lbl">READINESS</div>
+          <div class="ss-delta d-up">↑ trending</div>
+        </div>
+        <div class="ss-cell">
+          <div class="ss-val" style="color:#AA44FF">68<span class="ss-unit">%</span></div>
+          <div class="ss-lbl">SLEEP</div>
+          <div class="ss-delta d-dn">↓ below target</div>
+        </div>
+        <div class="ss-cell">
+          <div class="ss-val" style="color:#1D9E75">42<span class="ss-unit">ms</span></div>
+          <div class="ss-lbl">HRV · 90D</div>
+          <div class="ss-delta d-up">↑ improving</div>
+        </div>
+        <div class="ss-cell">
+          <div class="ss-val" style="color:#FF6B00">58<span class="ss-unit">bpm</span></div>
+          <div class="ss-lbl">RESTING HR</div>
+          <div class="ss-delta d-ok">✓ optimal</div>
+        </div>
+      </div>
+    </div><!-- sonar-section -->
+
+    <!-- QUICK ACTIONS -->
+    <div class="qa-grid">
+      <div class="qa-btn"><div class="qa-icon">⚡</div><div class="qa-lbl">SCAN NOW</div></div>
+      <div class="qa-btn"><div class="qa-icon">🐟</div><div class="qa-lbl">FISH TAB</div></div>
+      <div class="qa-btn"><div class="qa-icon">🗺</div><div class="qa-lbl">OFF GRID</div></div>
+    </div>
+
+    <!-- ACT RIGHT -->
+    <div class="ar-card">
+      <div>
+        <div class="ar-lbl">ACT RIGHT DOLLARS</div>
+        <div class="ar-amt">$47.20</div>
+        <div class="ar-sub">Earned from smart swaps</div>
+      </div>
+      <div class="ar-debit">
+        <div class="ar-brand">AA2 · ACT RIGHT</div>
+        <div class="ar-num">•••• 4821</div>
+      </div>
+    </div>
+
+    <!-- RECENT SCANS -->
+    <div class="scans-wrap" style="margin:8px 13px 12px">
+      <div class="scans-hdr">
+        <span class="scans-lbl">RECENT SCANS</span>
+        <span class="scans-all">SEE ALL →</span>
+      </div>
+      <div class="scan-item">
+        <div class="scan-dot sd-clear"></div>
+        <div class="scan-body"><div class="scan-name">Barilla Spaghetti</div><div class="scan-meta">SCAN · 2h ago · Albertsons</div></div>
+        <div class="scan-v sv-clear">ALL CLEAR</div>
+      </div>
+      <div class="scan-item">
+        <div class="scan-dot sd-notice"></div>
+        <div class="scan-body"><div class="scan-name">Cento Tomato Paste</div><div class="scan-meta">SCAN · 2h ago · Albertsons</div></div>
+        <div class="scan-v sv-notice">TAKE NOTICE</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl" style="color:#1BB8FF">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">⚗️</span><span class="nav-lbl">Equalizer</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANEL 2 — FULL STACK DASHBOARD
+═══════════════════════════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#1D9E75;background:rgba(29,158,117,0.06);border:0.5px solid rgba(29,158,117,0.15)">PANEL 02 · FULL STACK DASHBOARD</div>
+  <div class="screen-desc">90-day baseline loaded · Equalizer bands · Hardware row · Scan history</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">James Pitts</div>
+      </div>
+      <div style="text-align:right">
+        <div class="live-badge" style="background:rgba(29,158,117,0.06);border:0.5px solid rgba(29,158,117,0.18)">
+          <div class="live-dot" style="background:#1D9E75"></div>
+          <span class="live-text" style="color:#1D9E75">MEMBRANE LIVE</span>
+        </div>
+        <div class="loc-text">BELGRADE MT · APR 7</div>
+      </div>
+    </div>
+
+    <div class="baseline-card">
+      <div class="bc-header">
+        <span class="bc-title">BIOSIGNAL BASELINE · 90D</span>
+        <span class="bc-src">GARMIN · OURA · STRAVA</span>
+      </div>
+      <div class="bc-grid">
+        <div class="bc-stat"><div class="bcv">74<span class="bcu">%</span></div><div class="bcl">READINESS · 90D</div><div class="bcd d-up">↑ trending up</div></div>
+        <div class="bc-stat"><div class="bcv">68<span class="bcu">%</span></div><div class="bcl">SLEEP SCORE · 90D</div><div class="bcd d-dn">↓ below target</div></div>
+        <div class="bc-stat"><div class="bcv">42<span class="bcu">ms</span></div><div class="bcl">HRV TREND · 90D</div><div class="bcd d-up">↑ improving</div></div>
+        <div class="bc-stat"><div class="bcv">58<span class="bcu">bpm</span></div><div class="bcl">RESTING HR · 90D</div><div class="bcd d-ok">✓ optimal</div></div>
+      </div>
+    </div>
+
+    <div class="eq-wrap">
+      <div class="eq-lbl">THE EQUALIZER · YOUR PERSONAL BASELINE</div>
+      <div class="eq-bars">
+        <div class="eq-b" style="height:74%;background:#1BB8FF;opacity:0.85"></div>
+        <div class="eq-b" style="height:68%;background:#1D9E75;opacity:0.8"></div>
+        <div class="eq-b" style="height:55%;background:#C49A2A;opacity:0.85"></div>
+        <div class="eq-b" style="height:42%;background:#C49A2A;opacity:0.75"></div>
+        <div class="eq-b" style="height:82%;background:#1BB8FF;opacity:0.85"></div>
+        <div class="eq-b" style="height:70%;background:#1D9E75;opacity:0.8"></div>
+        <div class="eq-b" style="height:66%;background:#1D9E75;opacity:0.75"></div>
+        <div class="eq-b" style="height:88%;background:#00FF88;opacity:0.8"></div>
+        <div class="eq-b" style="height:58%;background:#C49A2A;opacity:0.7"></div>
+        <div class="eq-b" style="height:72%;background:#1D9E75;opacity:0.8"></div>
+      </div>
+      <div class="eq-cline"><span class="eq-clbl">YOUR BASELINE</span></div>
+      <div class="eq-blabels">
+        <div class="eq-bl">READY</div><div class="eq-bl">SLEEP</div><div class="eq-bl">HRV</div>
+        <div class="eq-bl">STRESS</div><div class="eq-bl">ENERGY</div><div class="eq-bl">RECOV</div>
+        <div class="eq-bl">ACTIV</div><div class="eq-bl">VO2</div><div class="eq-bl">WEIGHT</div>
+        <div class="eq-bl">BAL</div>
+      </div>
+    </div>
+
+    <div class="hw-row">
+      <div class="hw-top">
+        <span class="hw-title">CONNECTED HARDWARE</span>
+        <span class="hw-badge">FULL STACK</span>
+      </div>
+      <div class="hw-devices">
+        <div class="hw-dev"><div class="hw-dot" style="background:#1BB8FF;box-shadow:0 0 3px #1BB8FF"></div><span class="hw-dn">Garmin Tactix 8</span></div>
+        <div class="hw-dev"><div class="hw-dot" style="background:#1D9E75;box-shadow:0 0 3px #1D9E75"></div><span class="hw-dn">Oura Ring 4</span></div>
+        <div class="hw-dev"><div class="hw-dot" style="background:#C49A2A;box-shadow:0 0 3px #C49A2A"></div><span class="hw-dn">Strava</span></div>
+        <div class="hw-dev"><div class="hw-dot" style="background:#AA44FF;box-shadow:0 0 3px #AA44FF"></div><span class="hw-dn">Beats Pro 2</span></div>
+      </div>
+    </div>
+
+    <div class="scans-wrap">
+      <div class="scans-hdr"><span class="scans-lbl">RECENT SCANS</span><span class="scans-all">SEE ALL →</span></div>
+      <div class="scan-item">
+        <div class="scan-dot sd-clear"></div>
+        <div class="scan-body"><div class="scan-name">Barilla Spaghetti</div><div class="scan-meta">SCAN · 2h ago</div></div>
+        <div class="scan-v sv-clear">ALL CLEAR</div>
+      </div>
+      <div class="scan-item">
+        <div class="scan-dot sd-notice"></div>
+        <div class="scan-body"><div class="scan-name">Cento Tomato Paste</div><div class="scan-meta">SCAN · 2h ago</div></div>
+        <div class="scan-v sv-notice">TAKE NOTICE</div>
+      </div>
+      <div class="scan-item">
+        <div class="scan-dot sd-clear"></div>
+        <div class="scan-body"><div class="scan-name">Macallan 12</div><div class="scan-meta">WINE & SPIRITS · Yesterday</div></div>
+        <div class="scan-v sv-clear">ALL CLEAR</div>
+      </div>
+    </div>
+
+    <div class="ar-card">
+      <div><div class="ar-lbl">ACT RIGHT DOLLARS</div><div class="ar-amt">$47.20</div><div class="ar-sub">Earned from smart swaps</div></div>
+      <div class="ar-debit"><div class="ar-brand">AA2 · ACT RIGHT</div><div class="ar-num">•••• 4821</div></div>
+    </div>
+
+    <div class="qa-grid">
+      <div class="qa-btn"><div class="qa-icon">⚡</div><div class="qa-lbl">SCAN NOW</div></div>
+      <div class="qa-btn"><div class="qa-icon">🐟</div><div class="qa-lbl">FISH TAB</div></div>
+      <div class="qa-btn"><div class="qa-icon">🗺</div><div class="qa-lbl">OFF GRID</div></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl" style="color:#1D9E75">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">⚗️</span><span class="nav-lbl">Equalizer</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANEL 3 — PHONE ONLY
+═══════════════════════════════════ -->
+<div class="phone-col">
+  <div class="step-tag" style="color:#C49A2A;background:rgba(196,154,42,0.06);border:0.5px solid rgba(196,154,42,0.15)">PANEL 03 · PHONE ONLY</div>
+  <div class="screen-desc">Scanner still full · No biosignal baseline · Upgrade prompt where baseline would be</div><br>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+    <div class="dash-header">
+      <div>
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="member-name">Sarah M.</div>
+      </div>
+      <div style="text-align:right">
+        <div class="live-badge" style="background:rgba(196,154,42,0.06);border:0.5px solid rgba(196,154,42,0.18)">
+          <div class="live-dot" style="background:#C49A2A;animation:none;opacity:0.6"></div>
+          <span class="live-text" style="color:#C49A2A">SCANNER ACTIVE</span>
+        </div>
+        <div class="loc-text">APR 7, 2026</div>
+      </div>
+    </div>
+
+    <div class="no-baseline">
+      <div class="nb-lbl">YOUR BIOSIGNAL BASELINE</div>
+      <div class="nb-quote">"The more of yourself you bring to this system — the more the system's mirror can reflect back to you."</div>
+      <div class="nb-cta">CONNECT HARDWARE TO ACTIVATE →</div>
+    </div>
+
+    <div style="margin:8px 13px 0;background:#0C0E12;border-radius:9px;border:0.5px solid #141618;overflow:hidden">
+      <div style="padding:5px 10px;border-bottom:0.5px solid #0E1014;display:flex;justify-content:space-between">
+        <span style="font-size:5px;letter-spacing:2px;color:#1E2028">YOUR SCANNER · FULL ACCESS</span>
+        <span style="font-size:5px;color:#1D9E75;letter-spacing:1px">ACTIVE</span>
+      </div>
+      <div class="scanner-grid" style="margin:6px 8px">
+        <div class="sg-btn"><div class="sg-icon">⚡</div><div class="sg-lbl">SCAN</div></div>
+        <div class="sg-btn"><div class="sg-icon">🌿</div><div class="sg-lbl">PRODUCE</div></div>
+        <div class="sg-btn"><div class="sg-icon">🥩</div><div class="sg-lbl">MEAT</div></div>
+        <div class="sg-btn"><div class="sg-icon">🧴</div><div class="sg-lbl">CARE</div></div>
+        <div class="sg-btn"><div class="sg-icon">🍷</div><div class="sg-lbl">SPIRITS</div></div>
+        <div class="sg-btn"><div class="sg-icon">🐟</div><div class="sg-lbl">FISH</div></div>
+      </div>
+    </div>
+
+    <div class="scans-wrap" style="margin:8px 13px 0">
+      <div class="scans-hdr"><span class="scans-lbl">RECENT SCANS</span><span class="scans-all">SEE ALL →</span></div>
+      <div class="scan-item">
+        <div class="scan-dot sd-clear"></div>
+        <div class="scan-body"><div class="scan-name">Tide Free & Gentle</div><div class="scan-meta">PERSONAL CARE · 1h ago</div></div>
+        <div class="scan-v sv-clear">ALL CLEAR</div>
+      </div>
+      <div class="scan-item">
+        <div class="scan-dot sd-attn"></div>
+        <div class="scan-body"><div class="scan-name">Nestle Pure Life</div><div class="scan-meta">SCAN · 3h ago · Costco</div></div>
+        <div class="scan-v sv-attn">PAY ATTENTION</div>
+      </div>
+    </div>
+
+    <div class="ar-card">
+      <div><div class="ar-lbl">ACT RIGHT DOLLARS</div><div class="ar-amt">$12.40</div><div class="ar-sub">Earned from smart swaps</div></div>
+      <div class="ar-debit"><div class="ar-brand">AA2 · ACT RIGHT</div><div class="ar-num">•••• 7742</div></div>
+    </div>
+
+    <div class="qa-grid" style="margin-bottom:0">
+      <div class="qa-btn"><div class="qa-icon">⚡</div><div class="qa-lbl">SCAN NOW</div></div>
+      <div class="qa-btn"><div class="qa-icon">⚗️</div><div class="qa-lbl">APOTHECARY</div></div>
+      <div class="qa-btn"><div class="qa-icon">🧬</div><div class="qa-lbl">MEMBRANE</div></div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><span class="nav-icon">⚡</span><span class="nav-lbl" style="color:#C49A2A">Home</span></div>
+      <div class="nav-item"><span class="nav-icon">⚗️</span><span class="nav-lbl">Equalizer</span></div>
+      <div class="nav-item"><span class="nav-icon">▶</span><span class="nav-lbl">Explore</span></div>
+      <div class="nav-item"><span class="nav-icon">🧬</span><span class="nav-lbl">Membrane</span></div>
+      <div class="nav-item"><span class="nav-icon">🗺</span><span class="nav-lbl">Map</span></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- phones-row -->
+
+<!-- DOCTRINE -->
+<div class="doctrine">
+  <div class="doc-title">HOME DASHBOARD — ARCHITECTURE DOCTRINE · PRE-BUILD LOCK</div>
+  <div class="doc-grid">
+    <div><div class="doc-lbl">FIRST SCREEN AFTER ONBOARDING</div><div class="doc-val">Panel 01 is what loads after SEAL THE MEMBRANE. The sonar biosignal view is the home. Not the scanner. The membrane made visible.</div></div>
+    <div><div class="doc-lbl">DEVICE COLOR DOCTRINE</div><div class="doc-val">Garmin = electric blue #1BB8FF. Oura = teal #1D9E75. Beats Pro = gold #C49A2A. Oakley Meta = purple #AA44FF. Each device owns its color everywhere in the system.</div></div>
+    <div><div class="doc-lbl">EKG RHYTHM FLOW</div><div class="doc-val">Each device produces a slow, unique waveform flowing left to right. Garmin is cardiac — sharp peaks. Oura is sleep — smooth sine. Beats is audio-ambient — gentle oscillation. Oakley is neural — micro-tremor pattern.</div></div>
+    <div><div class="doc-lbl">PANEL 01 → PANEL 02</div><div class="doc-val">Swipe down from the sonar view to reach the full stack dashboard with equalizer bands and hardware row. Same session, different depth of data.</div></div>
+    <div><div class="doc-lbl">PHONE-ONLY UPGRADE PATH</div><div class="doc-val">The upgrade prompt sits exactly where the baseline card would be. Mirror Doctrine quote. One CTA. No shame. No repeated asks. The product earns the upgrade.</div></div>
+    <div><div class="doc-lbl">BASELINE DATA SOURCE</div><div class="doc-val">Reads baseline_profiles: sleep_score, hrv_baseline_90d, readiness_baseline_90d, resting_heart_rate. Written by hardware upload at onboarding. If null — upgrade prompt shows. If populated — full view shows.</div></div>
+  </div>
+</div>
+
+<script>
+// EKG Canvas — Panel 1
+const canvas = document.getElementById('ekgCanvas');
+if (canvas) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const rowH = H / 4;
+
+  const COLORS = ['#1BB8FF','#1D9E75','#C49A2A','#AA44FF'];
+  let offset = 0;
+
+  function generateWave(type, x, w, amplitude, baseline) {
+    const pts = [];
+    for (let i = 0; i <= w; i++) {
+      let y;
+      const t = (i + offset * (type === 0 ? 1.2 : type === 1 ? 0.8 : type === 2 ? 0.6 : 1.0)) * 0.04;
+      if (type === 0) {
+        // Garmin — cardiac EKG
+        const phase = (t % (Math.PI * 2));
+        if (phase < 0.3) y = 0;
+        else if (phase < 0.5) y = -amplitude * 0.3;
+        else if (phase < 0.7) y = -amplitude;
+        else if (phase < 0.9) y = amplitude * 0.6;
+        else if (phase < 1.1) y = -amplitude * 0.2;
+        else y = 0;
+      } else if (type === 1) {
+        // Oura — smooth sine (sleep)
+        y = Math.sin(t * 0.8) * amplitude * 0.7 + Math.sin(t * 0.3) * amplitude * 0.3;
+      } else if (type === 2) {
+        // Beats — gentle audio oscillation
+        y = Math.sin(t * 1.4) * amplitude * 0.5 + Math.sin(t * 2.8) * amplitude * 0.25;
+      } else {
+        // Oakley — neural micro
+        y = Math.sin(t * 2.1) * amplitude * 0.4 + Math.sin(t * 4.2) * amplitude * 0.15 + Math.sin(t * 7) * amplitude * 0.08;
+      }
+      pts.push({ x: i, y: baseline + y });
+    }
+    return pts;
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background rows
+    COLORS.forEach((col, i) => {
+      ctx.fillStyle = `${col}08`;
+      ctx.fillRect(0, i * rowH, W, rowH);
+      // Divider
+      ctx.beginPath();
+      ctx.moveTo(0, (i + 1) * rowH);
+      ctx.lineTo(W, (i + 1) * rowH);
+      ctx.strokeStyle = '#0E1014';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+    });
+
+    COLORS.forEach((col, i) => {
+      const baseline = i * rowH + rowH / 2;
+      const amp = rowH * 0.32;
+      const pts = generateWave(i, 0, W, amp, baseline);
+
+      // Baseline center line
+      ctx.beginPath();
+      ctx.moveTo(0, baseline);
+      ctx.lineTo(W, baseline);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 0.3;
+      ctx.globalAlpha = 0.12;
+      ctx.setLineDash([2, 6]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+
+      // Glow fill under wave
+      const grad = ctx.createLinearGradient(0, baseline - amp, 0, baseline + amp);
+      grad.addColorStop(0, col + '20');
+      grad.addColorStop(0.5, col + '08');
+      grad.addColorStop(1, col + '00');
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, baseline);
+      pts.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length-1].x, baseline);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.globalAlpha = 0.5;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // Main wave line
+      ctx.beginPath();
+      pts.forEach((p, idx) => idx === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.5;
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = col;
+      ctx.shadowBlur = 4;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Fade edges
+      const fadeL = ctx.createLinearGradient(0, 0, 16, 0);
+      fadeL.addColorStop(0, '#060809');
+      fadeL.addColorStop(1, 'transparent');
+      ctx.fillStyle = fadeL;
+      ctx.fillRect(0, i * rowH, 16, rowH);
+
+      const fadeR = ctx.createLinearGradient(W - 12, 0, W, 0);
+      fadeR.addColorStop(0, 'transparent');
+      fadeR.addColorStop(1, '#060809');
+      ctx.fillStyle = fadeR;
+      ctx.fillRect(W - 12, i * rowH, 12, rowH);
+    });
+
+    offset += 0.5;
+    requestAnimationFrame(draw);
+  }
+
+  draw();
+}
+</script>
+</body>
+</html>

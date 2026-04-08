@@ -2,7 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import * as FileSystem from 'expo-file-system';
 import { router, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -14,24 +14,19 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
         const info = await FileSystem.getInfoAsync(ARRIVAL_FLAG_PATH);
         if (!info.exists) {
-          router.replace('/arrival');
+          setTimeout(() => router.replace('/arrival'), 100);
         }
       } catch {
-        router.replace('/arrival');
-      } finally {
-        setReady(true);
+        setTimeout(() => router.replace('/arrival'), 100);
       }
     })();
   }, []);
-
-  if (!ready) return null;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

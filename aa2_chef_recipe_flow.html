@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AA2 — Chef Recipe Flow · Allergy Layer · Upgrade Gate</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#060607;display:flex;flex-direction:column;align-items:center;padding:40px 16px 80px;font-family:'DM Mono',monospace;min-height:100vh}
+.page-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-style:italic;color:#fff;text-align:center;margin-bottom:5px}
+.page-sub{font-size:8px;letter-spacing:3px;color:#383838;text-align:center;margin-bottom:10px}
+.page-note{font-size:10px;color:#555;text-align:center;max-width:780px;line-height:1.7;margin-bottom:44px;font-family:'DM Sans',sans-serif}
+.page-note strong{color:#C49A2A}
+.phones-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;align-items:flex-start;max-width:1440px;width:100%}
+.phone-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.step-tag{font-size:7px;letter-spacing:2.5px;color:#1D9E75;background:rgba(29,158,117,0.08);border:0.5px solid rgba(29,158,117,0.2);border-radius:20px;padding:3px 10px}
+.screen-desc{font-size:7px;letter-spacing:1px;color:#383838;text-align:center;max-width:290px;line-height:1.5}
+.phone{width:298px;background:#0C0D0F;border-radius:40px;overflow:hidden;border:1px solid #181A1E;box-shadow:0 0 0 1px #090909,0 24px 48px rgba(0,0,0,0.9)}
+.statusbar{background:#0C0D0F;padding:10px 20px 4px;display:flex;justify-content:space-between}
+.statusbar span{color:#444;font-size:9px}
+.tab-header{padding:9px 13px 7px;border-bottom:0.5px solid #141618}
+.receipt{font-size:6px;letter-spacing:3px;color:rgba(255,255,255,0.15);margin-bottom:2px}
+.intel-badge{font-size:6px;letter-spacing:1.5px;padding:2px 6px;border-radius:3px;display:inline-block}
+.intel-gold{color:#C49A2A;border:0.5px solid rgba(196,154,42,0.25)}
+.intel-teal{color:#1D9E75;border:0.5px solid rgba(29,158,117,0.25)}
+
+/* SCREEN 1 */
+.verdict-row{margin:9px 11px 0;background:rgba(196,154,42,0.06);border:0.5px solid rgba(196,154,42,0.25);border-radius:8px;padding:7px 10px;display:flex;align-items:center;gap:7px}
+.vdot-warn{width:7px;height:7px;background:#C49A2A;border-radius:50%;box-shadow:0 0 5px #C49A2A;flex-shrink:0}
+.vtext-warn{font-size:8px;letter-spacing:1.5px;color:#C49A2A}
+.vsub{font-size:7px;color:rgba(196,154,42,0.5);margin-top:1px}
+.allergy-alert{margin:6px 11px 0;background:rgba(210,60,40,0.06);border:0.5px solid rgba(210,60,40,0.3);border-radius:8px;padding:7px 10px}
+.allergy-top{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.allergy-icon{font-size:10px}
+.allergy-label{font-size:6px;letter-spacing:1.5px;color:#D43C28}
+.allergy-text{font-size:8px;color:#888;line-height:1.5;font-family:'DM Sans',sans-serif}
+.allergy-text strong{color:#D43C28}
+.allergy-alts{margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
+.alt-chip{background:rgba(29,158,117,0.08);border:0.5px solid rgba(29,158,117,0.25);border-radius:4px;padding:2px 6px;font-size:6px;color:#1D9E75}
+.wo-gate{margin:7px 11px 0;border-radius:10px;overflow:hidden;border:0.5px solid #1E2025}
+.wo-header{background:#111316;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid #1E2025}
+.wo-title{font-size:6px;letter-spacing:2px;color:#444}
+.wo-locked{background:rgba(196,154,42,0.1);border:0.5px solid rgba(196,154,42,0.3);border-radius:3px;padding:2px 6px;font-size:6px;letter-spacing:1px;color:#C49A2A}
+.wo-cols{display:flex}
+.wo-col{flex:1;padding:7px 9px}
+.wo-col.without{border-right:0.5px solid #1E2025}
+.wo-col.with{filter:blur(2.5px);pointer-events:none;user-select:none}
+.wo-col-label{font-size:6px;letter-spacing:2px;margin-bottom:4px}
+.without .wo-col-label{color:#444}
+.with .wo-col-label{color:#C49A2A}
+.wo-item{font-size:7px;line-height:1.4;margin-bottom:3px;font-family:'DM Sans',sans-serif}
+.without .wo-item{color:#555}
+.with .wo-item{color:#aaa}
+.upgrade-cta{background:linear-gradient(135deg,rgba(196,154,42,0.1),rgba(196,154,42,0.04));border-top:0.5px solid rgba(196,154,42,0.18);padding:7px 10px;display:flex;align-items:center;justify-content:space-between}
+.upgrade-text{font-size:6px;color:#C49A2A;line-height:1.5}
+.upgrade-btn{background:#C49A2A;border:none;border-radius:5px;padding:5px 8px;font-size:6px;letter-spacing:1px;color:#000;font-family:'DM Mono',monospace;font-weight:500;cursor:pointer}
+.product-name{font-family:'Cormorant Garamond',serif;font-size:14px;font-style:italic;color:#fff;margin:7px 11px 1px}
+.product-sub{font-size:6px;letter-spacing:1px;color:#383838;margin:0 11px 5px}
+.chef-divider{border-top:0.5px solid #141618;margin:5px 0 0;padding:6px 11px 4px;display:flex;align-items:center;gap:7px}
+.chef-name{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:#C49A2A}
+.chef-sub{font-size:6px;letter-spacing:1.5px;color:#444}
+.recipe-chips{padding:0 11px 10px;display:flex;flex-direction:column;gap:5px}
+.recipe-chip{background:#0F1114;border:0.5px solid #1E2025;border-radius:9px;padding:8px 10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.recipe-chip.active{border-color:rgba(196,154,42,0.4);background:rgba(196,154,42,0.04)}
+.chip-name{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#aaa}
+.recipe-chip.active .chip-name{color:#fff}
+.chip-meta{font-size:6px;letter-spacing:0.5px;color:#383838;margin-top:2px}
+.chip-arr{font-size:11px;color:#2A2D32}
+.recipe-chip.active .chip-arr{color:#C49A2A}
+
+/* SCREEN 2 */
+.recipe-detail-top{padding:9px 13px 7px;border-bottom:0.5px solid #141618;display:flex;justify-content:space-between;align-items:center}
+.back{font-size:7px;letter-spacing:1px;color:#444}
+.recipe-big{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:#fff;margin:7px 11px 3px}
+.recipe-meta-row{display:flex;gap:5px;margin:0 11px 7px}
+.recipe-meta-chip{font-size:6px;letter-spacing:1px;color:#444;background:#0F1114;border:0.5px solid #1E2025;border-radius:3px;padding:2px 5px}
+.ing-section{border-top:0.5px solid #141618;padding:4px 0}
+.ing-section-label{font-size:6px;letter-spacing:2px;padding:3px 11px 4px}
+.have-label{color:#1D9E75}
+.need-label{color:#C49A2A}
+.flag-label-txt{color:#D43C28}
+.ing-row{padding:5px 11px;display:flex;align-items:flex-start;gap:7px;border-bottom:0.5px solid #0C0D0F}
+.ing-row:last-child{border-bottom:none}
+.ing-check{width:13px;height:13px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:7px;flex-shrink:0;margin-top:1px}
+.check-have{background:rgba(29,158,117,0.12);border:0.5px solid rgba(29,158,117,0.35);color:#1D9E75}
+.check-need{background:#0F1114;border:0.5px solid #252830}
+.check-flag{background:rgba(210,60,40,0.1);border:0.5px solid rgba(210,60,40,0.35);color:#D43C28}
+.ing-body{flex:1}
+.ing-name{font-size:9px;color:#888}
+.ing-name.have{color:#ddd}
+.ing-name.flagged{color:#D43C28}
+.ing-name.need{color:#555}
+.ing-amount{font-size:6px;color:#383838}
+.ing-allergy{margin-top:4px;background:rgba(210,60,40,0.05);border:0.5px solid rgba(210,60,40,0.18);border-radius:4px;padding:4px 6px}
+.ing-allergy-warn{font-size:6px;color:#D43C28;margin-bottom:2px;letter-spacing:0.5px}
+.ing-allergy-text{font-size:7px;color:#666;line-height:1.4;font-family:'DM Sans',sans-serif}
+.ing-alts-row{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
+.ing-alt-btn{background:rgba(29,158,117,0.07);border:0.5px solid rgba(29,158,117,0.18);border-radius:3px;padding:2px 5px;font-size:6px;color:#1D9E75}
+.cookbook-cta{margin:8px 11px;background:linear-gradient(135deg,rgba(196,154,42,0.07),rgba(196,154,42,0.02));border:0.5px solid rgba(196,154,42,0.22);border-radius:10px;padding:9px 11px}
+.cta-q{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#C49A2A;margin-bottom:4px}
+.cta-sub{font-size:7px;color:#555;line-height:1.5;margin-bottom:7px;font-family:'DM Sans',sans-serif}
+.cta-btns{display:flex;gap:6px}
+.btn-yes{flex:1;background:#C49A2A;border:none;border-radius:6px;padding:7px;font-size:6px;letter-spacing:1.5px;color:#000;font-family:'DM Mono',monospace;font-weight:500;text-align:center}
+.btn-no{flex:0.6;background:transparent;border:0.5px solid #252830;border-radius:6px;padding:7px;font-size:6px;letter-spacing:1px;color:#444;text-align:center}
+
+/* SCREEN 3 */
+.memo-wrap{margin:10px 11px 0}
+.memo-card{background:#0F1114;border-radius:12px;border:0.5px solid #1E2025;overflow:hidden}
+.memo-titlebar{padding:8px 11px;border-bottom:0.5px solid #141618;display:flex;align-items:center;justify-content:space-between}
+.memo-recipe-name{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:#fff}
+.memo-badge{font-size:6px;letter-spacing:1px;color:#C49A2A;background:rgba(196,154,42,0.08);border:0.5px solid rgba(196,154,42,0.22);border-radius:3px;padding:2px 5px}
+.memo-progress{padding:5px 11px;border-bottom:0.5px solid #141618;display:flex;align-items:center;gap:8px}
+.prog-track{flex:1;background:#1A1C20;border-radius:3px;height:2px}
+.prog-fill{background:#1D9E75;border-radius:3px;height:2px;width:25%}
+.prog-label{font-size:6px;letter-spacing:1px;color:#444}
+.memo-item{padding:6px 11px;display:flex;align-items:flex-start;gap:7px;border-bottom:0.5px solid #0C0D0F}
+.memo-item:last-child{border-bottom:none}
+.memo-chk{width:14px;height:14px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;margin-top:1px}
+.mchk-done{background:rgba(29,158,117,0.12);border:0.5px solid rgba(29,158,117,0.3);color:#1D9E75}
+.mchk-open{background:#0C0D0F;border:0.5px solid #252830}
+.mchk-flag{background:rgba(210,60,40,0.1);border:0.5px solid rgba(210,60,40,0.3);color:#D43C28}
+.mchk-scan{background:rgba(27,184,255,0.08);border:0.5px solid rgba(27,184,255,0.25);color:#1BB8FF}
+.memo-body{flex:1}
+.memo-item-name{font-size:9px;margin-bottom:1px}
+.mname-done{color:#383838;text-decoration:line-through}
+.mname-open{color:#777}
+.mname-flag{color:#D43C28}
+.mname-scan{color:#1BB8FF}
+.memo-item-sub{font-size:6px;color:#383838;letter-spacing:0.3px}
+.memo-allergy{margin-top:4px;background:rgba(210,60,40,0.05);border:0.5px solid rgba(210,60,40,0.15);border-radius:4px;padding:4px 6px}
+.memo-allergy-text{font-size:7px;color:#8A3030;line-height:1.4;font-family:'DM Sans',sans-serif}
+.memo-alts{display:flex;gap:3px;margin-top:3px;flex-wrap:wrap}
+.memo-alt{font-size:6px;color:#1D9E75;background:rgba(29,158,117,0.07);border:0.5px solid rgba(29,158,117,0.15);border-radius:3px;padding:1px 4px}
+.memo-scan-btn{background:rgba(27,184,255,0.07);border:0.5px solid rgba(27,184,255,0.18);border-radius:3px;padding:2px 5px;font-size:6px;letter-spacing:1px;color:#1BB8FF;margin-top:3px;display:inline-block}
+.chef-tip-card{margin:8px 11px;background:#0F1114;border-radius:8px;border:0.5px solid #1E2025;padding:7px 10px}
+.chef-tip-label{font-size:6px;letter-spacing:2px;color:#C49A2A;margin-bottom:3px}
+.chef-tip-text{font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:#555;line-height:1.5}
+
+/* SCREEN 4 */
+.cookbook-card{margin:10px 11px 0;background:#0F1114;border-radius:12px;border:0.5px solid rgba(196,154,42,0.18);overflow:hidden}
+.cookbook-top{padding:10px 12px;border-bottom:0.5px solid #141618}
+.ck-flags{display:flex;gap:5px;margin-bottom:5px;flex-wrap:wrap}
+.flag-pill{background:#141618;border-radius:20px;padding:2px 6px;font-size:6px;letter-spacing:1px;color:#444}
+.ck-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#fff;margin-bottom:2px}
+.ck-date{font-size:6px;letter-spacing:1px;color:#383838}
+.ck-saved{display:inline-block;margin-top:5px;font-size:6px;letter-spacing:1px;color:#1D9E75;background:rgba(29,158,117,0.07);border:0.5px solid rgba(29,158,117,0.18);border-radius:3px;padding:2px 5px}
+.ck-ing-list{padding:3px 0}
+.ck-ing{padding:5px 12px;display:flex;align-items:center;gap:6px;border-bottom:0.5px solid #0C0D0F}
+.ck-ing:last-child{border-bottom:none}
+.ck-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.dot-have{background:#1D9E75}
+.dot-need{background:#C49A2A}
+.dot-flag{background:#D43C28}
+.ck-ing-name{font-size:9px;color:#666;flex:1}
+.ck-ing-tag{font-size:6px;color:#383838}
+.ck-flag-note{font-size:6px;color:#D43C28}
+.chef-assembling{padding:6px 12px;border-top:0.5px solid #141618;display:flex;align-items:center;gap:6px}
+.asm-dot{width:5px;height:5px;background:#C49A2A;border-radius:50%}
+.asm-text{font-size:6px;letter-spacing:1.5px;color:#C49A2A}
+.share-row{margin:8px 11px;display:flex;gap:6px}
+.share-main{flex:1;background:#C49A2A;border:none;border-radius:7px;padding:8px;font-size:6px;letter-spacing:1.5px;color:#000;font-family:'DM Mono',monospace;font-weight:500;text-align:center}
+.share-live{flex:1;background:rgba(29,158,117,0.07);border:0.5px solid rgba(29,158,117,0.22);border-radius:7px;padding:8px;font-size:6px;letter-spacing:1px;color:#1D9E75;text-align:center}
+
+/* DOCTRINE */
+.doctrine{max-width:1260px;width:100%;margin-top:48px;padding:28px 24px;background:#0C0D0F;border-radius:16px;border:0.5px solid #181A1E}
+.doctrine-title{font-size:7px;letter-spacing:3px;color:#C49A2A;margin-bottom:20px}
+.doctrine-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.doc-label{font-size:6px;letter-spacing:2px;color:#383838;margin-bottom:5px}
+.doc-value{font-family:'Cormorant Garamond',serif;font-size:12px;color:#555;line-height:1.6}
+</style>
+</head>
+<body>
+
+<div class="page-title">Chef Recipe Flow</div>
+<div class="page-sub">ALLERGY LAYER · UPGRADE GATE · SHOPPING MEMO · COOKBOOK</div>
+<div class="page-note">
+  Every ingredient in every Chef suggestion runs through <strong>The Equalizer</strong> against the member's membrane. Peanut allergy? Every item in the recipe gets checked — not just the scanned product. Non-full members see the W/WO gate and upgrade prompt. Full members see everything.
+</div>
+
+<div class="phones-row">
+
+  <!-- SCREEN 1 -->
+  <div class="phone-col">
+    <div class="step-tag">STEP 01</div>
+    <div class="screen-desc">Scan result · Allergy flag fires · W/WO upgrade gate · Tappable recipe chips</div><br>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+      <div class="tab-header">
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="intel-badge intel-gold">THE EQUALIZER · THE CHEF</div>
+      </div>
+      <div class="verdict-row">
+        <div class="vdot-warn"></div>
+        <div><div class="vtext-warn">HEADS UP</div><div class="vsub">Read before you buy</div></div>
+      </div>
+      <div class="allergy-alert">
+        <div class="allergy-top"><span class="allergy-icon">⚠</span><span class="allergy-label">MEMBRANE FLAG · PEANUT ALLERGEN</span></div>
+        <div class="allergy-text">This tomato paste <strong>contains traces of peanut oil</strong> from shared equipment. Your membrane flags peanut sensitivity.</div>
+        <div class="allergy-alts">
+          <span class="alt-chip">Muir Glen ✓</span>
+          <span class="alt-chip">Bianco DiNapoli ✓</span>
+          <span class="alt-chip">Jovial ✓</span>
+        </div>
+      </div>
+      <div class="wo-gate">
+        <div class="wo-header">
+          <span class="wo-title">WITHOUT / WITH AA2</span>
+          <span class="wo-locked">🔒 UPGRADE TO UNLOCK</span>
+        </div>
+        <div class="wo-cols">
+          <div class="wo-col without">
+            <div class="wo-col-label">WITHOUT</div>
+            <div class="wo-item">You buy this. Reaction at dinner. No warning given.</div>
+            <div class="wo-item">Recipe guesswork. No substitutes shown.</div>
+          </div>
+          <div class="wo-col with">
+            <div class="wo-col-label">WITH</div>
+            <div class="wo-item">Flagged before checkout. Safe alternates shown instantly.</div>
+            <div class="wo-item">Full recipe. Every ingredient membrane-checked.</div>
+          </div>
+        </div>
+        <div class="upgrade-cta">
+          <div class="upgrade-text">Full scanner · Allergy layer<br>Chef recipes · Cookbook</div>
+          <div class="upgrade-btn">UPGRADE →</div>
+        </div>
+      </div>
+      <div class="product-name">Cento Tomato Paste</div>
+      <div class="product-sub">6 OZ · CANNED · SCANNED IN STORE</div>
+      <div class="chef-divider">
+        <div><div class="chef-name">The Chef</div><div class="chef-sub">TAP A RECIPE TO BUILD YOUR LIST</div></div>
+      </div>
+      <div class="recipe-chips">
+        <div class="recipe-chip active">
+          <div><div class="chip-name">Spaghetti Bolognese</div><div class="chip-meta">8 ingredients · 45 min · 3 still needed</div></div>
+          <div class="chip-arr">›</div>
+        </div>
+        <div class="recipe-chip">
+          <div><div class="chip-name">Shakshuka</div><div class="chip-meta">7 ingredients · 25 min · 4 still needed</div></div>
+          <div class="chip-arr">›</div>
+        </div>
+        <div class="recipe-chip">
+          <div><div class="chip-name">Puttanesca</div><div class="chip-meta">9 ingredients · 30 min · 5 still needed</div></div>
+          <div class="chip-arr">›</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 -->
+  <div class="phone-col">
+    <div class="step-tag">STEP 02</div>
+    <div class="screen-desc">Full recipe · HAVE / FLAGGED / NEED split · Per-ingredient allergy check · Add to Cookbook</div><br>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+      <div class="tab-header">
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="intel-badge intel-gold">THE CHEF · FULL RECIPE</div>
+      </div>
+      <div class="recipe-detail-top">
+        <div class="back">← BACK</div>
+        <div class="intel-badge" style="color:#D43C28;border:0.5px solid rgba(210,60,40,0.3)">2 FLAGGED</div>
+      </div>
+      <div class="recipe-big">Spaghetti Bolognese</div>
+      <div class="recipe-meta-row">
+        <span class="recipe-meta-chip">45 MIN</span>
+        <span class="recipe-meta-chip">SERVES 4</span>
+        <span class="recipe-meta-chip">ITALIAN</span>
+      </div>
+      <div class="ing-section">
+        <div class="ing-section-label have-label">✓ YOU HAVE (1 OF 8)</div>
+        <div class="ing-row">
+          <div class="ing-check check-have">✓</div>
+          <div class="ing-body"><div class="ing-name have">Tomato paste</div><div class="ing-amount">2 tbsp · just scanned</div></div>
+        </div>
+      </div>
+      <div class="ing-section">
+        <div class="ing-section-label flag-label-txt">⚠ FLAGGED BY YOUR MEMBRANE (2)</div>
+        <div class="ing-row">
+          <div class="ing-check check-flag">⚠</div>
+          <div class="ing-body">
+            <div class="ing-name flagged">Peanut oil (some brands)</div>
+            <div class="ing-amount">2 tbsp · check brand</div>
+            <div class="ing-allergy">
+              <div class="ing-allergy-warn">⚠ PEANUT ALLERGEN IN YOUR MEMBRANE</div>
+              <div class="ing-allergy-text">Most recipes use olive oil. Confirm brand before buying. These are safe:</div>
+              <div class="ing-alts-row"><span class="ing-alt-btn">California Olive Ranch ✓</span><span class="ing-alt-btn">Kirkland EVOO ✓</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="ing-row">
+          <div class="ing-check check-flag">⚠</div>
+          <div class="ing-body">
+            <div class="ing-name flagged">Worcestershire sauce</div>
+            <div class="ing-amount">1 tsp · optional</div>
+            <div class="ing-allergy">
+              <div class="ing-allergy-warn">⚠ CONTAINS ANCHOVIES — CHECK SENSITIVITY</div>
+              <div class="ing-allergy-text">Your membrane flags shellfish sensitivity. Skip or substitute:</div>
+              <div class="ing-alts-row"><span class="ing-alt-btn">Coconut aminos ✓</span><span class="ing-alt-btn">Soy + vinegar ✓</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ing-section">
+        <div class="ing-section-label need-label">STILL NEED (5 OF 8)</div>
+        <div class="ing-row"><div class="ing-check check-need"></div><div class="ing-body"><div class="ing-name need">Ground beef 80/20</div><div class="ing-amount">500g</div></div></div>
+        <div class="ing-row"><div class="ing-check check-need"></div><div class="ing-body"><div class="ing-name need">Spaghetti noodles</div><div class="ing-amount">400g</div></div></div>
+        <div class="ing-row"><div class="ing-check check-need"></div><div class="ing-body"><div class="ing-name need">Yellow onion</div><div class="ing-amount">1 large</div></div></div>
+      </div>
+      <div class="cookbook-cta">
+        <div class="cta-q">Add this to your Cookbook?</div>
+        <div class="cta-sub">Saves the full recipe, your ingredient list, and membrane notes. Share via Live Cooking anytime.</div>
+        <div class="cta-btns"><div class="btn-yes">YES · SAVE TO COOKBOOK</div><div class="btn-no">Not now</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3 -->
+  <div class="phone-col">
+    <div class="step-tag">STEP 03</div>
+    <div class="screen-desc">Shopping memo · Check off as you scan · Allergy flags inline · Scan to verify</div><br>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+      <div class="tab-header">
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="intel-badge intel-gold">SHOPPING LIST · BOLOGNESE</div>
+      </div>
+      <div class="memo-wrap">
+        <div class="memo-card">
+          <div class="memo-titlebar">
+            <div class="memo-recipe-name">Spaghetti Bolognese</div>
+            <div class="memo-badge">2 of 8 done</div>
+          </div>
+          <div class="memo-progress">
+            <div class="prog-track"><div class="prog-fill"></div></div>
+            <div class="prog-label">25% COMPLETE</div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-done">✓</div>
+            <div class="memo-body"><div class="memo-item-name mname-done">Tomato paste · 2 tbsp</div><div class="memo-item-sub">Scanned · Cento · substituted</div></div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-done">✓</div>
+            <div class="memo-body"><div class="memo-item-name mname-done">Spaghetti noodles · 400g</div><div class="memo-item-sub">Scanned · Barilla · ALL CLEAR</div></div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-flag">⚠</div>
+            <div class="memo-body">
+              <div class="memo-item-name mname-flag">Tomato sauce · 1 can</div>
+              <div class="memo-item-sub">⚠ Verify peanut-free before buying</div>
+              <div class="memo-allergy">
+                <div class="memo-allergy-text">Some brands use shared peanut equipment. Scan before putting in cart.</div>
+                <div class="memo-alts"><span class="memo-alt">Muir Glen ✓</span><span class="memo-alt">Rao's ✓</span><span class="memo-alt">Bianco ✓</span></div>
+                <div class="memo-scan-btn">⚡ SCAN TO VERIFY →</div>
+              </div>
+            </div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-scan">⚡</div>
+            <div class="memo-body">
+              <div class="memo-item-name mname-scan">Ground beef 80/20 · 500g</div>
+              <div class="memo-item-sub">Scan label to verify in store</div>
+              <div class="memo-scan-btn">⚡ SCAN NOW →</div>
+            </div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-open"></div>
+            <div class="memo-body"><div class="memo-item-name mname-open">Yellow onion · 1 large</div><div class="memo-item-sub">Produce · no scan needed</div></div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-open"></div>
+            <div class="memo-body"><div class="memo-item-name mname-open">Garlic · 4 cloves</div><div class="memo-item-sub">Produce · no scan needed</div></div>
+          </div>
+          <div class="memo-item">
+            <div class="memo-chk mchk-open"></div>
+            <div class="memo-body">
+              <div class="memo-item-name mname-open">Olive oil · 2 tbsp</div>
+              <div class="memo-item-sub">Confirm peanut-free brand</div>
+              <div class="memo-scan-btn">⚡ SCAN TO VERIFY →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chef-tip-card" style="margin:8px 11px 12px">
+        <div class="chef-tip-label">THE CHEF · PREP NOTE</div>
+        <div class="chef-tip-text">"Brown the beef in batches. Never crowd the pan. That's where the flavor lives."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4 -->
+  <div class="phone-col">
+    <div class="step-tag">STEP 04</div>
+    <div class="screen-desc">Cookbook saved · Membrane notes attached · Share or start Live Cooking session</div><br>
+    <div class="phone">
+      <div class="statusbar"><span>9:41</span><span>●●●</span></div>
+      <div class="tab-header">
+        <div class="receipt">I AM THE RECEIPT</div>
+        <div class="intel-badge intel-gold">THE VAULT · COOKBOOK</div>
+      </div>
+      <div class="cookbook-card">
+        <div class="cookbook-top">
+          <div class="ck-flags"><span class="flag-pill">🇮🇹 ITALIAN</span><span class="flag-pill">45 MIN</span><span class="flag-pill">SERVES 4</span></div>
+          <div class="ck-title">Spaghetti Bolognese</div>
+          <div class="ck-date">SAVED APR 7, 2026 · IN-STORE BUILD · BELGRADE MT</div>
+          <div class="ck-saved">✓ SAVED TO COOKBOOK</div>
+        </div>
+        <div class="ck-ing-list">
+          <div class="ck-ing"><div class="ck-dot dot-have"></div><div class="ck-ing-name">Tomato paste · 2 tbsp</div><div class="ck-ing-tag">scanned · substituted</div></div>
+          <div class="ck-ing"><div class="ck-dot dot-have"></div><div class="ck-ing-name">Spaghetti noodles · 400g</div><div class="ck-ing-tag">scanned · clear</div></div>
+          <div class="ck-ing"><div class="ck-dot dot-flag"></div><div class="ck-ing-name">Olive oil · 2 tbsp</div><div class="ck-flag-note">⚠ verify peanut-free</div></div>
+          <div class="ck-ing"><div class="ck-dot dot-need"></div><div class="ck-ing-name">Ground beef 80/20 · 500g</div><div class="ck-ing-tag">not yet scanned</div></div>
+          <div class="ck-ing"><div class="ck-dot dot-need"></div><div class="ck-ing-name">Yellow onion · 1 large</div><div class="ck-ing-tag">produce</div></div>
+          <div class="ck-ing"><div class="ck-dot dot-need"></div><div class="ck-ing-name">Garlic · 4 cloves</div><div class="ck-ing-tag">produce</div></div>
+        </div>
+        <div class="chef-assembling"><div class="asm-dot"></div><div class="asm-text">THE CHEF IS ASSEMBLING THIS ENTRY</div></div>
+      </div>
+      <div class="share-row">
+        <div class="share-main">SHARE RECIPE →</div>
+        <div class="share-live">LIVE COOK SESSION</div>
+      </div>
+      <div class="chef-tip-card" style="margin:0 11px 12px">
+        <div class="chef-tip-label">MEMBRANE NOTES · PRIVATE · SAVED WITH RECIPE</div>
+        <div class="chef-tip-text">"2 ingredients flagged. Substitutes confirmed. Shared version shows clean ingredient list only — membrane flags stay private."</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DOCTRINE -->
+<div class="doctrine">
+  <div class="doctrine-title">CHEF RECIPE FLOW — ARCHITECTURE DOCTRINE · PRE-BUILD LOCK</div>
+  <div class="doctrine-grid">
+    <div><div class="doc-label">ALLERGY LAYER RULE</div><div class="doc-value">Every ingredient in every Chef suggestion runs through The Equalizer against the member's membrane. Not just the scanned item — every item in the full recipe list.</div></div>
+    <div><div class="doc-label">UPGRADE GATE</div><div class="doc-value">Non-full members see WITHOUT clearly, WITH blurred. Gate shows what they're missing — allergy layer, full recipe, substitutes. One CTA: Upgrade. No shame.</div></div>
+    <div><div class="doc-label">SECOND CLAUDE CALL</div><div class="doc-value">Tapping a recipe chip fires a new Claude API call. Passes: recipe name, member membrane, scanned items. Returns: full ingredient list, HAVE/FLAGGED/NEED split, allergy warnings, safe substitutes, prep note.</div></div>
+    <div><div class="doc-label">COOKBOOK TABLE NEEDED</div><div class="doc-value">New Supabase table: cookbook_recipes. Fields: member_id, recipe_name, ingredients (jsonb), membrane_flags (jsonb), created_at, shared (boolean), live_cooking_session_id.</div></div>
+    <div><div class="doc-label">SHOPPING MEMO STATES</div><div class="doc-value">DONE (green check), FLAGGED (red warning with allergy note + safe alternates + SCAN TO VERIFY), SCAN NOW (blue bolt), OPEN (empty checkbox). Allergy flags shown inline under the item.</div></div>
+    <div><div class="doc-label">SHARED RECIPE RULE</div><div class="doc-value">When shared via Live Cooking, the shared version shows the clean ingredient list only. Membrane flags and personal substitutes are never shared. Personal truth stays private.</div></div>
+    <div><div class="doc-label">ROLE SEPARATION</div><div class="doc-value">The Chef suggests recipes, builds ingredient lists, delivers prep notes, assembles cookbook format, suggests alternates. The Equalizer runs every allergy check. These roles never overlap.</div></div>
+    <div><div class="doc-label">ACT RIGHT DOLLARS</div><div class="doc-value">Every safe substitute found that saves money vs the flagged product earns Act Right Dollars. The allergy layer is also the savings layer. Both outputs appear on the same flag card.</div></div>
+  </div>
+</div>
+
+</body>
+</html>
