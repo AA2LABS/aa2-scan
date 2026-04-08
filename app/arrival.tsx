@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 
 // ─── FLAG ─────────────────────────────────────────────────────────────────────
-export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_v2';
+export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_v3';
 
 async function markArrivalDone(): Promise<void> {
   try {
@@ -107,6 +107,24 @@ const SCREENS: Screen[] = [
     role: 'Immune System · Gate Intelligence · Truth Engine',
     without: 'Harm enters quietly. Labels lie. No one watching the gate.',
     with: 'Nothing passes without clearance. Speaks only in emergencies.',
+    button: 'Continue →',
+  },
+  {
+    tag: 'SPOKE 27 · TACTICAL',
+    image: require('../assets/images/k9_hero.jpg'),
+    name: 'K9 Tactical',
+    role: 'Handler + Canine · Mission Readiness',
+    without: 'Guesswork in the field. No biosignal tracking.',
+    with: 'Handler and canine biosignals synced. Mission ready.',
+    button: 'Continue →',
+  },
+  {
+    tag: 'SPOKE 27 · K9 TAB',
+    image: require('../assets/images/k9_feline_hero.jpg'),
+    name: 'K9 Intelligence',
+    role: 'Canine Nutritionist · Safety · Species Care',
+    without: 'Food that harms. Toxins undetected.',
+    with: 'Every ingredient scanned. Species-safe.',
     button: 'Begin Onboarding →',
     isLast: true,
   },

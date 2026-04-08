@@ -51,7 +51,7 @@ const TAB_HEROES: Record<string, any> = {
   fish:       require('../../assets/images/fish_hero.jpg'),
   care:       require('../../assets/images/tab-care.jpg'),
   grownfolks: require('../../assets/images/tab-grownfolks.jpg'),
-  k9:         require('../../assets/images/tab-k9.jpg'),
+  k9:         require('../../assets/images/k9_feline_hero.jpg'),
   horse:      require('../../assets/images/tab-horse.jpg'),
   agri:       require('../../assets/images/tab-agri.jpg'),
 };
