@@ -572,6 +572,19 @@ export default function ScannerScreen() {
     return [];
   };
 
+  const heroLabel = () => {
+    if (activeTab==='fish') return 'FISH & PESCATARIAN';
+    if (activeTab==='species' && speciesSub==='feline') return 'K9 / FELINE';
+    if (activeTab==='species' && speciesSub==='k9') return 'K9 / PET';
+    return currentTab.label;
+  };
+
+  const heroSubLabel = () => {
+    if (activeTab==='fish') return 'THE EQUALIZER · FORAGER LAYER';
+    if (activeTab==='species' && speciesSub==='feline') return 'FELINE NUTRITIONIST · ASPCA FELINE THRESHOLDS ACTIVE';
+    return '9 DATABASES STANDING BY';
+  };
+
   return (
     <SafeAreaView style={[s.root, { backgroundColor:P.bg }]}>
 
@@ -677,8 +690,8 @@ export default function ScannerScreen() {
             <View style={s.heroWrap}>
               <Image source={heroImage} style={s.heroImage} resizeMode="cover"/>
               <View style={[s.heroOverlay,{backgroundColor:P.bg+'CC'}]}>
-                <Text style={[s.heroTabLabel,{color:accentColor}]}>{activeTab==='fish'?'FISH & PESCATARIAN':currentTab.label}</Text>
-                <Text style={[s.heroSubLabel,{color:F.dimWhite}]}>{activeTab==='fish'?'THE EQUALIZER · FORAGER LAYER':'9 DATABASES STANDING BY'}</Text>
+                <Text style={[s.heroTabLabel,{color:accentColor}]}>{heroLabel()}</Text>
+                <Text style={[s.heroSubLabel,{color:F.dimWhite}]}>{heroSubLabel()}</Text>
               </View>
             </View>
           )}
