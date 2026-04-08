@@ -84,7 +84,7 @@ const SCREENS: Screen[] = [
   },
   {
     tag: 'INTELLIGENCE 0X03',
-    image: require('../assets/images/Gemini_Generated_Image_iwymiiwymiiwymii.jpg'),
+    image: require('../assets/images/biobuddy_hero.jpg'),
     name: 'Bio Buddy',
     role: 'Biometric Intelligence · Signal Reader · Threshold Guard',
     without: 'Body signals go unread. Patterns invisible. Thresholds unknown.',
@@ -111,7 +111,7 @@ const SCREENS: Screen[] = [
   },
   {
     tag: 'SPOKE 27 · TACTICAL',
-    image: require('../assets/images/k9_hero.jpg'),
+    image: require('../assets/images/k9_tactical_hero.jpg'),
     name: 'K9 Tactical',
     role: 'Handler + Canine · Mission Readiness',
     without: 'Guesswork in the field. No biosignal tracking.',
