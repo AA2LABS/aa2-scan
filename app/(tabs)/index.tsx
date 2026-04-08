@@ -575,7 +575,7 @@ export default function ScannerScreen() {
   const heroLabel = () => {
     if (activeTab==='fish') return 'FISH & PESCATARIAN';
     if (activeTab==='species' && speciesSub==='feline') return 'K9 / FELINE';
-    if (activeTab==='species' && speciesSub==='k9') return 'K9 / PET';
+    if (activeTab==='species' && speciesSub==='k9') return 'K9 / FELINE INTELLIGENCE';
     if (activeTab==='species' && speciesSub==='agricultural') return 'AGRICULTURAL';
     if (activeTab==='species' && speciesSub==='agri') return 'AGRICULTURAL';
     return currentTab.label;

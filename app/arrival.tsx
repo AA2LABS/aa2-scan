@@ -102,7 +102,7 @@ const SCREENS: Screen[] = [
   },
   {
     tag: 'INTELLIGENCE 0X05',
-    image: require('../assets/images/Gemini_Generated_Image_iwymiiwymiiwymii.jpg'),
+    image: require('../assets/images/equalizer_hero.jpg'),
     name: 'The Equalizer',
     role: 'Immune System · Gate Intelligence · Truth Engine',
     without: 'Harm enters quietly. Labels lie. No one watching the gate.',
@@ -119,9 +119,9 @@ const SCREENS: Screen[] = [
     button: 'Continue →',
   },
   {
-    tag: 'SPOKE 27 · K9 TAB',
+    tag: 'K9-FELINE INTELLIGENCE',
     image: require('../assets/images/k9_feline_hero.jpg'),
-    name: 'K9 Intelligence',
+    name: 'K9 / Feline Intelligence',
     role: 'Canine Nutritionist · Safety · Species Care',
     without: 'Food that harms. Toxins undetected.',
     with: 'Every ingredient scanned. Species-safe.',
