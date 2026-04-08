@@ -102,7 +102,7 @@ const SCREENS: Screen[] = [
   },
   {
     tag: 'INTELLIGENCE 0X05',
-    image: require('../assets/images/Gemini_Generated_Image_iwymiiwymiiwymii.png'),
+    image: require('../assets/images/Gemini_Generated_Image_iwymiiwymiiwymii.jpg'),
     name: 'The Equalizer',
     role: 'Immune System · Gate Intelligence · Truth Engine',
     without: 'Harm enters quietly. Labels lie. No one watching the gate.',
