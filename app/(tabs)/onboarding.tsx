@@ -914,6 +914,20 @@ export default function OnboardingScreen() {
               : <Text style={st.completeBtnText}>CONTINUE WHEN READY →</Text>
             }
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setStep('block_4')}
+            style={{ marginTop: 16, paddingVertical: 12, alignItems: 'center' }}
+            activeOpacity={0.7}
+          >
+            <Text style={{
+              fontFamily: 'DMMono-Regular',
+              fontSize: 11,
+              color: MUTED,
+              letterSpacing: 2,
+            }}>
+              ← BACK TO BLOCK 4
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </SafeAreaView>
