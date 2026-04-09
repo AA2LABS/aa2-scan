@@ -19,8 +19,8 @@ const LIGHT = {
   muted:   '#8A7A6A',
   chip:    '#F0EBE3',
   chipBd:  '#D4C9B8',
-  accent:  '#1D9E75',
-  gold:    '#C49A2A',
+  accent:  '#1BB8FF',
+  gold:    '#1BB8FF',
   receipt: '#8A7A6A',
 };
 const DARK = {
@@ -31,8 +31,8 @@ const DARK = {
   muted:   'rgba(250,247,242,0.55)',
   chip:    '#1A1408',
   chipBd:  '#2E2208',
-  accent:  '#1D9E75',
-  gold:    '#C49A2A',
+  accent:  '#1BB8FF',
+  gold:    '#1BB8FF',
   receipt: 'rgba(250,247,242,0.35)',
 };
 
@@ -55,7 +55,7 @@ const anthropic = new Anthropic({
 });
 
 // ─── CHIP OPTIONS ─────────────────────────────────────────────────────────────
-const CONCIERGE_VOICE_OPTIONS = ['Javier', 'The Coach', 'The Stable', 'COMMAND', 'THE BRIEF'];
+const CONCIERGE_VOICE_OPTIONS = ['The Coach', 'The Stable', 'COMMAND', 'THE BRIEF'];
 
 const GOAL_OPTIONS = [
   'Weight management', 'Muscle building', 'Better sleep', 'Stress reduction',

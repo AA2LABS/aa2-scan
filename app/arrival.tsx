@@ -157,7 +157,7 @@ function Slide({
     <View style={sl.root}>
       <ImageBackground
         source={item.image}
-        style={sl.imageBg}
+        style={[sl.imageBg, { maxHeight: SCREEN_H * 0.55 }]}
         resizeMode="cover"
       >
         {/* Dark overlay */}
@@ -216,6 +216,7 @@ const sl = StyleSheet.create({
   root: {
     width: SCREEN_W,
     height: SCREEN_H,
+    maxHeight: SCREEN_H,
   },
   imageBg: {
     flex: 1,
