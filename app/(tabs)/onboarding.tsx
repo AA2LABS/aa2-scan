@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import PreviewPanels from '../preview-panels';
 import {
   ActivityIndicator,
   Dimensions,
@@ -312,6 +313,7 @@ function FieldLabel({ text }: { text: string }) {
 
 // ─── FLOW TYPE ───────────────────────────────────────────────────────────────
 type FlowStep =
+  | 'preview_panels'
   | 'north_star_intro'
   | 'briefing_1' | 'block_1'
   | 'briefing_2' | 'block_2'
@@ -330,7 +332,7 @@ export default function OnboardingScreen() {
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   // ── Flow
-  const [step, setStep] = useState<FlowStep>('north_star_intro');
+  const [step, setStep] = useState<FlowStep>('preview_panels');
 
   // ── Focus tracking
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -514,6 +516,11 @@ export default function OnboardingScreen() {
         total={27}
         onPress={() => setStep('north_star_intro')}
       />
+
+      {/* ── PREVIEW PANELS ───────────────────────────────────────────────── */}
+      {step === 'preview_panels' && (
+        <PreviewPanels onComplete={() => setStep('north_star_intro')} />
+      )}
 
       {/* ── NORTH STAR INTRO ─────────────────────────────────────────────── */}
       {step === 'north_star_intro' && (
