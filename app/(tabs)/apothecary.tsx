@@ -55,6 +55,7 @@ const anthropic = new Anthropic({
 
 // ─── MODES ───────────────────────────────────────────────────────────────────
 type Mode = 'compound' | 'formulate' | 'condition' | 'forager';
+type ForagerSubMode = 'identify' | 'scan_label' | 'water_body' | 'harvest';
 
 const MODES: { id: Mode; label: string; glyph: string; desc: string }[] = [
   {
@@ -100,7 +101,9 @@ const edibilityLabel = (e: EdibilityLevel) =>
   e === 'safe' ? 'SAFE TO CONSUME' : e === 'conditional' ? 'CONDITIONAL — READ NOTES' : 'TOXIC — DO NOT CONSUME';
 
 // ─── SYSTEM PROMPTS ──────────────────────────────────────────────────────────
-const COMPOUND_SYS = `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. You are backed by 9 silent internal databases spanning ethnobotany, pharmacognosy, toxicology, clinical herbalism, and integrative medicine. Speak as The Equalizer: direct, calm, authoritative. Never preachy.
+const SEVERITY_PREFIX = `SEVERITY RULE — NON-NEGOTIABLE:\nAlways render results in severity order from most dangerous to least dangerous.\nThe most dangerous information must appear FIRST in your response.\nNever bury a warning below informational content.\nA member should never have to scroll to find out something can harm them.\n\n`;
+
+const COMPOUND_SYS = SEVERITY_PREFIX + `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. You are backed by 9 silent internal databases spanning ethnobotany, pharmacognosy, toxicology, clinical herbalism, and integrative medicine. Speak as The Equalizer: direct, calm, authoritative. Never preachy.
 
 CRITICAL RULES:
 1. NEVER name any database in any user-facing field.
@@ -122,7 +125,7 @@ Return this exact JSON:
   "actRightDollars": "REQUIRED. Estimated savings versus pharmaceutical equivalent. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
 }`;
 
-const FORMULATE_SYS = `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. You assess compound stacks for synergy, antagonism, and safety before the member ever formulates.
+const FORMULATE_SYS = SEVERITY_PREFIX + `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. You assess compound stacks for synergy, antagonism, and safety before the member ever formulates.
 
 CRITICAL RULES:
 1. NEVER name any database in any user-facing field.
@@ -141,7 +144,7 @@ Return this exact JSON:
   "actRightDollars": "REQUIRED. Estimated savings vs. pharmaceutical alternatives. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
 }`;
 
-const CONDITION_SYS = `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. Given a health goal or condition, return a complete plant-based protocol.
+const CONDITION_SYS = SEVERITY_PREFIX + `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. Given a health goal or condition, return a complete plant-based protocol.
 
 CRITICAL RULES:
 1. NEVER name any database in any user-facing field.
@@ -161,7 +164,7 @@ Return this exact JSON:
   "actRightDollars": "REQUIRED. Estimated savings vs. pharmaceutical approaches. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
 }`;
 
-const FORAGER_SYS = `You are The Equalizer running the FORAGER LAYER — AA2's wild food intelligence for Spoke 34. Backed by 9 silent databases spanning mycology, ethnobotany, wilderness survival medicine, foraging field guides, and regional flora/fauna databases. Speak as The Equalizer: direct, calm, authoritative. A wrong identification can kill. Be exact.
+const FORAGER_SYS = SEVERITY_PREFIX + `You are The Equalizer running the FORAGER LAYER — AA2's wild food intelligence for Spoke 34. Backed by 9 silent databases spanning mycology, ethnobotany, wilderness survival medicine, foraging field guides, and regional flora/fauna databases. Speak as The Equalizer: direct, calm, authoritative. A wrong identification can kill. Be exact.
 
 CRITICAL RULES:
 1. NEVER name any database in any user-facing field.
@@ -189,6 +192,98 @@ Return this exact JSON:
   "foragerNote": "REQUIRED. 3 numbered practical field notes — harvesting tips, storage, any warnings specific to this specimen.",
   "actRightDollars": "REQUIRED. Estimated market value of a typical foraged haul of this species. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
 }`;
+
+// ─── HUNTER PROMPT ───────────────────────────────────────────────────────────
+const HUNTER_PROMPT = `You are AA2 Hunter Intelligence — The Equalizer operating in the field.
+
+SEVERITY RULE — NON-NEGOTIABLE:
+Always render results in severity order from most dangerous to least dangerous.
+Never bury a danger below informational content. A hunter should never have to scroll to find out something is dangerous.
+
+Identify the wild game animal in this image or description. Then respond in this EXACT format and order:
+
+IDENTIFICATION: [Common name · Scientific name · Sex if determinable · Estimated age class]
+
+CWD STATUS:
+[This section is ALWAYS first after identification. Chronic Wasting Disease is a fatal prion disease with no cure.]
+
+For deer, elk, moose, caribou, reindeer:
+- Check if species is CWD-susceptible
+- Assess risk based on member location
+- If HIGH RISK: flag in red with explicit do-not-consume warnings for brain, spinal cord, eyes, spleen, lymph nodes
+- If LOW RISK: still recommend testing
+- Always include: "Contact your state wildlife agency for free CWD testing kits before consuming."
+
+For non-susceptible species (rabbit, pheasant, duck, turkey, bear, boar):
+- State clearly: CWD NOT APPLICABLE TO THIS SPECIES
+
+PARASITE & PATHOGEN RISK:
+[Species-specific risks only]
+- Bear/boar: Trichinella warning
+- Rabbit: Tularemia handling precautions
+- Waterfowl: Avian influenza if applicable
+- Elk/deer: Liver fluke if applicable
+- If none applicable: state ALL CLEAR
+
+HARVEST REGULATIONS:
+[Based on member home location]
+- Season status (open/closed)
+- Bag/possession limits
+- Tagging requirements
+- Reporting deadlines
+- License requirements
+State clearly if you cannot verify current regulations and direct them to their state wildlife agency.
+
+FIELD SAFETY:
+[Overall assessment — Safe to process / Caution / Do not consume]
+One clear verdict with reason.
+
+MEAT QUALITY INDICATORS:
+[What to look for in the field]
+- Hide/feather condition
+- Fat coverage
+- Muscle color and texture
+- Signs of disease or injury
+- Gut shot assessment if relevant
+
+FIELD DRESS NOTES:
+[Species-specific handling]
+- Temperature management
+- Time sensitivity
+- Key steps for this species
+- What NOT to do
+
+NUTRITION:
+[Protein, fat profile, comparison to commercial equivalent]
+
+CHEF NOTES:
+[The Chef's guidance]
+- Aging recommendation
+- Best cuts for this species
+- Optimal cooking method
+- Flavor profile
+
+If you cannot identify the animal, say IDENTIFICATION: UNCLEAR and ask for a clearer image or more detail.`;
+
+// ─── HARVEST ANALYSIS ────────────────────────────────────────────────────────
+async function runHarvestAnalysis(query: string, location: string = 'Belgrade, MT'): Promise<string> {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY!,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1200,
+      system: HUNTER_PROMPT + `\n\nMember location: ${location}`,
+      messages: [{ role: 'user', content: `Harvest analysis request: ${query}` }],
+    }),
+  });
+  const data = await response.json();
+  return data.content?.[0]?.text ?? 'Analysis unavailable.';
+}
 
 // ─── BARCODE LOOKUP ──────────────────────────────────────────────────────────
 async function lookupBarcode(barcode: string): Promise<string> {
@@ -231,22 +326,26 @@ export default function ApothecaryScreen() {
   const lastBarcodeRef = useRef<string | null>(null);
   const scannedRef     = useRef(false);
 
-  const [mode,          setMode]          = useState<Mode>('compound');
-  const [query,         setQuery]         = useState('');
-  const [condition,     setCondition]     = useState('');
-  const [stackInput,    setStackInput]    = useState('');
-  const [stack,         setStack]         = useState<StackItem[]>([]);
-  const [foragerQuery,  setForagerQuery]  = useState('');
-  const [loading,       setLoading]       = useState(false);
-  const [result,        setResult]        = useState<any>(null);
-  const [apiError,      setApiError]      = useState('');
+  const [mode,           setMode]          = useState<Mode>('compound');
+  const [foragerSubMode, setForagerSubMode]= useState<ForagerSubMode>('identify');
+  const [query,          setQuery]         = useState('');
+  const [condition,      setCondition]     = useState('');
+  const [stackInput,     setStackInput]    = useState('');
+  const [stack,          setStack]         = useState<StackItem[]>([]);
+  const [foragerQuery,   setForagerQuery]  = useState('');
+  const [harvestResult,  setHarvestResult] = useState('');
+  const [loading,        setLoading]       = useState(false);
+  const [result,         setResult]        = useState<any>(null);
+  const [apiError,       setApiError]      = useState('');
 
-  const clearResult = () => { setResult(null); setApiError(''); };
+  const clearResult = () => { setResult(null); setHarvestResult(''); setApiError(''); };
 
   const switchMode = (m: Mode) => {
     setMode(m);
     clearResult();
     closeCameraIfOpen();
+    setForagerSubMode('identify');
+    setForagerQuery('');
   };
 
   const closeCameraIfOpen = () => {
@@ -292,6 +391,21 @@ export default function ApothecaryScreen() {
     if (loading) return;
     const barcode = lastBarcodeRef.current;
     scannedRef.current = true;
+
+    if (mode === 'forager' && foragerSubMode === 'harvest') {
+      closeCameraIfOpen();
+      setLoading(true);
+      clearResult();
+      try {
+        const text = await runHarvestAnalysis('Wild game harvested — photographed. Identify the species, run CWD protocol, provide full harvest intelligence in severity order.');
+        setHarvestResult(text);
+      } catch (err: any) {
+        setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     if (mode === 'forager') {
       // Capture photo as base64 BEFORE closing camera
@@ -451,11 +565,31 @@ export default function ApothecaryScreen() {
     }
   };
 
+  const runHarvest = async () => {
+    if (!foragerQuery.trim()) {
+      Alert.alert('Describe your harvest', 'Type a species or description of your harvest.');
+      return;
+    }
+    setLoading(true);
+    clearResult();
+    try {
+      const text = await runHarvestAnalysis(foragerQuery.trim());
+      setHarvestResult(text);
+    } catch (err: any) {
+      setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRun = () => {
     if (mode === 'compound')  runCompound();
     if (mode === 'formulate') runFormulate();
     if (mode === 'condition') runCondition();
-    if (mode === 'forager')   runForager();
+    if (mode === 'forager') {
+      if (foragerSubMode === 'harvest') runHarvest();
+      else runForager();
+    }
   };
 
   const hasResult = !!result;
@@ -480,7 +614,7 @@ export default function ApothecaryScreen() {
                   borderWidth: barcodeReady ? 3 : 1.5,
                 }]}/>
                 <Text style={[s.camDoctrine, { color: C.gold }]}>
-                  {mode === 'forager' ? 'FRAME YOUR WILD FIND' : 'FRAME PLANT · LABEL · BARCODE'}
+                  {mode === 'forager' && foragerSubMode === 'harvest' ? 'PHOTOGRAPH YOUR HARVEST' : mode === 'forager' ? 'FRAME YOUR WILD FIND' : 'FRAME PLANT · LABEL · BARCODE'}
                 </Text>
                 <Text style={[s.camHint, { color: barcodeReady ? C.gold : C.teal }]}>
                   {barcodeReady ? '● LOCKED — TAP TO SCAN' : 'FRAME IT · CONFIRM IT · SCAN IT'}
@@ -687,42 +821,99 @@ export default function ApothecaryScreen() {
 
         {/* ════════════ FORAGER MODE ════════════ */}
         {mode === 'forager' && (
-          hasResult && !loading ? (
-            <TouchableOpacity
-              style={[s.resetBar, { borderColor: C.teal }]}
-              onPress={() => { clearResult(); setForagerQuery(''); }}
-            >
-              <Text style={[s.resetBarText, { color: C.teal }]}>
-                🌿  IDENTIFY ANOTHER FIND
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={s.inputCard}>
-              <Text style={s.modeDesc}>{MODES[3].desc}</Text>
+          <>
+            {/* Sub-mode selector — hide when showing result */}
+            {!((foragerSubMode === 'harvest' ? !!harvestResult : hasResult) && !loading) && (
+              <View style={s.foragerSubStrip}>
+                {(['identify', 'scan_label', 'water_body', 'harvest'] as ForagerSubMode[]).map(sm => {
+                  const isHarv = sm === 'harvest';
+                  const active = foragerSubMode === sm;
+                  return (
+                    <TouchableOpacity
+                      key={sm}
+                      style={[s.foragerSubBtn,
+                        active && { borderColor: isHarv ? '#E8873A' : C.teal, backgroundColor: isHarv ? 'rgba(232,135,58,0.13)' : C.tealDim },
+                      ]}
+                      onPress={() => { setForagerSubMode(sm); clearResult(); setForagerQuery(''); }}
+                    >
+                      <Text style={[s.foragerSubBtnText, active && { color: isHarv ? '#E8873A' : C.teal }]}>
+                        {sm === 'identify' ? 'IDENTIFY' : sm === 'scan_label' ? 'SCAN LABEL' : sm === 'water_body' ? 'WATER BODY' : 'HARVEST'}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
 
-              <TouchableOpacity style={[s.scanCameraBtn, { borderColor: C.teal }]} onPress={openCamera}>
-                <Text style={s.scanCameraBtnIcon}>📷</Text>
-                <Text style={s.scanCameraBtnLabel}>FRAME YOUR WILD FIND</Text>
+            {(foragerSubMode === 'harvest' ? !!harvestResult : hasResult) && !loading ? (
+              <TouchableOpacity
+                style={[s.resetBar, { borderColor: foragerSubMode === 'harvest' ? '#E8873A' : C.teal }]}
+                onPress={() => { clearResult(); setForagerQuery(''); }}
+              >
+                <Text style={[s.resetBarText, { color: foragerSubMode === 'harvest' ? '#E8873A' : C.teal }]}>
+                  {foragerSubMode === 'harvest' ? '🦌  IDENTIFY ANOTHER HARVEST' : '🌿  IDENTIFY ANOTHER FIND'}
+                </Text>
               </TouchableOpacity>
+            ) : (
+              <View style={s.inputCard}>
+                <Text style={s.modeDesc}>
+                  {foragerSubMode === 'harvest'
+                    ? 'Wild game identification. CWD screening. Field safety. Harvest regulations. Processing and prep notes.'
+                    : MODES[3].desc}
+                </Text>
 
-              <Text style={s.orDivider}>— or describe it —</Text>
+                <TouchableOpacity
+                  style={[s.scanCameraBtn, {
+                    borderColor:     foragerSubMode === 'harvest' ? '#E8873A' : C.teal,
+                    backgroundColor: foragerSubMode === 'harvest' ? 'rgba(232,135,58,0.10)' : C.tealDim,
+                  }]}
+                  onPress={openCamera}
+                >
+                  <Text style={s.scanCameraBtnIcon}>📷</Text>
+                  <Text style={[s.scanCameraBtnLabel, { color: foragerSubMode === 'harvest' ? '#E8873A' : C.teal }]}>
+                    {foragerSubMode === 'harvest' ? 'PHOTOGRAPH YOUR HARVEST' : 'FRAME YOUR WILD FIND'}
+                  </Text>
+                </TouchableOpacity>
 
-              <Text style={s.fieldLabel}>WHAT DID YOU FIND?</Text>
-              <TextInput
-                style={[s.input, { minHeight: 88, textAlignVertical: 'top', paddingTop: 12 }]}
-                placeholder="e.g. brown cap mushroom with gills, found near oak trees in October... or: wild berries, blue-black, cluster formation..."
-                placeholderTextColor={C.muted}
-                value={foragerQuery}
-                onChangeText={setForagerQuery}
-                multiline
-                numberOfLines={3}
-                autoCorrect={false}
-              />
-              <TouchableOpacity style={s.runBtn} onPress={handleRun}>
-                <Text style={s.runBtnText}>🌿  IDENTIFY &amp; ASSESS</Text>
-              </TouchableOpacity>
-            </View>
-          )
+                <Text style={s.orDivider}>— or describe it —</Text>
+
+                <Text style={s.fieldLabel}>
+                  {foragerSubMode === 'harvest' ? 'SPECIES OR DESCRIPTION' : 'WHAT DID YOU FIND?'}
+                </Text>
+                <TextInput
+                  style={[s.input, { minHeight: 88, textAlignVertical: 'top', paddingTop: 12 }]}
+                  placeholder={foragerSubMode === 'harvest'
+                    ? 'e.g. Bull elk, whitetail doe, pheasant, cottontail...'
+                    : 'e.g. brown cap mushroom with gills, found near oak trees in October... or: wild berries, blue-black, cluster formation...'}
+                  placeholderTextColor={C.muted}
+                  value={foragerQuery}
+                  onChangeText={setForagerQuery}
+                  multiline
+                  numberOfLines={3}
+                  autoCorrect={false}
+                />
+                <TouchableOpacity
+                  style={[s.runBtn,
+                    foragerSubMode === 'harvest' && { backgroundColor: '#E8873A', opacity: foragerQuery.trim() ? 1 : 0.4 },
+                  ]}
+                  onPress={handleRun}
+                  disabled={foragerSubMode === 'harvest' && !foragerQuery.trim() || loading}
+                >
+                  <Text style={s.runBtnText}>
+                    {foragerSubMode === 'harvest' ? '🦌  IDENTIFY HARVEST →' : '🌿  IDENTIFY & ASSESS'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Harvest plain-text result */}
+            {foragerSubMode === 'harvest' && !!harvestResult && !loading && (
+              <View style={[s.intelBlock, { borderLeftColor: '#E8873A', marginTop: 12 }]}>
+                <Text style={[s.intelTag, { color: '#E8873A' }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
+                <Text style={[s.prose, { lineHeight: 22, fontSize: 14 }]}>{harvestResult}</Text>
+              </View>
+            )}
+          </>
         )}
 
         {/* ════════════ LOADING ════════════ */}
@@ -1139,6 +1330,30 @@ const s = StyleSheet.create({
   verdictGlyph:  { fontFamily: F.mono, fontSize: 20, fontWeight: '700' },
   verdictTag:    { fontFamily: F.mono, fontSize: 9, letterSpacing: 3, marginBottom: 4 },
   verdictSubject:{ fontFamily: F.display, fontSize: 22, color: C.white, letterSpacing: 2, lineHeight: 26 },
+
+  // Forager sub-mode strip
+  foragerSubStrip: {
+    flexDirection:  'row',
+    paddingHorizontal: 12,
+    paddingTop:     10,
+    paddingBottom:   4,
+    gap:             6,
+  },
+  foragerSubBtn: {
+    flex:           1,
+    alignItems:     'center',
+    paddingVertical: 7,
+    borderRadius:    7,
+    borderWidth:     1,
+    borderColor:    C.border,
+    backgroundColor: C.card,
+  },
+  foragerSubBtnText: {
+    fontFamily:    F.mono,
+    fontSize:       8,
+    color:         C.muted,
+    letterSpacing:  1,
+  },
 
   // Forager
   edibilityBadge: {
