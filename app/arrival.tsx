@@ -25,7 +25,10 @@ async function markArrivalDone(): Promise<void> {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
-const SLIDE_H = SCREEN_H * 0.82;
+const SCREEN_ASPECT = SCREEN_W / SCREEN_H;
+const SLIDE_H = SCREEN_ASPECT < 0.50
+  ? SCREEN_H * 0.65
+  : SCREEN_H * 0.82;
 
 const F = {
   display: 'BebasNeue-Regular',

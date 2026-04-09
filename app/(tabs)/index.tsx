@@ -2,10 +2,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, Alert, FlatList, Image, Modal, Platform,
+  ActivityIndicator, Alert, FlatList, Image, Linking, Modal, Platform,
   SafeAreaView, ScrollView, StyleSheet, Text, TextInput,
   TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import { supabase } from '../../lib/supabase';
 
@@ -173,6 +174,22 @@ type ScanRecord = {
   id:string; timestamp:string; tab:string;
   query:string; verdict:string; productName:string;
 };
+
+async function handleWhereToBuy(productName: string): Promise<void> {
+  try {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      const query = encodeURIComponent(productName);
+      await Linking.openURL(`https://www.google.com/maps/search/${query}`);
+      return;
+    }
+    const query = encodeURIComponent(productName + ' near me');
+    await Linking.openURL(`https://www.google.com/maps/search/${query}`);
+  } catch {
+    const query = encodeURIComponent(productName);
+    await Linking.openURL(`https://www.google.com/maps/search/${query}`);
+  }
+}
 
 async function lookupBarcode(barcode:string):Promise<string> {
   try {
@@ -1114,12 +1131,20 @@ export default function ScannerScreen() {
                   {result.alternatives.map((a:string,i:number)=>(
                     <View key={i} style={s.altItemRow}>
                       <Text style={[s.altItem,{color:F.teal,flex:1}]}>→ {a}</Text>
-                      <TouchableOpacity
-                        onPress={()=>openWhyAlternative(a)}
-                        style={s.whyBtn}
-                        hitSlop={{top:8,bottom:8,left:8,right:8}}>
-                        <Text style={s.whyBtnText}>WHY?</Text>
-                      </TouchableOpacity>
+                      <View style={{flexDirection:'row',gap:8,marginTop:8,flexWrap:'wrap'}}>
+                        <TouchableOpacity
+                          onPress={()=>openWhyAlternative(a)}
+                          style={s.whyBtn}
+                          hitSlop={{top:8,bottom:8,left:8,right:8}}>
+                          <Text style={s.whyBtnText}>WHY?</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={()=>handleWhereToBuy(a)}
+                          style={{borderWidth:1,borderColor:'rgba(27,184,255,0.40)',backgroundColor:'rgba(27,184,255,0.12)',borderRadius:8,paddingHorizontal:12,paddingVertical:6}}
+                          activeOpacity={0.7}>
+                          <Text style={{fontFamily:'DMMono-Regular',fontSize:10,color:'#1BB8FF',letterSpacing:1}}>WHERE TO BUY →</Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   ))}
                 </View>
