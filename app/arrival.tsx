@@ -27,8 +27,8 @@ async function markArrivalDone(): Promise<void> {
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 const SCREEN_ASPECT = SCREEN_W / SCREEN_H;
 const SLIDE_H = SCREEN_ASPECT < 0.50
-  ? SCREEN_H * 0.65
-  : SCREEN_H * 0.82;
+  ? SCREEN_H * 0.78
+  : SCREEN_H * 0.88;
 
 const F = {
   display: 'BebasNeue-Regular',
@@ -49,6 +49,7 @@ type Screen = {
   accentColor: string;
   buttonColor: string;
   isLast?: boolean;
+  imagePosition?: 'top' | 'center' | 'bottom';
 };
 
 const SCREENS: Screen[] = [
@@ -62,6 +63,7 @@ const SCREENS: Screen[] = [
     accentColor: '#1BB8FF',
     buttonColor: '#1BB8FF',
     buttonLabel: 'Meet the Concierge →',
+    imagePosition: 'top',
   },
   {
     tag: 'INTELLIGENCE 0X02',
@@ -73,6 +75,7 @@ const SCREENS: Screen[] = [
     accentColor: '#1BB8FF',
     buttonColor: '#1BB8FF',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'INTELLIGENCE 0X03',
@@ -84,6 +87,7 @@ const SCREENS: Screen[] = [
     accentColor: '#1BB8FF',
     buttonColor: '#1BB8FF',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'INTELLIGENCE 0X04',
@@ -95,6 +99,7 @@ const SCREENS: Screen[] = [
     accentColor: '#1BB8FF',
     buttonColor: '#1BB8FF',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'INTELLIGENCE 0X05',
@@ -106,6 +111,7 @@ const SCREENS: Screen[] = [
     accentColor: '#1BB8FF',
     buttonColor: '#1BB8FF',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'K9-FELINE INTELLIGENCE',
@@ -117,6 +123,7 @@ const SCREENS: Screen[] = [
     accentColor: '#1BB8FF',
     buttonColor: '#1BB8FF',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'SPOKE 28 · EQUESTRIAN',
@@ -128,6 +135,7 @@ const SCREENS: Screen[] = [
     accentColor: '#C49A2A',
     buttonColor: '#C49A2A',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'SPOKE 29 · AGRICULTURAL',
@@ -139,6 +147,7 @@ const SCREENS: Screen[] = [
     accentColor: '#4CAF50',
     buttonColor: '#4CAF50',
     buttonLabel: 'Continue →',
+    imagePosition: 'top',
   },
   {
     tag: 'SPOKE 27 · TACTICAL',
@@ -151,6 +160,7 @@ const SCREENS: Screen[] = [
     buttonColor: '#8B7355',
     buttonLabel: 'Enter AA2 →',
     isLast: true,
+    imagePosition: 'center',
   },
 ];
 
@@ -180,7 +190,20 @@ function Slide({
   return (
     <View style={sl.root}>
       {/* Full bleed hero */}
-      <Image source={item.image} style={sl.imageFill} resizeMode="cover" />
+      <Image
+        source={item.image}
+        resizeMode="cover"
+        style={[
+          sl.imageFill,
+          {
+            top: item.imagePosition === 'center'
+              ? '10%'
+              : item.imagePosition === 'bottom'
+              ? '20%'
+              : '-5%',
+          }
+        ]}
+      />
 
       {/* Dark overlay */}
       <View style={sl.overlay} />
