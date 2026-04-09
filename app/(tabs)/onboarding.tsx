@@ -106,6 +106,7 @@ interface ProgressBarProps {
 
 function MembraneProgressBar({ completed, total, onPress }: ProgressBarProps) {
   const pct = completed / total;
+  const barColor = completed >= total ? GREEN : BLUE;
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -118,7 +119,7 @@ function MembraneProgressBar({ completed, total, onPress }: ProgressBarProps) {
         backgroundColor: BLUE_DIM,
       }}
     >
-      <View style={{ height: 4, width: `${pct * 100}%` as any, backgroundColor: BLUE }} />
+      <View style={{ height: 4, width: `${pct * 100}%` as any, backgroundColor: barColor }} />
     </TouchableOpacity>
   );
 }
@@ -316,7 +317,12 @@ type FlowStep =
   | 'briefing_2' | 'block_2'
   | 'briefing_3' | 'block_3'
   | 'briefing_4' | 'block_4'
-  | 'pass1_complete';
+  | 'pass1_complete'
+  | 'briefing_5' | 'block_5'
+  | 'briefing_6' | 'block_6'
+  | 'briefing_7' | 'block_7'
+  | 'briefing_8' | 'block_8'
+  | 'membrane_complete';
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 export default function OnboardingScreen() {
@@ -346,21 +352,39 @@ export default function OnboardingScreen() {
   const [aliveBodySurprises,  setAliveBodySurprises]  = useState('');
 
   // ── Block 3
-  const [activities,         setActivities]         = useState<string[]>([]);
-  const [trainingFrequency,  setTrainingFrequency]  = useState('');
-  const [trainingPhase,      setTrainingPhase]      = useState('');
-  const [trainsOthers,       setTrainsOthers]       = useState('');
+  const [activities,        setActivities]        = useState<string[]>([]);
+  const [trainingFrequency, setTrainingFrequency] = useState('');
+  const [trainingPhase,     setTrainingPhase]     = useState('');
+  const [trainsOthers,      setTrainsOthers]      = useState('');
 
   // ── Block 4
-  const [foodAllergies,    setFoodAllergies]    = useState('');
-  const [allergiesNa,      setAllergiesNa]      = useState(false);
-  const [medications,      setMedications]      = useState('');
-  const [medicationsNa,    setMedicationsNa]    = useState(false);
-  const [medicalConditions,setMedicalConditions]= useState('');
-  const [conditionsNa,     setConditionsNa]     = useState(false);
-  const [dietaryApproach,  setDietaryApproach]  = useState('');
-  const [supplementStack,  setSupplementStack]  = useState('');
-  const [supplementsNa,    setSupplementsNa]    = useState(false);
+  const [foodAllergies,     setFoodAllergies]     = useState('');
+  const [allergiesNa,       setAllergiesNa]       = useState(false);
+  const [medications,       setMedications]       = useState('');
+  const [medicationsNa,     setMedicationsNa]     = useState(false);
+  const [medicalConditions, setMedicalConditions] = useState('');
+  const [conditionsNa,      setConditionsNa]      = useState(false);
+  const [dietaryApproach,   setDietaryApproach]   = useState('');
+  const [supplementStack,   setSupplementStack]   = useState('');
+  const [supplementsNa,     setSupplementsNa]     = useState(false);
+
+  // ── Block 5
+  const [wearables,          setWearables]          = useState<string[]>([]);
+  const [ouraToken,          setOuraToken]           = useState('');
+  const [garminExportReady,  setGarminExportReady]  = useState('');
+
+  // ── Block 6
+  const [setupFor,    setSetupFor]    = useState('');
+  const [petSpecies,  setPetSpecies]  = useState<string[]>([]);
+  const [petNames,    setPetNames]    = useState('');
+
+  // ── Block 7
+  const [conciergeVoice, setConciergeVoice] = useState('');
+
+  // ── Block 8
+  const [northStar30d,        setNorthStar30d]        = useState('');
+  const [northStar90d,        setNorthStar90d]        = useState('');
+  const [northStarProtecting, setNorthStarProtecting] = useState('');
 
   // ── Auth bootstrap on mount
   useEffect(() => {
@@ -375,26 +399,43 @@ export default function OnboardingScreen() {
     })();
   }, []);
 
-  // ── Progress calculation — 18 total fields
+  // ── Progress calculation — 27 total fields
   const completedFields = (
-    (conciergeName.trim()            ? 1 : 0) +
-    (biologicalSex                   ? 1 : 0) +
-    (birthYear.trim()                ? 1 : 0) +
-    (homeLocation.trim()             ? 1 : 0) +
-    (aliveBestDay.trim()             ? 1 : 0) +
-    (aliveBuildingToward.trim()      ? 1 : 0) +
-    (aliveQuietActivity.trim()       ? 1 : 0) +
-    (aliveMostYourself.length > 0    ? 1 : 0) +
-    (aliveBodySurprises.trim()       ? 1 : 0) +
-    (activities.length > 0           ? 1 : 0) +
-    (trainingFrequency               ? 1 : 0) +
-    (trainingPhase                   ? 1 : 0) +
-    (trainsOthers                    ? 1 : 0) +
-    ((foodAllergies.trim() || allergiesNa)   ? 1 : 0) +
-    ((medications.trim()   || medicationsNa) ? 1 : 0) +
-    ((medicalConditions.trim() || conditionsNa) ? 1 : 0) +
-    (dietaryApproach                 ? 1 : 0) +
-    ((supplementStack.trim() || supplementsNa) ? 1 : 0)
+    // Block 1 (4)
+    (conciergeName.trim()               ? 1 : 0) +
+    (biologicalSex                      ? 1 : 0) +
+    (birthYear.trim()                   ? 1 : 0) +
+    (homeLocation.trim()                ? 1 : 0) +
+    // Block 2 (5)
+    (aliveBestDay.trim()                ? 1 : 0) +
+    (aliveBuildingToward.trim()         ? 1 : 0) +
+    (aliveQuietActivity.trim()          ? 1 : 0) +
+    (aliveMostYourself.length > 0       ? 1 : 0) +
+    (aliveBodySurprises.trim()          ? 1 : 0) +
+    // Block 3 (4)
+    (activities.length > 0              ? 1 : 0) +
+    (trainingFrequency                  ? 1 : 0) +
+    (trainingPhase                      ? 1 : 0) +
+    (trainsOthers                       ? 1 : 0) +
+    // Block 4 (5)
+    ((foodAllergies.trim() || allergiesNa)        ? 1 : 0) +
+    ((medications.trim()   || medicationsNa)      ? 1 : 0) +
+    ((medicalConditions.trim() || conditionsNa)   ? 1 : 0) +
+    (dietaryApproach                    ? 1 : 0) +
+    ((supplementStack.trim() || supplementsNa)    ? 1 : 0) +
+    // Block 5 (3)
+    (wearables.length > 0               ? 1 : 0) +
+    (ouraToken.trim()                   ? 1 : 0) +
+    (garminExportReady                  ? 1 : 0) +
+    // Block 6 (2)
+    (setupFor                           ? 1 : 0) +
+    ((petSpecies.length > 0 || setupFor === 'Just me') ? 1 : 0) +
+    // Block 7 (1)
+    (conciergeVoice                     ? 1 : 0) +
+    // Block 8 (3)
+    (northStar30d.trim()                ? 1 : 0) +
+    (northStar90d.trim()                ? 1 : 0) +
+    (northStarProtecting.trim()         ? 1 : 0)
   );
 
   // ── Activity toggle
@@ -424,10 +465,35 @@ export default function OnboardingScreen() {
     saveField('food_allergies', next);
   };
 
-  // ── Pass 1 complete
-  const handlePass1Complete = async () => {
+  // ── Wearable toggle
+  const toggleWearable = (w: string) => {
+    const next = wearables.includes(w)
+      ? wearables.filter(x => x !== w)
+      : [...wearables, w];
+    setWearables(next);
+    saveField('wearables', next);
+  };
+
+  // ── Pet species toggle
+  const togglePetSpecies = (s: string) => {
+    if (s === 'No pets') {
+      const next = ['No pets'];
+      setPetSpecies(next);
+      saveField('pet_species', next);
+    } else {
+      const filtered = petSpecies.filter(x => x !== 'No pets');
+      const next = filtered.includes(s)
+        ? filtered.filter(x => x !== s)
+        : [...filtered, s];
+      setPetSpecies(next);
+      saveField('pet_species', next);
+    }
+  };
+
+  // ── Membrane complete
+  const handleMembraneComplete = async () => {
     setSaving(true);
-    await saveField('membrane_pass1_complete', true);
+    await saveField('membrane_complete', true);
     setSaving(false);
     router.replace('/');
   };
@@ -445,27 +511,20 @@ export default function OnboardingScreen() {
     <SafeAreaView style={st.root}>
       <MembraneProgressBar
         completed={completedFields}
-        total={18}
+        total={27}
         onPress={() => setStep('north_star_intro')}
       />
 
       {/* ── NORTH STAR INTRO ─────────────────────────────────────────────── */}
       {step === 'north_star_intro' && (
-        <ScrollView
-          contentContainerStyle={st.northWrap}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={st.northWrap} keyboardShouldPersistTaps="handled">
           <Text style={st.northQuote}>
             "The more of yourself you bring to this system — the more the system's mirror can reflect back to you."
           </Text>
           <Text style={st.northSub}>
             5 MINUTES. 8 QUESTIONS. ONE MEMBRANE.
           </Text>
-          <TouchableOpacity
-            style={st.northBtn}
-            onPress={() => setStep('briefing_1')}
-            activeOpacity={0.85}
-          >
+          <TouchableOpacity style={st.northBtn} onPress={() => setStep('briefing_1')} activeOpacity={0.85}>
             <Text style={st.northBtnText}>BUILD MY MEMBRANE →</Text>
           </TouchableOpacity>
         </ScrollView>
@@ -498,6 +557,34 @@ export default function OnboardingScreen() {
           blockLabel="BLOCK 4 · GUARD RAILS"
           text="Now tell me what to protect you from. No allergies, no medications, no conditions — that is not an empty answer. A clean baseline is some of the most powerful data I can hold. N/A here means confirmed clear. I treat it that way."
           onBegin={() => setStep('block_4')}
+        />
+      )}
+      {step === 'briefing_5' && (
+        <BriefingCard
+          blockLabel="BLOCK 5 · HARDWARE"
+          text="Tell me what is connected. The more signal I receive, the more precise I become. But even without hardware, the membrane works. Start with what you have."
+          onBegin={() => setStep('block_5')}
+        />
+      )}
+      {step === 'briefing_6' && (
+        <BriefingCard
+          blockLabel="BLOCK 6 · FAMILY & SPECIES"
+          text="Now tell me who else you are protecting. The membrane extends to everyone in your care — family, dogs, horses, livestock. One account. Every signal."
+          onBegin={() => setStep('block_6')}
+        />
+      )}
+      {step === 'briefing_7' && (
+        <BriefingCard
+          blockLabel="BLOCK 7 · YOUR VOICE"
+          text="Last thing before the North Star. Choose how I speak to you. This does not change what I know. It changes how I deliver it."
+          onBegin={() => setStep('block_7')}
+        />
+      )}
+      {step === 'briefing_8' && (
+        <BriefingCard
+          blockLabel="BLOCK 8 · NORTH STAR"
+          text="These last three questions never get shown back to you as data. They shape everything I do quietly. Answer them honestly. They are just for the system."
+          onBegin={() => setStep('block_8')}
         />
       )}
 
@@ -695,7 +782,13 @@ export default function OnboardingScreen() {
               <ChipSelector
                 options={['Yes — athletes','Yes — general','Yes — tactical','No']}
                 selected={trainsOthers}
-                onSelect={v => { setTrainsOthers(v); saveField('trains_others', v); }}
+                onSelect={v => {
+                  setTrainsOthers(v);
+                  saveField('trains_others', v);
+                  if (v.startsWith('Yes')) {
+                    saveField('commander_layer_active', true);
+                  }
+                }}
               />
             </View>
 
@@ -712,7 +805,6 @@ export default function OnboardingScreen() {
           <ScrollView style={{ flex: 1 }} contentContainerStyle={st.blockWrap} keyboardShouldPersistTaps="handled">
             <Text style={st.blockHeader}>BLOCK 4 · GUARD RAILS</Text>
 
-            {/* food_allergies */}
             <View style={st.fieldGroup}>
               <FieldLabel text="KNOWN FOOD ALLERGIES" />
               <TextInput
@@ -763,7 +855,6 @@ export default function OnboardingScreen() {
               />
             </View>
 
-            {/* medications */}
             <View style={st.fieldGroup}>
               <FieldLabel text="CURRENT MEDICATIONS" />
               <TextInput
@@ -798,7 +889,6 @@ export default function OnboardingScreen() {
               />
             </View>
 
-            {/* medical_conditions */}
             <View style={st.fieldGroup}>
               <FieldLabel text="KNOWN MEDICAL CONDITIONS" />
               <TextInput
@@ -833,7 +923,6 @@ export default function OnboardingScreen() {
               />
             </View>
 
-            {/* dietary_approach */}
             <View style={st.fieldGroup}>
               <FieldLabel text="DIETARY APPROACH" />
               <ChipSelector
@@ -843,7 +932,6 @@ export default function OnboardingScreen() {
               />
             </View>
 
-            {/* supplement_stack */}
             <View style={st.fieldGroup}>
               <FieldLabel text="SUPPLEMENT STACK (OPTIONAL)" />
               <TextInput
@@ -904,29 +992,305 @@ export default function OnboardingScreen() {
             <View style={[st.completePbFill, { width: '50%' }]} />
           </View>
           <TouchableOpacity
-            style={[st.completeBtn, { opacity: saving ? 0.6 : 1 }]}
-            onPress={handlePass1Complete}
-            disabled={saving}
+            style={st.completeBtn}
+            onPress={() => setStep('briefing_5')}
             activeOpacity={0.85}
           >
-            {saving
-              ? <ActivityIndicator size="small" color="#03050A" />
-              : <Text style={st.completeBtnText}>CONTINUE WHEN READY →</Text>
-            }
+            <Text style={st.completeBtnText}>CONTINUE WHEN READY →</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setStep('block_4')}
             style={{ marginTop: 16, paddingVertical: 12, alignItems: 'center' }}
             activeOpacity={0.7}
           >
-            <Text style={{
-              fontFamily: 'DMMono-Regular',
-              fontSize: 11,
-              color: MUTED,
-              letterSpacing: 2,
-            }}>
+            <Text style={{ fontFamily: 'DMMono-Regular', fontSize: 11, color: MUTED, letterSpacing: 2 }}>
               ← BACK TO BLOCK 4
             </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* ── BLOCK 5 · BIOSIGNAL HARDWARE ─────────────────────────────────── */}
+      {step === 'block_5' && (
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={st.blockWrap} keyboardShouldPersistTaps="handled">
+            <Text style={st.blockHeader}>BLOCK 5 · BIOSIGNAL HARDWARE</Text>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="WHICH WEARABLES DO YOU USE?" />
+              <ChipSelector
+                options={['Garmin','Oura Ring','Apple Watch','Whoop','Fitbit','Polar','Samsung Watch','None']}
+                selected={wearables}
+                multi
+                onSelect={toggleWearable}
+              />
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="OURA PERSONAL API TOKEN" />
+              <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginBottom: 8 }}>
+                cloud.ouraring.com/personal-access-tokens
+              </Text>
+              {wearables.includes('Oura Ring') ? (
+                <TextInput
+                  style={[st.input, {
+                    borderColor: fieldBorder(ouraToken, focusedField === 'oura_token'),
+                    opacity: fieldOpacity(ouraToken, focusedField === 'oura_token'),
+                  }]}
+                  placeholder="Paste token here"
+                  placeholderTextColor={MUTED}
+                  value={ouraToken}
+                  onChangeText={setOuraToken}
+                  onFocus={() => setFocusedField('oura_token')}
+                  onBlur={() => { setFocusedField(null); saveField('oura_token', ouraToken); }}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                />
+              ) : (
+                <View style={[st.input, { opacity: 0.4, justifyContent: 'center' }]}>
+                  <Text style={{ fontFamily: F.mono, fontSize: 11, color: MUTED, letterSpacing: 1 }}>
+                    CONNECT OURA RING ABOVE TO ACTIVATE
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="GARMIN DATA EXPORT READY?" />
+              <ChipSelector
+                options={['Yes','Not yet','Skip for now']}
+                selected={garminExportReady}
+                onSelect={v => { setGarminExportReady(v); saveField('garmin_export_ready', v); }}
+              />
+            </View>
+
+            <TouchableOpacity style={st.nextBtn} onPress={() => setStep('briefing_6')} activeOpacity={0.85}>
+              <Text style={st.nextBtnText}>NEXT →</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
+
+      {/* ── BLOCK 6 · FAMILY & SPECIES ───────────────────────────────────── */}
+      {step === 'block_6' && (
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={st.blockWrap} keyboardShouldPersistTaps="handled">
+            <Text style={st.blockHeader}>BLOCK 6 · FAMILY & SPECIES</Text>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="SETTING THIS UP FOR" />
+              <ChipSelector
+                options={['Just me','Me + family','Family account']}
+                selected={setupFor}
+                onSelect={v => { setSetupFor(v); saveField('setup_for', v); }}
+              />
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="DO YOU HAVE PETS OR ANIMALS IN YOUR CARE?" />
+              <ChipSelector
+                options={['Dog','Cat','Horse','Cattle','Other','No pets']}
+                selected={petSpecies}
+                multi
+                onSelect={togglePetSpecies}
+              />
+            </View>
+
+            {petSpecies.length > 0 && !petSpecies.includes('No pets') && (
+              <View style={st.fieldGroup}>
+                <FieldLabel text="PET NAMES" />
+                <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginBottom: 8 }}>
+                  One per line or comma separated
+                </Text>
+                <TextInput
+                  style={[st.inputMulti, {
+                    borderColor: fieldBorder(petNames, focusedField === 'pet_names'),
+                    opacity: fieldOpacity(petNames, focusedField === 'pet_names'),
+                  }]}
+                  placeholder="e.g. Max, Luna, Scout"
+                  placeholderTextColor={MUTED}
+                  value={petNames}
+                  onChangeText={setPetNames}
+                  onFocus={() => setFocusedField('pet_names')}
+                  onBlur={() => { setFocusedField(null); saveField('pet_names', petNames); }}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            )}
+
+            <TouchableOpacity style={st.nextBtn} onPress={() => setStep('briefing_7')} activeOpacity={0.85}>
+              <Text style={st.nextBtnText}>NEXT →</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
+
+      {/* ── BLOCK 7 · YOUR VOICE ─────────────────────────────────────────── */}
+      {step === 'block_7' && (
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={st.blockWrap} keyboardShouldPersistTaps="handled">
+          <Text style={st.blockHeader}>BLOCK 7 · YOUR VOICE</Text>
+
+          <View style={st.fieldGroup}>
+            <FieldLabel text="HOW SHOULD THE CONCIERGE SPEAK TO YOU?" />
+            <View style={{ gap: 12, marginTop: 8 }}>
+              {([
+                { value: 'The Coach',  title: 'THE COACH',  desc: 'Direct, motivating, holds you accountable' },
+                { value: 'The Stable', title: 'THE STABLE', desc: 'Calm, steady, no noise unless necessary' },
+                { value: 'COMMAND',    title: 'COMMAND',    desc: 'Tactical, minimal, ops-ready' },
+                { value: 'THE BRIEF',  title: 'THE BRIEF',  desc: 'Executive, fast, only what matters' },
+              ] as const).map(card => {
+                const on = conciergeVoice === card.value;
+                return (
+                  <TouchableOpacity
+                    key={card.value}
+                    onPress={() => { setConciergeVoice(card.value); saveField('concierge_personality', card.value); }}
+                    style={{
+                      borderRadius: 14,
+                      padding: 20,
+                      borderWidth: 1.5,
+                      borderColor: on ? BLUE : BLUE_BORDER,
+                      backgroundColor: on ? 'rgba(27,184,255,0.10)' : CARD_BG,
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={{ fontFamily: F.monoMd, fontSize: 14, color: WHITE, letterSpacing: 2 }}>
+                      {card.title}
+                    </Text>
+                    <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginTop: 6 }}>
+                      {card.desc}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={[st.nextBtn, { opacity: conciergeVoice ? 1 : 0.4 }]}
+            onPress={() => { if (conciergeVoice) setStep('briefing_8'); }}
+            activeOpacity={0.85}
+          >
+            <Text style={st.nextBtnText}>NEXT →</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
+
+      {/* ── BLOCK 8 · NORTH STAR ─────────────────────────────────────────── */}
+      {step === 'block_8' && (
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <ScrollView style={{ flex: 1 }} contentContainerStyle={st.blockWrap} keyboardShouldPersistTaps="handled">
+            <Text style={st.blockHeader}>BLOCK 8 · NORTH STAR</Text>
+
+            <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 24, lineHeight: 20 }}>
+              These answers are never shown back to you as data. They shape everything the system does quietly.
+            </Text>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="WHAT DO YOU WANT TO FEEL IN 30 DAYS THAT YOU DO NOT FEEL TODAY?" />
+              <TextInput
+                style={[st.inputMulti, {
+                  minHeight: 100,
+                  borderColor: fieldBorder(northStar30d, focusedField === 'north_star_30d'),
+                  opacity: fieldOpacity(northStar30d, focusedField === 'north_star_30d'),
+                }]}
+                placeholderTextColor={MUTED}
+                value={northStar30d}
+                onChangeText={setNorthStar30d}
+                onFocus={() => setFocusedField('north_star_30d')}
+                onBlur={() => { setFocusedField(null); saveField('north_star_30d', northStar30d); }}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="WHAT WOULD MAKE THE NEXT 90 DAYS THE BEST QUARTER OF YOUR LIFE?" />
+              <TextInput
+                style={[st.inputMulti, {
+                  minHeight: 100,
+                  borderColor: fieldBorder(northStar90d, focusedField === 'north_star_90d'),
+                  opacity: fieldOpacity(northStar90d, focusedField === 'north_star_90d'),
+                }]}
+                placeholderTextColor={MUTED}
+                value={northStar90d}
+                onChangeText={setNorthStar90d}
+                onFocus={() => setFocusedField('north_star_90d')}
+                onBlur={() => { setFocusedField(null); saveField('north_star_90d', northStar90d); }}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="WHO ARE YOU PROTECTING WITH THIS SYSTEM?" />
+              <TextInput
+                style={[st.inputMulti, {
+                  borderColor: fieldBorder(northStarProtecting, focusedField === 'north_star_protecting'),
+                  opacity: fieldOpacity(northStarProtecting, focusedField === 'north_star_protecting'),
+                }]}
+                placeholder="Your name, your family, your dog, your unit..."
+                placeholderTextColor={MUTED}
+                value={northStarProtecting}
+                onChangeText={setNorthStarProtecting}
+                onFocus={() => setFocusedField('north_star_protecting')}
+                onBlur={() => { setFocusedField(null); saveField('north_star_protecting', northStarProtecting); }}
+                multiline
+                textAlignVertical="top"
+              />
+              <Text style={{
+                fontFamily: F.serifIt,
+                fontSize: 16,
+                color: BLUE,
+                textAlign: 'center',
+                marginTop: 16,
+                marginBottom: 8,
+              }}>
+                The membrane holds what matters.
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[st.sealBtn, { opacity: saving ? 0.6 : 1 }]}
+              onPress={() => { if (!saving) { setSaving(true); saveField('membrane_complete', false).then(() => { setSaving(false); setStep('membrane_complete'); }); } }}
+              activeOpacity={0.85}
+              disabled={saving}
+            >
+              {saving
+                ? <ActivityIndicator size="small" color="#03050A" />
+                : <Text style={st.sealBtnText}>SEAL THE MEMBRANE →</Text>
+              }
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      )}
+
+      {/* ── MEMBRANE COMPLETE ─────────────────────────────────────────────── */}
+      {step === 'membrane_complete' && (
+        <View style={st.completeOuter}>
+          <Text style={st.completeEyebrow}>MEMBRANE SEALED · AA2 ACTIVE</Text>
+          <Text style={{ fontFamily: F.serifIt, fontSize: 64, color: WHITE, textAlign: 'center', marginBottom: 8 }}>
+            The membrane holds.
+          </Text>
+          <Text style={{ fontFamily: F.sans, fontSize: 15, color: MUTED, textAlign: 'center', marginBottom: 40, lineHeight: 24 }}>
+            {northStarProtecting.trim()
+              ? `Protecting: ${northStarProtecting.trim()}`
+              : 'Every scan from here is yours alone.'
+            }
+          </Text>
+          <View style={[st.completePbTrack, { marginBottom: 40 }]}>
+            <View style={[st.completePbFill, { width: '100%', backgroundColor: GREEN }]} />
+          </View>
+          <TouchableOpacity
+            style={[st.completeBtn, { opacity: saving ? 0.6 : 1 }]}
+            onPress={handleMembraneComplete}
+            disabled={saving}
+            activeOpacity={0.85}
+          >
+            {saving
+              ? <ActivityIndicator size="small" color="#03050A" />
+              : <Text style={st.completeBtnText}>ENTER AA2 →</Text>
+            }
           </TouchableOpacity>
         </View>
       )}
@@ -1036,7 +1400,22 @@ const st = StyleSheet.create({
     letterSpacing: 2,
   },
 
-  // Pass 1 complete
+  // Seal button (block 8)
+  sealBtn: {
+    backgroundColor: BLUE,
+    borderRadius: 14,
+    paddingVertical: 20,
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  sealBtnText: {
+    fontFamily: 'DMMono-Medium',
+    fontSize: 14,
+    color: '#03050A',
+    letterSpacing: 2,
+  },
+
+  // Complete screens
   completeOuter: {
     flex: 1,
     paddingHorizontal: 32,
