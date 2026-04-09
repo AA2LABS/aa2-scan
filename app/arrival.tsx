@@ -8,7 +8,6 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,7 +15,7 @@ import {
 } from 'react-native';
 
 // ─── FLAG ─────────────────────────────────────────────────────────────────────
-export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_v3';
+export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_v4';
 
 async function markArrivalDone(): Promise<void> {
   try {
@@ -26,29 +25,13 @@ async function markArrivalDone(): Promise<void> {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+const SLIDE_H = SCREEN_H * 0.82;
 
 const F = {
   display: 'BebasNeue-Regular',
-  serif:   'CormorantGaramond-Regular',
-  serifMd: 'CormorantGaramond-Medium',
-  serifIt: 'CormorantGaramond-Italic',
   mono:    'DMMono-Regular',
   monoMd:  'DMMono-Medium',
   sans:    'DMSans-Regular',
-  sansMd:  'DMSans-Medium',
-};
-
-const C = {
-  white:     '#FFFFFF',
-  dimWhite:  'rgba(255,255,255,0.65)',
-  mutedWhite:'rgba(255,255,255,0.38)',
-  teal:      '#2ECFB3',
-  red:       '#E05252',
-  gold:      '#C49A2A',
-  overlay:   'rgba(3,5,10,0.72)',
-  panelBg:   'rgba(255,255,255,0.06)',
-  withBd:    'rgba(46,207,179,0.60)',
-  withoutBd: 'rgba(224,82,82,0.55)',
 };
 
 // ─── SCREENS DATA ─────────────────────────────────────────────────────────────
@@ -59,7 +42,9 @@ type Screen = {
   role: string;
   without: string;
   with: string;
-  button: string;
+  buttonLabel: string;
+  accentColor: string;
+  buttonColor: string;
   isLast?: boolean;
 };
 
@@ -71,7 +56,9 @@ const SCREENS: Screen[] = [
     role: 'Personal Intelligence · Memory · Continuity',
     without: 'Navigating everything alone. No memory. No continuity.',
     with: 'A personal intelligence who knows you, your goals, your world.',
-    button: 'Meet the Team →',
+    accentColor: '#1BB8FF',
+    buttonColor: '#1BB8FF',
+    buttonLabel: 'Meet the Concierge →',
   },
   {
     tag: 'INTELLIGENCE 0X02',
@@ -80,7 +67,9 @@ const SCREENS: Screen[] = [
     role: 'Nutrition Intelligence · Meal Design · Biology-First',
     without: 'Generic recipes. Wrong pairings. Nutrition with no context.',
     with: 'Every meal aligned to your biology, your goals, your life.',
-    button: 'Continue →',
+    accentColor: '#1BB8FF',
+    buttonColor: '#1BB8FF',
+    buttonLabel: 'Continue →',
   },
   {
     tag: 'INTELLIGENCE 0X03',
@@ -89,7 +78,9 @@ const SCREENS: Screen[] = [
     role: 'Biometric Intelligence · Signal Reader · Threshold Guard',
     without: 'Body signals go unread. Patterns invisible. Thresholds unknown.',
     with: 'Speaks only when asked or a threshold is crossed.',
-    button: 'Continue →',
+    accentColor: '#1BB8FF',
+    buttonColor: '#1BB8FF',
+    buttonLabel: 'Continue →',
   },
   {
     tag: 'INTELLIGENCE 0X04',
@@ -98,7 +89,9 @@ const SCREENS: Screen[] = [
     role: 'Travel Intelligence · Route Safety · Waypoint Briefings',
     without: 'Maps with no memory. Routes with no context.',
     with: 'Pre-programmed safe routes. Full briefings at every waypoint.',
-    button: 'Continue →',
+    accentColor: '#1BB8FF',
+    buttonColor: '#1BB8FF',
+    buttonLabel: 'Continue →',
   },
   {
     tag: 'INTELLIGENCE 0X05',
@@ -107,7 +100,42 @@ const SCREENS: Screen[] = [
     role: 'Immune System · Gate Intelligence · Truth Engine',
     without: 'Harm enters quietly. Labels lie. No one watching the gate.',
     with: 'Nothing passes without clearance. Speaks only in emergencies.',
-    button: 'Continue →',
+    accentColor: '#1BB8FF',
+    buttonColor: '#1BB8FF',
+    buttonLabel: 'Continue →',
+  },
+  {
+    tag: 'K9-FELINE INTELLIGENCE',
+    image: require('../assets/images/k9_feline_hero.jpg'),
+    name: 'K9 / Feline',
+    role: 'Canine · Feline · Nutrition · Safety · Behavior',
+    without: 'Pet symptoms missed. Food harm silent. Behavior misread.',
+    with: 'Canine and feline biosignals read. Every ingredient screened.',
+    accentColor: '#1BB8FF',
+    buttonColor: '#1BB8FF',
+    buttonLabel: 'Continue →',
+  },
+  {
+    tag: 'SPOKE 28 · EQUESTRIAN',
+    image: require('../assets/images/equine_hero.jpg'),
+    name: 'Equine Intelligence',
+    role: 'Equine Nutritionist · Safety · Performance',
+    without: 'Feed guesswork. Supplement interactions missed.',
+    with: 'Every feed scanned. Jockey and horse biosignals synced.',
+    accentColor: '#C49A2A',
+    buttonColor: '#C49A2A',
+    buttonLabel: 'Continue →',
+  },
+  {
+    tag: 'SPOKE 29 · AGRICULTURAL',
+    image: require('../assets/images/cattle_hero.jpg'),
+    name: 'Agricultural Intelligence',
+    role: 'Agricultural Analyst · Livestock · Feed Safety',
+    without: 'Mycotoxins undetected. Feed additives unchecked.',
+    with: 'Full feed stack scanned. Livestock aligned.',
+    accentColor: '#4CAF50',
+    buttonColor: '#4CAF50',
+    buttonLabel: 'Continue →',
   },
   {
     tag: 'SPOKE 27 · TACTICAL',
@@ -116,16 +144,9 @@ const SCREENS: Screen[] = [
     role: 'Handler + Canine · Mission Readiness',
     without: 'Guesswork in the field. No biosignal tracking.',
     with: 'Handler and canine biosignals synced. Mission ready.',
-    button: 'Continue →',
-  },
-  {
-    tag: 'K9-FELINE INTELLIGENCE',
-    image: require('../assets/images/k9_feline_hero.jpg'),
-    name: 'K9 / Feline Intelligence',
-    role: 'Canine Nutritionist · Safety · Species Care',
-    without: 'Food that harms. Toxins undetected.',
-    with: 'Every ingredient scanned. Species-safe.',
-    button: 'Begin Onboarding →',
+    accentColor: '#8B7355',
+    buttonColor: '#8B7355',
+    buttonLabel: 'Enter AA2 →',
     isLast: true,
   },
 ];
@@ -155,55 +176,48 @@ function Slide({
 
   return (
     <View style={sl.root}>
-      {/* Full bleed hero — absolute, fills 100% of container */}
+      {/* Full bleed hero */}
       <Image source={item.image} style={sl.imageFill} resizeMode="cover" />
 
       {/* Dark overlay */}
       <View style={sl.overlay} />
 
-      {/* Content layer */}
-      <SafeAreaView style={sl.safeArea}>
-        {/* Skip — top right */}
-        <View style={sl.topBar}>
-          <View style={{ flex: 1 }} />
-          <TouchableOpacity onPress={handleSkip} style={sl.skipBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-            <Text style={sl.skipText}>SKIP</Text>
-          </TouchableOpacity>
+      {/* Content layer — pinned to bottom */}
+      <View style={sl.contentLayer}>
+        <Text style={sl.tag}>{item.tag}</Text>
+        <Text style={sl.name}>{item.name}</Text>
+        <Text style={sl.role}>{item.role}</Text>
+
+        {/* WITHOUT card */}
+        <View style={sl.panelWithout}>
+          <Text style={sl.labelWithout}>WITHOUT</Text>
+          <Text style={sl.panelText}>{item.without}</Text>
         </View>
 
-        {/* Main content — pinned to bottom */}
-        <View style={sl.content}>
-          {/* label + title + subtitle */}
-          <Text style={sl.tag}>{item.tag}</Text>
-          <View style={sl.nameBlock}>
-            <Text style={sl.name}>{item.name}</Text>
-            <Text style={sl.role}>{item.role}</Text>
-          </View>
-
-          {/* WITHOUT card — full width */}
-          <View style={[sl.panel, { borderLeftColor: C.withoutBd }]}>
-            <Text style={sl.panelLabel}>WITHOUT</Text>
-            <Text style={sl.panelText}>{item.without}</Text>
-          </View>
-
-          {/* WITH card — full width */}
-          <View style={[sl.panel, sl.panelWith, { borderLeftColor: C.withBd }]}>
-            <Text style={[sl.panelLabel, { color: C.teal }]}>WITH</Text>
-            <Text style={sl.panelText}>{item.with}</Text>
-          </View>
-
-          {/* Continue button — full width */}
-          <TouchableOpacity
-            style={[sl.btn, item.isLast && { backgroundColor: C.teal }]}
-            onPress={handleButton}
-            activeOpacity={0.85}
-          >
-            <Text style={[sl.btnText, item.isLast && { color: '#03050A' }]}>
-              {item.button}
-            </Text>
-          </TouchableOpacity>
+        {/* WITH card */}
+        <View style={[sl.panelWith, { borderLeftColor: item.accentColor }]}>
+          <Text style={[sl.labelWith, { color: item.accentColor }]}>WITH</Text>
+          <Text style={sl.panelText}>{item.with}</Text>
         </View>
-      </SafeAreaView>
+
+        {/* Action button */}
+        <TouchableOpacity
+          style={[sl.btn, { backgroundColor: item.buttonColor }]}
+          onPress={handleButton}
+          activeOpacity={0.85}
+        >
+          <Text style={sl.btnText}>{item.buttonLabel}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Skip — absolute top right */}
+      <TouchableOpacity
+        style={sl.skipBtn}
+        onPress={handleSkip}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      >
+        <Text style={sl.skipText}>SKIP</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -211,102 +225,116 @@ function Slide({
 const sl = StyleSheet.create({
   root: {
     width: SCREEN_W,
-    height: SCREEN_H,
+    height: SLIDE_H,
+    position: 'relative',
+    overflow: 'hidden',
   },
   imageFill: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: C.overlay,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
   },
-  safeArea: {
-    flex: 1,
+  contentLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 24,
+    paddingTop: 48,
+    paddingBottom: 24,
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
   },
-  topBar: {
-    flexDirection: 'row',
+  tag: {
+    fontFamily: F.mono,
+    fontSize: 9,
+    color: 'rgba(255,255,255,0.60)',
+    letterSpacing: 3,
+    marginBottom: 6,
+  },
+  name: {
+    fontFamily: F.display,
+    fontSize: 52,
+    color: '#FFFFFF',
+    lineHeight: 54,
+    marginBottom: 4,
+  },
+  role: {
+    fontFamily: F.sans,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.70)',
+    marginBottom: 20,
+  },
+  panelWithout: {
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 2,
+    borderLeftColor: '#E05252',
+    marginBottom: 10,
+  },
+  panelWith: {
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    borderRadius: 12,
+    padding: 16,
+    borderLeftWidth: 2,
+    marginBottom: 16,
+  },
+  labelWithout: {
+    fontFamily: F.monoMd,
+    fontSize: 11,
+    color: '#E05252',
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+  labelWith: {
+    fontFamily: F.monoMd,
+    fontSize: 11,
+    letterSpacing: 2,
+    marginBottom: 6,
+  },
+  panelText: {
+    fontFamily: F.sans,
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.85)',
+    lineHeight: 20,
+  },
+  btn: {
+    borderRadius: 14,
+    paddingVertical: 18,
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 12 : 4,
-    paddingBottom: 8,
+  },
+  btnText: {
+    fontFamily: F.monoMd,
+    fontSize: 13,
+    color: '#03050A',
+    letterSpacing: 1.5,
   },
   skipBtn: {
+    position: 'absolute',
+    top: Platform.OS === 'android' ? 52 : 56,
+    right: 24,
     paddingHorizontal: 8,
     paddingVertical: 6,
   },
   skipText: {
     fontFamily: F.mono,
     fontSize: 10,
-    color: C.dimWhite,
+    color: 'rgba(255,255,255,0.65)',
     letterSpacing: 2,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-    justifyContent: 'flex-end',
-  },
-  tag: {
-    fontFamily: F.mono,
-    fontSize: 9,
-    color: C.mutedWhite,
-    letterSpacing: 3,
-    marginBottom: 12,
-  },
-  nameBlock: {
-    marginBottom: 16,
-  },
-  name: {
-    fontFamily: F.serifIt,
-    fontSize: 52,
-    color: C.white,
-    lineHeight: 56,
-    marginBottom: 6,
-  },
-  role: {
-    fontFamily: F.sans,
-    fontSize: 11,
-    color: C.dimWhite,
-    letterSpacing: 0.5,
-  },
-  panel: {
-    backgroundColor: C.panelBg,
-    borderRadius: 10,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    borderLeftWidth: 3,
-    marginBottom: 10,
-  },
-  panelWith: {
-    marginBottom: 20,
-  },
-  panelLabel: {
-    fontFamily: F.monoMd,
-    fontSize: 8,
-    color: C.red,
-    letterSpacing: 2,
-    marginBottom: 8,
-  },
-  panelText: {
-    fontFamily: F.sans,
-    fontSize: 12,
-    color: C.dimWhite,
-    lineHeight: 18,
-  },
-  btn: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)',
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  btnText: {
-    fontFamily: F.monoMd,
-    fontSize: 13,
-    color: C.white,
-    letterSpacing: 1.5,
   },
 });
 
@@ -347,15 +375,12 @@ export default function ArrivalScreen() {
         })}
       />
 
-      {/* Progress dots — overlaid above FlatList */}
+      {/* Progress dots */}
       <View style={s.dots} pointerEvents="none">
         {SCREENS.map((_, i) => (
           <View
             key={i}
-            style={[
-              s.dot,
-              i === activeIndex ? s.dotActive : s.dotInactive,
-            ]}
+            style={[s.dot, i === activeIndex ? s.dotActive : s.dotInactive]}
           />
         ))}
       </View>
@@ -370,7 +395,7 @@ const s = StyleSheet.create({
   },
   dots: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 116 : 96,
+    bottom: Platform.OS === 'ios' ? 48 : 32,
     left: 0,
     right: 0,
     flexDirection: 'row',
