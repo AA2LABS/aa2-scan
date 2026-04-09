@@ -206,7 +206,7 @@ async function lookupBarcode(barcode: string): Promise<string> {
       `ADDITIVES: ${p.additives_tags?.map((a: string) => a.replace('en:', '')).join(', ') || 'none'}`,
       `\nAnalyze as a botanical compound or supplement. Return compound verdict JSON.`,
     ].filter(Boolean).join('\n');
-  } catch {
+  } catch (err: any) {
     return `Barcode: ${barcode}. Lookup failed. Analyze as herb or supplement and return compound verdict JSON.`;
   }
 }
@@ -224,6 +224,7 @@ export default function ApothecaryScreen() {
   const captureSize = Math.min(Math.max(screenW * 0.19, 68), 90);
 
   const [permission, requestPermission] = useCameraPermissions();
+  const cameraRef = useRef<CameraView>(null);
 
   const [cameraMode,   setCameraMode]   = useState(false);
   const [barcodeReady, setBarcodeReady] = useState(false);
@@ -291,27 +292,48 @@ export default function ApothecaryScreen() {
     if (loading) return;
     const barcode = lastBarcodeRef.current;
     scannedRef.current = true;
-    closeCameraIfOpen();
-    setLoading(true);
-    clearResult();
 
     if (mode === 'forager') {
+      // Capture photo as base64 BEFORE closing camera
+      let capturedBase64: string | undefined;
       try {
-        const content = 'Wild plant, mushroom, berry, or fish photographed — identify the species. Assess edibility, list toxic lookalikes, provide foraging and preparation guidance. Return forager verdict JSON.';
+        const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.7 });
+        capturedBase64 = photo?.base64;
+      } catch {
+        // fall through — will send text-only if photo capture fails
+      }
+
+      closeCameraIfOpen();
+      setLoading(true);
+      clearResult();
+
+      try {
+        const textContent = 'Wild plant, mushroom, berry, or fish photographed — identify the species. Assess edibility, list toxic lookalikes, provide foraging and preparation guidance. Return forager verdict JSON.';
+        const messages: any[] = capturedBase64
+          ? [{ role: 'user', content: [
+              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: capturedBase64 } },
+              { type: 'text', text: textContent },
+            ]}]
+          : [{ role: 'user', content: textContent }];
+
         const res = await anthropic.messages.create({
           model: 'claude-sonnet-4-20250514',
           max_tokens: 1600,
           system: FORAGER_SYS,
-          messages: [{ role: 'user', content }],
+          messages,
         });
         setResult(parseResponse((res.content[0] as any).text || ''));
-      } catch {
-        setApiError('The Equalizer could not complete this analysis. Check your connection and try again.');
+      } catch (err: any) {
+        setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
       } finally {
         setLoading(false);
       }
       return;
     }
+
+    closeCameraIfOpen();
+    setLoading(true);
+    clearResult();
 
     try {
       let content: string;
@@ -330,8 +352,8 @@ export default function ApothecaryScreen() {
         messages: [{ role: 'user', content }],
       });
       setResult(parseResponse((res.content[0] as any).text || ''));
-    } catch {
-      setApiError('The Equalizer could not complete this analysis. Check your connection and try again.');
+    } catch (err: any) {
+      setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
     } finally {
       setLoading(false);
     }
@@ -355,8 +377,8 @@ export default function ApothecaryScreen() {
         messages: [{ role: 'user', content: `Analyze for Spoke 34: ${query.trim()}` }],
       });
       setResult(parseResponse((res.content[0] as any).text || ''));
-    } catch {
-      setApiError('The Equalizer could not complete this analysis. Check your connection and try again.');
+    } catch (err: any) {
+      setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
     } finally {
       setLoading(false);
     }
@@ -378,8 +400,8 @@ export default function ApothecaryScreen() {
         messages: [{ role: 'user', content: `Assess this compound stack for Spoke 34: ${list}` }],
       });
       setResult(parseResponse((res.content[0] as any).text || ''));
-    } catch {
-      setApiError('The Equalizer could not assess this stack. Try again.');
+    } catch (err: any) {
+      setApiError(err?.message || err?.toString() || 'The Equalizer could not assess this stack. Try again.');
     } finally {
       setLoading(false);
     }
@@ -400,8 +422,8 @@ export default function ApothecaryScreen() {
         messages: [{ role: 'user', content: `Build a plant protocol for Spoke 34 member. Goal or condition: ${condition.trim()}` }],
       });
       setResult(parseResponse((res.content[0] as any).text || ''));
-    } catch {
-      setApiError('The Equalizer could not build this protocol. Try again.');
+    } catch (err: any) {
+      setApiError(err?.message || err?.toString() || 'The Equalizer could not build this protocol. Try again.');
     } finally {
       setLoading(false);
     }
@@ -422,8 +444,8 @@ export default function ApothecaryScreen() {
         messages: [{ role: 'user', content: `Identify and assess this wild find: ${foragerQuery.trim()}` }],
       });
       setResult(parseResponse((res.content[0] as any).text || ''));
-    } catch {
-      setApiError('The Equalizer could not complete this analysis. Try again.');
+    } catch (err: any) {
+      setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
     } finally {
       setLoading(false);
     }
@@ -444,7 +466,12 @@ export default function ApothecaryScreen() {
     return (
       <SafeAreaView style={[s.root, { backgroundColor: '#000' }]}>
         <View style={{ flex: 1 }}>
-          <CameraView style={{ flex: 1 }} facing="back" onBarcodeScanned={mode !== 'forager' ? handleBarcodeScanned : undefined}>
+          <CameraView
+            ref={cameraRef}
+            style={{ flex: 1 }}
+            facing="back"
+            onBarcodeScanned={mode !== 'forager' ? handleBarcodeScanned : undefined}
+          >
             <View style={[s.camOverlay, { paddingTop: camPadTop, paddingBottom: camPadBot }]}>
               <View style={s.camFrameGroup}>
                 <View style={[s.camFrame, {
