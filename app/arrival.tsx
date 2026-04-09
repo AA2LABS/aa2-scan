@@ -4,7 +4,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
-  ImageBackground,
+  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -45,7 +45,7 @@ const C = {
   teal:      '#2ECFB3',
   red:       '#E05252',
   gold:      '#C49A2A',
-  overlay:   'rgba(3,5,10,0.66)',
+  overlay:   'rgba(3,5,10,0.72)',
   panelBg:   'rgba(255,255,255,0.06)',
   withBd:    'rgba(46,207,179,0.60)',
   withoutBd: 'rgba(224,82,82,0.55)',
@@ -155,59 +155,55 @@ function Slide({
 
   return (
     <View style={sl.root}>
-      <ImageBackground
-        source={item.image}
-        style={[sl.imageBg, { maxHeight: SCREEN_H * 0.55 }]}
-        resizeMode="cover"
-      >
-        {/* Dark overlay */}
-        <View style={sl.overlay} />
+      {/* Full bleed hero — absolute, fills 100% of container */}
+      <Image source={item.image} style={sl.imageFill} resizeMode="cover" />
 
-        <SafeAreaView style={sl.safeArea}>
-          {/* Skip — top right */}
-          <View style={sl.topBar}>
-            <View style={{ flex: 1 }} />
-            <TouchableOpacity onPress={handleSkip} style={sl.skipBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-              <Text style={sl.skipText}>SKIP</Text>
-            </TouchableOpacity>
+      {/* Dark overlay */}
+      <View style={sl.overlay} />
+
+      {/* Content layer */}
+      <SafeAreaView style={sl.safeArea}>
+        {/* Skip — top right */}
+        <View style={sl.topBar}>
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity onPress={handleSkip} style={sl.skipBtn} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+            <Text style={sl.skipText}>SKIP</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Main content — pinned to bottom */}
+        <View style={sl.content}>
+          {/* label + title + subtitle */}
+          <Text style={sl.tag}>{item.tag}</Text>
+          <View style={sl.nameBlock}>
+            <Text style={sl.name}>{item.name}</Text>
+            <Text style={sl.role}>{item.role}</Text>
           </View>
 
-          {/* Main content */}
-          <View style={sl.content}>
-            {/* Intelligence tag */}
-            <Text style={sl.tag}>{item.tag}</Text>
-
-            {/* Name + Role */}
-            <View style={sl.nameBlock}>
-              <Text style={sl.name}>{item.name}</Text>
-              <Text style={sl.role}>{item.role}</Text>
-            </View>
-
-            {/* WITHOUT / WITH panel */}
-            <View style={sl.panelRow}>
-              <View style={[sl.panel, sl.panelLeft, { borderLeftColor: C.withoutBd }]}>
-                <Text style={sl.panelLabel}>WITHOUT</Text>
-                <Text style={sl.panelText}>{item.without}</Text>
-              </View>
-              <View style={[sl.panel, sl.panelRight, { borderLeftColor: C.withBd }]}>
-                <Text style={[sl.panelLabel, { color: C.teal }]}>WITH</Text>
-                <Text style={sl.panelText}>{item.with}</Text>
-              </View>
-            </View>
-
-            {/* Button */}
-            <TouchableOpacity
-              style={[sl.btn, item.isLast && { backgroundColor: C.teal }]}
-              onPress={handleButton}
-              activeOpacity={0.85}
-            >
-              <Text style={[sl.btnText, item.isLast && { color: '#03050A' }]}>
-                {item.button}
-              </Text>
-            </TouchableOpacity>
+          {/* WITHOUT card — full width */}
+          <View style={[sl.panel, { borderLeftColor: C.withoutBd }]}>
+            <Text style={sl.panelLabel}>WITHOUT</Text>
+            <Text style={sl.panelText}>{item.without}</Text>
           </View>
-        </SafeAreaView>
-      </ImageBackground>
+
+          {/* WITH card — full width */}
+          <View style={[sl.panel, sl.panelWith, { borderLeftColor: C.withBd }]}>
+            <Text style={[sl.panelLabel, { color: C.teal }]}>WITH</Text>
+            <Text style={sl.panelText}>{item.with}</Text>
+          </View>
+
+          {/* Continue button — full width */}
+          <TouchableOpacity
+            style={[sl.btn, item.isLast && { backgroundColor: C.teal }]}
+            onPress={handleButton}
+            activeOpacity={0.85}
+          >
+            <Text style={[sl.btnText, item.isLast && { color: '#03050A' }]}>
+              {item.button}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
@@ -216,10 +212,9 @@ const sl = StyleSheet.create({
   root: {
     width: SCREEN_W,
     height: SCREEN_H,
-    maxHeight: SCREEN_H,
   },
-  imageBg: {
-    flex: 1,
+  imageFill: {
+    ...StyleSheet.absoluteFillObject,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -259,7 +254,7 @@ const sl = StyleSheet.create({
     marginBottom: 12,
   },
   nameBlock: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   name: {
     fontFamily: F.serifIt,
@@ -274,24 +269,17 @@ const sl = StyleSheet.create({
     color: C.dimWhite,
     letterSpacing: 0.5,
   },
-  panelRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 24,
-  },
   panel: {
-    flex: 1,
     backgroundColor: C.panelBg,
     borderRadius: 10,
     padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
-  },
-  panelLeft: {
     borderLeftWidth: 3,
+    marginBottom: 10,
   },
-  panelRight: {
-    borderLeftWidth: 3,
+  panelWith: {
+    marginBottom: 20,
   },
   panelLabel: {
     fontFamily: F.monoMd,
