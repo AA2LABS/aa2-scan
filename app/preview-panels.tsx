@@ -35,6 +35,7 @@ const F = {
   mono:    'DMMono-Regular',
   monoMd:  'DMMono-Medium',
   sans:    'DMSans-Regular',
+  sansMd:  'DMSans-Medium',
 };
 
 // ─── DIMENSIONS ──────────────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ const PANELS = [
   { id: 10, caption: 'Mycotoxins do not announce themselves. The system catches what the eye misses.' },
   { id: 11, caption: 'Every destination briefed. Every route pre-cleared. You move. We prepare.' },
   { id: 12, caption: 'The $12 bottle that beats the $90 one. The Sommelier knows.' },
-  { id: 13, caption: 'What touches your skin enters your bloodstream. The Cosmo Chemist reads every formula.' },
+  { id: 13, caption: 'The skin is not a barrier. It is an organ. The Cosmo Chemist reads every formula.' },
   { id: 14, caption: '' },
 ];
 
@@ -63,6 +64,23 @@ function TagChip({ label, color }: { label: string; color: string }) {
   return (
     <View style={{ borderWidth: 1, borderColor: color + '80', backgroundColor: color + '1F', borderRadius: 14, paddingHorizontal: 10, paddingVertical: 5 }}>
       <Text style={{ fontFamily: F.mono, fontSize: 9, color, letterSpacing: 1 }}>{label}</Text>
+    </View>
+  );
+}
+
+function PanelChip({ label, color = BLUE, filled = false }: { label: string; color?: string; filled?: boolean }) {
+  return (
+    <View style={{
+      borderWidth: 1,
+      borderColor: color,
+      backgroundColor: filled ? color : color + '20',
+      borderRadius: 14,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+    }}>
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: filled ? '#03050A' : color, letterSpacing: 1 }}>
+        {label}
+      </Text>
     </View>
   );
 }
@@ -309,61 +327,61 @@ function Panel5() {
   );
 }
 
-// ─── PANEL 6 — FAMILY DASHBOARD ──────────────────────────────────────────────
+// ─── PANEL 6 — THE FAMILY DASHBOARD ─────────────────────────────────────────
 function Panel6() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+      {/* Header */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
         <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 3 }}>I AM THE RECEIPT</Text>
-        <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
+        <View style={{ marginLeft: 'auto', flexDirection: 'row', gap: 6, alignItems: 'center' }}>
           <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN }} />
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: GREEN, letterSpacing: 1 }}>FAMILY MEMBRANE LIVE</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2 }}>MEMBRANE LIVE</Text>
         </View>
       </View>
-      {/* James */}
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: BLUE_DIM }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: BLUE, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: '#03050A' }}>JP</Text>
+
+      {/* James Pitts */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: 'rgba(27,184,255,0.30)' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: WHITE }}>James Pitts</Text>
+            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginTop: 2 }}>BELGRADE, MT</Text>
           </View>
-          <View style={{ marginLeft: 10, flex: 1 }}>
-            <Text style={{ fontFamily: F.serifIt, fontSize: 18, color: WHITE }}>James Pitts</Text>
-            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 1 }}>BELGRADE, MT · MEMBRANE LIVE</Text>
+          <View style={{ backgroundColor: 'rgba(27,184,255,0.12)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }}>
+            <Text style={{ fontFamily: F.mono, fontSize: 8, color: BLUE, letterSpacing: 1 }}>MEMBRANE LIVE</Text>
           </View>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN }} />
         </View>
-        <View style={{ flexDirection: 'row', gap: 16 }}>
-          {[{ n: '74', l: 'HRV', c: BLUE }, { n: '68', l: 'READY', c: GREEN }, { n: 'ALL', l: 'CLEAR', c: GREEN }].map(s => (
-            <View key={s.l} style={{ alignItems: 'center' }}>
-              <Text style={{ fontFamily: F.monoMd, fontSize: 20, color: s.c }}>{s.n}</Text>
-              <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED }}>{s.l}</Text>
-            </View>
-          ))}
+        <View style={{ flexDirection: 'row', gap: 16, marginTop: 10 }}>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: BLUE }}>74 HRV</Text>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: GREEN }}>68 RDY</Text>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: GREEN }}>ALL CLEAR</Text>
         </View>
       </View>
-      {/* Sarah */}
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: BLUE_DIM }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-          <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: PURPLE, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: WHITE }}>SM</Text>
+
+      {/* Sarah M. */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: 'rgba(196,154,42,0.30)' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: WHITE }}>Sarah M.</Text>
+            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginTop: 2 }}>BELGRADE, MT</Text>
           </View>
-          <View style={{ marginLeft: 10, flex: 1 }}>
-            <Text style={{ fontFamily: F.serifIt, fontSize: 18, color: WHITE }}>Sarah M.</Text>
-            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 1 }}>SCANNER ACTIVE</Text>
+          <View style={{ backgroundColor: 'rgba(196,154,42,0.12)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }}>
+            <Text style={{ fontFamily: F.mono, fontSize: 8, color: GOLD, letterSpacing: 1 }}>SCANNER ACTIVE</Text>
           </View>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: GOLD }} />
         </View>
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-          <View style={{ flex: 1, backgroundColor: CARD_BG, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(29,158,117,0.30)' }}>
-            <Text style={{ fontFamily: F.sans, fontSize: 11, color: WHITE, marginBottom: 2 }}>Tide Free & Gentle</Text>
-            <Text style={{ fontFamily: F.mono, fontSize: 8, color: GREEN, letterSpacing: 1 }}>ALL CLEAR</Text>
-          </View>
-          <View style={{ flex: 1, backgroundColor: CARD_BG, borderRadius: 8, padding: 10, borderWidth: 1, borderColor: 'rgba(224,82,82,0.30)' }}>
-            <Text style={{ fontFamily: F.sans, fontSize: 11, color: WHITE, marginBottom: 2 }}>Nestle Pure Life</Text>
-            <Text style={{ fontFamily: F.mono, fontSize: 8, color: RED, letterSpacing: 1 }}>PAY ATTENTION</Text>
-          </View>
+        <View style={{ flexDirection: 'row', gap: 16, marginTop: 10, alignItems: 'center' }}>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 11, color: RED }}>PAY ATTENTION</Text>
+          <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED }}>Nestle Pure Life</Text>
         </View>
       </View>
+
+      {/* Children */}
+      {['Child 1', 'Child 2'].map(name => (
+        <View key={name} style={{ backgroundColor: CARD_BG, borderRadius: 10, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={{ fontFamily: F.sans, fontSize: 13, color: WHITE, flex: 1 }}>{name}</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 1 }}>PROTECTED</Text>
+        </View>
+      ))}
     </ScrollView>
   );
 }
@@ -372,26 +390,31 @@ function Panel6() {
 function Panel7() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(27,184,255,0.20)', flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Text style={{ fontSize: 16 }}>🐕</Text>
+      {/* Header badge */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: BLUE_DIM, flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <Text style={{ fontSize: 16 }}>🐾</Text>
         <View>
           <Text style={{ fontFamily: F.mono, fontSize: 9, color: BLUE, letterSpacing: 2 }}>K9 / FELINE INTELLIGENCE</Text>
-          <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, marginTop: 2 }}>ASPCA · 9 Databases · Canine Nutritionist</Text>
+          <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED, marginTop: 2 }}>ASPCA Database Active</Text>
         </View>
       </View>
-      <SevCard level={1} title="TOXIC TO CANINES">
-        <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: WHITE, marginBottom: 6 }}>Peanut Butter Dog Treat</Text>
-        <View style={{ backgroundColor: 'rgba(224,82,82,0.20)', borderRadius: 6, padding: 10, marginBottom: 8 }}>
-          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: RED, letterSpacing: 2, marginBottom: 4 }}>XYLITOL DETECTED</Text>
-          <Text style={{ fontFamily: F.sans, fontSize: 13, color: WHITE, lineHeight: 20 }}>
-            Xylitol causes rapid insulin release in dogs. Hypoglycemia can develop within 30 minutes. Do not give this to your dog.
-          </Text>
-        </View>
-        <Text style={{ fontFamily: F.mono, fontSize: 8, color: GREEN, letterSpacing: 2, marginBottom: 6 }}>SAFE ALTERNATIVES CONFIRMED</Text>
-        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
-          {["Kong Classic ✓", "Zuke's Mini ✓", "Wellness Soft ✓"].map(b => <TagChip key={b} label={b} color={GREEN} />)}
-        </View>
-      </SevCard>
+
+      {/* Danger card */}
+      <View style={{ backgroundColor: 'rgba(224,82,82,0.12)', borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(224,82,82,0.30)', borderLeftColor: RED }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: RED, letterSpacing: 2, marginBottom: 8 }}>LEVEL 1 · IMMEDIATE DANGER</Text>
+        <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: RED, letterSpacing: 1, marginBottom: 6 }}>XYLITOL DETECTED · TOXIC TO CANINES</Text>
+        <Text style={{ fontFamily: F.sans, fontSize: 13, color: WHITE, lineHeight: 20 }}>
+          This product contains xylitol. Even small amounts cause rapid insulin release and liver failure in dogs. Do not give to any canine.
+        </Text>
+      </View>
+
+      {/* Safe alternatives */}
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2, marginBottom: 8 }}>CANINE-SAFE ALTERNATIVES</Text>
+      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+        {["Zuke's Mini Naturals ✓", 'Wellness Soft WellBites ✓', 'Blue Buffalo Bits ✓'].map(b => (
+          <TagChip key={b} label={b} color={GREEN} />
+        ))}
+      </View>
     </ScrollView>
   );
 }
@@ -400,107 +423,99 @@ function Panel7() {
 function Panel8() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-        <View>
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2 }}>SPOKE 27 · TACTICAL</Text>
-          <Text style={{ fontFamily: F.display, fontSize: 32, color: WHITE }}>K9 Tactical</Text>
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: 'rgba(139,115,85,1)', letterSpacing: 3, marginBottom: 8 }}>SPOKE 27 · TACTICAL</Text>
+      <Text style={{ fontFamily: F.display, fontSize: 36, color: WHITE, marginBottom: 4 }}>K9 Tactical</Text>
+      <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 16 }}>Handler + Canine · Mission Readiness</Text>
+
+      {/* Handler row */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: 'rgba(27,184,255,0.25)' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: BLUE }} />
+          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: BLUE, letterSpacing: 2, marginLeft: 6 }}>HANDLER</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginLeft: 'auto' }}>HR 94 · STRESS 42</Text>
         </View>
-        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN, marginTop: 8 }} />
+        <View style={{ height: 2, borderRadius: 1, backgroundColor: BLUE, width: '65%' }} />
       </View>
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: 'rgba(27,184,255,0.20)' }}>
-        <Text style={{ fontFamily: F.mono, fontSize: 8, color: BLUE, letterSpacing: 2, marginBottom: 8 }}>HANDLER</Text>
-        <View style={{ flexDirection: 'row', gap: 20 }}>
-          {[{ n: '94', l: 'HR BPM', c: BLUE }, { n: '42', l: 'STRESS', c: GREEN }, { n: 'ACTIVE', l: 'STATUS', c: GREEN }].map(s => (
-            <View key={s.l}>
-              <Text style={{ fontFamily: F.monoMd, fontSize: 24, color: s.c }}>{s.n}</Text>
-              <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED }}>{s.l}</Text>
-            </View>
-          ))}
+
+      {/* K9 row */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: 'rgba(224,82,82,0.35)' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: RED }} />
+          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: RED, letterSpacing: 2, marginLeft: 6 }}>K9 UNIT</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 10, color: RED, marginLeft: 'auto' }}>HR 118 · STRESS ELEVATED</Text>
+        </View>
+        <View style={{ height: 2, borderRadius: 1, backgroundColor: RED, width: '80%' }} />
+      </View>
+
+      {/* Transfer alert */}
+      <View style={{ backgroundColor: 'rgba(224,82,82,0.10)', borderRadius: 10, padding: 12, marginTop: 4, borderWidth: 1, borderColor: 'rgba(224,82,82,0.35)', flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <Text style={{ fontSize: 14, color: RED }}>⚠</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontFamily: F.mono, fontSize: 9, color: RED, letterSpacing: 1, marginBottom: 3 }}>HANDLER STRESS TRANSFERRING TO K9</Text>
+          <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED, lineHeight: 16 }}>
+            Recommend handler recovery protocol before deployment.
+          </Text>
         </View>
       </View>
-      <View style={{ backgroundColor: 'rgba(232,135,58,0.10)', borderRadius: 12, padding: 14, marginBottom: 8, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(232,135,58,0.25)', borderLeftColor: ORANGE }}>
-        <Text style={{ fontFamily: F.mono, fontSize: 8, color: ORANGE, letterSpacing: 2, marginBottom: 8 }}>K9 · WORKING DOG</Text>
-        <View style={{ flexDirection: 'row', gap: 20 }}>
-          {[{ n: '118', l: 'HR BPM', c: ORANGE }, { n: '68', l: 'STRESS', c: ORANGE }, { n: 'ELEVATED', l: 'STATUS', c: ORANGE }].map(s => (
-            <View key={s.l}>
-              <Text style={{ fontFamily: F.monoMd, fontSize: s.n === 'ELEVATED' ? 11 : 24, color: s.c }}>{s.n}</Text>
-              <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED }}>{s.l}</Text>
-            </View>
-          ))}
+    </ScrollView>
+  );
+}
+
+// ─── PANEL 9 — EQUINE INTELLIGENCE ───────────────────────────────────────────
+function Panel9() {
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: GOLD, letterSpacing: 3, marginBottom: 8 }}>SPOKE 28 · EQUESTRIAN</Text>
+      <Text style={{ fontFamily: F.display, fontSize: 36, color: WHITE, marginBottom: 4 }}>Equine Intelligence</Text>
+      <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 16 }}>Equine Nutritionist · Safety · Performance</Text>
+
+      {/* Feed scan result */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(196,154,42,0.30)' }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>FEED SCAN RESULT</Text>
+        <Text style={{ fontFamily: F.sansMd, fontSize: 14, color: WHITE, marginBottom: 4 }}>Standlee Premium Timothy Grass</Text>
+        <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+          <PanelChip label="SAFE" color={GREEN} />
+          <PanelChip label="LOW SUGAR" color={BLUE} />
+          <PanelChip label="VERIFIED" color={GREEN} />
         </View>
       </View>
-      <View style={{ backgroundColor: 'rgba(232,135,58,0.12)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(232,135,58,0.35)' }}>
-        <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-          <Text style={{ fontSize: 12, color: ORANGE }}>⚠</Text>
-          <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: ORANGE, letterSpacing: 1, flex: 1 }}>HANDLER STRESS TRANSFERRING TO K9</Text>
-        </View>
-        <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, marginTop: 8, lineHeight: 18 }}>
-          Biosignal sync confirms elevated stress transfer. Consider mission pause or handler rotation.
+
+      {/* Supplement warning */}
+      <View style={{ backgroundColor: 'rgba(232,135,58,0.10)', borderRadius: 12, padding: 14, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(232,135,58,0.30)', borderLeftColor: ORANGE }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: ORANGE, letterSpacing: 2, marginBottom: 6 }}>LEVEL 2 · SUPPLEMENT INTERACTION</Text>
+        <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: ORANGE, letterSpacing: 1, marginBottom: 6 }}>IRON OVERLOAD RISK</Text>
+        <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
+          Current iron supplement combined with this hay exceeds safe threshold for your horse's weight and breed. Reduce iron supplement by 50% or switch hay source.
         </Text>
       </View>
     </ScrollView>
   );
 }
 
-// ─── PANEL 9 — EQUINE ────────────────────────────────────────────────────────
-function Panel9() {
-  return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2 }}>SPOKE 28 · EQUESTRIAN</Text>
-          <Text style={{ fontFamily: F.display, fontSize: 28, color: WHITE }}>Equine Intelligence</Text>
-        </View>
-        <Text style={{ fontSize: 24 }}>🐎</Text>
-      </View>
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
-        <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 6 }}>FEED SCAN RESULT</Text>
-        <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: WHITE, marginBottom: 10 }}>Triple Crown Senior</Text>
-        <SevCard level={2} title="SUPPLEMENT INTERACTION">
-          <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-            Iron overload risk detected. This feed combined with your current supplement stack exceeds safe iron threshold for senior horses. Consult equine nutritionist before continuing this combination.
-          </Text>
-        </SevCard>
-      </View>
-      <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
-        {[{ label: 'HORSE 1', value: 'ALERT', color: ORANGE }, { label: 'JOCKEY', value: 'NOMINAL', color: GREEN }].map(s => (
-          <View key={s.label} style={{ flex: 1, backgroundColor: CARD_BG, borderRadius: 8, padding: 10, alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED }}>{s.label}</Text>
-            <Text style={{ fontFamily: F.monoMd, fontSize: 14, color: s.color, marginTop: 4 }}>{s.value}</Text>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
-  );
-}
-
-// ─── PANEL 10 — AGRICULTURAL ─────────────────────────────────────────────────
+// ─── PANEL 10 — AGRICULTURAL INTELLIGENCE ────────────────────────────────────
 function Panel10() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <View style={{ flexDirection: 'row', marginBottom: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2 }}>SPOKE 29 · AGRICULTURAL</Text>
-          <Text style={{ fontFamily: F.display, fontSize: 26, color: WHITE }}>Agricultural Intelligence</Text>
-        </View>
-        <Text style={{ fontSize: 24 }}>🐄</Text>
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: '#4CAF50', letterSpacing: 3, marginBottom: 8 }}>SPOKE 29 · AGRICULTURAL</Text>
+      <Text style={{ fontFamily: F.display, fontSize: 32, color: WHITE, marginBottom: 4 }}>Agricultural Intelligence</Text>
+      <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 16 }}>Agricultural Analyst · Livestock · Feed Safety</Text>
+
+      {/* Danger card */}
+      <View style={{ backgroundColor: 'rgba(224,82,82,0.12)', borderRadius: 12, padding: 16, marginBottom: 10, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(224,82,82,0.30)', borderLeftColor: RED }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: RED, letterSpacing: 2, marginBottom: 8 }}>LEVEL 1 · IMMEDIATE DANGER</Text>
+        <Text style={{ fontFamily: F.monoMd, fontSize: 13, color: RED, letterSpacing: 1, marginBottom: 4 }}>MYCOTOXIN DETECTED</Text>
+        <Text style={{ fontFamily: F.mono, fontSize: 11, color: RED, marginBottom: 8 }}>DON · ABOVE SAFE THRESHOLD</Text>
+        <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
+          Deoxynivalenol detected at 2.4 ppm. Safe threshold for cattle is 2.0 ppm. Do not feed this lot. Risk of reduced feed intake, immune suppression, reproductive issues.
+        </Text>
       </View>
-      <SevCard level={1} title="MYCOTOXIN DETECTED">
-        <Text style={{ fontFamily: F.serifIt, fontSize: 18, color: WHITE, marginBottom: 6 }}>Bulk Corn Feed — Lot 2024-11B</Text>
-        <View style={{ backgroundColor: 'rgba(224,82,82,0.20)', borderRadius: 6, padding: 10, marginBottom: 8 }}>
-          <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: RED, letterSpacing: 1, marginBottom: 4 }}>DON DETECTED · ABOVE SAFE THRESHOLD</Text>
-          <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-            Deoxynivalenol at 4.2 ppm — FDA threshold is 1 ppm for cattle. Do not feed this lot. Quarantine immediately.
-          </Text>
-        </View>
-      </SevCard>
-      <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
-        {[{ n: '5', l: 'CATTLE PROTECTED', c: RED, font: 28 }, { n: 'USDA', l: 'FEED SAFETY ACTIVE', c: BLUE, font: 14 }].map(s => (
-          <View key={s.l} style={{ flex: 1, backgroundColor: CARD_BG, borderRadius: 8, padding: 10, alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.display, fontSize: s.font, color: s.c }}>{s.n}</Text>
-            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 1, marginTop: 2, textAlign: 'center' }}>{s.l}</Text>
-          </View>
-        ))}
+
+      {/* Action */}
+      <View style={{ backgroundColor: 'rgba(27,184,255,0.10)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: BLUE_DIM }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: BLUE, letterSpacing: 2, marginBottom: 6 }}>RECOMMENDED ACTION</Text>
+        <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED, lineHeight: 16 }}>
+          Quarantine this feed lot. Contact supplier for replacement. Test remaining inventory before use.
+        </Text>
       </View>
     </ScrollView>
   );
@@ -510,87 +525,100 @@ function Panel10() {
 function Panel11() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 3, marginBottom: 4 }}>INTELLIGENCE 0X04</Text>
-      <Text style={{ fontFamily: F.display, fontSize: 36, color: WHITE, marginBottom: 2 }}>The Chauffeur</Text>
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED, letterSpacing: 3, marginBottom: 8 }}>INTELLIGENCE 0X04</Text>
+      <Text style={{ fontFamily: F.display, fontSize: 36, color: WHITE, marginBottom: 4 }}>The Chauffeur</Text>
       <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 16 }}>Travel Intelligence · Route Safety · Waypoint Briefings</Text>
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(27,184,255,0.20)' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 }}>
-          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN }} />
-          <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: GREEN, letterSpacing: 1 }}>SAFE ROUTE · PRE-CLEARED</Text>
+
+      {/* Route card */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: BLUE_DIM }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+          <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2 }}>SAFE ROUTE · PRE-CLEARED</Text>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN, marginLeft: 'auto' }} />
         </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED }}>BELGRADE</Text>
-            <Text style={{ fontFamily: F.monoMd, fontSize: 11, color: WHITE }}>MT</Text>
+        <Text style={{ fontFamily: F.monoMd, fontSize: 12, color: WHITE, letterSpacing: 1, marginBottom: 12 }}>BELGRADE, MT → BOZEMAN, MT</Text>
+        {[
+          { name: 'Belgrade I-90 On-Ramp',    dist: '0.4 mi' },
+          { name: 'Belgrade-Amsterdam Road',   dist: '3.2 mi' },
+          { name: 'Bozeman City Center',       dist: '8.1 mi' },
+        ].map((w, i) => (
+          <View key={i} style={{ flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: BLUE }} />
+            <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, flex: 1 }}>{w.name}</Text>
+            <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED }}>{w.dist}</Text>
           </View>
-          <Text style={{ fontFamily: F.mono, fontSize: 16, color: MUTED }}>→</Text>
-          <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED }}>BOZEMAN</Text>
-            <Text style={{ fontFamily: F.monoMd, fontSize: 11, color: WHITE }}>MT</Text>
-          </View>
-        </View>
-        <View style={{ marginTop: 10, gap: 6 }}>
-          {[
-            { color: BLUE,  text: 'Costco — Belgrade · Stock before departure' },
-            { color: BLUE,  text: 'I-90 W · Fastest · Low traffic window: 8-9am' },
-            { color: GREEN, text: 'Bozeman Health · Verified safe destination' },
-          ].map((w, i) => (
-            <View key={i} style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: w.color }} />
-              <Text style={{ fontFamily: F.sans, fontSize: 11, color: WHITE }}>{w.text}</Text>
-            </View>
-          ))}
-        </View>
+        ))}
       </View>
-      <View style={{ backgroundColor: 'rgba(29,158,117,0.10)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(29,158,117,0.25)' }}>
-        <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2, marginBottom: 6 }}>TOKYO TRIP · GROCERY MATCH</Text>
-        <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-          Your Montana staples matched to Tokyo stores. Miso replaces chicken stock. Konnyaku matches sweet potato texture. 7 of 12 items have local equivalents.
-        </Text>
+
+      {/* Global grocery match */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(196,154,42,0.25)' }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>GLOBAL GROCERY MATCH · TOKYO</Text>
+        {[
+          { yours: 'Olive oil',    match: 'Yamaki Olive Oil' },
+          { yours: 'Greek yogurt', match: 'Meiji Bulgaria Yogurt' },
+          { yours: 'Sourdough',    match: 'Viron Baguette' },
+        ].map((g, i) => (
+          <View key={i} style={{ flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 6 }}>
+            <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, flex: 1 }}>{g.yours}</Text>
+            <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED }}>→</Text>
+            <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, flex: 1 }}>{g.match}</Text>
+          </View>
+        ))}
       </View>
     </ScrollView>
   );
 }
 
-// ─── PANEL 12 — WINE & SPIRITS ───────────────────────────────────────────────
+// ─── PANEL 12 — WINE AND SPIRITS ─────────────────────────────────────────────
 function Panel12() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <Text style={{ fontFamily: F.mono, fontSize: 9, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>WINE & SPIRITS INTELLIGENCE</Text>
-      <Text style={{ fontFamily: F.display, fontSize: 36, color: WHITE, marginBottom: 2 }}>The Sommelier</Text>
-      <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 16 }}>Real pairings. Real health intel. Every bottle covered.</Text>
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
-        <Text style={{ fontFamily: F.serifIt, fontSize: 22, color: WHITE, marginBottom: 2 }}>Macallan 12 Year</Text>
-        <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, marginBottom: 10 }}>Single Malt Scotch · Speyside · 40% ABV</Text>
-        <View style={{ backgroundColor: 'rgba(196,154,42,0.10)', borderRadius: 8, padding: 10, borderWidth: 1, borderLeftWidth: 2, borderColor: 'rgba(196,154,42,0.25)', borderLeftColor: GOLD, marginBottom: 10 }}>
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>MODERATION NOTE</Text>
-          <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-            Clean distillation. Fewer congeners. Same 40% ABV — same liver processing required.
-          </Text>
-        </View>
-        <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>BETTER ALTERNATIVES</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: F.sans, fontSize: 13, color: BLUE, marginBottom: 2 }}>→ Tito's Handmade Vodka</Text>
-            <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED }}>Corn-based · Gluten-free · Cleaner production</Text>
-          </View>
-          <View style={{ gap: 6 }}>
-            <View style={{ borderWidth: 1, borderColor: BLUE_BORDER, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }}>
-              <Text style={{ fontFamily: F.mono, fontSize: 9, color: BLUE }}>WHY?</Text>
-            </View>
-            <View style={{ borderWidth: 1, borderColor: BLUE_BORDER, backgroundColor: BLUE_DIM, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 }}>
-              <Text style={{ fontFamily: F.mono, fontSize: 9, color: BLUE }}>WHERE TO BUY →</Text>
-            </View>
-          </View>
-        </View>
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: GOLD, letterSpacing: 2, marginBottom: 8 }}>WINE & SPIRITS INTELLIGENCE</Text>
+      <Text style={{ fontFamily: F.serifIt, fontSize: 28, color: WHITE, marginBottom: 2 }}>Macallan 12</Text>
+      <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, marginBottom: 12 }}>Highland Single Malt · 12 Year</Text>
+
+      {/* Result chips */}
+      <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        <PanelChip label="ALL CLEAR" color={GREEN} />
+        <PanelChip label="40% ABV"   color={BLUE} />
+        <PanelChip label="GLUTEN FREE" color={GREEN} />
       </View>
-      <View style={{ backgroundColor: 'rgba(29,158,117,0.10)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(29,158,117,0.25)' }}>
-        <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
-          <Text style={{ color: GREEN, fontSize: 10 }}>◆</Text>
-          <Text style={{ fontFamily: F.monoMd, fontSize: 8, color: GREEN, letterSpacing: 2 }}>ACT RIGHT DOLLARS</Text>
+
+      {/* Moderation note */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)' }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>MODERATION NOTE</Text>
+        <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, lineHeight: 18 }}>
+          Clean distillation, fewer congeners. Same liver processing required.
+        </Text>
+      </View>
+
+      {/* Better alternatives */}
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED, letterSpacing: 2, marginBottom: 8 }}>BETTER ALTERNATIVES</Text>
+      {[
+        '→ Glenfiddich 12 (similar profile, better value)',
+        '→ Glenlivet 12 (lighter, citrus notes)',
+        '→ Monkey Shoulder (blended, budget-friendly)',
+      ].map((alt, i) => (
+        <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 }}>
+          <Text style={{ fontFamily: F.sansMd, fontSize: 13, color: BLUE, lineHeight: 20, flex: 1 }}>{alt}</Text>
+          <View style={{ gap: 6, marginLeft: 8 }}>
+            <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.20)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }}>
+              <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED }}>WHY?</Text>
+            </View>
+            <View style={{ borderWidth: 1, borderColor: BLUE_BORDER, backgroundColor: BLUE_DIM, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }}>
+              <Text style={{ fontFamily: F.mono, fontSize: 9, color: BLUE }}>WHERE →</Text>
+            </View>
+          </View>
         </View>
-        <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-          Switching saves $8-12 per bottle. Goes directly into your AA2 Vault.
+      ))}
+
+      {/* Act Right */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 10, padding: 12, marginTop: 4, borderWidth: 1, borderColor: 'rgba(196,154,42,0.25)' }}>
+        <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
+          <Text style={{ fontSize: 12, color: GREEN }}>◆</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2 }}>ACT RIGHT DOLLARS</Text>
+        </View>
+        <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, lineHeight: 16, marginTop: 4 }}>
+          Switching saves $8-12 per bottle. Goes directly to your AA2 Vault.
         </Text>
       </View>
     </ScrollView>
@@ -601,27 +629,34 @@ function Panel12() {
 function Panel13() {
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-      <Text style={{ fontFamily: F.mono, fontSize: 9, color: PURPLE, letterSpacing: 2, marginBottom: 4 }}>SKIN INGESTION DOCTRINE</Text>
-      <Text style={{ fontFamily: F.display, fontSize: 36, color: WHITE, marginBottom: 2 }}>Cosmo Chemist</Text>
-      <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 16 }}>The skin is not a barrier. It is an organ.</Text>
-      <View style={{ backgroundColor: CARD_BG, borderRadius: 12, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
-        <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: WHITE, marginBottom: 2 }}>Head & Shoulders Classic</Text>
-        <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 1, marginBottom: 10 }}>SHAMPOO · SCANNED IN STORE</Text>
-        <SevCard level={1} title="ENDOCRINE DISRUPTOR">
-          <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-            METHYLISOTHIAZOLINONE detected. Known skin sensitizer and potential neurotoxin. EWG Score: 7/10. Flagged by EU Cosmetics Regulation.
-          </Text>
-        </SevCard>
-        <SevCard level={2} title="FRAGRANCE COMPLEX">
-          <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, lineHeight: 18 }}>
-            Undisclosed fragrance compounds. May contain phthalates. Your membrane flags fragrance sensitivity.
-          </Text>
-        </SevCard>
-        <View style={{ backgroundColor: 'rgba(29,158,117,0.10)', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: 'rgba(29,158,117,0.25)' }}>
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: GREEN, letterSpacing: 2, marginBottom: 4 }}>MEMBRANE-SAFE ALTERNATIVE</Text>
-          <Text style={{ fontFamily: F.sans, fontSize: 13, color: GREEN, marginBottom: 2 }}>→ Free & Clear Shampoo</Text>
-          <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED }}>EWG Score: 1/10 · No fragrance · No MIT · Dermatologist tested</Text>
-        </View>
+      {/* Doctrine header */}
+      <View style={{ backgroundColor: 'rgba(155,89,182,0.12)', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderLeftWidth: 3, borderColor: 'rgba(155,89,182,0.30)', borderLeftColor: PURPLE }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: PURPLE, letterSpacing: 2, marginBottom: 6 }}>SKIN INGESTION DOCTRINE</Text>
+        <Text style={{ fontFamily: F.sans, fontSize: 13, color: WHITE, lineHeight: 20 }}>
+          The skin is not a barrier — it is an organ. What touches your skin enters your bloodstream. The Cosmo Chemist names every chemical.
+        </Text>
+      </View>
+
+      {/* Product scanned */}
+      <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: WHITE, marginBottom: 2 }}>Neutrogena T/Gel Shampoo</Text>
+      <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 12 }}>SCANNED · PERSONAL CARE</Text>
+
+      {/* Flagged ingredients */}
+      <View style={{ backgroundColor: 'rgba(224,82,82,0.08)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(224,82,82,0.25)' }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, color: RED, letterSpacing: 2, marginBottom: 10 }}>FLAGGED INGREDIENTS</Text>
+        {[
+          { name: 'Coal Tar',                concern: 'Known carcinogen. EWG Hazard 10.' },
+          { name: 'Sodium Lauryl Sulfate',   concern: 'Skin irritant. Penetration enhancer.' },
+          { name: 'Fragrance',               concern: 'Undisclosed chemicals. Allergen risk.' },
+        ].map((ing, i) => (
+          <View key={i} style={{ flexDirection: 'row', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: RED, marginTop: 5 }} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: F.mono, fontSize: 10, color: RED }}>{ing.name}</Text>
+              <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED, lineHeight: 15, marginTop: 2 }}>{ing.concern}</Text>
+            </View>
+          </View>
+        ))}
       </View>
     </ScrollView>
   );
@@ -658,6 +693,8 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
     const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
     setActiveIndex(idx);
   };
+
+  const isLastPanel = activeIndex === PANELS.length - 1;
 
   const renderPanel = ({ item }: { item: typeof PANELS[0] }) => {
     const isLast = item.id === 14;
@@ -711,18 +748,20 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
         onMomentumScrollEnd={handleMomentumScrollEnd}
       />
 
-      {/* Progress dots */}
-      <View style={styles.dotsWrap} pointerEvents="none">
-        {PANELS.map((_, i) => (
-          <View
-            key={i}
-            style={[styles.dot, {
-              width: i === activeIndex ? 8 : 5,
-              backgroundColor: i === activeIndex ? BLUE : 'rgba(255,255,255,0.25)',
-            }]}
-          />
-        ))}
-      </View>
+      {/* Progress dots — hidden on North Star */}
+      {!isLastPanel && (
+        <View style={styles.dotsWrap} pointerEvents="none">
+          {PANELS.slice(0, -1).map((_, i) => (
+            <View
+              key={i}
+              style={[styles.dot, {
+                width: i === activeIndex ? 12 : 6,
+                backgroundColor: i === activeIndex ? BLUE : 'rgba(255,255,255,0.25)',
+              }]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -749,8 +788,9 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 6,
+    gap: 5,
     flexWrap: 'wrap',
+    paddingHorizontal: 20,
   },
   dot: {
     height: 6,
