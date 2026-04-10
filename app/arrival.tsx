@@ -388,9 +388,16 @@ export default function ArrivalScreen() {
         keyExtractor={item => item.tag}
         horizontal
         pagingEnabled
+        snapToInterval={SCREEN_W}
+        disableIntervalMomentum={true}
         showsHorizontalScrollIndicator={false}
+        bounces={false}
+        overScrollMode="never"
         scrollEventThrottle={16}
         onScroll={handleScroll}
+        initialNumToRender={1}
+        maxToRenderPerBatch={1}
+        windowSize={3}
         renderItem={({ item }) => (
           <Slide item={item} onNext={handleNext} />
         )}
