@@ -54,7 +54,7 @@ const anthropic = new Anthropic({
 });
 
 // ─── MODES ───────────────────────────────────────────────────────────────────
-type Mode = 'compound' | 'formulate' | 'condition' | 'forager';
+type Mode = 'compound' | 'formulate' | 'condition' | 'forager' | 'harvest';
 type ForagerSubMode = 'identify' | 'scan_label' | 'water_body' | 'harvest';
 
 const MODES: { id: Mode; label: string; glyph: string; desc: string }[] = [
@@ -81,6 +81,12 @@ const MODES: { id: Mode; label: string; glyph: string; desc: string }[] = [
     label: 'FORAGER',
     glyph: '🌿',
     desc: 'Point at or describe any wild plant, mushroom, berry, or wild-caught fish. The Equalizer identifies, verifies edibility, and flags every toxic lookalike.',
+  },
+  {
+    id: 'harvest',
+    label: 'HARVEST',
+    glyph: '🦌',
+    desc: 'Wild game identification. CWD screening. Field safety. Harvest regulations. Processing and prep notes. The Equalizer at the point of harvest.',
   },
 ];
 
@@ -194,76 +200,82 @@ Return this exact JSON:
 }`;
 
 // ─── HUNTER PROMPT ───────────────────────────────────────────────────────────
-const HUNTER_PROMPT = `You are AA2 Hunter Intelligence — The Equalizer operating in the field.
+const HUNTER_PROMPT = `You are AA2 Hunter Intelligence — The Equalizer operating at the point of harvest.
 
 SEVERITY RULE — NON-NEGOTIABLE:
-Always render results in severity order from most dangerous to least dangerous.
-Never bury a danger below informational content. A hunter should never have to scroll to find out something is dangerous.
+Always render results in this exact order, most dangerous first. Never bury danger below informational content.
 
-Identify the wild game animal in this image or description. Then respond in this EXACT format and order:
+RESULT FORMAT — FOLLOW EXACTLY:
 
-IDENTIFICATION: [Common name · Scientific name · Sex if determinable · Estimated age class]
+IDENTIFICATION:
+[Species · Subspecies if detectable · Estimated age/weight if describable]
 
-CWD STATUS:
-[This section is ALWAYS first after identification. Chronic Wasting Disease is a fatal prion disease with no cure.]
+━━━━━━━━━━━━━━━━━━━━━━━━━
+CWD STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━
+For deer and elk ONLY:
 
-For deer, elk, moose, caribou, reindeer:
-- Check if species is CWD-susceptible
-- Assess risk based on member location
-- If HIGH RISK: flag in red with explicit do-not-consume warnings for brain, spinal cord, eyes, spleen, lymph nodes
-- If LOW RISK: still recommend testing
-- Always include: "Contact your state wildlife agency for free CWD testing kits before consuming."
+If species is NOT deer or elk:
+CWD STATUS: NOT APPLICABLE
+This species is not susceptible to Chronic Wasting Disease.
 
-For non-susceptible species (rabbit, pheasant, duck, turkey, bear, boar):
-- State clearly: CWD NOT APPLICABLE TO THIS SPECIES
+If species IS deer or elk:
+CWD STATUS: [LOW RISK / CASES DETECTED / UNKNOWN — based on location provided]
 
-PARASITE & PATHOGEN RISK:
-[Species-specific risks only]
-- Bear/boar: Trichinella warning
-- Rabbit: Tularemia handling precautions
-- Waterfowl: Avian influenza if applicable
-- Elk/deer: Liver fluke if applicable
-- If none applicable: state ALL CLEAR
+LOW RISK response:
+No confirmed cases in this region in the last 24 months. CDC recommends testing all deer and elk before consumption regardless of region. Contact your state wildlife agency for free testing kits.
 
-HARVEST REGULATIONS:
-[Based on member home location]
-- Season status (open/closed)
-- Bag/possession limits
-- Tagging requirements
-- Reporting deadlines
-- License requirements
-State clearly if you cannot verify current regulations and direct them to their state wildlife agency.
+CASES DETECTED response:
+Confirmed CWD cases have been reported within this region. Your state wildlife agency strongly recommends laboratory testing before consumption. Do not consume brain, spinal cord, eyes, spleen, or lymph nodes regardless of test results. Bone-in cuts carry higher risk than deboned muscle meat.
+
+For all other wild game:
+Note any species-specific pathogens relevant to this animal:
+- Bear/boar: Trichinosis risk
+- Rabbit: Tularemia risk
+- Waterfowl: Avian influenza awareness
+- All game: E. coli, Salmonella handling
+━━━━━━━━━━━━━━━━━━━━━━━━━
 
 FIELD SAFETY:
-[Overall assessment — Safe to process / Caution / Do not consume]
-One clear verdict with reason.
+[Safe to process / Caution / Do not consume]
+[Specific reason if caution or avoid]
+[Any visible signs that indicate health concerns]
+
+HARVEST REGULATIONS:
+[State-specific based on location provided]
+[Season dates if known]
+[Bag limits]
+[Tagging requirements]
+[Reporting requirements and timeline]
+[License requirements]
 
 MEAT QUALITY INDICATORS:
-[What to look for in the field]
-- Hide/feather condition
-- Fat coverage
-- Muscle color and texture
-- Signs of disease or injury
-- Gut shot assessment if relevant
+[What to look for to assess quality]
+[Hide condition tells]
+[Fat coverage assessment]
+[Muscle color indicators]
+[Field temperature management]
 
 FIELD DRESS NOTES:
-[Species-specific handling]
-- Temperature management
-- Time sensitivity
-- Key steps for this species
-- What NOT to do
+[How to handle this animal in the field]
+[Temperature and time guidance]
+[Equipment recommendations]
+[Species-specific technique notes]
 
 NUTRITION:
-[Protein, fat profile, comparison to commercial equivalent]
+[Protein content]
+[Fat profile comparison to commercial meat]
+[Notable micronutrients]
+[Any consumption frequency guidance]
 
 CHEF NOTES:
-[The Chef's guidance]
-- Aging recommendation
-- Best cuts for this species
-- Optimal cooking method
-- Flavor profile
+[Aging recommendation — time and temperature]
+[Best cuts for this species]
+[Cooking method guidance]
+[Flavor profile]
+[One specific preparation tip]
 
-If you cannot identify the animal, say IDENTIFICATION: UNCLEAR and ask for a clearer image or more detail.`;
+If you cannot identify the species from the description or image, say IDENTIFICATION: UNCLEAR and ask for the species name, location of harvest, and state so regulations can be pulled accurately.`;
 
 // ─── HARVEST ANALYSIS ────────────────────────────────────────────────────────
 async function runHarvestAnalysis(query: string, location: string = 'Belgrade, MT'): Promise<string> {
@@ -333,6 +345,7 @@ export default function ApothecaryScreen() {
   const [stackInput,     setStackInput]    = useState('');
   const [stack,          setStack]         = useState<StackItem[]>([]);
   const [foragerQuery,   setForagerQuery]  = useState('');
+  const [harvestQuery,   setHarvestQuery]  = useState('');
   const [harvestResult,  setHarvestResult] = useState('');
   const [loading,        setLoading]       = useState(false);
   const [result,         setResult]        = useState<any>(null);
@@ -346,6 +359,7 @@ export default function ApothecaryScreen() {
     closeCameraIfOpen();
     setForagerSubMode('identify');
     setForagerQuery('');
+    setHarvestQuery('');
   };
 
   const closeCameraIfOpen = () => {
@@ -392,7 +406,7 @@ export default function ApothecaryScreen() {
     const barcode = lastBarcodeRef.current;
     scannedRef.current = true;
 
-    if (mode === 'forager' && foragerSubMode === 'harvest') {
+    if (mode === 'harvest' || (mode === 'forager' && foragerSubMode === 'harvest')) {
       closeCameraIfOpen();
       setLoading(true);
       clearResult();
@@ -566,14 +580,15 @@ export default function ApothecaryScreen() {
   };
 
   const runHarvest = async () => {
-    if (!foragerQuery.trim()) {
+    const q = mode === 'harvest' ? harvestQuery.trim() : foragerQuery.trim();
+    if (!q) {
       Alert.alert('Describe your harvest', 'Type a species or description of your harvest.');
       return;
     }
     setLoading(true);
     clearResult();
     try {
-      const text = await runHarvestAnalysis(foragerQuery.trim());
+      const text = await runHarvestAnalysis(q);
       setHarvestResult(text);
     } catch (err: any) {
       setApiError(err?.message || err?.toString() || 'The Equalizer could not complete this analysis. Try again.');
@@ -586,6 +601,7 @@ export default function ApothecaryScreen() {
     if (mode === 'compound')  runCompound();
     if (mode === 'formulate') runFormulate();
     if (mode === 'condition') runCondition();
+    if (mode === 'harvest')   runHarvest();
     if (mode === 'forager') {
       if (foragerSubMode === 'harvest') runHarvest();
       else runForager();
@@ -604,7 +620,7 @@ export default function ApothecaryScreen() {
             ref={cameraRef}
             style={{ flex: 1 }}
             facing="back"
-            onBarcodeScanned={mode !== 'forager' ? handleBarcodeScanned : undefined}
+            onBarcodeScanned={mode !== 'forager' && mode !== 'harvest' ? handleBarcodeScanned : undefined}
           >
             <View style={[s.camOverlay, { paddingTop: camPadTop, paddingBottom: camPadBot }]}>
               <View style={s.camFrameGroup}>
@@ -614,7 +630,7 @@ export default function ApothecaryScreen() {
                   borderWidth: barcodeReady ? 3 : 1.5,
                 }]}/>
                 <Text style={[s.camDoctrine, { color: C.gold }]}>
-                  {mode === 'forager' && foragerSubMode === 'harvest' ? 'PHOTOGRAPH YOUR HARVEST' : mode === 'forager' ? 'FRAME YOUR WILD FIND' : 'FRAME PLANT · LABEL · BARCODE'}
+                  {mode === 'harvest' || (mode === 'forager' && foragerSubMode === 'harvest') ? 'PHOTOGRAPH YOUR HARVEST' : mode === 'forager' ? 'FRAME YOUR WILD FIND' : 'FRAME PLANT · LABEL · BARCODE'}
                 </Text>
                 <Text style={[s.camHint, { color: barcodeReady ? C.gold : C.teal }]}>
                   {barcodeReady ? '● LOCKED — TAP TO SCAN' : 'FRAME IT · CONFIRM IT · SCAN IT'}
@@ -658,23 +674,28 @@ export default function ApothecaryScreen() {
 
       {/* ── MODE STRIP ── */}
       <View style={s.modeStrip}>
-        {MODES.map(m => (
-          <TouchableOpacity
-            key={m.id}
-            style={[
-              s.modeBtn,
-              mode === m.id && { borderColor: C.teal, backgroundColor: C.tealDim },
-            ]}
-            onPress={() => switchMode(m.id)}
-          >
-            <Text style={[s.modeGlyph, mode === m.id && { color: C.teal }]}>
-              {m.glyph}
-            </Text>
-            <Text style={[s.modeLabel, mode === m.id && { color: C.teal }]}>
-              {m.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        {MODES.map(m => {
+          const isHarv = m.id === 'harvest';
+          const activeColor = isHarv ? '#E8873A' : C.teal;
+          const activeBg    = isHarv ? 'rgba(232,135,58,0.13)' : C.tealDim;
+          return (
+            <TouchableOpacity
+              key={m.id}
+              style={[
+                s.modeBtn,
+                mode === m.id && { borderColor: activeColor, backgroundColor: activeBg },
+              ]}
+              onPress={() => switchMode(m.id)}
+            >
+              <Text style={[s.modeGlyph, mode === m.id && { color: activeColor }]}>
+                {m.glyph}
+              </Text>
+              <Text style={[s.modeLabel, mode === m.id && { color: activeColor }]}>
+                {m.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <ScrollView
@@ -911,6 +932,147 @@ export default function ApothecaryScreen() {
               <View style={[s.intelBlock, { borderLeftColor: '#E8873A', marginTop: 12 }]}>
                 <Text style={[s.intelTag, { color: '#E8873A' }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
                 <Text style={[s.prose, { lineHeight: 22, fontSize: 14 }]}>{harvestResult}</Text>
+              </View>
+            )}
+          </>
+        )}
+
+        {/* ════════════ HARVEST MODE ════════════ */}
+        {mode === 'harvest' && (
+          <>
+            {!!harvestResult && !loading ? (
+              <>
+                <TouchableOpacity
+                  style={[s.resetBar, { borderColor: '#E8873A' }]}
+                  onPress={() => { clearResult(); setHarvestQuery(''); }}
+                >
+                  <Text style={[s.resetBarText, { color: '#E8873A' }]}>
+                    🦌  IDENTIFY ANOTHER HARVEST
+                  </Text>
+                </TouchableOpacity>
+
+                {/* CWD Status card — rendered FIRST */}
+                {(() => {
+                  const upper = harvestResult.toUpperCase();
+                  let cwdColor = '#1BB8FF';
+                  let cwdLabel = 'NOT APPLICABLE';
+                  let cwdBg    = 'rgba(27,184,255,0.08)';
+                  let cwdBorder= 'rgba(27,184,255,0.30)';
+                  if (upper.includes('CASES DETECTED')) {
+                    cwdColor  = '#E05252';
+                    cwdLabel  = 'CWD · CASES DETECTED';
+                    cwdBg     = 'rgba(224,82,82,0.10)';
+                    cwdBorder = 'rgba(224,82,82,0.40)';
+                  } else if (upper.includes('LOW RISK')) {
+                    cwdColor  = '#1D9E75';
+                    cwdLabel  = 'CWD · LOW RISK';
+                    cwdBg     = 'rgba(29,158,117,0.10)';
+                    cwdBorder = 'rgba(29,158,117,0.35)';
+                  }
+                  const cwdStart = harvestResult.search(/CWD STATUS/i);
+                  const cwdEnd   = harvestResult.indexOf('━━━', cwdStart + 10);
+                  const cwdBody  = cwdStart >= 0 && cwdEnd >= 0
+                    ? harvestResult.slice(cwdStart, cwdEnd).replace(/CWD STATUS/i, '').replace(/━+/g, '').trim()
+                    : '';
+                  return (
+                    <View style={[s.dataCard, {
+                      marginTop: 10,
+                      borderColor: cwdBorder,
+                      borderLeftWidth: 3,
+                      borderLeftColor: cwdColor,
+                      backgroundColor: cwdBg,
+                    }]}>
+                      <Text style={[s.dataCardTitle, { color: cwdColor, marginBottom: 6 }]}>{cwdLabel}</Text>
+                      {!!cwdBody && <Text style={s.prose}>{cwdBody}</Text>}
+                    </View>
+                  );
+                })()}
+
+                {/* Full intel block */}
+                <View style={[s.intelBlock, { borderLeftColor: '#E8873A', marginTop: 8 }]}>
+                  <Text style={[s.intelTag, { color: '#E8873A' }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
+                  {harvestResult.split('\n').map((line, i) => {
+                    const trimmed = line.trim();
+                    const isHeader = /^[A-Z][A-Z &]+:$/.test(trimmed) || /^━+$/.test(trimmed) || trimmed === 'CWD STATUS';
+                    return (
+                      <Text
+                        key={i}
+                        style={isHeader
+                          ? [s.intelTag, { color: '#E8873A', marginTop: 10, marginBottom: 2 }]
+                          : [s.prose, { lineHeight: 22, fontSize: 14 }]}
+                      >
+                        {line}
+                      </Text>
+                    );
+                  })}
+                </View>
+              </>
+            ) : !loading && (
+              <View style={s.inputCard}>
+                {/* Header card */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 10,
+                  backgroundColor: 'rgba(232,135,58,0.08)', borderRadius: 10,
+                  borderWidth: 1, borderColor: 'rgba(232,135,58,0.25)',
+                  padding: 14, marginBottom: 16,
+                }}>
+                  <Text style={{ fontSize: 24 }}>🦌</Text>
+                  <View>
+                    <Text style={[s.fieldLabel, { color: '#E8873A', marginBottom: 2 }]}>THE HUNTER</Text>
+                    <Text style={[s.fieldLabel, { color: C.dim, letterSpacing: 1 }]}>HARVEST INTELLIGENCE</Text>
+                  </View>
+                </View>
+
+                <Text style={s.modeDesc}>{MODES[4].desc}</Text>
+
+                <TouchableOpacity
+                  style={[s.scanCameraBtn, {
+                    borderColor: '#E8873A',
+                    backgroundColor: 'rgba(232,135,58,0.10)',
+                  }]}
+                  onPress={openCamera}
+                >
+                  <Text style={s.scanCameraBtnIcon}>📷</Text>
+                  <Text style={[s.scanCameraBtnLabel, { color: '#E8873A' }]}>PHOTOGRAPH YOUR HARVEST →</Text>
+                </TouchableOpacity>
+
+                <Text style={s.orDivider}>— or describe it —</Text>
+
+                <Text style={s.fieldLabel}>SPECIES OR DESCRIPTION</Text>
+                <TextInput
+                  style={[s.input, { minHeight: 88, textAlignVertical: 'top', paddingTop: 12 }]}
+                  placeholder="e.g. Bull elk, 6x6, harvested near Bozeman MT..."
+                  placeholderTextColor={C.muted}
+                  value={harvestQuery}
+                  onChangeText={setHarvestQuery}
+                  multiline
+                  numberOfLines={3}
+                  autoCorrect={false}
+                />
+
+                {/* Location note */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+                  backgroundColor: C.glass, borderRadius: 8,
+                  borderWidth: 1, borderColor: C.glassBorder,
+                  padding: 10, marginBottom: 14,
+                }}>
+                  <Text style={{ fontSize: 12, marginTop: 1 }}>📍</Text>
+                  <Text style={[s.hintText, { textAlign: 'left', marginTop: 0, flex: 1 }]}>
+                    Include your harvest location and state for accurate CWD risk assessment and regulation lookup.
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  style={[s.runBtn, {
+                    backgroundColor: '#E8873A',
+                    opacity: harvestQuery.trim() ? 1 : 0.4,
+                  }]}
+                  onPress={handleRun}
+                  disabled={!harvestQuery.trim() || loading}
+                >
+                  <Text style={s.runBtnText}>🦌  RUN HARVEST ANALYSIS →</Text>
+                </TouchableOpacity>
               </View>
             )}
           </>
