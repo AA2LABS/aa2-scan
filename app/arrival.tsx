@@ -11,6 +11,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 
@@ -24,7 +25,8 @@ async function markArrivalDone(): Promise<void> {
 }
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+// const { width: SCREEN_W } = Dimensions.get('window'); — replaced by useWindowDimensions hook
+const { height: SCREEN_H } = Dimensions.get('window');
 const SCREEN_ASPECT = SCREEN_W / SCREEN_H;
 const SLIDE_H = SCREEN_ASPECT < 0.50
   ? SCREEN_H * 0.78
@@ -366,6 +368,7 @@ const sl = StyleSheet.create({
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function ArrivalScreen() {
+  const { width: SCREEN_W } = useWindowDimensions();
   const flatRef = useRef<FlatList>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
