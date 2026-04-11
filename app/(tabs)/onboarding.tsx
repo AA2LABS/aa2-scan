@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import PreviewPanels from '../preview-panels';
+import BiomarkerManager from '../biomarker-manager';
 import {
   ActivityIndicator,
   Dimensions,
@@ -1274,32 +1275,52 @@ export default function OnboardingScreen() {
 
       {/* ── MEMBRANE COMPLETE ─────────────────────────────────────────────── */}
       {step === 'membrane_complete' && (
-        <View style={st.completeOuter}>
-          <Text style={st.completeEyebrow}>MEMBRANE SEALED · AA2 ACTIVE</Text>
-          <Text style={{ fontFamily: F.serifIt, fontSize: 64, color: WHITE, textAlign: 'center', marginBottom: 8 }}>
-            The membrane holds.
-          </Text>
-          <Text style={{ fontFamily: F.sans, fontSize: 15, color: MUTED, textAlign: 'center', marginBottom: 40, lineHeight: 24 }}>
-            {northStarProtecting.trim()
-              ? `Protecting: ${northStarProtecting.trim()}`
-              : 'Every scan from here is yours alone.'
-            }
-          </Text>
-          <View style={[st.completePbTrack, { marginBottom: 40 }]}>
-            <View style={[st.completePbFill, { width: '100%', backgroundColor: GREEN }]} />
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={st.completeOuter}>
+            <Text style={st.completeEyebrow}>MEMBRANE SEALED · AA2 ACTIVE</Text>
+            <Text style={{ fontFamily: F.serifIt, fontSize: 64, color: WHITE, textAlign: 'center', marginBottom: 8 }}>
+              The membrane holds.
+            </Text>
+            <Text style={{ fontFamily: F.sans, fontSize: 15, color: MUTED, textAlign: 'center', marginBottom: 40, lineHeight: 24 }}>
+              {northStarProtecting.trim()
+                ? `Protecting: ${northStarProtecting.trim()}`
+                : 'Every scan from here is yours alone.'
+              }
+            </Text>
+            <View style={[st.completePbTrack, { marginBottom: 40 }]}>
+              <View style={[st.completePbFill, { width: '100%', backgroundColor: GREEN }]} />
+            </View>
+            <TouchableOpacity
+              style={[st.completeBtn, { opacity: saving ? 0.6 : 1 }]}
+              onPress={handleMembraneComplete}
+              disabled={saving}
+              activeOpacity={0.85}
+            >
+              {saving
+                ? <ActivityIndicator size="small" color="#03050A" />
+                : <Text style={st.completeBtnText}>ENTER AA2 →</Text>
+              }
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={[st.completeBtn, { opacity: saving ? 0.6 : 1 }]}
-            onPress={handleMembraneComplete}
-            disabled={saving}
-            activeOpacity={0.85}
-          >
-            {saving
-              ? <ActivityIndicator size="small" color="#03050A" />
-              : <Text style={st.completeBtnText}>ENTER AA2 →</Text>
-            }
-          </TouchableOpacity>
-        </View>
+
+          <View style={{ marginTop: 24, paddingHorizontal: 0 }}>
+            <Text style={{
+              fontFamily: 'DMMono-Regular',
+              fontSize: 9,
+              color: BLUE,
+              letterSpacing: 3,
+              marginBottom: 8,
+              textAlign: 'center',
+            }}>
+              MANAGE YOUR ACTIVE BIOMARKERS
+            </Text>
+            <BiomarkerManager embedded={true} />
+          </View>
+        </ScrollView>
       )}
     </SafeAreaView>
   );
