@@ -239,6 +239,58 @@ const pd = StyleSheet.create({
   dot:     { width:16, height:16, borderRadius:8 },
 });
 
+// ─── CONCIERGE MESSAGE ───────────────────────────────────────────────────────
+function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <TouchableOpacity
+      onPress={onDismiss}
+      activeOpacity={0.8}
+      style={{
+        marginHorizontal: 16,
+        marginBottom: 10,
+        backgroundColor: 'rgba(27,184,255,0.08)',
+        borderRadius: 12,
+        padding: 14,
+        borderWidth: 1,
+        borderColor: 'rgba(27,184,255,0.25)',
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        gap: 10,
+      }}
+    >
+      <Text style={{ fontSize: 16 }}>🧬</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={{
+          fontFamily: 'DMMono-Regular',
+          fontSize: 9,
+          color: '#1BB8FF',
+          letterSpacing: 2,
+          marginBottom: 4,
+        }}>
+          THE CONCIERGE
+        </Text>
+        <Text style={{
+          fontFamily: 'CormorantGaramond-Italic',
+          fontSize: 15,
+          color: 'rgba(255,255,255,0.85)',
+          lineHeight: 22,
+        }}>
+          "Don't be shy — you can ask me anything about any food, plant, meat, species, wine, or spirits. No barcode? No problem. I listen just as well as I scan."
+        </Text>
+        <Text style={{
+          fontFamily: 'DMMono-Regular',
+          fontSize: 9,
+          color: 'rgba(255,255,255,0.35)',
+          marginTop: 6,
+          letterSpacing: 1,
+        }}>
+          TAP TO DISMISS
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 export default function ScannerScreen() {
   const { width: screenW, height: screenH } = useWindowDimensions();
@@ -277,6 +329,7 @@ export default function ScannerScreen() {
   const [infoSheetTitle,   setInfoSheetTitle]   = useState('');
   const [infoSheetText,    setInfoSheetText]     = useState('');
   const [infoSheetLoading, setInfoSheetLoading] = useState(false);
+  const [showConciergeMsg, setShowConciergeMsg] = useState(true);
 
   const scannedRef     = useRef(false);
   const lastBarcodeRef = useRef<string|null>(null);
@@ -624,6 +677,10 @@ export default function ScannerScreen() {
 
       {/* PALETTE DOTS */}
       <PaletteDots current={palette} onSelect={setPalette} cardBg={P.card}/>
+
+      {showConciergeMsg && (
+        <ConciergeMessage onDismiss={() => setShowConciergeMsg(false)} />
+      )}
 
       {/* TABS — 4+3 layout */}
       <View style={[s.tabGrid,{borderBottomColor:P.border}]}>

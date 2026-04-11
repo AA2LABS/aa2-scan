@@ -56,7 +56,8 @@ const PANELS = [
   { id: 11, caption: 'Every destination briefed. Every route pre-cleared. You move. We prepare.' },
   { id: 12, caption: 'The $12 bottle that beats the $90 one. The Sommelier knows.' },
   { id: 13, caption: 'The skin is not a barrier. It is an organ. The Cosmo Chemist reads every formula.' },
-  { id: 14, caption: '' },
+  { id: 14, caption: 'Every recipe you save builds your personal gourmet library. Download it. Share it. It grows for life.' },
+  { id: 15, caption: '' },
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -662,8 +663,81 @@ function Panel13() {
   );
 }
 
-// ─── PANEL 14 — NORTH STAR TRANSITION ────────────────────────────────────────
-function Panel14({ onComplete }: { onComplete: () => void }) {
+// ─── PANEL 14 — THE VAULT · COOKBOOK ─────────────────────────────────────────
+function Panel14() {
+  return (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+      {/* Header */}
+      <Text style={{ fontFamily: F.mono, fontSize: 9, color: GOLD, letterSpacing: 3, marginBottom: 4 }}>THE VAULT · COOKBOOK</Text>
+      <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2 }}>YOUR LIVING GOURMET LIBRARY</Text>
+
+      {/* Recipe card */}
+      <View style={{ backgroundColor: CARD_BG, borderRadius: 14, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(196,154,42,0.30)', marginTop: 12 }}>
+        {/* Saved badge */}
+        <View style={{ backgroundColor: 'rgba(29,158,117,0.20)', padding: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Text style={{ fontFamily: F.mono, fontSize: 10, color: GREEN }}>✓</Text>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: GREEN, letterSpacing: 2 }}>SAVED TO COOKBOOK</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, marginLeft: 'auto' }}>APR 7, 2026 · IN-STORE SCAN</Text>
+        </View>
+
+        {/* Recipe title + chips + ingredients */}
+        <View style={{ padding: 14 }}>
+          <Text style={{ fontFamily: F.serifIt, fontSize: 26, color: WHITE, marginBottom: 2 }}>Spaghetti Bolognese</Text>
+          <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+            <PanelChip label="ITALIAN" color={GOLD} />
+            <PanelChip label="45 MIN"  color={MUTED} />
+            <PanelChip label="SERVES 4" color={MUTED} />
+          </View>
+
+          {[
+            { dot: GREEN, name: 'Tomato paste · 2 tbsp',   status: 'SCANNED',       statusColor: GREEN },
+            { dot: GREEN, name: 'Spaghetti noodles · 400g', status: 'SCANNED',       statusColor: GREEN },
+            { dot: RED,   name: 'Olive oil · 2 tbsp',       status: 'VERIFY BRAND',  statusColor: RED   },
+            { dot: BLUE,  name: 'Yellow onion · 1 large',   status: 'PRODUCE',       statusColor: BLUE  },
+            { dot: BLUE,  name: 'Garlic · 4 cloves',        status: 'PRODUCE',       statusColor: BLUE  },
+          ].map((row, i, arr) => (
+            <View key={i} style={{
+              flexDirection: 'row', alignItems: 'center', gap: 8,
+              paddingVertical: 5,
+              borderBottomWidth: i < arr.length - 1 ? 1 : 0,
+              borderBottomColor: 'rgba(255,255,255,0.04)',
+            }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: row.dot }} />
+              <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, flex: 1 }}>{row.name}</Text>
+              <Text style={{ fontFamily: F.mono, fontSize: 9, color: row.statusColor, letterSpacing: 1 }}>{row.status}</Text>
+            </View>
+          ))}
+
+          {/* Membrane notes */}
+          <View style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 10, marginTop: 10 }}>
+            <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>MEMBRANE NOTES · PRIVATE</Text>
+            <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED, lineHeight: 16 }}>
+              2 ingredients flagged. Substitutes confirmed. Shared version shows clean list only — membrane flags stay private.
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Action buttons */}
+      <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+        <TouchableOpacity activeOpacity={0.85} style={{ flex: 1, backgroundColor: GOLD, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: '#03050A', letterSpacing: 1 }}>SHARE RECIPE →</Text>
+        </TouchableOpacity>
+        <TouchableOpacity activeOpacity={0.85} style={{ flex: 1, borderWidth: 1, borderColor: BLUE, backgroundColor: BLUE_DIM, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: BLUE, letterSpacing: 1 }}>DOWNLOAD PDF</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Bottom note */}
+      <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, textAlign: 'center', lineHeight: 18, marginTop: 12 }}>
+        Your Cookbook grows with every saved recipe. Download it. Share it. It is yours — always.
+      </Text>
+    </ScrollView>
+  );
+}
+
+// ─── PANEL 15 — NORTH STAR TRANSITION ────────────────────────────────────────
+function Panel15({ onComplete }: { onComplete: () => void }) {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
       <Text style={{ fontFamily: F.mono, fontSize: 9, color: BLUE, letterSpacing: 3, textAlign: 'center', marginBottom: 40 }}>
@@ -697,7 +771,7 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
   const isLastPanel = activeIndex === PANELS.length - 1;
 
   const renderPanel = ({ item }: { item: typeof PANELS[0] }) => {
-    const isLast = item.id === 14;
+    const isLast = item.id === 15;
     return (
       <View style={{
         width: SCREEN_W,
@@ -720,7 +794,8 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
         {item.id === 11 && <Panel11 />}
         {item.id === 12 && <Panel12 />}
         {item.id === 13 && <Panel13 />}
-        {item.id === 14 && <Panel14 onComplete={onComplete} />}
+        {item.id === 14 && <Panel14 />}
+        {item.id === 15 && <Panel15 onComplete={onComplete} />}
 
         {!isLast && item.caption.length > 0 && (
           <View style={styles.captionWrap} pointerEvents="none">
