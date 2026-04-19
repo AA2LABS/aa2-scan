@@ -33,10 +33,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="apothecary"
         options={{
-          title: 'The Equalizer',
+          title: 'Apothecary',
           tabBarActiveTintColor: TEAL,
           tabBarIcon: ({ color, focused }) => (
-            <TabIcon emoji="⚗" color={focused ? TEAL : color} />
+            <TabIcon emoji="A" color={focused ? TEAL : color} />
           ),
         }}
       />

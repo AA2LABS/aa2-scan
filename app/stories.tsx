@@ -1,7 +1,7 @@
 /**
  * AA2 BioMesh — stories.tsx
  * 7-Door Home Screen
- * Canon v43 · April 12, 2026 · SEALED
+ * Canon v44 · April 13, 2026 · SEALED
  */
 
 import React from 'react';
@@ -127,13 +127,13 @@ interface DoorConfig {
 }
 
 const DOORS: DoorConfig[] = [
-  { id:'aa2', number:'01', title:'THE AA2 STORY', subtitle:'I AM THE RECEIPT', route:'/story-aa2', type:'photo', image:require('../assets/images/17789.png'), accentColor:'#1BB8FF' },
+  { id:'aa2', number:'01', title:'THE AA2 STORY', subtitle:'I AM THE RECEIPT', route:'/story-aa2', type:'photo', image:require('../assets/images/17789.jpg'), accentColor:'#1BB8FF' },
   { id:'scanner', number:'02', title:'THE SCANNER', subtitle:'S.C.A.N. · Safety Clarifier Adaptive Nerve', route:'/story-scanner', type:'graphic', accentColor:'#1BB8FF', GraphicComponent:ScannerGraphic },
   { id:'concierge', number:'03', title:'THE CONCIERGE', subtitle:'Clarifier Baseline · 30/60/90 Day Arc', route:'/story-concierge', type:'graphic', accentColor:'#E05252', GraphicComponent:ConciergeGraphic },
   { id:'equalizer', number:'04', title:'THE EQUALIZER', subtitle:'Produce · Meat · Species · Forager · Hunter', route:'/story-equalizer', type:'graphic', accentColor:'#1D9E75', GraphicComponent:EqualizerGraphic },
   { id:'chauffeur', number:'05', title:'THE CHAUFFEUR', subtitle:"Kelly's Story · Costa Rica · The Membrane at Full Power", route:'/story-chauffeur', type:'graphic', accentColor:'#1BB8FF', GraphicComponent:ChauffeurGraphic },
   { id:'chef', number:'06', title:'THE CHEF', subtitle:'Scan → Recipe → Shop → International Cookbook', route:'/story-chef', type:'graphic', accentColor:'#C49A2A', GraphicComponent:ChefGraphic },
-  { id:'cookbook', number:'07', title:'THE COOKBOOK', subtitle:'AA2 International Live Cooking Recipes', route:'/story-cookbook', type:'photo', image:require('../assets/images/17786.png'), accentColor:'#C49A2A' },
+  { id:'cookbook', number:'07', title:'THE COOKBOOK', subtitle:'AA2 International Live Cooking Recipes', route:'/story-cookbook', type:'photo', image:require('../assets/images/17786.jpg'), accentColor:'#C49A2A' },
 ];
 
 interface PhotoCardProps { door: DoorConfig; cardW: number; onPress: () => void; }
