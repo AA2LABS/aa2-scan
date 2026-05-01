@@ -26,7 +26,7 @@ async function markArrivalDone(): Promise<void> {
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 // const { width: SCREEN_W } = Dimensions.get('window'); — replaced by useWindowDimensions hook
-const { height: SCREEN_H } = Dimensions.get('window');
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 const SCREEN_ASPECT = SCREEN_W / SCREEN_H;
 const SLIDE_H = SCREEN_ASPECT < 0.50
   ? SCREEN_H * 0.78
