@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
+import DoctrineOverlay from '../../components/DoctrineOverlay';
+import type { DoctrineVerdict, Verdict as DoctrineVerdictKind } from '../../lib/chemical-doctrine';
 import { supabase } from '../../lib/supabase';
 
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
