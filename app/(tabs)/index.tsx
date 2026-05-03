@@ -10,6 +10,7 @@ import * as Location from 'expo-location';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import DoctrineOverlay from '../../components/DoctrineOverlay';
 import type { DoctrineVerdict, Verdict as DoctrineVerdictKind } from '../../lib/chemical-doctrine';
+import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
 import { supabase } from '../../lib/supabase';
 
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
@@ -312,6 +313,7 @@ export default function ScannerScreen() {
   const [manualInput,        setManualInput]       = useState('');
   const [loading,            setLoading]           = useState(false);
   const [result,             setResult]            = useState<any>(null);
+  const cameraRef = useRef<any>(null);
   const [history,            setHistory]           = useState<ScanRecord[]>([]);
   const [historyVisible,     setHistoryVisible]    = useState(false);
   const [barcodeReady,       setBarcodeReady]      = useState(false);
@@ -418,11 +420,45 @@ export default function ScannerScreen() {
       return;
     }
 
-    const tabLabel = activeTab==='species'
-      ? `${SPECIES_SUBS.find(s=>s.id===speciesSub)?.label??'Species'} product`
-      : currentTab.label;
     setCameraMode(false); setScanning(false);
-    await runAnalysis(`Camera scan — ${tabLabel}. Return verdict JSON.`, true);
+    setLoading(true); setResult(null);
+    try {
+      const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.6, skipProcessing: true });
+      if (!photo?.base64) {
+        setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Camera capture failed — try again or speak the product name.' });
+        setLoading(false);
+        return;
+      }
+      const profile = memberProfile;
+      const personalTruth = buildPersonalTruth(profile);
+      const tabContext: TabContext = (activeTab==='scan'||activeTab==='care'||activeTab==='grownfolks'||activeTab==='fish'||activeTab==='species'||activeTab==='apothecary'||activeTab==='forager') ? activeTab as TabContext : 'scan';
+      const visionResult = await scanWithVision({
+        imageBase64: photo.base64,
+        tabContext,
+        personalTruth,
+        systemPrompt: SEVERITY_PREFIX + (personalTruth || ''),
+      });
+      if (!visionResult.ok || isVisionEmpty(visionResult.rawText)) {
+        setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Image unclear — try again or speak the product name.' });
+        setLoading(false);
+        return;
+      }
+      let parsed: any = null;
+      try {
+        const jsonMatch = visionResult.rawText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
+      } catch (e) { console.error('[vision] JSON parse failed:', e); }
+      if (!parsed) {
+        setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Could not parse scan result — try again.' });
+      } else {
+        setResult(parsed);
+      }
+    } catch (err: any) {
+      console.error('[handleCapture vision] error:', err);
+      setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Scan failed — ' + (err?.message || 'try again') });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancelCamera = () => {
@@ -731,7 +767,7 @@ export default function ScannerScreen() {
       {/* ── CAMERA ── */}
       {cameraMode?(
         <View style={s.cameraContainer}>
-          <CameraView style={s.camera} facing="back"
+          <CameraView ref={cameraRef} style={s.camera} facing="back"
             onBarcodeScanned={cameraSupportsBarcode ? handleBarcodeScanned : undefined}>
             <View style={[s.cameraOverlay,{paddingTop:camPadTop,paddingBottom:camPadBot}]}>
               <View style={s.cameraFrameGroup}>
