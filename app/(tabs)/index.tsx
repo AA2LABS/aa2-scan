@@ -11,6 +11,7 @@ import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import DoctrineOverlay from '../../components/DoctrineOverlay';
 import type { DoctrineVerdict, Verdict as DoctrineVerdictKind } from '../../lib/chemical-doctrine';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
+import AdaptiveScanner from '../../components/AdaptiveScanner';
 import { supabase } from '../../lib/supabase';
 
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
@@ -371,7 +372,7 @@ export default function ScannerScreen() {
     const barcode = lastBarcodeRef.current;
 
     if (activeTab==='scan') {
-      if (barcode) { scannedRef.current=true; setScanning(false); setCameraMode(false); await runAnalysis(barcode, true); }
+      if (false) { /* v50 W3.2: SCAN tab always uses vision */ }
       else Alert.alert('Frame It First','Wait for the gold border — then tap.');
       return;
     }
@@ -769,35 +770,14 @@ export default function ScannerScreen() {
         <View style={s.cameraContainer}>
           <CameraView ref={cameraRef} style={s.camera} facing="back"
             onBarcodeScanned={cameraSupportsBarcode ? handleBarcodeScanned : undefined}>
-            <View style={[s.cameraOverlay,{paddingTop:camPadTop,paddingBottom:camPadBot}]}>
-              <View style={s.cameraFrameGroup}>
-                <View style={[s.scanFrame,{
-                  width:frameW, height:frameH,
-                  borderColor:barcodeReady?F.gold:accentColor,
-                  borderWidth:barcodeReady?3:1.5,
-                }]}/>
-                <Text style={[s.frameDoctrine,{color:F.gold}]}>FRAME IT · CONFIRM IT · SCAN IT</Text>
-                <Text style={[s.cameraHint,{color:barcodeReady?F.gold:accentColor}]}>
-                  {cameraHintText()}
-                </Text>
-              </View>
-              <View style={s.cameraControls}>
-                <TouchableOpacity
-                  style={[s.captureOuter,{
-                    width:captureSize, height:captureSize, borderRadius:captureSize/2,
-                    borderColor:barcodeReady?F.gold:accentColor,
-                  }]}
-                  onPress={handleCapture} activeOpacity={0.85}>
-                  <View style={[s.captureInner,{
-                    width:captureSize*0.74, height:captureSize*0.74, borderRadius:captureSize*0.37,
-                    backgroundColor:barcodeReady?F.gold:accentColor,
-                  }]}/>
-                </TouchableOpacity>
-                <TouchableOpacity style={[s.cancelBtn,{borderColor:P.border}]} onPress={handleCancelCamera}>
-                  <Text style={s.cancelText}>✕ CANCEL</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            <AdaptiveScanner
+              state="vision"
+              onCapture={handleCapture}
+              onVoiceStart={handleCapture}
+              onBarcodeOnly={handleCapture}
+              onTypeOpen={handleCapture}
+              tabName={String(activeTab).toUpperCase()}
+            />
           </CameraView>
         </View>
       ):(
