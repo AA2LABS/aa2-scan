@@ -2,7 +2,7 @@
   "expo": {
     "name": "aa2-scan",
     "slug": "aa2-scan",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aa2scan",
@@ -20,7 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.aa2labs.aa2scan"
+      "package": "com.aa2labs.aa2scan",
+      "versionCode": 2
     },
     "web": {
       "output": "static",
