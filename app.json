@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "aa2-scan",
+    "name": "AA2 Scan v50",
     "slug": "aa2-scan",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aa2scan",
@@ -20,8 +20,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.aa2labs.aa2scan",
-      "versionCode": 4
+      "package": "com.aa2labs.aa2scanv50",
+      "versionCode": 5
     },
     "web": {
       "output": "static",
@@ -56,7 +56,8 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/5749d821-f2ac-4908-a773-53eed0fd44e6"
+      "enabled": false,
+      "checkAutomatically": "NEVER"
     }
   }
 }
