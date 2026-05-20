@@ -75,9 +75,9 @@ export const AdaptiveScanner: React.FC<AdaptiveScannerProps> = ({
   const Dock = (props: { activeMode?: 'vision' | 'voice' }) => (
     <View style={s.inputDock}>
       <View style={s.inputModes}>
-        <ModeBtn icon="👁" label="VISION" priority={props.activeMode==='vision'?'ACTIVE':'PRIMARY'} onPress={onCapture} active={props.activeMode==='vision'} />
+        <ModeBtn icon="👁" label="VIS" priority={props.activeMode==='vision'?'ACTIVE':'PRIMARY'} onPress={onCapture} active={props.activeMode==='vision'} />
         <ModeBtn icon="🎙" label="VOICE" priority={props.activeMode==='voice'?'ACTIVE':'2ND'} onPress={onVoiceStart} activeGold={props.activeMode==='voice'} />
-        <ModeBtn icon="▭" label="BARCODE" priority="3RD" onPress={onBarcodeOnly} />
+        <ModeBtn icon="▭" label="BAR" priority="3" onPress={onBarcodeOnly} />
         <ModeBtn icon="⌨" label="TYPE" priority="4TH" onPress={onTypeOpen} />
       </View>
       {state === 'vision' && (
@@ -175,7 +175,7 @@ const ModeBtn: React.FC<{
 const ms = StyleSheet.create({
   btn: { flex: 1, borderWidth: 1, borderRadius: 6, paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center', gap: 4 },
   icon: { fontSize: 18 },
-  label: { fontSize: 8, letterSpacing: 1.5 },
+  label: { fontSize: 8, letterSpacing: 0.5 },
   priority: { fontSize: 7, letterSpacing: 1, color: C.textLow, opacity: 0.6 },
 });
 
@@ -186,13 +186,13 @@ const s = StyleSheet.create({
   glyph: { color: C.gold, fontSize: 14 },
   brandName: { color: C.textHi, fontSize: 14, letterSpacing: 3, fontWeight: '600' },
   tabPill: { borderWidth: 1, borderColor: C.cyan, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 3 },
-  tabPillText: { fontSize: 9, letterSpacing: 1.5, color: C.cyan },
+  tabPillText: { fontSize:8,letterSpacing:1,color:C.cyan },
   eyebrowRow: { paddingVertical: 10, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: C.border, backgroundColor: C.navy },
   eyebrowText: { fontSize: 10, letterSpacing: 2, color: C.textLow },
   viewfinderArea: { flex: 1, position: 'relative' },
   vfStatus: { position: 'absolute', top: 24, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, borderColor: C.cyan, backgroundColor: 'rgba(20,37,69,0.85)', zIndex: 5 },
   vfPulse: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.cyan, marginRight: 8 },
-  vfStatusText: { fontSize: 10, letterSpacing: 1.5, color: C.cyan },
+  vfStatusText: { fontSize: 10, letterSpacing: 0.5, color: C.cyan },
   corner: { position: 'absolute', width: 32, height: 32, borderColor: C.cyan },
   cornerTL: { top: 60, left: 30, borderTopWidth: 2, borderLeftWidth: 2 },
   cornerTR: { top: 60, right: 30, borderTopWidth: 2, borderRightWidth: 2 },
@@ -203,7 +203,7 @@ const s = StyleSheet.create({
   inputDock: { backgroundColor: C.navyDeep, borderTopWidth: 1, borderTopColor: C.border, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 },
   inputModes: { flexDirection: 'row', gap: 8, marginBottom: 12 },
   modeTip: { fontSize: 12, color: C.textMid, textAlign: 'center', fontStyle: 'italic', lineHeight: 18 },
-  modeAccent: { color: C.gold, fontStyle: 'normal', fontSize: 10, letterSpacing: 1.5 },
+  modeAccent: { color: C.gold, fontStyle: 'normal', fontSize: 10, letterSpacing: 0.5 },
   fallbackPanel: { position: 'absolute', bottom: 110, left: 0, right: 0, backgroundColor: C.navyCard, borderTopWidth: 1, borderTopColor: C.amber, padding: 22 },
   fbEyebrow: { color: C.amber, fontSize: 9, letterSpacing: 2, marginBottom: 6 },
   fbMessage: { color: C.textHi, fontStyle: 'italic', fontSize: 16, lineHeight: 22, marginBottom: 16 },
@@ -211,7 +211,7 @@ const s = StyleSheet.create({
   fbCta: { flex: 1, borderWidth: 1, borderColor: C.cyan, borderRadius: 4, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', gap: 4 },
   fbCtaPrimary: { backgroundColor: 'rgba(212,168,71,0.12)', borderColor: C.gold },
   fbCtaIcon: { fontSize: 14, color: C.cyan },
-  fbCtaText: { fontSize: 9, letterSpacing: 1.5, color: C.cyan },
+  fbCtaText: { fontSize: 9, letterSpacing: 0.5, color: C.cyan },
   voiceOverlay: { position: 'absolute', top: 100, left: 0, right: 0, bottom: 110, backgroundColor: 'rgba(10,20,40,0.94)', alignItems: 'center', justifyContent: 'center', padding: 40, zIndex: 10 },
   voiceMic: { width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(212,168,71,0.1)', borderWidth: 2, borderColor: C.gold, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
   voiceMicIcon: { fontSize: 40 },

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AA2 — The Membrane</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:   #1BB8FF;
+    --green:  #1D9E75;
+    --gold:   #C49A2A;
+    --red:    #E05252;
+    --orange: #E8873A;
+    --white:  #FFFFFF;
+    --muted:  rgba(255,255,255,0.55);
+    --dim:    rgba(255,255,255,0.15);
+    --bg:     #0A0804;
+    --card:   #150F0A;
+    --border: rgba(255,255,255,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--white);
+    user-select: none;
+  }
+
+  /* ── CONTAINER ── */
+  .book {
+    width: 100%; height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 48px 28px 80px;
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.55s cubic-bezier(.4,0,.2,1),
+                transform 0.55s cubic-bezier(.4,0,.2,1);
+    overflow-y: auto;
+  }
+
+  .panel.active {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .panel.exit-left {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+
+  /* ── DOTS ── */
+  .dots {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 100;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .dot.active {
+    width: 20px;
+    background: var(--blue);
+  }
+
+  /* ── NAV ARROWS ── */
+  .nav {
+    position: fixed;
+    bottom: 60px;
+    display: flex;
+    gap: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+  }
+
+  .nav-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(27,184,255,0.25);
+    background: rgba(27,184,255,0.08);
+    color: var(--blue);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { background: rgba(27,184,255,0.18); }
+  .nav-btn:disabled { opacity: 0.2; cursor: default; }
+
+  /* ── TYPOGRAPHY ── */
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--blue);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  .eyebrow.gold { color: var(--gold); }
+  .eyebrow.green { color: var(--green); }
+  .eyebrow.muted { color: var(--muted); }
+
+  .headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 8vw, 52px);
+    line-height: 1.1;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .headline em {
+    font-style: italic;
+    color: var(--blue);
+  }
+
+  .headline.gold em { color: var(--gold); }
+  .headline.green em { color: var(--green); }
+
+  .body-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--muted);
+    text-align: center;
+    max-width: 340px;
+    margin-bottom: 16px;
+  }
+
+  .body-text strong {
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .mono-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 12px;
+  }
+
+  .card.blue-border { border-color: rgba(27,184,255,0.25); }
+  .card.gold-border { border-color: rgba(196,154,42,0.25); }
+  .card.green-border { border-color: rgba(29,158,117,0.25); }
+  .card.red-border { border-color: rgba(224,82,82,0.25); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 48px; height: 1px;
+    background: rgba(27,184,255,0.30);
+    margin: 16px auto;
+  }
+
+  /* ── CHIP ── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(27,184,255,0.30);
+    background: rgba(27,184,255,0.08);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--blue);
+    margin: 3px;
+  }
+
+  .chip.gold {
+    border-color: rgba(196,154,42,0.30);
+    background: rgba(196,154,42,0.08);
+    color: var(--gold);
+  }
+
+  .chip.green {
+    border-color: rgba(29,158,117,0.30);
+    background: rgba(29,158,117,0.08);
+    color: var(--green);
+  }
+
+  /* ── DEVICE ROW ── */
+  .device-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .device-row:last-child { border-bottom: none; }
+
+  .device-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .device-name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .device-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* ── WITH/WITHOUT ── */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 16px;
+  }
+
+  .split-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 14px 12px;
+  }
+
+  .split-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .split-item {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.4;
+  }
+
+  .split-item:last-child { border-bottom: none; }
+  .split-item.red { color: var(--red); }
+  .split-item.green { color: var(--green); }
+
+  /* ── QUOTE ── */
+  .quote-block {
+    background: rgba(27,184,255,0.06);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    max-width: 360px;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .quote-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--white);
+  }
+
+  /* ── WHO LIST ── */
+  .who-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    max-width: 360px;
+    width: 100%;
+  }
+
+  .who-row:last-child { border-bottom: none; }
+
+  .who-icon {
+    font-size: 16px;
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .who-text {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .who-text strong {
+    color: var(--white);
+    font-weight: 500;
+    display: block;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    margin-bottom: 1px;
+  }
+
+  /* ── CTA BUTTON ── */
+  .cta-btn {
+    background: var(--blue);
+    color: #03050A;
+    border: none;
+    border-radius: 14px;
+    padding: 18px 40px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .cta-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* ── PANEL 8 SPECIAL ── */
+  .final-panel {
+    background: radial-gradient(ellipse at center, rgba(27,184,255,0.06) 0%, transparent 70%);
+  }
+
+  /* ── DISRUPTION/HARMONY VISUAL ── */
+  .dis-harm {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 360px;
+    margin-bottom: 16px;
+  }
+
+  .dis-card {
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .dis-card.disruption {
+    background: rgba(224,82,82,0.06);
+    border-color: rgba(224,82,82,0.20);
+  }
+
+  .dis-card.harmony {
+    background: rgba(29,158,117,0.06);
+    border-color: rgba(29,158,117,0.20);
+  }
+
+  .dis-header {
+    font-family: 'DM Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .dis-device {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dis-device:last-child { border-bottom: none; }
+
+  .dis-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── SCROLL CONTENT ── */
+  .panel-inner {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* FADE IN ANIMATION */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .panel.active .panel-inner > * {
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .panel.active .panel-inner > *:nth-child(1) { animation-delay: 0.1s; }
+  .panel.active .panel-inner > *:nth-child(2) { animation-delay: 0.2s; }
+  .panel.active .panel-inner > *:nth-child(3) { animation-delay: 0.3s; }
+  .panel.active .panel-inner > *:nth-child(4) { animation-delay: 0.4s; }
+  .panel.active .panel-inner > *:nth-child(5) { animation-delay: 0.5s; }
+  .panel.active .panel-inner > *:nth-child(6) { animation-delay: 0.6s; }
+
+  /* Swipe hint */
+  .swipe-hint {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.15);
+    z-index: 99;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="book" id="book">
+
+  <!-- PANEL 1 — WELCOME -->
+  <div class="panel active" id="panel-0">
+    <div class="panel-inner">
+      <div class="eyebrow">AA2 ADAPTIVE ADVANTAGE LABORATORIES</div>
+      <h1 class="headline">You finally <em>arrived.</em></h1>
+      <div class="divider"></div>
+      <p class="body-text">
+        The one place that reunites everything you've collected — your watch, your ring, your glasses, your earbuds — and transforms their raw signals into something that actually makes sense for <strong>your life.</strong>
+      </p>
+      <p class="body-text">
+        Not a mirror of what your devices already say.<br>
+        <strong>An interpretation. A correct one.</strong>
+      </p>
+      <div class="mono-label">1 OF 8 · SWIPE TO CONTINUE</div>
+    </div>
+  </div>
+
+  <!-- PANEL 2 — WHAT THIS SYSTEM DOES -->
+  <div class="panel" id="panel-1">
+    <div class="panel-inner">
+      <div class="eyebrow">THE MEMBRANE PROTECTS</div>
+      <h1 class="headline">One system. <em>Everything.</em></h1>
+      <div class="divider"></div>
+
+      <div class="card blue-border" style="max-width:360px;width:100%;">
+        <div style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;">
+          <span class="chip">FOOD SAFETY</span>
+          <span class="chip">PATHOGEN DETECTION</span>
+          <span class="chip">TRAVEL SAFETY</span>
+          <span class="chip">ALLERGEN ALERTS</span>
+          <span class="chip">WILD GAME · CWD</span>
+          <span class="chip">FORAGING</span>
+          <span class="chip gold">LIVE COOKING</span>
+          <span class="chip gold">LANGUAGE LEARNING</span>
+          <span class="chip gold">FINANCIAL SAVINGS</span>
+          <span class="chip green">K9 INTELLIGENCE</span>
+          <span class="chip green">EQUESTRIAN</span>
+          <span class="chip green">AGRICULTURAL</span>
+        </div>
+      </div>
+
+      <p class="body-text">
+        AT&T makes the connection.<br>
+        <strong>AA2 makes the interpretation.</strong>
+      </p>
+
+      <div class="quote-block">
+        <div class="quote-text">"The same membrane that reads your biosignals reads the label on your food, the mushroom in the woods, and the formula in your shampoo."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3 — HARDWARE REVIVAL -->
+  <div class="panel" id="panel-2">
+    <div class="panel-inner">
+      <div class="eyebrow gold">THE HARDWARE DRAWER DOCTRINE</div>
+      <h1 class="headline gold">Your old device<br><em>has new life.</em></h1>
+      <div class="divider" style="background:rgba(196,154,42,0.40);"></div>
+
+      <div class="card gold-border">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:12px;">WHAT YOU THOUGHT WAS OBSOLETE</div>
+        <div class="device-row">
+          <div class="device-dot" style="background:#E8873A;"></div>
+          <div class="device-name" style="color:var(--muted);">Old Garmin</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">NO NEW FIRMWARE</div>
+        </div>
+        <div class="device-row">
+          <div class="device-dot" style="background:#E8873A;"></div>
+          <div class="device-name" style="color:var(--muted);">Previous Ring</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">STOPPED UPDATING</div>
+        </div>
+        <div class="device-row" style="border-bottom:none;">
+          <div class="device-dot" style="background:#E8873A;"></div>
+          <div class="device-name" style="color:var(--muted);">Old Earbuds</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);">THOUGHT USELESS</div>
+        </div>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);margin:8px 0;">↓ UPLOAD THE PDF MANUAL ↓</div>
+
+      <div class="card green-border">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--green);margin-bottom:12px;">WHAT IT BECOMES INSIDE AA2</div>
+        <div class="device-row">
+          <div class="device-dot" style="background:var(--green);"></div>
+          <div class="device-name">Same Old Garmin</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);">74 HRV · LIVE</div>
+        </div>
+        <div class="device-row">
+          <div class="device-dot" style="background:var(--green);"></div>
+          <div class="device-name">Same Old Ring</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);">68 READINESS</div>
+        </div>
+        <div class="device-row" style="border-bottom:none;">
+          <div class="device-dot" style="background:var(--green);"></div>
+          <div class="device-name">Same Old Earbuds</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--green);">42ms HRV</div>
+        </div>
+      </div>
+
+      <p class="body-text" style="margin-top:4px;">
+        <strong>You had years of bios locked inside.</strong><br>They were just waiting for a system smart enough to set them free.
+      </p>
+    </div>
+  </div>
+
+  <!-- PANEL 4 — DISRUPTION VS HARMONY -->
+  <div class="panel" id="panel-3">
+    <div class="panel-inner">
+      <div class="eyebrow">THE TRANSFORMATION</div>
+      <h1 class="headline">Disruption<br>vs <em>Harmony.</em></h1>
+      <div class="divider"></div>
+
+      <div class="dis-harm">
+        <div class="dis-card disruption">
+          <div class="dis-header" style="color:var(--red);">DISRUPTION</div>
+          <div class="dis-device"><div class="dis-dot" style="background:var(--red);"></div>Garmin says 118</div>
+          <div class="dis-device"><div class="dis-dot" style="background:var(--red);"></div>Ring says stress</div>
+          <div class="dis-device"><div class="dis-dot" style="background:var(--red);"></div>No context</div>
+          <div class="dis-device" style="border-bottom:none;"><div class="dis-dot" style="background:var(--red);"></div>No meaning</div>
+        </div>
+        <div class="dis-card harmony">
+          <div class="dis-header" style="color:var(--green);">HARMONY</div>
+          <div class="dis-device"><div class="dis-dot" style="background:var(--green);"></div>All signals read</div>
+          <div class="dis-device"><div class="dis-dot" style="background:var(--green);"></div>Context applied</div>
+          <div class="dis-device"><div class="dis-dot" style="background:var(--green);"></div>Clarified</div>
+          <div class="dis-device" style="border-bottom:none;"><div class="dis-dot" style="background:var(--green);"></div>Interpreted</div>
+        </div>
+      </div>
+
+      <div class="card blue-border">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:8px;">THE CLARIFIER DIFFERENCE</div>
+        <p style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);line-height:1.6;">
+          Any app can mirror what your devices already say. AA2 runs every signal through <strong style="color:var(--white);">The Clarifier</strong> — the only system that knows the difference between your stress and your excitement, your workout and your housecleaning, your fear and your joy.
+        </p>
+      </div>
+
+      <p class="body-text">
+        <strong>Organic and inorganic material alike.</strong><br>
+        The membrane reads biosignals and barcodes with the same intelligence.
+      </p>
+    </div>
+  </div>
+
+  <!-- PANEL 5 — BYOB / BYOH / BYMR -->
+  <div class="panel" id="panel-4">
+    <div class="panel-inner">
+      <div class="eyebrow">BRING EVERYTHING YOU ALREADY HAVE</div>
+      <h1 class="headline">Your data.<br><em>Always yours.</em></h1>
+      <div class="divider"></div>
+
+      <div class="split">
+        <div class="split-card">
+          <div class="split-label" style="color:var(--blue);">BYOB</div>
+          <div class="split-item">Biosignal history</div>
+          <div class="split-item">HRV baselines</div>
+          <div class="split-item green">Yours forever</div>
+        </div>
+        <div class="split-card">
+          <div class="split-label" style="color:var(--gold);">BYOH</div>
+          <div class="split-item">Any wearable</div>
+          <div class="split-item">PDF manuals</div>
+          <div class="split-item green">Old or new</div>
+        </div>
+        <div class="split-card">
+          <div class="split-label" style="color:var(--green);">BYMR</div>
+          <div class="split-item">Allergy records</div>
+          <div class="split-item">Medications</div>
+          <div class="split-item green">Your profile</div>
+        </div>
+        <div class="split-card">
+          <div class="split-label" style="color:var(--orange);">EXPORT</div>
+          <div class="split-item">Full data CSV</div>
+          <div class="split-item">Cookbook PDF</div>
+          <div class="split-item green">Leave anytime</div>
+        </div>
+      </div>
+
+      <div class="quote-block">
+        <div class="quote-text">"When we say it's your data — it's your data. The system holds nothing hostage."</div>
+      </div>
+
+      <p class="body-text">
+        Bring your bios. Bring your allergies. Bring your pet's history, your horse's feed records, your device manuals. The membrane is ready for all of it.
+      </p>
+    </div>
+  </div>
+
+  <!-- PANEL 6 — WHO THIS IS FOR -->
+  <div class="panel" id="panel-5">
+    <div class="panel-inner">
+      <div class="eyebrow">NO MATTER YOUR PATH</div>
+      <h1 class="headline">Built for <em>every life.</em></h1>
+      <div class="divider"></div>
+
+      <div class="card blue-border" style="padding:8px 16px;">
+        <div class="who-row">
+          <div class="who-icon">👨‍👩‍👧‍👦</div>
+          <div class="who-text"><strong>FAMILIES</strong>Every person and animal you protect. One membrane.</div>
+        </div>
+        <div class="who-row">
+          <div class="who-icon">🎯</div>
+          <div class="who-text"><strong>TACTICAL · LAW ENFORCEMENT</strong>Handler and K9 in sync. Mission readiness protected.</div>
+        </div>
+        <div class="who-row">
+          <div class="who-icon">🏇</div>
+          <div class="who-text"><strong>EQUESTRIAN · AGRICULTURE</strong>Jockey and horse biosignals unified. Feed safety monitored.</div>
+        </div>
+        <div class="who-row">
+          <div class="who-icon">🏆</div>
+          <div class="who-text"><strong>PROFESSIONAL ATHLETES · TEAMS</strong>NBA, NFL, F1, Olympic. Every player a channel on the master bus.</div>
+        </div>
+        <div class="who-row" style="border-bottom:none;">
+          <div class="who-icon">✈️</div>
+          <div class="who-text"><strong>GLOBAL TRAVELERS</strong>Safe routes, local food intelligence, language in real time.</div>
+        </div>
+      </div>
+
+      <p class="body-text" style="margin-top:8px;">
+        <strong>One investment. Every context.</strong><br>
+        The membrane scales from your kitchen to the command room.
+      </p>
+    </div>
+  </div>
+
+  <!-- PANEL 7 — THE BIO CONTROL PANEL -->
+  <div class="panel" id="panel-6">
+    <div class="panel-inner">
+      <div class="eyebrow">THE LARGE SCREEN EXPERIENCE</div>
+      <h1 class="headline">The Bio<br><em>Control Panel.</em></h1>
+      <div class="divider"></div>
+
+      <div class="card blue-border">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:12px;">NFL COACHING STAFF · MONITOR VIEW</div>
+        <div class="device-row">
+          <div class="device-dot" style="background:var(--green);"></div>
+          <div class="device-name" style="font-size:12px;">Head Coach</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);">OPTIMAL</div>
+        </div>
+        <div class="device-row">
+          <div class="device-dot" style="background:var(--gold);"></div>
+          <div class="device-name" style="font-size:12px;">QB · #12</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--gold);">MONITOR</div>
+        </div>
+        <div class="device-row">
+          <div class="device-dot" style="background:var(--green);"></div>
+          <div class="device-name" style="font-size:12px;">Lead Trainer</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green);">OPTIMAL</div>
+        </div>
+        <div class="device-row" style="border-bottom:none;">
+          <div class="device-dot" style="background:var(--red);"></div>
+          <div class="device-name" style="font-size:12px;">RB · #23</div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);">ATTENTION</div>
+        </div>
+      </div>
+
+      <p class="body-text">
+        On a phone, AA2 feels personal.<br>
+        <strong>On a 65-inch screen, AA2 feels like a living operational system.</strong>
+      </p>
+
+      <div class="card" style="border-color:rgba(196,154,42,0.25);">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:8px;">ENTERPRISE · F1 · LAW ENFORCEMENT</div>
+        <p style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);line-height:1.6;">
+          87 seats. 24 countries. WADA layer. Every member a channel on the master bus. Every signal interpreted — not just displayed.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 8 — THE DOORWAY -->
+  <div class="panel final-panel" id="panel-7">
+    <div class="panel-inner">
+      <div class="eyebrow" style="letter-spacing:4px;">THE MEMBRANE · AA2 BIOSIGNAL SYSTEM</div>
+
+      <div style="margin:20px 0;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:4px;color:rgba(27,184,255,0.40);margin-bottom:12px;">✦ ✦ ✦</div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(36px,9vw,58px);line-height:1.05;color:var(--white);margin-bottom:12px;">
+          The more of yourself<br>you bring to this system —
+        </h1>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(36px,9vw,58px);line-height:1.05;color:var(--blue);margin-bottom:24px;">
+          the more the system's<br>mirror reflects you.
+        </h1>
+      </div>
+
+      <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--muted);text-align:center;margin-bottom:32px;">
+        5 MINUTES · 8 BLOCKS · ONE MEMBRANE
+      </div>
+
+      <button class="cta-btn" onclick="alert('BUILD MY MEMBRANE — this button routes to onboarding')">
+        BUILD MY MEMBRANE →
+      </button>
+
+      <div style="margin-top:20px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.20);text-align:center;">
+        I AM THE RECEIPT
+      </div>
+    </div>
+  </div>
+
+</div><!-- /book -->
+
+<!-- NAVIGATION -->
+<div class="dots" id="dots"></div>
+
+<div class="nav">
+  <button class="nav-btn" id="prev-btn" onclick="navigate(-1)" disabled>←</button>
+  <button class="nav-btn" id="next-btn" onclick="navigate(1)">→</button>
+</div>
+
+<div class="swipe-hint" id="swipe-hint">SWIPE OR USE ARROWS</div>
+
+<script>
+  const TOTAL = 8;
+  let current = 0;
+  let isAnimating = false;
+  let touchStartX = 0;
+  let touchStartY = 0;
+
+  // Build dots
+  const dotsEl = document.getElementById('dots');
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(index) {
+    if (isAnimating || index === current) return;
+    if (index < 0 || index >= TOTAL) return;
+
+    isAnimating = true;
+
+    const prev = document.getElementById(`panel-${current}`);
+    const next = document.getElementById(`panel-${index}`);
+
+    prev.classList.remove('active');
+    prev.classList.add('exit-left');
+
+    setTimeout(() => {
+      prev.classList.remove('exit-left');
+    }, 550);
+
+    next.classList.add('active');
+    current = index;
+
+    // Update dots
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === current);
+    });
+
+    // Update buttons
+    document.getElementById('prev-btn').disabled = current === 0;
+    document.getElementById('next-btn').disabled = current === TOTAL - 1;
+
+    // Hide swipe hint after first swipe
+    if (current > 0) {
+      document.getElementById('swipe-hint').style.opacity = '0';
+    }
+
+    setTimeout(() => { isAnimating = false; }, 560);
+  }
+
+  function navigate(dir) {
+    goTo(current + dir);
+  }
+
+  // Touch/swipe support
+  document.getElementById('book').addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  document.getElementById('book').addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      navigate(dx < 0 ? 1 : -1);
+    }
+  }, { passive: true });
+
+  // Keyboard support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') navigate(1);
+    if (e.key === 'ArrowLeft') navigate(-1);
+  });
+</script>
+</body>
+</html>

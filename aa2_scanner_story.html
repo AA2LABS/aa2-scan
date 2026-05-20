@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AA2 — Scanner Story · 16 Panels</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1BB8FF;--bdim:rgba(27,184,255,0.10);--bb:rgba(27,184,255,0.22);
+  --green:#1D9E75;--gdim:rgba(29,158,117,0.10);--gb:rgba(29,158,117,0.22);
+  --gold:#C49A2A;--ydim:rgba(196,154,42,0.10);--yb:rgba(196,154,42,0.22);
+  --red:#E05252;--rdim:rgba(224,82,82,0.10);--rb:rgba(224,82,82,0.22);
+  --orange:#E8873A;--odim:rgba(232,135,58,0.10);--ob:rgba(232,135,58,0.22);
+  --purple:#9B59B6;--pdim:rgba(155,89,182,0.10);--pb:rgba(155,89,182,0.22);
+  --white:#FFFFFF;--muted:rgba(255,255,255,0.52);--dim:rgba(255,255,255,0.10);
+  --bg:#0A0804;--card:#120D08;--border:rgba(255,255,255,0.055);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);}
+.book{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* PANEL SHELL */
+.panel{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;
+  opacity:0;transform:translateX(100%);
+  transition:opacity .44s cubic-bezier(.4,0,.2,1),transform .44s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.panel.active{opacity:1;transform:translateX(0);}
+.panel.exit{opacity:0;transform:translateX(-40px);}
+
+/* FIXED HEADER */
+.ph{padding:44px 22px 10px;flex-shrink:0;width:100%;max-width:420px;margin:0 auto;}
+
+/* SCROLLABLE BODY */
+.pb{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 22px 80px;width:100%;max-width:420px;margin:0 auto;}
+.pb::-webkit-scrollbar{display:none;}
+
+/* CENTER PANEL */
+.panel.center .ph{padding-bottom:0;}
+.panel.center .pb{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+
+/* STAGGER */
+@keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.panel.active .ph>*{animation:up .38s ease both;}
+.panel.active .ph>*:nth-child(1){animation-delay:.07s;}
+.panel.active .ph>*:nth-child(2){animation-delay:.14s;}
+.panel.active .ph>*:nth-child(3){animation-delay:.21s;}
+.panel.active .pb>*{animation:up .38s ease both;}
+.panel.active .pb>*:nth-child(1){animation-delay:.14s;}
+.panel.active .pb>*:nth-child(2){animation-delay:.21s;}
+.panel.active .pb>*:nth-child(3){animation-delay:.28s;}
+.panel.active .pb>*:nth-child(4){animation-delay:.35s;}
+.panel.active .pb>*:nth-child(5){animation-delay:.42s;}
+.panel.active .pb>*:nth-child(6){animation-delay:.49s;}
+.panel.active .pb>*:nth-child(7){animation-delay:.56s;}
+.panel.active .pb>*:nth-child(8){animation-delay:.63s;}
+
+/* TYPOGRAPHY */
+.ey{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--blue);margin-bottom:5px;}
+.ey.g{color:var(--gold);}.ey.gr{color:var(--green);}.ey.r{color:var(--red);}.ey.o{color:var(--orange);}.ey.p{color:var(--purple);}
+h1.hl{font-family:'Cormorant Garamond',serif;font-size:clamp(26px,7vw,40px);line-height:1.08;font-weight:400;margin-bottom:8px;}
+h1.hl em{font-style:italic;color:var(--blue);}
+h1.hl.r em{color:var(--red);}h1.hl.gr em{color:var(--green);}h1.hl.g em{color:var(--gold);}
+.sub{font-size:13px;line-height:1.75;color:var(--muted);margin-bottom:10px;}
+.sub strong{color:var(--white);font-weight:500;}
+.mn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);}
+.mn.b{color:var(--blue);}.mn.g{color:var(--gold);}.mn.gr{color:var(--green);}.mn.r{color:var(--red);}
+
+/* DIVIDER */
+.dv{width:32px;height:1px;background:var(--bb);margin:6px 0 12px;}
+.dv.r{background:var(--rb);}.dv.gr{background:var(--gb);}.dv.g{background:var(--yb);}.dv.c{margin:6px auto 12px;}
+
+/* CARD */
+.card{width:100%;background:var(--card);border-radius:12px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;}
+.card.b{border-color:var(--bb);background:rgba(27,184,255,0.03);}
+.card.g{border-color:var(--yb);background:rgba(196,154,42,0.03);}
+.card.gr{border-color:var(--gb);background:rgba(29,158,117,0.03);}
+.card.r{border-color:var(--rb);background:rgba(224,82,82,0.04);}
+.card.o{border-color:var(--ob);background:rgba(232,135,58,0.03);}
+.card.p{border-color:var(--pb);background:rgba(155,89,182,0.03);}
+
+/* CARD LABEL */
+.cl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:8px;}
+.cl.g{color:var(--gold);}.cl.gr{color:var(--green);}.cl.r{color:var(--red);}.cl.m{color:var(--muted);}.cl.o{color:var(--orange);}.cl.p{color:var(--purple);}
+
+/* ROW */
+.row{display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.row:first-child{padding-top:0;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.rn{font-size:13px;color:var(--white);flex:1;line-height:1.4;}
+.rn small{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.8px;margin-top:2px;}
+.rv{font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0;padding-top:1px;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--bb);background:var(--bdim);border-radius:20px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.2px;color:var(--blue);}
+.chip.g{border-color:var(--yb);background:var(--ydim);color:var(--gold);}
+.chip.gr{border-color:var(--gb);background:var(--gdim);color:var(--green);}
+.chip.r{border-color:var(--rb);background:var(--rdim);color:var(--red);}
+.chip.m{border-color:var(--dim);background:rgba(255,255,255,0.02);color:var(--muted);}
+.chip.o{border-color:var(--ob);background:var(--odim);color:var(--orange);}
+
+/* QUOTE */
+.qt{width:100%;border-left:2.5px solid var(--blue);background:var(--bdim);border-radius:0 10px 10px 0;padding:11px 13px;margin-bottom:8px;}
+.qt p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.6;color:var(--white);}
+.qt.gr{border-left-color:var(--green);background:var(--gdim);}
+.qt.r{border-left-color:var(--red);background:var(--rdim);}
+
+/* SEVERITY */
+.sev{width:100%;border-radius:11px;border:1px solid;padding:11px 13px;margin-bottom:8px;}
+.sev.danger{border-color:var(--rb);background:rgba(224,82,82,0.06);border-left:3px solid var(--red);}
+.sev.caution{border-color:var(--ob);background:rgba(232,135,58,0.05);border-left:3px solid var(--orange);}
+.sev.notice{border-color:var(--yb);background:rgba(196,154,42,0.05);border-left:3px solid var(--gold);}
+.sev.info{border-color:var(--bb);background:rgba(27,184,255,0.05);border-left:3px solid var(--blue);}
+.sev.clear{border-color:var(--gb);background:rgba(29,158,117,0.05);border-left:3px solid var(--green);}
+.sev-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;margin-bottom:5px;}
+.sev-ttl{font-size:15px;font-weight:500;margin-bottom:6px;}
+.sev-body{font-size:12.5px;color:var(--muted);line-height:1.65;}
+
+/* PHONE FRAME */
+.phone-frame{
+  width:100%;
+  background:var(--card);
+  border-radius:14px;
+  border:2px solid var(--border);
+  overflow:hidden;
+  margin-bottom:10px;
+}
+.phone-frame.child{border-color:var(--rb);}
+.phone-frame.mom{border-color:var(--bb);}
+.phone-frame.approved{border-color:var(--gb);}
+
+.phone-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px 6px;
+  border-bottom:1px solid var(--border);
+}
+.phone-who{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;}
+.phone-status{display:flex;align-items:center;gap:5px;}
+.phone-dot{width:5px;height:5px;border-radius:50%;}
+.phone-body{padding:12px;}
+
+/* NOTIFICATION BANNER */
+.notif{
+  width:100%;
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:8px;
+  border:1px solid;
+}
+.notif.alert{background:rgba(224,82,82,0.10);border-color:var(--rb);}
+.notif.info{background:rgba(27,184,255,0.08);border-color:var(--bb);}
+.notif.approved{background:rgba(29,158,117,0.08);border-color:var(--gb);}
+.notif-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.notif-icon{font-size:18px;flex-shrink:0;}
+.notif-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;}
+
+/* CAPTION */
+.caption{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:rgba(255,255,255,0.38);text-align:center;line-height:1.5;margin-top:4px;padding:0 8px;}
+
+/* CTA */
+.cta{width:100%;background:var(--blue);color:#03050A;border:none;border-radius:12px;padding:15px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;}
+
+/* 2-BTN ROW */
+.btn2{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;}
+.btn-p{background:var(--gold);color:#03050A;border:none;border-radius:11px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;}
+.btn-s{background:transparent;color:var(--blue);border:1px solid var(--bb);border-radius:11px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;}
+.btn-gr{background:var(--green);color:#fff;border:none;border-radius:11px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;}
+.btn-r{background:var(--red);color:#fff;border:none;border-radius:11px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;}
+
+/* LOCATION PILL */
+.loc{display:inline-flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 12px;margin-bottom:10px;}
+.loc-dot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+.loc-text{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--muted);}
+
+/* SCANNER TAB BAR */
+.tab-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.tab{display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--card);border-radius:20px;padding:5px 11px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:var(--muted);cursor:pointer;}
+.tab.active-tab{border-color:var(--bb);background:var(--bdim);color:var(--blue);}
+.tab.active-tab.g{border-color:var(--yb);background:var(--ydim);color:var(--gold);}
+.tab.active-tab.gr{border-color:var(--gb);background:var(--gdim);color:var(--green);}
+.tab.active-tab.o{border-color:var(--ob);background:var(--odim);color:var(--orange);}
+.tab.active-tab.p{border-color:var(--pb);background:var(--pdim);color:var(--purple);}
+
+/* PCOUNT & NAV */
+.pcount{position:fixed;top:14px;right:16px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.20);z-index:200;}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:100;flex-wrap:wrap;justify-content:center;max-width:320px;}
+.d{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.14);transition:all .3s;cursor:pointer;}
+.d.active{width:14px;background:var(--blue);}
+.nav{position:fixed;bottom:50px;display:flex;gap:8px;left:50%;transform:translateX(-50%);z-index:100;}
+.nb{width:36px;height:36px;border-radius:50%;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.nb:disabled{opacity:.14;cursor:default;}
+.hint{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.11);z-index:99;pointer-events:none;transition:opacity .4s;}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+<div class="pcount" id="pcount">1 / 16</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P1 — THE SETUP                                 -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel active" id="p0">
+<div class="ph">
+  <div class="ey">AA2 S.C.A.N. · SAFETY CLARIFIER ADAPTIVE NERVE</div>
+  <h1 class="hl">Mom is at work.<br><em>Child is at the store.</em></h1>
+  <div class="dv"></div>
+</div>
+<div class="pb">
+  <p class="sub">Jaylen is 11 years old. He's at Albertsons picking up snacks after school. His mom, Denise, is at her office across town. Jaylen has a <strong>severe peanut allergy.</strong> Denise isn't there to read the label.</p>
+
+  <div class="card b">
+    <div class="cl">AA2 MEMBRANE · FAMILY SETUP</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--blue);"></div>
+      <div class="rn">Denise<small>Mom · AA2 Full Member · Work — Bozeman, MT</small></div>
+      <div class="rv" style="color:var(--green);">ONLINE</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="rn">Jaylen<small>Child · AA2 Protected Member · Albertsons — Belgrade, MT</small></div>
+      <div class="rv" style="color:var(--green);">SCANNING</div>
+    </div>
+  </div>
+
+  <div class="card r">
+    <div class="cl r">ACTIVE MEMBRANE FLAGS · JAYLEN'S PROFILE</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--red);"></div>
+      <div class="rn">Peanut<small style="color:var(--red);">SEVERE · Anaphylactic risk · EpiPen prescribed</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--orange);"></div>
+      <div class="rn">Tree nuts<small style="color:var(--orange);">MODERATE · Monitor</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="rn">Shellfish<small style="color:var(--gold);">MILD · Check labels</small></div>
+    </div>
+  </div>
+
+  <div class="qt r"><p>"The membrane doesn't need mom to be there. It carries her knowledge into every store, every aisle, every label — wherever Jaylen goes."</p></div>
+  <div class="caption">The scanner is the nervous system she left with him.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P2 — CHILD'S PHONE · SCAN · BLOCKED            -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p1">
+<div class="ph">
+  <div class="ey r">JAYLEN'S PHONE · ALBERTSONS · BELGRADE, MT</div>
+  <h1 class="hl r">Purchase<br><em>blocked.</em></h1>
+  <div class="dv r"></div>
+</div>
+<div class="pb">
+  <div class="phone-frame child">
+    <div class="phone-bar">
+      <div class="phone-who" style="color:var(--gold);">JAYLEN · AA2 SCAN</div>
+      <div class="phone-status"><div class="phone-dot" style="background:var(--red);"></div><div class="mn r">ALERT FIRED</div></div>
+    </div>
+    <div class="phone-body">
+
+      <div class="notif alert">
+        <div class="notif-hdr"><div class="notif-icon">🚫</div><div class="notif-title" style="color:var(--red);">PURCHASE BLOCKED</div></div>
+        <div style="font-size:15px;font-weight:500;color:var(--white);margin-bottom:6px;">Planters Honey Roasted Peanuts</div>
+        <div class="mn" style="margin-bottom:8px;">SCANNED · AISLE 7 · 3:47 PM</div>
+        <div style="background:rgba(224,82,82,0.15);border-radius:8px;padding:9px 11px;margin-bottom:8px;">
+          <div class="mn r" style="margin-bottom:4px;">☠ LEVEL 1 · IMMEDIATE DANGER</div>
+          <p style="font-size:13px;color:var(--white);line-height:1.65;"><strong>PEANUTS · PRIMARY INGREDIENT</strong><br>This product is 100% peanuts. Your membrane flags severe peanut allergy with anaphylactic risk.</p>
+        </div>
+        <div class="mn" style="color:rgba(255,255,255,0.35);">Mom has been notified · Alert sent 3:47 PM</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">☠ LEVEL 1 · SEVERE ALLERGEN · PEANUT</div>
+    <div class="sev-ttl" style="color:var(--white);">Do not purchase. Do not consume.</div>
+    <p class="sev-body">Peanuts are the primary ingredient. Even trace contact can trigger anaphylaxis in sensitized individuals. EpiPen may be required if accidental exposure occurs.</p>
+  </div>
+
+  <div class="card b">
+    <div class="cl">ALERT SENT TO MOM · DENISE</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;">Denise received a full alert at work — product name, ingredients, severity level, and Jaylen's current location. She sees everything he sees. <strong style="color:var(--white);">In real time.</strong></p>
+  </div>
+
+  <div class="caption">He didn't need to call her. The membrane already did.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P3 — MOM'S PHONE AT WORK · ALERT RECEIVED      -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p2">
+<div class="ph">
+  <div class="ey b">DENISE'S PHONE · OFFICE · BOZEMAN, MT</div>
+  <h1 class="hl">Mom sees<br><em>everything.</em></h1>
+  <div class="dv"></div>
+</div>
+<div class="pb">
+  <div class="phone-frame mom">
+    <div class="phone-bar">
+      <div class="phone-who" style="color:var(--blue);">DENISE · AA2 FAMILY</div>
+      <div class="phone-status"><div class="phone-dot" style="background:var(--red);"></div><div class="mn r">ALERT · JAYLEN</div></div>
+    </div>
+    <div class="phone-body">
+
+      <div class="notif alert">
+        <div class="notif-hdr"><div class="notif-icon">⚠️</div><div class="notif-title" style="color:var(--red);">ALLERGEN ALERT · JAYLEN</div></div>
+        <p style="font-size:13px;color:var(--white);line-height:1.65;margin-bottom:8px;">Jaylen scanned a product with a <strong>severe allergen match.</strong> Purchase has been automatically blocked on his device.</p>
+        <div class="mn" style="margin-bottom:6px;">ALBERTSONS · BELGRADE, MT · AISLE 7 · 3:47 PM</div>
+        <div class="row" style="padding-top:0;">
+          <div class="dot" style="background:var(--red);"></div>
+          <div class="rn" style="font-size:12px;">Planters Honey Roasted Peanuts<small style="color:var(--red);">PRIMARY INGREDIENT: PEANUTS · ANAPHYLAXIS RISK</small></div>
+        </div>
+        <div class="row">
+          <div class="dot" style="background:var(--green);"></div>
+          <div class="rn" style="font-size:12px;">Alternatives shown on Jaylen's phone<small style="color:var(--green);">3 safe options verified · Same store · Same aisle</small></div>
+        </div>
+      </div>
+
+      <div class="card b">
+        <div class="cl">JAYLEN'S LOCATION · LIVE</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;"></div>
+          <div style="font-size:13px;">Albertsons Belgrade</div>
+        </div>
+        <div class="mn">1350 BELGRADE AVE · BELGRADE, MT · LAST PING 3:47 PM</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;">
+        <button class="btn-gr">APPROVE ALT →</button>
+        <button style="background:transparent;color:var(--red);border:1px solid var(--rb);border-radius:11px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;">CALL JAYLEN</button>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="qt"><p>"She was in a meeting. The alert came in. She saw the product, the allergen, his location, and three safe alternatives — all before she looked up from her phone."</p></div>
+  <div class="caption">Protection doesn't need her presence. It needs the membrane.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P4 — SAFE ALTERNATIVES · CHILD'S PHONE         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p3">
+<div class="ph">
+  <div class="ey gr">JAYLEN'S PHONE · SAFE ALTERNATIVES</div>
+  <h1 class="hl gr">Same aisle.<br><em>Safe options.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <div class="phone-frame child">
+    <div class="phone-bar">
+      <div class="phone-who" style="color:var(--gold);">JAYLEN · AA2 SCAN</div>
+      <div class="phone-status"><div class="phone-dot" style="background:var(--green);"></div><div class="mn gr">ALTERNATIVES FOUND</div></div>
+    </div>
+    <div class="phone-body">
+
+      <div class="mn" style="margin-bottom:10px;">3 SAFE OPTIONS · VERIFIED · SAME STORE · AISLE 7</div>
+
+      <div class="card gr" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:500;">SunButter Sunflower Butter</div>
+          <div style="color:var(--green);font-size:18px;">›</div>
+        </div>
+        <div class="chips" style="margin-bottom:6px;"><span class="chip gr">PEANUT FREE</span><span class="chip gr">TREE NUT FREE</span><span class="chip gr">VERIFIED</span></div>
+        <div class="mn gr">✓ ALL MEMBRANE FLAGS CLEAR · $4.29 · SHELF 3</div>
+      </div>
+
+      <div class="card gr" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:500;">Enjoy Life Chocolate Chips</div>
+          <div style="color:var(--green);font-size:18px;">›</div>
+        </div>
+        <div class="chips" style="margin-bottom:6px;"><span class="chip gr">TOP 14 FREE</span><span class="chip gr">ALLERGY SAFE</span></div>
+        <div class="mn gr">✓ ALL MEMBRANE FLAGS CLEAR · $5.49 · SHELF 4</div>
+      </div>
+
+      <div class="card gr" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <div style="font-size:15px;font-weight:500;">Made Good Granola Bites</div>
+          <div style="color:var(--green);font-size:18px;">›</div>
+        </div>
+        <div class="chips" style="margin-bottom:6px;"><span class="chip gr">PEANUT FREE</span><span class="chip gr">NUT FREE FACILITY</span></div>
+        <div class="mn gr">✓ ALL MEMBRANE FLAGS CLEAR · $3.99 · SHELF 2</div>
+      </div>
+
+      <div class="card b">
+        <div class="cl">WAITING FOR MOM'S APPROVAL</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Mom has been notified. She can approve one of these alternatives from her phone. Once approved, the selection unlocks for purchase.</p>
+      </div>
+
+    </div>
+  </div>
+  <div class="caption">The membrane found the safe options before he could even ask.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P5 — MOM APPROVES FROM WORK                    -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p4">
+<div class="ph">
+  <div class="ey b">DENISE'S PHONE · APPROVAL SENT</div>
+  <h1 class="hl">Mom approves.<br><em>From work.</em></h1>
+  <div class="dv"></div>
+</div>
+<div class="pb">
+  <div class="phone-frame mom">
+    <div class="phone-bar">
+      <div class="phone-who" style="color:var(--blue);">DENISE · AA2 FAMILY</div>
+      <div class="phone-status"><div class="phone-dot" style="background:var(--green);"></div><div class="mn gr">APPROVED</div></div>
+    </div>
+    <div class="phone-body">
+
+      <div class="mn" style="margin-bottom:10px;">SELECT ALTERNATIVE TO APPROVE</div>
+
+      <div class="card gr" style="cursor:pointer;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div style="width:18px;height:18px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;">✓</div>
+          <div style="font-size:15px;font-weight:500;">SunButter Sunflower Butter</div>
+        </div>
+        <div class="chips" style="margin-bottom:4px;"><span class="chip gr">PEANUT FREE</span><span class="chip gr">TREE NUT FREE</span></div>
+        <div class="mn gr">APPROVED BY DENISE · 3:49 PM</div>
+      </div>
+
+      <div class="card" style="opacity:.4;cursor:not-allowed;">
+        <div style="font-size:14px;color:var(--muted);">Enjoy Life Chocolate Chips</div>
+        <div class="mn" style="margin-top:4px;">NOT SELECTED</div>
+      </div>
+
+      <div class="card" style="opacity:.4;cursor:not-allowed;">
+        <div style="font-size:14px;color:var(--muted);">Made Good Granola Bites</div>
+        <div class="mn" style="margin-top:4px;">NOT SELECTED</div>
+      </div>
+
+      <div class="sev clear">
+        <div class="sev-lbl" style="color:var(--green);">✓ APPROVAL SENT TO JAYLEN · 3:49 PM</div>
+        <p class="sev-body" style="color:var(--white);">SunButter Sunflower Butter approved for purchase. Jaylen's phone has been unlocked for this item. Allergen-free confirmed.</p>
+      </div>
+
+      <div class="card b">
+        <div class="cl">MEMBRANE LOG · FAMILY RECORD</div>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.7;">This interaction has been logged to the family membrane. Planters Honey Roasted Peanuts permanently flagged on Jaylen's profile. SunButter added to approved products.</p>
+      </div>
+
+    </div>
+  </div>
+  <div class="caption">She approved it in 90 seconds. From her desk. Without leaving the meeting.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P6 — CHILD'S PHONE · PURCHASE APPROVED         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p5">
+<div class="ph">
+  <div class="ey gr">JAYLEN'S PHONE · PURCHASE APPROVED</div>
+  <h1 class="hl gr">Safe choice.<br><em>Mom approved.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <div class="phone-frame approved">
+    <div class="phone-bar">
+      <div class="phone-who" style="color:var(--gold);">JAYLEN · AA2 SCAN</div>
+      <div class="phone-status"><div class="phone-dot" style="background:var(--green);"></div><div class="mn gr">PURCHASE APPROVED</div></div>
+    </div>
+    <div class="phone-body">
+
+      <div class="notif approved">
+        <div class="notif-hdr"><div class="notif-icon">✅</div><div class="notif-title" style="color:var(--green);">PURCHASE APPROVED · MOM</div></div>
+        <div style="font-size:17px;font-weight:500;color:var(--white);margin-bottom:6px;">SunButter Sunflower Butter</div>
+        <div class="chips" style="margin-bottom:8px;"><span class="chip gr">PEANUT FREE</span><span class="chip gr">TREE NUT FREE</span><span class="chip gr">VERIFIED</span></div>
+        <div style="background:rgba(29,158,117,0.12);border-radius:8px;padding:9px 11px;">
+          <div class="mn gr" style="margin-bottom:3px;">APPROVED BY DENISE · 3:49 PM</div>
+          <p style="font-size:12px;color:var(--white);line-height:1.6;">"This one is safe baby. Get this one. Love you."</p>
+        </div>
+      </div>
+
+      <div class="sev clear">
+        <div class="sev-lbl" style="color:var(--green);">✓ ALL MEMBRANE FLAGS CLEAR</div>
+        <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Peanut<small style="color:var(--green);">NOT PRESENT · Peanut-free facility confirmed</small></div></div>
+        <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Tree nuts<small style="color:var(--green);">NOT PRESENT · Verified</small></div></div>
+        <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Shellfish<small style="color:var(--green);">NOT PRESENT</small></div></div>
+      </div>
+
+      <div class="card g">
+        <div class="cl g">ACT RIGHT DOLLARS EARNED</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <p style="font-size:12.5px;color:var(--muted);line-height:1.6;">Safe scan completed. Allergen avoided. $0.30 added to Jaylen's vault.</p>
+          <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--gold);flex-shrink:0;margin-left:10px;">+$0.30</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="qt gr"><p>"Jaylen put the right snack in his basket and kept walking. Mom went back to her meeting. Neither one had to worry."</p></div>
+  <div class="caption">That is the membrane working. That is the point of all of this.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P7 — THAT WAS ONE SCAN                         -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel center" id="p6">
+<div class="ph">
+  <div class="ey" style="text-align:center;letter-spacing:4px;">AA2 S.C.A.N. · SAFETY CLARIFIER ADAPTIVE NERVE</div>
+</div>
+<div class="pb">
+  <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:5px;color:rgba(27,184,255,0.22);margin-bottom:16px;">✦ ✦ ✦</div>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,7.5vw,44px);line-height:1.1;font-weight:400;margin-bottom:8px;text-align:center;color:var(--white);">That was<br>one scan.</h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(28px,7.5vw,44px);line-height:1.1;font-weight:400;margin-bottom:20px;text-align:center;color:var(--blue);">Here's everything<br>else the scanner does.</h1>
+  <div class="dv c"></div>
+  <div class="card b" style="text-align:left;margin-bottom:8px;">
+    <div class="cl" style="margin-bottom:10px;">SCANNER TABS · ALL ACTIVE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">SCAN<small>Barcodes, packaging, labels — any product</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">PRODUCE<small>Pesticides, sourcing, organic verification</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">MEAT<small>Quality, sourcing, hormones, prep safety</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--purple);"></div><div class="rn" style="font-size:12px;">SPECIES<small>K9 · Feline · Equestrian · Cattle · Goat · Rabbit</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--orange);"></div><div class="rn" style="font-size:12px;">WINE & SPIRITS<small>Sommelier layer · allergens · savings</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--purple);"></div><div class="rn" style="font-size:12px;">PERSONAL CARE<small>Skin ingestion doctrine · Cosmo Chemist</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">FORAGER<small>Wild plants · mushrooms · berries · fish</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--orange);"></div><div class="rn" style="font-size:12px;">HUNTER<small>Wild game · CWD · field dress · regulations</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">APOTHECARY<small>Herbs · plant medicine · substitutes</small></div></div>
+  </div>
+  <div class="mn" style="text-align:center;padding-top:4px;">SWIPE TO SEE EACH ONE →</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P8 — PRODUCE TAB                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p7">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">SCAN</span><span class="tab active-tab gr">PRODUCE</span><span class="tab">MEAT</span><span class="tab">SPECIES</span><span class="tab">WINE</span></div>
+  <div class="ey gr">PRODUCE · PESTICIDE & SOURCING INTELLIGENCE</div>
+  <h1 class="hl gr">Produce<br><em>Intelligence.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-size:22px;">🍓</span>
+      <div>
+        <div style="font-size:16px;font-weight:500;">Driscoll's Strawberries</div>
+        <div class="mn">16 OZ · SCANNED · ALBERTSONS BELGRADE</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sev caution">
+    <div class="sev-lbl" style="color:var(--orange);">LEVEL 2 · PESTICIDE LOAD DETECTED</div>
+    <div class="sev-ttl" style="color:var(--orange);">HIGH PESTICIDE RESIDUE · EWG DIRTY DOZEN #1</div>
+    <p class="sev-body">Strawberries consistently rank #1 on EWG Dirty Dozen. Conventional samples show up to 22 different pesticide residues. Children and pregnant women most at risk. Wash thoroughly or choose organic.</p>
+  </div>
+
+  <div class="card gr">
+    <div class="cl gr">SAFER ALTERNATIVES · SAME STORE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn">Driscoll's Organic Strawberries<small style="color:var(--green);">Organic certified · $1.80 more · Aisle 2</small></div><div class="rv" style="color:var(--green);">CLEAN</div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Local Berry Farm · Seasonal<small style="color:var(--green);">Farmers market section · No pesticide record</small></div><div class="rv" style="color:var(--green);">CLEAN</div></div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">SOURCING INTELLIGENCE</div>
+    <div class="row" style="padding-top:0;"><div class="mn" style="min-width:90px;">ORIGIN</div><div class="rn" style="font-size:12px;">Watsonville, CA · Driscoll's proprietary variety</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;">CERTIFIED</div><div class="rn" style="font-size:12px;">Conventional · No organic cert · No Non-GMO cert</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;">BEST USE</div><div class="rn" style="font-size:12px;">Wash with produce wash, soak 2 min, rinse thoroughly before eating</div></div>
+  </div>
+
+  <div class="caption">The label says fresh. The membrane tells you what's on them.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P9 — MEAT TAB                                  -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p8">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">SCAN</span><span class="tab">PRODUCE</span><span class="tab active-tab g">MEAT</span><span class="tab">SPECIES</span><span class="tab">WINE</span></div>
+  <div class="ey g">MEAT · QUALITY · SOURCING · SAFETY</div>
+  <h1 class="hl g">Meat<br><em>Intelligence.</em></h1>
+  <div class="dv g"></div>
+</div>
+<div class="pb">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-size:22px;">🥩</span>
+      <div>
+        <div style="font-size:16px;font-weight:500;">Tyson 80/20 Ground Beef</div>
+        <div class="mn">1 LB · SCANNED · MEAT DEPARTMENT</div>
+      </div>
+    </div>
+    <div class="chips"><span class="chip m">CONVENTIONAL</span><span class="chip m">80/20</span><span class="chip m">NO HORMONE FREE CERT</span></div>
+  </div>
+
+  <div class="sev notice">
+    <div class="sev-lbl" style="color:var(--gold);">◉ TAKE NOTICE · HORMONE & ANTIBIOTIC USE</div>
+    <p class="sev-body">No rBGH-free or antibiotic-free certification on this product. USDA allows hormones and antibiotics in conventional beef production. Not a danger at normal consumption — a transparency flag for informed choice.</p>
+  </div>
+
+  <div class="card gr">
+    <div class="cl gr">BETTER ALTERNATIVES · SAME STORE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn">Laura's Lean 96/4 Ground Beef<small style="color:var(--green);">No added hormones · No antibiotics · $1.20 more</small></div><div class="rv" style="color:var(--green);">BETTER</div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Organic Prairie 85/15<small style="color:var(--green);">USDA Organic · Grass fed · No hormones</small></div><div class="rv" style="color:var(--green);">BEST</div></div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">PREP SAFETY · THE CHEF NOTES</div>
+    <div class="row" style="padding-top:0;"><div class="mn" style="min-width:80px;">INTERNAL TEMP</div><div class="rn" style="font-size:12px;">160°F for ground beef · Use meat thermometer</div></div>
+    <div class="row"><div class="mn" style="min-width:80px;">STORAGE</div><div class="rn" style="font-size:12px;">Use within 2 days or freeze. 40°F max refrigerator temp.</div></div>
+    <div class="row"><div class="mn" style="min-width:80px;">CROSS CONT.</div><div class="rn" style="font-size:12px;">Separate cutting board from produce. Wash hands after handling.</div></div>
+  </div>
+
+  <div class="caption">Grade, sourcing, hormones, prep. The membrane reads the whole story.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P10 — SPECIES TAB                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p9">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">SCAN</span><span class="tab">PRODUCE</span><span class="tab">MEAT</span><span class="tab active-tab gr">SPECIES</span><span class="tab">WINE</span></div>
+  <div class="ey gr">SPECIES · THE SCANNER WORKS FOR YOUR ANIMALS TOO</div>
+  <h1 class="hl gr">Every species.<br><em>Protected.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <p class="sub">The same scanner that protects Jaylen from peanuts protects your dog from xylitol, your horse from iron overload, your cattle from mycotoxins, and your rabbit colony from toxic plants.</p>
+
+  <div class="card gr">
+    <div class="cl gr">ASPCA ANIMAL POISON CONTROL · ACTIVE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn">K9 · Canine<small>Xylitol · grapes · chocolate · onion · macadamia</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Feline<small>More toxicologically sensitive than dogs · Full database</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn">Equestrian<small>Iron overload · supplement interactions · feed safety</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--orange);"></div><div class="rn">Cattle<small>Mycotoxin screening · DON · Aflatoxin · herd biosignal</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--orange);"></div><div class="rn">Goat<small>Supplement stacking · plant toxicity · browse safety</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn">Rabbit<small>GI sensitivity · pellet ingredient screening · ASPCA verified</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn">Tactical K9<small>Handler stress transfer · mission readiness · supplement safety</small></div></div>
+  </div>
+
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">EXAMPLE · LIVE SCAN · K9</div>
+    <div class="sev-ttl" style="color:var(--red);">XYLITOL DETECTED · IMMEDIATE DANGER TO DOGS</div>
+    <p class="sev-body">Sugar-free gum scanned. Contains xylitol. Even trace amounts cause rapid insulin release and liver failure in dogs. Do not give to any canine regardless of serving size.</p>
+  </div>
+
+  <div class="caption">The membrane doesn't care what species it's protecting. It just protects.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P11 — WINE & SPIRITS TAB                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p10">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">SCAN</span><span class="tab">PRODUCE</span><span class="tab">MEAT</span><span class="tab">SPECIES</span><span class="tab active-tab o">WINE</span></div>
+  <div class="ey o">WINE & SPIRITS · THE SOMMELIER</div>
+  <h1 class="hl">The<br><em>Sommelier.</em></h1>
+  <div class="dv"></div>
+</div>
+<div class="pb">
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-size:22px;">🥃</span>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;">Macallan 12</div>
+        <div class="mn">HIGHLAND SINGLE MALT · 40% ABV</div>
+      </div>
+    </div>
+    <div class="chips"><span class="chip gr">ALL CLEAR</span><span class="chip m">40% ABV</span><span class="chip gr">GLUTEN FREE</span><span class="chip m">NO MEMBRANE FLAGS</span></div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">BETTER ALTERNATIVES · THE SOMMELIER SAYS</div>
+    <div class="row" style="padding-top:0;">
+      <div class="rn">→ Glenfiddich 12<small>Similar sherry-oak profile · $12 less · same region</small></div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);border-radius:5px;padding:2px 7px;text-align:center;">WHY?</div>
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;background:var(--blue);color:#03050A;border-radius:5px;padding:2px 7px;text-align:center;">WHERE →</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="rn">→ Glenlivet 12<small>Lighter profile · $18 less · excellent value</small></div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);border-radius:5px;padding:2px 7px;text-align:center;">WHY?</div>
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;background:var(--blue);color:#03050A;border-radius:5px;padding:2px 7px;text-align:center;">WHERE →</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card g">
+    <div class="cl g">ACT RIGHT DOLLARS · SWITCHING SAVES $12</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7;">Savings go directly to your AA2 Vault. Spend toward Travel My Planet destinations. Every scan that saves you money builds your next experience.</p>
+  </div>
+
+  <div class="card">
+    <div class="cl m">GROWN FOLKS TAB · PAIRING INTELLIGENCE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Red wine<small>Pairs with: red meat, aged cheeses, lamb, game</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Port<small>Pairs with: stilton, dark chocolate, walnuts, blue cheese</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Whiskey<small>Pairs with: smoked meats, cheddar, dried fruit, dark chocolate</small></div></div>
+  </div>
+
+  <div class="caption">The $12 bottle that beats the $90 one. The Sommelier knows.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P12 — PERSONAL CARE TAB                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p11">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">PERSONAL CARE</span><span class="tab">FORAGER</span><span class="tab">HUNTER</span><span class="tab">APOTHECARY</span></div>
+  <div class="ey p">PERSONAL CARE · COSMO CHEMIST · SKIN INGESTION DOCTRINE</div>
+  <h1 class="hl">The skin is<br><em>an organ.</em></h1>
+  <div class="dv" style="background:var(--pb);"></div>
+</div>
+<div class="pb">
+  <div class="card p">
+    <div class="cl p">SKIN INGESTION DOCTRINE</div>
+    <p style="font-size:13px;color:var(--white);line-height:1.75;">What touches your skin enters your bloodstream within minutes. The Cosmo Chemist reads every formula and names every chemical — in plain language, with hazard scores, and with verified alternatives.</p>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <span style="font-size:22px;">🧴</span>
+      <div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:20px;">Neutrogena T/Gel Shampoo</div>
+        <div class="mn">SCANNED · PERSONAL CARE · 4 FL OZ</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card r">
+    <div class="cl r">FLAGGED INGREDIENTS · EWG DATABASE ACTIVE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--red);"></div><div class="rn">Coal Tar (0.5%)<small style="color:var(--red);">Known carcinogen · EWG Hazard Score 10 · EU restricted · Linked to cancer risk with prolonged use</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn">Sodium Lauryl Sulfate<small>Skin irritant · Penetration enhancer · Increases absorption of other chemicals</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--orange);"></div><div class="rn">Fragrance (undisclosed)<small style="color:var(--orange);">May contain phthalates · Allergen risk · No FDA disclosure required</small></div></div>
+  </div>
+
+  <div class="card gr">
+    <div class="cl gr">SAFER ALTERNATIVES</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn">Vanicream Shampoo<small style="color:var(--green);">No SLS · No fragrance · EWG verified · Dermatologist recommended</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Free & Clear Shampoo<small style="color:var(--green);">Clinical formula · No dyes · No fragrance · Allergy tested</small></div></div>
+  </div>
+
+  <div class="caption">The skin is not a barrier. It is an organ. The Cosmo Chemist reads every formula.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P13 — FORAGER TAB                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p12">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">PERSONAL CARE</span><span class="tab active-tab gr">FORAGER</span><span class="tab">HUNTER</span><span class="tab">APOTHECARY</span></div>
+  <div class="ey gr">FORAGER · WILD PLANTS · MUSHROOMS · FISH · BERRIES</div>
+  <h1 class="hl gr">Point.<br><em>Scan. Know.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <div class="card gr">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+      <div class="dot" style="background:var(--green);margin-top:0;"></div>
+      <div class="cl gr" style="margin-bottom:0;">ALL CLEAR · EDIBLE</div>
+      <div class="mn" style="margin-left:auto;">High confidence ID</div>
+    </div>
+    <div style="font-size:26px;font-weight:500;margin-bottom:2px;">Rainbow Trout</div>
+    <div class="mn" style="margin-bottom:10px;">Oncorhynchus mykiss · Salmonidae</div>
+    <div class="chips"><span class="chip gr">SAFE TO EAT</span><span class="chip">NATIVE · MT</span><span class="chip g">IN SEASON</span></div>
+    <div class="row" style="padding-top:0;"><div class="mn" style="min-width:90px;">EDIBILITY</div><div class="rn" style="font-size:12.5px;color:var(--green);">Excellent. Mild, clean flavor. Pan-fry or grill over open flame within 24 hours.</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;">NUTRITION</div><div class="rn" style="font-size:12.5px;">Omega-3 1.9g/100g · 20g protein · Low mercury · Vitamin D, B12, selenium</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;">REGS</div><div class="rn" style="font-size:12.5px;color:var(--red);">MT FWP: 5 fish/day limit · License required · Local water restrictions apply</div></div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">FORAGER COVERS</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Wild plants<small>Edibility · toxicity · preparation · regional availability</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Mushrooms<small>Safe vs toxic look-alikes · spore print · season · habitat</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Wild berries<small>Identification · toxicity · medicinal use · preparation</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Fish & water sources<small>Species ID · safety · regulations · mercury levels</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Produce markets abroad<small>Local naming · seasonal availability · regional safety</small></div></div>
+  </div>
+
+  <div class="caption">Roadside stand in Montana. Market in Tokyo. Wild river in Iceland. Point. Scan. Know.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P14 — HUNTER TAB                               -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p13">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">PERSONAL CARE</span><span class="tab">FORAGER</span><span class="tab active-tab o">HUNTER</span><span class="tab">APOTHECARY</span></div>
+  <div class="ey o">HUNTER · WILD GAME · CWD FIRST · FIELD SAFETY</div>
+  <h1 class="hl">CWD status<br><em>always first.</em></h1>
+  <div class="dv" style="background:var(--ob);"></div>
+</div>
+<div class="pb">
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">☠ IMMEDIATE DANGER · CWD STATUS · ALWAYS FIRST</div>
+    <div class="sev-ttl" style="color:var(--white);">Rocky Mountain Elk · Bull · 3-4 years</div>
+    <div style="background:rgba(224,82,82,0.12);border-radius:8px;padding:10px 12px;margin-bottom:0;">
+      <div class="mn r" style="margin-bottom:5px;">CASES DETECTED · GALLATIN COUNTY, MT</div>
+      <p style="font-size:12.5px;color:var(--white);line-height:1.65;">Do not consume brain, spinal cord, eyes, spleen, or lymph nodes. Contact Montana FWP for free testing kit before consumption. Bone-in cuts carry higher risk than deboned muscle meat.</p>
+    </div>
+  </div>
+
+  <div class="sev caution">
+    <div class="sev-lbl" style="color:var(--orange);">⚠ SERIOUS CAUTION · FIELD SAFETY</div>
+    <p class="sev-body">Liver fluke risk in wet-region elk. Inspect liver before consumption. Rifle harvest: trim 6 inches around wound channel for lead fragmentation risk. Field dress with gloves.</p>
+  </div>
+
+  <div class="sev notice">
+    <div class="sev-lbl" style="color:var(--gold);">◉ REGULATIONS · MONTANA FWP</div>
+    <p class="sev-body">Bull elk · 1 per season · Tag within 24hrs · Report to FWP within 24hrs of harvest · Antler restrictions apply in some units · License required.</p>
+  </div>
+
+  <div class="sev info">
+    <div class="sev-lbl" style="color:var(--blue);">● CHEF NOTES · FIELD TO TABLE</div>
+    <p class="sev-body">Age 7-14 days at 34-38°F for best flavor. Backstrap first — grill medium-rare. Shoulders for ground. High protein, low fat, rich in iron and B12.</p>
+  </div>
+
+  <div class="caption">CWD status always fires first. Before identification. Before anything else.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P15 — APOTHECARY TAB                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel" id="p14">
+<div class="ph">
+  <div class="tab-bar"><span class="tab">PERSONAL CARE</span><span class="tab">FORAGER</span><span class="tab">HUNTER</span><span class="tab active-tab gr">APOTHECARY</span></div>
+  <div class="ey gr">APOTHECARY · THE EQUALIZER · HERB & PLANT MEDICINE</div>
+  <h1 class="hl gr">The<br><em>Apothecary.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <p class="sub">The Apothecary layer reads herbs, plant medicines, supplements, and natural remedies. It cross-references your membrane — medications, conditions, allergies — and tells you what works, what interacts, and what to substitute.</p>
+
+  <div class="card gr">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <span style="font-size:22px;">🌿</span>
+      <div>
+        <div style="font-size:16px;font-weight:500;">Ashwagandha Root</div>
+        <div class="mn">KSM-66 · 600mg · SCANNED</div>
+      </div>
+    </div>
+    <div class="chips"><span class="chip gr">SAFE AT THIS DOSE</span><span class="chip m">ADAPTOGEN</span><span class="chip m">EVIDENCE: MODERATE</span></div>
+    <div class="row" style="padding-top:0;"><div class="mn" style="min-width:80px;">EVIDENCE</div><div class="rn" style="font-size:12px;">Reduces cortisol 15-30%. Improves HRV. 8-week minimum for measurable effect.</div></div>
+    <div class="row"><div class="mn" style="min-width:80px;">DRUG INT.</div><div class="rn" style="font-size:12px;color:var(--gold);">May increase sedative effects. Check with prescriber if on benzodiazepines or thyroid meds.</div></div>
+    <div class="row"><div class="mn" style="min-width:80px;">TIMING</div><div class="rn" style="font-size:12px;">Take with food. Evening preferred for stress and sleep benefit.</div></div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">APOTHECARY DATA SOURCES</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Kew Royal Botanic Gardens<small>Plant identification · medicinal properties</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">USDA Plant Database<small>North American species · regional availability</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">NCCIH · MedlinePlus<small>Clinical evidence · drug interactions · safety data</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">openFDA · ASPCA<small>Regulatory data · animal toxicology</small></div></div>
+  </div>
+
+  <div class="card" style="border-color:var(--yb);">
+    <div class="cl g">THREE PLACEMENTS · APOTHECARY APPEARS</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Standalone Apothecary tab in scanner</div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Next to Chef recipes — herb and spice substitutes</div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">ON GRID/OFF GRID map — local herb and plant availability</div></div>
+  </div>
+
+  <div class="caption">Nature's pharmacy. Your membrane as the pharmacist.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- P16 — THE CLOSE                                -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="panel center" id="p15">
+<div class="ph" style="padding-bottom:0;">
+  <div class="ey" style="text-align:center;letter-spacing:4px;">AA2 S.C.A.N. · SAFETY CLARIFIER ADAPTIVE NERVE</div>
+</div>
+<div class="pb">
+  <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:5px;color:rgba(27,184,255,0.22);margin-bottom:14px;">✦ ✦ ✦</div>
+
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(26px,7vw,40px);line-height:1.1;font-weight:400;margin-bottom:6px;text-align:center;color:var(--white);">All of this.</h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(26px,7vw,40px);line-height:1.1;font-weight:400;margin-bottom:16px;text-align:center;color:var(--blue);">One tap.<br>One scanner.<br>One membrane.</h1>
+
+  <div class="dv c"></div>
+
+  <div class="card b" style="text-align:left;margin-bottom:8px;">
+    <div class="cl" style="margin-bottom:8px;">EVERYTHING THE SCANNER DOES</div>
+    <div class="chips">
+      <span class="chip">BARCODES</span><span class="chip gr">PRODUCE</span><span class="chip g">MEAT</span>
+      <span class="chip gr">SPECIES</span><span class="chip o">WINE</span><span class="chip m">PERSONAL CARE</span>
+      <span class="chip gr">FORAGER</span><span class="chip o">HUNTER</span><span class="chip gr">APOTHECARY</span>
+      <span class="chip">ALLERGENS</span><span class="chip r">CWD</span><span class="chip">PESTICIDES</span>
+      <span class="chip g">SAVINGS</span><span class="chip gr">FAMILY ALERTS</span><span class="chip">LIVE ABROAD</span>
+    </div>
+  </div>
+
+  <div class="qt"><p>"Jaylen got the right snack. Denise stayed in her meeting. The membrane was the parent in the aisle."</p></div>
+
+  <div class="mn" style="text-align:center;margin-bottom:16px;">BUILD YOUR MEMBRANE AND BRING IT WITH YOU</div>
+
+  <button class="cta">BUILD MY MEMBRANE →</button>
+
+  <div class="mn" style="margin-top:12px;text-align:center;opacity:.28;">I AM THE RECEIPT</div>
+</div>
+</div>
+
+</div><!-- /book -->
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button class="nb" id="pb" onclick="go(-1)" disabled>←</button>
+  <button class="nb" id="nbtn" onclick="go(1)">→</button>
+</div>
+<div class="hint" id="hint">SWIPE OR USE ARROWS · 16 PANELS</div>
+
+<script>
+const TOTAL=16;
+let cur=0,anim=false,tx=0,ty=0;
+const dotsEl=document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');d.className='d'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);dotsEl.appendChild(d);
+}
+function goTo(i){
+  if(anim||i===cur||i<0||i>=TOTAL)return;
+  anim=true;
+  document.getElementById('p'+cur).classList.remove('active');
+  document.getElementById('p'+cur).classList.add('exit');
+  setTimeout(()=>{const el=document.getElementById('p'+cur);if(el)el.classList.remove('exit');},460);
+  document.getElementById('p'+i).classList.add('active');
+  cur=i;
+  document.querySelectorAll('.d').forEach((d,j)=>d.classList.toggle('active',j===cur));
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nbtn').disabled=cur===TOTAL-1;
+  document.getElementById('pcount').textContent=(cur+1)+' / '+TOTAL;
+  if(cur>0)document.getElementById('hint').style.opacity='0';
+  setTimeout(()=>anim=false,470);
+}
+function go(d){goTo(cur+d);}
+document.getElementById('book').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('book').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>36)go(dx<0?1:-1);
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+</script>
+</body>
+</html>

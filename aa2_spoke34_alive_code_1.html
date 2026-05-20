@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AA2 · Spoke 34 · Still Alive &amp; Safe</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1BB8FF;
+  --blue-dim: rgba(27,184,255,0.12);
+  --blue-border: rgba(27,184,255,0.38);
+  --blue-glow: rgba(27,184,255,0.22);
+  --green: #1D9E75;
+  --green-dim: rgba(29,158,117,0.12);
+  --amber: #C49A2A;
+  --amber-dim: rgba(196,154,42,0.12);
+  --red: #E05252;
+  --red-dim: rgba(224,82,82,0.10);
+  --bg: #0A0804;
+  --card: #150F0A;
+  --card-elev: #1C140D;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.14);
+  --white: #FFFFFF;
+  --muted: rgba(255,255,255,0.55);
+  --muted-2: rgba(255,255,255,0.35);
+
+  --display: 'Bebas Neue', sans-serif;
+  --serif: 'Cormorant Garamond', serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 800px 400px at 50% -100px, rgba(27,184,255,0.05), transparent),
+    var(--bg);
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 120px;
+  position: relative;
+}
+
+@media (min-width: 900px) {
+  .app { max-width: 880px; }
+}
+
+/* ── STATUS BAR ─────────────────────────────────── */
+.status-bar {
+  padding: 14px 20px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.status-bar .ts {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+}
+.status-bar .glyph {
+  font-size: 11px;
+  color: var(--blue);
+}
+
+/* ── EYEBROW ────────────────────────────────────── */
+.eyebrow {
+  padding: 20px 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.eyebrow .spoke {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.eyebrow .tier {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+}
+
+/* ── HERO ───────────────────────────────────────── */
+.hero {
+  padding: 12px 20px 24px;
+}
+.hero h1 {
+  font-family: var(--display);
+  font-size: 52px;
+  line-height: 0.9;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+  color: var(--white);
+}
+.hero h1 .accent { color: var(--blue); }
+.hero .doctrine {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: 14px;
+  padding-left: 14px;
+  border-left: 1px solid var(--blue-border);
+}
+
+/* ── KPI STRIP ──────────────────────────────────── */
+.kpi-strip {
+  margin: 0 20px 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+.kpi {
+  border: 1px solid var(--line);
+  padding: 12px 12px;
+  border-radius: 10px;
+  background: var(--card);
+}
+.kpi .n {
+  font-family: var(--display);
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.kpi .l {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+.kpi.alive { border-top: 2px solid var(--green); }
+.kpi.alive .n { color: var(--green); }
+.kpi.half { border-top: 2px solid var(--amber); }
+.kpi.half .n { color: var(--amber); }
+.kpi.toss { border-top: 2px solid var(--red); }
+.kpi.toss .n { color: var(--red); }
+
+/* ── SECTION LABEL ──────────────────────────────── */
+.sec-label {
+  padding: 16px 20px 10px;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sec-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* ── SPLIT COLUMN ──────────────────────────────── */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 14px;
+}
+.col {
+  border-radius: 12px;
+  background: var(--card);
+  padding: 12px 12px;
+  border: 1px solid var(--line);
+}
+.col.alive { border-top: 2px solid var(--green); }
+.col.toss { border-top: 2px solid var(--red); }
+
+.col-head {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.col.alive .col-head { color: var(--green); }
+.col.toss .col-head { color: var(--red); }
+.col-head .count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted-2);
+}
+
+.item {
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.item:last-child { border-bottom: none; padding-bottom: 2px; }
+.item .name {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--white);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  line-height: 1.2;
+}
+.item .name .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block; flex-shrink: 0;
+}
+.col.alive .item .name .dot { background: var(--green); box-shadow: 0 0 6px rgba(29,158,117,0.6); }
+.col.toss .item .name .dot { background: var(--red); }
+.col.alive .item.warn .name .dot { background: var(--amber); box-shadow: 0 0 6px rgba(196,154,42,0.6); }
+
+.item .meta {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 1px;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.col.alive .item .meta .status { color: var(--green); }
+.col.alive .item.warn .meta .status { color: var(--amber); }
+.col.toss .item .meta .status { color: var(--red); }
+
+/* ── SYNERGY RIBBON ─────────────────────────────── */
+.ribbon {
+  padding: 4px 0 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ribbon::-webkit-scrollbar { display: none; }
+.ribbon-inner {
+  display: flex;
+  gap: 10px;
+  padding: 4px 20px 10px;
+  min-width: max-content;
+}
+.pair {
+  border: 1px solid var(--blue-border);
+  background: var(--card);
+  border-radius: 12px;
+  padding: 14px 16px;
+  min-width: 220px;
+  flex-shrink: 0;
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(27,184,255,0.04), transparent 40%),
+    var(--card);
+}
+.pair .pair-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.pair .pair-items {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+.pair .pair-items .plus {
+  color: var(--blue);
+  margin: 0 3px;
+  font-weight: 400;
+}
+.pair .pair-effect {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+.pair .pair-delta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: 1.5px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+/* ── ALIVE CODE GENERATOR ───────────────────────── */
+.generator {
+  margin: 6px 14px 0;
+  border: 1px solid var(--blue-border);
+  border-radius: 14px;
+  padding: 22px 20px;
+  background:
+    radial-gradient(ellipse at top right, rgba(27,184,255,0.08), transparent 50%),
+    linear-gradient(180deg, var(--card) 0%, var(--card-elev) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.generator::after {
+  content: "◆";
+  position: absolute;
+  top: -24px;
+  right: -12px;
+  font-size: 160px;
+  color: var(--blue);
+  opacity: 0.04;
+  pointer-events: none;
+  line-height: 1;
+}
+.generator .g-eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+.generator h2 {
+  font-family: var(--display);
+  font-size: 36px;
+  line-height: 0.95;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.generator .g-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.4;
+  position: relative;
+}
+
+/* 3 layers */
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+  margin-bottom: 18px;
+  position: relative;
+}
+.layer {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--blue);
+  background: rgba(0,0,0,0.3);
+  padding: 10px 14px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.layer-name {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+  min-width: 62px;
+}
+.layer-content {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--white);
+  flex: 1;
+  text-align: right;
+  letter-spacing: 0.5px;
+}
+.layer-content .accent { color: var(--blue); }
+.layer-content .gr { color: var(--green); }
+
+/* Physical label preview */
+.label-preview {
+  background: #f5f1e8;
+  color: #1a1a1a;
+  padding: 11px 14px 10px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  margin: 14px 0 30px;
+  box-shadow:
+    0 2px 10px rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(0,0,0,0.06);
+  position: relative;
+  transform: rotate(-0.5deg);
+}
+.label-preview::before {
+  content: "";
+  position: absolute;
+  top: -8px; left: 30%; right: 30%;
+  height: 16px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,230,150,0.85) 0px, rgba(255,230,150,0.85) 3px, rgba(255,230,150,0.6) 3px, rgba(255,230,150,0.6) 6px);
+  border-radius: 1px;
+  opacity: 0.7;
+  transform: rotate(-2deg);
+}
+.label-preview .lp-name {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.label-preview .lp-short {
+  font-size: 11px;
+  color: #3a3a3a;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.label-preview .lp-sig {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(0,0,0,0.15);
+}
+.label-preview .lp-sig .glyph { color: #1BB8FF; font-size: 11px; }
+.label-preview .lp-sig .stat { color: #1D9E75; }
+.label-preview::after {
+  content: "MASKING TAPE · HANDWRITTEN OR THERMAL STAMPED";
+  position: absolute;
+  bottom: -20px; left: 0; right: 0;
+  font-size: 8px;
+  color: var(--muted-2);
+  letter-spacing: 2.5px;
+  font-family: var(--mono);
+  text-align: center;
+}
+
+.cta-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+.cta {
+  flex: 1;
+  padding: 13px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-border);
+  background: var(--blue-dim);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cta.primary { background: var(--blue); color: #03050A; border-color: var(--blue); font-weight: 500; }
+.cta:hover { filter: brightness(1.12); }
+
+/* ── CLOVES DETAIL CARD ─────────────────────────── */
+.detail {
+  margin: 8px 14px 0;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.detail-hero {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background:
+    radial-gradient(ellipse at top left, rgba(27,184,255,0.06), transparent 60%),
+    transparent;
+}
+
+/* Jar illustration */
+.jar-viz {
+  width: 64px;
+  min-width: 64px;
+  height: 88px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 4px;
+}
+.jar-viz .cap {
+  width: 46px;
+  height: 12px;
+  background: linear-gradient(180deg, #4a3620, #2a1e12);
+  border: 1px solid rgba(196,154,42,0.35);
+  border-radius: 3px 3px 0 0;
+}
+.jar-viz .body {
+  width: 58px;
+  flex: 1;
+  background: linear-gradient(180deg, #2a1f14 0%, #1a1008 100%);
+  border: 1px solid rgba(196,154,42,0.25);
+  border-top: none;
+  border-radius: 4px 4px 6px 6px;
+  position: relative;
+  overflow: hidden;
+}
+.jar-viz .body::before {
+  content: "";
+  position: absolute;
+  top: 4px; left: 8px;
+  width: 2px; height: 30px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+}
+.jar-viz .mini-label {
+  position: absolute;
+  bottom: 8px;
+  left: 4px; right: 4px;
+  background: #f5f1e8;
+  color: #1a1a1a;
+  padding: 3px 2px 3px;
+  font-family: var(--mono);
+  font-size: 5.5px;
+  text-align: center;
+  line-height: 1.2;
+  border-radius: 1px;
+  letter-spacing: 0.3px;
+  transform: rotate(-1deg);
+}
+.jar-viz .mini-label .sig { color: #1BB8FF; font-size: 5px; font-weight: 600; }
+
+.detail-hero .h-text {
+  flex: 1;
+  min-width: 0;
+}
+.detail-hero h3 {
+  font-family: var(--display);
+  font-size: 42px;
+  line-height: 0.9;
+  letter-spacing: 1.5px;
+}
+.detail-hero .latin {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.chip-row {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  line-height: 1.6;
+}
+.chip.code { background: var(--blue-dim); border: 1px solid var(--blue-border); color: var(--blue); }
+.chip.status { background: var(--green-dim); border: 1px solid rgba(29,158,117,0.3); color: var(--green); }
+
+/* Data grid inside detail */
+.d-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--line);
+}
+.d-cell {
+  background: var(--card);
+  padding: 14px 16px;
+}
+.d-cell .l {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.d-cell .v {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--white);
+}
+.d-cell .v.mono {
+  font-family: var(--mono);
+  font-size: 14px;
+  font-weight: 400;
+}
+.d-cell .v .unit {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 4px;
+  letter-spacing: 1px;
+  font-family: var(--mono);
+  font-weight: 400;
+}
+.d-cell.whole { border-left: 2px solid var(--green); }
+.d-cell.ground { border-left: 2px solid var(--red); }
+
+.d-row {
+  padding: 12px 18px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+}
+.d-row .rl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+  min-width: 92px;
+}
+.d-row .rv {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--white);
+  text-align: right;
+  flex: 1;
+}
+
+.voices {
+  padding: 16px 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  background: rgba(0,0,0,0.18);
+}
+.voice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.voice .badge {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  padding: 3px 7px;
+  border-radius: 3px;
+  min-width: 80px;
+  text-align: center;
+  line-height: 1.5;
+}
+.voice.chef .badge { background: var(--green-dim); color: var(--green); border: 1px solid rgba(29,158,117,0.3); }
+.voice.eq .badge { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,82,82,0.3); }
+.voice.body .badge { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(196,154,42,0.3); }
+.voice .txt {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.42;
+  flex: 1;
+}
+
+.paywall {
+  padding: 16px 18px 18px;
+  background: linear-gradient(180deg, transparent, rgba(27,184,255,0.08));
+  border-top: 1px solid var(--blue-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.paywall .lock {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+}
+.paywall .plock {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--white);
+  line-height: 1.35;
+  margin-bottom: 2px;
+}
+.paywall .p-cta {
+  margin-top: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  border: 1px solid var(--blue);
+  padding: 12px 12px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.paywall .p-cta:hover { background: var(--blue); color: #03050A; }
+
+/* ── SHARPIE LEGEND ─────────────────────────────── */
+.legend {
+  margin: 20px 14px 0;
+  border: 1px solid var(--blue-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--card);
+}
+.legend-head {
+  padding: 16px 18px;
+  background:
+    linear-gradient(90deg, rgba(27,184,255,0.08), transparent),
+    var(--card);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.legend-head .lh-l {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.legend-head .lh-eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.legend-head .lh-title {
+  font-family: var(--display);
+  font-size: 26px;
+  line-height: 0.95;
+  letter-spacing: 1px;
+}
+.legend-head .lh-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.legend-head .chev {
+  font-family: var(--mono);
+  color: var(--blue);
+  font-size: 14px;
+  transition: transform 0.3s;
+}
+.legend.open .chev { transform: rotate(180deg); }
+
+.legend-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+}
+.legend.open .legend-body {
+  max-height: 1400px;
+}
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+}
+.leg-group {
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+}
+.leg-group:nth-child(odd) { border-right: 1px solid var(--line); }
+.leg-group h4 {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+  margin-bottom: 12px;
+}
+.leg-group h4:not(:first-child) { margin-top: 16px; }
+.leg-group .code {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 7px;
+  align-items: baseline;
+}
+.leg-group .code .c {
+  font-family: var(--mono);
+  font-weight: 500;
+  color: var(--white);
+  font-size: 12.5px;
+  min-width: 28px;
+}
+.leg-group .code .d {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.legend-example {
+  border-top: 1px solid var(--line);
+  padding: 16px 18px 18px;
+}
+.legend-example h4 {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+  margin-bottom: 14px;
+}
+.ex-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+}
+.ex-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.ex-row .lab {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  background: rgba(245,241,232,0.95);
+  color: #1a1a1a;
+  padding: 8px 9px;
+  border-radius: 3px;
+  line-height: 1.2;
+  text-align: center;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transform: rotate(-0.4deg);
+}
+.ex-row .trans {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* ── B2B FOOTER ─────────────────────────────────── */
+.b2b {
+  margin: 24px 14px 0;
+  padding: 24px 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at top left, rgba(27,184,255,0.08), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(196,154,42,0.04), transparent 55%),
+    var(--card);
+  position: relative;
+}
+.b2b .b-eye {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+.b2b h3 {
+  font-family: var(--display);
+  font-size: 34px;
+  line-height: 0.95;
+  letter-spacing: 1.5px;
+  margin-bottom: 14px;
+}
+.b2b h3 .glow { color: var(--blue); }
+.b2b p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+.b2b .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+.b2b .chips span {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line);
+  padding: 5px 9px;
+  border-radius: 4px;
+}
+
+/* ── RECEIPT ────────────────────────────────────── */
+.receipt {
+  margin: 32px 20px 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2.5px;
+  text-align: center;
+}
+.receipt span { color: var(--blue); }
+
+/* ── SIDE-BY-SIDE ON DESKTOP ─────────────────────── */
+@media (min-width: 900px) {
+  .app {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 18px;
+    padding: 20px 14px 120px;
+  }
+  .status-bar, .eyebrow, .hero, .kpi-strip, .sec-label.top,
+  .split, .ribbon, .b2b, .receipt {
+    grid-column: 1 / -1;
+  }
+  .sec-label { grid-column: 1 / -1; }
+  .generator { margin: 0; }
+  .detail { margin: 0; }
+  .legend { grid-column: 1 / -1; margin: 20px 0 0; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="status-bar">
+    <div class="ts">AA2 · SPOKE 34 · CANON v45</div>
+    <div class="glyph">◆</div>
+  </div>
+
+  <div class="eyebrow">
+    <div class="spoke">APOTHECARY · THE EQUALIZER</div>
+    <div class="tier">FREE TIER · 3 / 3 CODES LEFT</div>
+  </div>
+
+  <div class="hero">
+    <h1>STILL ALIVE<br><span class="accent">&amp; SAFE.</span></h1>
+    <div class="doctrine">Your kitchen has been lying to you. The best-by dates were written by someone who's never met you. The Alive Code was written by AA2, in your handwriting, dated the day you opened it. This is the truth of what you own.</div>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi alive"><div class="n">14</div><div class="l">ALIVE</div></div>
+    <div class="kpi half"><div class="n">06</div><div class="l">HALF-LIFE</div></div>
+    <div class="kpi toss"><div class="n">09</div><div class="l">TOSS</div></div>
+  </div>
+
+  <!-- ── SPLIT COLUMN ─────────────────────────── -->
+  <div class="sec-label top">CABINET · SCAN 4·23·26</div>
+  <div class="split">
+    <div class="col alive">
+      <div class="col-head"><span>ALIVE</span><span class="count">14</span></div>
+      <div class="item"><div class="name"><span class="dot"></span>Cloves · Whole</div><div class="meta"><span>W 2·14·26 G▲</span><span class="status">★ 3·5 YR</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Cinnamon · Sticks</div><div class="meta"><span>W 1·20·26 G▲</span><span class="status">★ 2 YR</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Turmeric root</div><div class="meta"><span>FZ 3·1·26 VAC</span><span class="status">★ 1 YR</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Tulsi leaf</div><div class="meta"><span>L 1·5·26 G▲</span><span class="status">★ 10 MO</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Rooibos</div><div class="meta"><span>TB 3·10·26 G▲</span><span class="status">★ 2 YR</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Peppercorn · Whole</div><div class="meta"><span>W 9·1·24 G▲</span><span class="status">★ 3 YR</span></div></div>
+      <div class="item warn"><div class="name"><span class="dot"></span>Cumin · Ground</div><div class="meta"><span>G 11·8·25 G▲</span><span class="status">◐ 60%</span></div></div>
+      <div class="item warn"><div class="name"><span class="dot"></span>Nettle leaf</div><div class="meta"><span>L 11·20·25 G▲</span><span class="status">◐ 65%</span></div></div>
+    </div>
+
+    <div class="col toss">
+      <div class="col-head"><span>TOSS</span><span class="count">9</span></div>
+      <div class="item"><div class="name"><span class="dot"></span>Cinnamon · Ground</div><div class="meta"><span>G 10·10·23</span><span class="status">✕ 18 MO PAST</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Turmeric · Ground</div><div class="meta"><span>G 6·2·24</span><span class="status">✕ △ 8%</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Bay leaves</div><div class="meta"><span>L 8·15·24 P▼</span><span class="status">✕ FADED</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Green tea loose</div><div class="meta"><span>TB 8·1·24</span><span class="status">✕ FLAT</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Rosemary oil</div><div class="meta"><span>O 2·2·26 G▲</span><span class="status">✕ BOTULISM</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Paprika</div><div class="meta"><span>G 4·1·25 G▲</span><span class="status">✕ NO COLOR</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Basil · Fresh</div><div class="meta"><span>F 4·18·26 R</span><span class="status">✕ WRONG FRIDGE</span></div></div>
+      <div class="item"><div class="name"><span class="dot"></span>Oregano · Dry</div><div class="meta"><span>L 3·2·23</span><span class="status">✕ NO OIL</span></div></div>
+    </div>
+  </div>
+
+  <!-- ── SYNERGY RIBBON ───────────────────────── -->
+  <div class="sec-label">SYNERGY PAIRS · SWIPE →</div>
+  <div class="ribbon">
+    <div class="ribbon-inner">
+      <div class="pair">
+        <div class="pair-title">INFLAMMATION</div>
+        <div class="pair-items">Turmeric <span class="plus">+</span> Black Pepper</div>
+        <div class="pair-effect">Piperine unlocks curcumin across the gut wall.</div>
+        <div class="pair-delta">▲ 2000% ABSORPTION</div>
+      </div>
+      <div class="pair">
+        <div class="pair-title">RESPIRATORY</div>
+        <div class="pair-items">Ginger <span class="plus">+</span> Honey <span class="plus">+</span> Lemon</div>
+        <div class="pair-effect">Gingerol · raw enzymes · Vit C. Old medicine.</div>
+        <div class="pair-delta">▲ MUCOSA · IMMUNE</div>
+      </div>
+      <div class="pair">
+        <div class="pair-title">CIRCULATORY</div>
+        <div class="pair-items">Rosemary <span class="plus">+</span> Olive Oil</div>
+        <div class="pair-effect">Carnosic acid is fat-soluble. Never water.</div>
+        <div class="pair-delta">▲ BIOAVAILABILITY</div>
+      </div>
+      <div class="pair">
+        <div class="pair-title">METABOLIC</div>
+        <div class="pair-items">Cinnamon <span class="plus">+</span> Clove <span class="plus">+</span> Cardamom</div>
+        <div class="pair-effect">Eugenol stack. Glucose modulation, warming.</div>
+        <div class="pair-delta">▲ INSULIN RESPONSE</div>
+      </div>
+      <div class="pair">
+        <div class="pair-title">NERVINE</div>
+        <div class="pair-items">Tulsi <span class="plus">+</span> Ashwagandha</div>
+        <div class="pair-effect">Adaptogen stack. Cortisol buffer for the HPA axis.</div>
+        <div class="pair-delta">▲ SLEEP · RECOVERY</div>
+      </div>
+      <div class="pair">
+        <div class="pair-title">DIGESTIVE</div>
+        <div class="pair-items">Fennel <span class="plus">+</span> Caraway <span class="plus">+</span> Anise</div>
+        <div class="pair-effect">Carminative stack. Breaks fermentation gas.</div>
+        <div class="pair-delta">▲ MOTILITY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ALIVE CODE GENERATOR ─────────────────── -->
+  <div class="sec-label">THE ALIVE CODE · GENERATOR</div>
+  <div class="generator">
+    <div class="g-eyebrow">BAR · CODE · OF · SAFETY</div>
+    <h2>GENERATE.<br>PEEL. STICK.</h2>
+    <div class="g-sub">You don't memorize the shorthand. AA2 writes it for you — in your handwriting, printed, or thermal-stamped. Every jar gets three layers.</div>
+
+    <div class="layers">
+      <div class="layer">
+        <div class="layer-name">LAYER 1</div>
+        <div class="layer-content"><span class="accent">CLOVES · WHOLE</span></div>
+      </div>
+      <div class="layer">
+        <div class="layer-name">LAYER 2</div>
+        <div class="layer-content">W · 2·14·26 · G▲</div>
+      </div>
+      <div class="layer">
+        <div class="layer-name">LAYER 3</div>
+        <div class="layer-content"><span class="accent">◆ TRQ8</span> · <span class="gr">★ ALIVE 3·5 YR</span></div>
+      </div>
+    </div>
+
+    <div class="label-preview">
+      <div class="lp-name">CLOVES · WHOLE</div>
+      <div class="lp-short">W 2·14·26 G▲</div>
+      <div class="lp-sig"><span class="glyph">◆ TRQ8</span><span class="stat">★ ALIVE 3·5 YR</span></div>
+    </div>
+
+    <div class="cta-row">
+      <div class="cta primary">WRITE IT</div>
+      <div class="cta">PRINT PNG</div>
+      <div class="cta">THERMAL</div>
+    </div>
+  </div>
+
+  <!-- ── CLOVES DETAIL ─────────────────────────── -->
+  <div class="sec-label">◆ TRQ8 · TAPPED</div>
+  <div class="detail">
+    <div class="detail-hero">
+      <div class="jar-viz">
+        <div class="cap"></div>
+        <div class="body">
+          <div class="mini-label">
+            <div>CLOVES · W</div>
+            <div>2·14·26 G▲</div>
+            <div class="sig">◆ TRQ8</div>
+          </div>
+        </div>
+      </div>
+      <div class="h-text">
+        <h3>CLOVES</h3>
+        <div class="latin">Syzygium aromaticum</div>
+        <div class="chip-row">
+          <span class="chip code">◆ TRQ8</span>
+          <span class="chip status">★ ALIVE 3·5 YR</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-grid">
+      <div class="d-cell whole">
+        <div class="l">WHOLE · SHELF</div>
+        <div class="v">3–5 <span class="unit">YEARS</span></div>
+      </div>
+      <div class="d-cell ground">
+        <div class="l">GROUND · SHELF</div>
+        <div class="v">6 <span class="unit">MONTHS</span></div>
+      </div>
+      <div class="d-cell">
+        <div class="l">ACTIVE · EUGENOL</div>
+        <div class="v mono">82%</div>
+      </div>
+      <div class="d-cell">
+        <div class="l">ENZYME CLIFF</div>
+        <div class="v">~ 30 <span class="unit">MO</span></div>
+      </div>
+    </div>
+
+    <div class="d-row">
+      <div class="rl">BEST STORAGE</div>
+      <div class="rv">Glass, dark, dry · 60–70°F</div>
+    </div>
+    <div class="d-row">
+      <div class="rl">FRIDGE?</div>
+      <div class="rv">No. Condensation kills volatile oil.</div>
+    </div>
+    <div class="d-row">
+      <div class="rl">FORMS</div>
+      <div class="rv">Cook · Tea · Tincture · Infused Oil</div>
+    </div>
+
+    <div class="voices">
+      <div class="voice chef">
+        <div class="badge">CHEF</div>
+        <div class="txt">Crush one whole clove into ghee before onions. Unlocks eugenol into the fat. Never add ground at the end — the aromatics are already gone.</div>
+      </div>
+      <div class="voice eq">
+        <div class="badge">EQUALIZER</div>
+        <div class="txt">Pairs with cinnamon + cardamom for the metabolic stack. Eugenol is fat-soluble, heat-stable to 180°C, anti-microbial against oral pathogens.</div>
+      </div>
+      <div class="voice body">
+        <div class="badge">BODY MAP</div>
+        <div class="txt">Routes to Digestive + Oral systems. Traditional use: tooth pain, bile flow, gum inflammation. Not for infants under 2.</div>
+      </div>
+    </div>
+
+    <div class="paywall">
+      <div class="lock">◆ UNLOCK · APOTHECARY TIER</div>
+      <div class="plock">14 more clove pairings, tincture ratios, K9 &amp; feline safety, WADA status, and thermal-print unlimited Alive Codes.</div>
+      <div class="p-cta">UPGRADE · $9 / MONTH</div>
+    </div>
+  </div>
+
+  <!-- ── SHARPIE LEGEND ───────────────────────── -->
+  <div class="legend open" id="legend">
+    <div class="legend-head" onclick="document.getElementById('legend').classList.toggle('open')">
+      <div class="lh-l">
+        <div class="lh-eyebrow">THE AA2 SHORTHAND</div>
+        <div class="lh-title">YOUR SHARPIE<br>IS YOUR SCANNER.</div>
+        <div class="lh-sub">One line per jar. Cabinet readable in a glance.</div>
+      </div>
+      <div class="chev">▲</div>
+    </div>
+    <div class="legend-body">
+      <div class="legend-grid">
+        <div class="leg-group">
+          <h4>FORM</h4>
+          <div class="code"><span class="c">W</span><span class="d">Whole</span></div>
+          <div class="code"><span class="c">G</span><span class="d">Ground</span></div>
+          <div class="code"><span class="c">L</span><span class="d">Dried leaf</span></div>
+          <div class="code"><span class="c">F</span><span class="d">Fresh</span></div>
+          <div class="code"><span class="c">TN</span><span class="d">Tincture</span></div>
+          <div class="code"><span class="c">TB</span><span class="d">Tea blend</span></div>
+          <div class="code"><span class="c">O</span><span class="d">Oil-infused</span></div>
+          <div class="code"><span class="c">H</span><span class="d">Honey-infused</span></div>
+          <div class="code"><span class="c">V</span><span class="d">Vinegar-infused</span></div>
+          <div class="code"><span class="c">P</span><span class="d">Paste</span></div>
+        </div>
+        <div class="leg-group">
+          <h4>STORAGE</h4>
+          <div class="code"><span class="c">G▲</span><span class="d">Glass, dark</span></div>
+          <div class="code"><span class="c">P▼</span><span class="d">Paper, dark</span></div>
+          <div class="code"><span class="c">R</span><span class="d">Refrigerated</span></div>
+          <div class="code"><span class="c">FZ</span><span class="d">Frozen</span></div>
+          <div class="code"><span class="c">AM</span><span class="d">Amber glass</span></div>
+          <div class="code"><span class="c">VAC</span><span class="d">Vacuum sealed</span></div>
+
+          <h4>STATUS</h4>
+          <div class="code"><span class="c">★</span><span class="d">Peak · 0–30%</span></div>
+          <div class="code"><span class="c">◐</span><span class="d">Half-life</span></div>
+          <div class="code"><span class="c">△</span><span class="d">Low · &lt;25%</span></div>
+          <div class="code"><span class="c">✕</span><span class="d">Toss</span></div>
+        </div>
+      </div>
+
+      <div class="legend-example">
+        <h4>WORKED EXAMPLES</h4>
+        <div class="ex-row">
+          <div class="lab">W 2·14·26 G▲</div>
+          <div class="trans">Whole cloves, opened Valentine's '26, glass upright. Alive 3+ yrs. ★</div>
+        </div>
+        <div class="ex-row">
+          <div class="lab">G 10·10·23 G▲</div>
+          <div class="trans">Ground cinnamon, Oct '23. 18 mo past the ground-cinnamon cliff (6 mo). ✕ Toss.</div>
+        </div>
+        <div class="ex-row">
+          <div class="lab">TN 10·15·25 AM</div>
+          <div class="trans">Elderberry tincture in amber glass. Alcohol-preserved. ★ 3–5 yrs.</div>
+        </div>
+        <div class="ex-row">
+          <div class="lab">FZ 3·1·26 VAC</div>
+          <div class="trans">Fresh turmeric root, vacuum-sealed, frozen. Grate from frozen. ★ 1 yr+.</div>
+        </div>
+        <div class="ex-row">
+          <div class="lab">O 2·2·26 G▲</div>
+          <div class="trans">Rosemary-infused olive oil. Fresh herb in oil = botulism watch. 3 mo at the wall.</div>
+        </div>
+        <div class="ex-row">
+          <div class="lab">F 4·20·26 R</div>
+          <div class="trans">Fresh cilantro, 3 days old, paper towel + loose bag, fridge. ★ 5–7 days max.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B2B FOOTER ───────────────────────────── -->
+  <div class="b2b">
+    <div class="b-eye">SPOKE 34 · ENTERPRISE LAYER</div>
+    <h3>YOUR KITCHEN.<br>YOUR RESTAURANT.<br><span class="glow">YOUR MESS HALL.</span></h3>
+    <p>One code. Every shelf. Every jar. HACCP compliance logs itself every time the camera reads a label. Inventory in ten seconds per shelf. Same system in a Boquete kitchen as a Michelin kitchen in Paris.</p>
+    <div class="chips">
+      <span>RESTAURANTS</span>
+      <span>SCHOOLS</span>
+      <span>CAFETERIAS</span>
+      <span>HOTELS</span>
+      <span>CATERERS</span>
+      <span>MEAL KITS</span>
+      <span>CORPORATE KITCHENS</span>
+      <span>PRIVATE JET</span>
+      <span>F1 KITCHEN</span>
+      <span>PANAMA GOV</span>
+    </div>
+  </div>
+
+  <div class="receipt">
+    I AM THE RECEIPT · <span>◆</span> · AA2 SPOKE 34 · v45
+  </div>
+
+</div>
+</body>
+</html>

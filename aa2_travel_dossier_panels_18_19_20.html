@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AA2 · Travel Dossier · Panels 18 · 19 · 20 · Canon v47</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1BB8FF;
+  --blue-dim: rgba(27,184,255,0.12);
+  --blue-border: rgba(27,184,255,0.38);
+  --green: #1D9E75;
+  --green-dim: rgba(29,158,117,0.12);
+  --amber: #C49A2A;
+  --amber-dim: rgba(196,154,42,0.12);
+  --red: #E05252;
+  --red-dim: rgba(224,82,82,0.10);
+  --bg: #0A0804;
+  --page: #050403;
+  --card: #150F0A;
+  --card-elev: #1C140D;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.14);
+  --white: #FFFFFF;
+  --muted: rgba(255,255,255,0.55);
+  --muted-2: rgba(255,255,255,0.35);
+  --paper: #f5f1e8;
+  --paper-worn: #ebe4d5;
+  --ink: #1a1a1a;
+  --paper-muted: #5a5450;
+  --display: 'Bebas Neue', sans-serif;
+  --serif: 'Cormorant Garamond', serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--page);
+  color: var(--white);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.page-head {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 40px 28px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.page-head .eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+.page-head h1 {
+  font-family: var(--display);
+  font-size: 56px;
+  line-height: 0.92;
+  letter-spacing: 1.5px;
+}
+.page-head h1 .accent { color: var(--blue); }
+.page-head .sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 8px;
+  max-width: 760px;
+  line-height: 1.4;
+}
+.page-head .right {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted-2);
+  text-align: right;
+  line-height: 1.8;
+}
+.page-head .right .blue { color: var(--blue); }
+.page-head .right .big {
+  font-family: var(--display);
+  font-size: 26px;
+  color: var(--white);
+  letter-spacing: 2px;
+}
+
+.sec-divider {
+  max-width: 1800px;
+  margin: 10px auto 0;
+  padding: 36px 28px 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sec-divider .lbl {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.sec-divider .ln { flex: 1; height: 1px; background: var(--line); }
+
+/* 3-column stage */
+.stage {
+  max-width: 1800px;
+  margin: 0 auto;
+  padding: 36px 28px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+@media (max-width: 1280px) { .stage { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 860px)  { .stage { grid-template-columns: 1fr; } }
+
+.stage-col { display: flex; flex-direction: column; gap: 14px; }
+.stage-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.stage-title {
+  font-family: var(--display);
+  font-size: 38px;
+  line-height: 0.92;
+  letter-spacing: 1.3px;
+}
+.stage-title .accent { color: var(--blue); }
+.stage-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 6px;
+  margin-bottom: 4px;
+}
+.panel-label .num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+}
+.panel-label .sec-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+}
+
+/* ===== PHONE FRAME ===== */
+.phone-wrap { display: flex; justify-content: center; margin-top: 10px; }
+.phone {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 40px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,0.7),
+    inset 0 0 0 2px rgba(0,0,0,0.7),
+    inset 0 0 0 3px rgba(255,255,255,0.03);
+  position: relative;
+}
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 24px;
+  background: #000;
+  border-radius: 24px;
+  z-index: 10;
+}
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 52px 18px 22px;
+  overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse 300px 200px at 50% -50px, rgba(27,184,255,0.05), transparent),
+    var(--bg);
+  min-height: 820px;
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 0 6px;
+}
+.top-bar .ts { font-family: var(--mono); font-size: 9px; color: var(--muted-2); letter-spacing: 1.5px; }
+.top-bar .glyph { color: var(--blue); font-size: 11px; }
+.top-bar .ind { font-family: var(--mono); font-size: 8px; color: var(--blue); letter-spacing: 1.8px; }
+.top-bar .ind.amber { color: var(--amber); }
+.top-bar .ind.green { color: var(--green); }
+
+.s-eye { font-family: var(--mono); font-size: 9px; color: var(--blue); letter-spacing: 2.5px; margin-bottom: 4px; }
+.s-h1  { font-family: var(--display); font-size: 32px; line-height: 0.9; letter-spacing: 1.2px; margin-bottom: 8px; }
+.s-h1 .accent { color: var(--blue); }
+.s-h1 .green { color: var(--green); }
+.s-sub { font-family: var(--serif); font-style: italic; font-size: 12px; color: var(--muted); line-height: 1.4; margin-bottom: 14px; }
+
+/* Question stack */
+.qstack { display: flex; flex-direction: column; gap: 7px; }
+.q {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 11px;
+  position: relative;
+}
+.q.active {
+  border: 1px solid var(--blue-border);
+  background: linear-gradient(180deg, rgba(27,184,255,0.05), var(--card));
+  box-shadow: 0 0 0 3px rgba(27,184,255,0.08);
+}
+.q.done { border-left: 2px solid var(--green); }
+.q .qhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.q .qn { font-family: var(--mono); font-size: 7.5px; color: var(--blue); letter-spacing: 1.8px; }
+.q.done .qn { color: var(--green); }
+.q .qs { font-family: var(--mono); font-size: 7.5px; letter-spacing: 1.5px; color: var(--muted-2); }
+.q.done .qs { color: var(--green); }
+.q .qt { font-family: var(--display); font-size: 15px; letter-spacing: 0.8px; color: var(--white); line-height: 1; margin-bottom: 3px; }
+.q .qv { font-family: var(--sans); font-size: 10px; color: var(--white); line-height: 1.35; }
+.q .qv .tag {
+  display: inline-block;
+  padding: 2px 6px; margin: 2px 3px 0 0;
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-border);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 7.5px; border-radius: 3px; letter-spacing: 0.8px;
+}
+.q .qv .tag.green { background: var(--green-dim); border-color: rgba(29,158,117,0.35); color: var(--green); }
+.q .qv .tag.amber { background: var(--amber-dim); border-color: rgba(196,154,42,0.35); color: var(--amber); }
+.q .qv .tag.red   { background: var(--red-dim); border-color: rgba(224,82,82,0.35); color: var(--red); }
+.q-hint { font-family: var(--serif); font-style: italic; font-size: 9.5px; color: var(--muted-2); line-height: 1.35; margin-top: 3px; }
+
+.compile {
+  margin-top: 12px;
+  padding: 12px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-border);
+  background:
+    radial-gradient(ellipse at top right, rgba(27,184,255,0.08), transparent 55%),
+    var(--card);
+}
+.compile .ch { font-family: var(--mono); font-size: 8px; color: var(--blue); letter-spacing: 2px; margin-bottom: 7px; }
+.compile .cm { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 9px; }
+.compile .cm .mod {
+  font-family: var(--mono); font-size: 7px; color: var(--white);
+  background: rgba(27,184,255,0.1); border: 1px solid rgba(27,184,255,0.28);
+  padding: 2.5px 5px; border-radius: 3px; letter-spacing: 0.7px;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.compile .cm .mod::before { content: "◆"; color: var(--blue); font-size: 7px; }
+.compile .btn {
+  margin-top: 4px; padding: 11px;
+  background: var(--blue); color: #03050A;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: 2px;
+  text-align: center; border-radius: 7px; font-weight: 500;
+}
+
+.p-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono); font-size: 7.5px;
+  color: var(--muted-2); letter-spacing: 2.2px;
+  text-align: center;
+}
+.p-foot .blue { color: var(--blue); }
+
+/* ===== PAPER / DOSSIER ===== */
+.doc {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 32px 32px 28px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  position: relative;
+  box-shadow:
+    0 22px 44px rgba(0,0,0,0.55),
+    0 6px 16px rgba(0,0,0,0.35),
+    inset 0 0 0 1px rgba(0,0,0,0.06);
+  transform: rotate(-0.3deg);
+}
+.doc::before {
+  content: "";
+  position: absolute;
+  top: -14px; left: 36%; right: 36%;
+  height: 22px;
+  background: repeating-linear-gradient(90deg, rgba(255,230,150,0.85) 0px, rgba(255,230,150,0.85) 4px, rgba(255,230,150,0.55) 4px, rgba(255,230,150,0.55) 8px);
+  border-radius: 1px; opacity: 0.85; transform: rotate(-1deg);
+}
+.doc.pg2 { transform: rotate(0.2deg); margin-top: -6px; }
+.doc.pg3 { transform: rotate(-0.15deg); margin-top: -6px; }
+
+.cover .corner-glyph { font-family: var(--display); font-size: 22px; color: #1BB8FF; line-height: 1; margin-bottom: 4px; }
+.cover .cover-eye { font-size: 8px; font-weight: 700; letter-spacing: 2.6px; color: #1BB8FF; text-transform: uppercase; }
+.cover h2 { font-family: var(--display); font-size: 40px; letter-spacing: 2px; line-height: 0.95; color: var(--ink); margin: 10px 0 6px; }
+.cover .tagline {
+  font-family: var(--serif); font-style: italic;
+  font-size: 13px; color: var(--paper-muted);
+  line-height: 1.4; margin-bottom: 22px;
+  padding-left: 10px; border-left: 2px solid #1BB8FF;
+}
+.cover-fields {
+  display: grid; grid-template-columns: max-content 1fr;
+  gap: 5px 14px; font-size: 9.5px; margin-bottom: 20px;
+}
+.cover-fields .fl { color: #1BB8FF; font-weight: 700; letter-spacing: 1.8px; }
+.cover-fields .fv { color: var(--ink); letter-spacing: 0.3px; }
+
+.cover-contents { border-top: 1px dashed rgba(0,0,0,0.2); padding-top: 14px; margin-bottom: 20px; }
+.cover-contents .cch { font-size: 8px; font-weight: 700; letter-spacing: 2px; color: #1BB8FF; margin-bottom: 9px; }
+.cover-contents .ci {
+  display: flex; justify-content: space-between;
+  font-size: 9px; padding: 2.5px 0;
+  border-bottom: 1px dotted rgba(0,0,0,0.12);
+}
+.cover-contents .ci .cin { color: var(--ink); }
+.cover-contents .ci .cip { color: var(--paper-muted); }
+
+.cover-sig {
+  border-top: 2px solid #1BB8FF;
+  padding-top: 10px;
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 8.5px; letter-spacing: 1.8px;
+}
+.cover-sig .sig-l { color: #1BB8FF; font-weight: 700; }
+.cover-sig .sig-r { color: var(--ink); font-weight: 500; }
+
+.cover-stamp {
+  position: absolute; top: 32px; right: 26px;
+  transform: rotate(8deg);
+  border: 2px solid rgba(224,82,82,0.7);
+  color: rgba(224,82,82,0.75);
+  padding: 3px 9px 2px;
+  font-family: var(--mono);
+  font-size: 7.5px; font-weight: 700; letter-spacing: 2px;
+  border-radius: 3px;
+}
+.cover-stamp.complete {
+  border-color: rgba(29,158,117,0.7);
+  color: rgba(29,158,117,0.8);
+  top: 26px;
+}
+
+.pg-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px solid #1BB8FF; padding-bottom: 6px; margin-bottom: 12px;
+}
+.pg-head .ph-l { font-family: var(--display); font-size: 18px; letter-spacing: 1.4px; color: var(--ink); }
+.pg-head .ph-r { font-size: 7.5px; color: #1BB8FF; font-weight: 700; letter-spacing: 1.8px; }
+
+.sec { margin-bottom: 16px; }
+.sec h3 {
+  font-size: 8px; font-weight: 700; letter-spacing: 2px; color: #1BB8FF;
+  margin-bottom: 7px; display: flex; align-items: center; gap: 6px;
+}
+.sec h3::before { content: "◆"; color: #1BB8FF; }
+
+.btable { width: 100%; border-collapse: collapse; font-size: 8.5px; }
+.btable thead th {
+  background: rgba(27,184,255,0.15); color: var(--ink);
+  font-weight: 700; padding: 4px 5px;
+  border: 1px solid rgba(0,0,0,0.15);
+  text-align: right; letter-spacing: 0.5px;
+  font-size: 7.5px; text-transform: uppercase;
+}
+.btable thead th:first-child { text-align: left; }
+.btable tbody td {
+  padding: 3.5px 5px; border: 1px solid rgba(0,0,0,0.1);
+  text-align: right; font-family: var(--mono); font-size: 8.5px;
+}
+.btable tbody td:first-child { text-align: left; font-weight: 700; color: #1BB8FF; }
+.btable tbody tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+.btable .sweet td { background: rgba(29,158,117,0.14) !important; color: var(--ink); }
+.btable .sweet td:first-child { color: #0e6b4f; }
+
+.context-line {
+  font-family: var(--serif); font-style: italic;
+  font-size: 9.5px; color: var(--paper-muted);
+  margin-top: 5px; line-height: 1.4;
+}
+
+.rteline {
+  font-family: var(--mono); font-size: 8.5px;
+  color: var(--ink); line-height: 1.6;
+  display: grid; grid-template-columns: 50px 1fr max-content;
+  gap: 7px; padding: 3px 0;
+  border-bottom: 1px dotted rgba(0,0,0,0.12);
+}
+.rteline .rt-t { color: #1BB8FF; font-weight: 700; }
+.rteline .rt-n { color: var(--paper-muted); font-size: 7.5px; font-family: var(--serif); font-style: italic; text-align: right; }
+
+.panic {
+  border: 2px solid rgba(224,82,82,0.7);
+  background: rgba(224,82,82,0.05);
+  padding: 9px 11px; border-radius: 3px; margin-top: 9px;
+}
+.panic .ph { font-size: 8.5px; font-weight: 700; letter-spacing: 2px; color: #c23c3c; margin-bottom: 5px; }
+.panic .pb { font-family: var(--mono); font-size: 8.5px; color: var(--ink); line-height: 1.5; }
+.panic .pb b { color: #c23c3c; }
+
+.pg-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 16px; padding-top: 8px;
+  border-top: 1px dashed rgba(0,0,0,0.25);
+  font-size: 7.5px; color: var(--paper-muted); letter-spacing: 1.8px;
+}
+.pg-foot .pf-sig { color: #1BB8FF; font-weight: 700; }
+.pg-foot .pf-p { font-family: var(--mono); }
+
+.grid2 {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 9px; font-size: 8.5px;
+}
+.grid2 .pcol h4 {
+  font-size: 7.5px; font-weight: 700; color: #1BB8FF;
+  letter-spacing: 1.5px; margin-bottom: 5px;
+  padding-bottom: 3px; border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.grid2 .pi {
+  font-family: var(--mono); font-size: 8px; color: var(--ink);
+  padding: 2px 0; display: flex; justify-content: space-between;
+}
+.grid2 .pi .pk { color: var(--paper-muted); font-size: 7px; }
+
+.lang-grid { font-size: 8.5px; line-height: 1.55; }
+.lang-grid .lr {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; padding: 3px 0;
+  border-bottom: 1px dotted rgba(0,0,0,0.12);
+}
+.lang-grid .lr .en { color: var(--paper-muted); font-family: var(--serif); font-style: italic; }
+.lang-grid .lr .es { color: var(--ink); font-weight: 500; font-family: var(--mono); font-size: 8.5px; }
+
+.elev-strip {
+  height: 40px;
+  background: linear-gradient(180deg, rgba(27,184,255,0.08) 0%, rgba(27,184,255,0.03) 100%);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 3px;
+  position: relative; overflow: hidden; margin-top: 7px;
+}
+.elev-strip svg { width: 100%; height: 100%; display: block; }
+
+/* ===== PANEL 20 — RETURN SCAN ===== */
+.return-phone-wrap { display: flex; justify-content: center; margin-top: 10px; }
+
+/* Camera viewfinder capturing the dossier cover */
+.viewfinder {
+  position: relative;
+  margin: 0 -4px 12px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: #0a0a0a;
+  min-height: 200px;
+  padding: 22px 14px;
+}
+.viewfinder::before,
+.viewfinder::after,
+.viewfinder .corner-bl,
+.viewfinder .corner-br {
+  content: "";
+  position: absolute;
+  width: 22px; height: 22px;
+  border: 2px solid var(--blue);
+}
+.viewfinder::before  { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+.viewfinder::after   { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+.viewfinder .corner-bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+.viewfinder .corner-br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+/* Mini-dossier inside viewfinder */
+.mini-dossier {
+  background: var(--paper-worn);
+  color: var(--ink);
+  padding: 14px 14px 10px;
+  border-radius: 2px;
+  font-family: var(--mono);
+  position: relative;
+  transform: rotate(-2deg);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5);
+  max-width: 220px;
+  margin: 0 auto;
+}
+.mini-dossier::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 80% 100%, rgba(0,0,0,0.18), transparent 60%);
+  pointer-events: none;
+  border-radius: 2px;
+}
+.mini-dossier .md-eye { font-size: 6.5px; font-weight: 700; letter-spacing: 1.8px; color: #1BB8FF; }
+.mini-dossier .md-h {
+  font-family: var(--display); font-size: 20px; letter-spacing: 1.4px;
+  color: var(--ink); line-height: 0.95; margin: 4px 0 5px;
+}
+.mini-dossier .md-sig {
+  font-size: 7px; letter-spacing: 1.5px; color: #1BB8FF;
+  font-weight: 700; padding-top: 5px;
+  border-top: 1.5px solid #1BB8FF;
+  display: flex; justify-content: space-between;
+}
+.mini-dossier .md-sig .dt { color: var(--paper-muted); font-weight: 500; }
+.mini-dossier .pen-mark {
+  position: absolute;
+  font-family: 'Caveat', 'Segoe Script', cursive;
+  color: #1a1a6e;
+  font-size: 11px;
+  transform: rotate(-6deg);
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.scan-line {
+  position: absolute;
+  left: 8px; right: 8px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  box-shadow: 0 0 10px var(--blue);
+  top: 50%;
+  animation: scanMove 2.2s ease-in-out infinite;
+}
+@keyframes scanMove {
+  0%   { top: 18%; opacity: 0.2; }
+  50%  { top: 70%; opacity: 1; }
+  100% { top: 18%; opacity: 0.2; }
+}
+
+.reading {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--blue);
+  letter-spacing: 1.5px;
+  display: flex; justify-content: space-between;
+  padding: 6px 12px 0;
+}
+
+/* Annotation ingest list */
+.ingest {
+  margin-top: 10px;
+  padding: 12px 12px;
+  border-radius: 9px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.ingest .ih {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ingest .ih .cnt {
+  font-family: var(--mono);
+  font-size: 7px;
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-border);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--blue);
+  letter-spacing: 1px;
+}
+.ingest-row {
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.ingest-row:last-child { border-bottom: none; }
+.ingest-row .ir-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  margin-top: 4px; flex-shrink: 0;
+}
+.ingest-row.ok .ir-dot { background: var(--green); box-shadow: 0 0 6px rgba(29,158,117,0.6); }
+.ingest-row.note .ir-dot { background: var(--blue); }
+.ingest-row.flag .ir-dot { background: var(--amber); }
+
+.ingest-row .ir-body { flex: 1; min-width: 0; }
+.ingest-row .ir-src {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--muted-2);
+  letter-spacing: 1.5px;
+  margin-bottom: 2px;
+}
+.ingest-row .ir-note {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 10.5px;
+  color: var(--white);
+  line-height: 1.3;
+}
+.ingest-row .ir-effect {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--green);
+  letter-spacing: 0.5px;
+  margin-top: 3px;
+}
+.ingest-row.flag .ir-effect { color: var(--amber); }
+
+/* Baseline delta */
+.delta {
+  margin-top: 10px;
+  padding: 11px 12px;
+  border-radius: 9px;
+  background:
+    radial-gradient(ellipse at top left, rgba(27,184,255,0.07), transparent 55%),
+    var(--card);
+  border: 1px solid var(--blue-border);
+}
+.delta .dh {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  margin-bottom: 7px;
+}
+.delta .drow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--white);
+}
+.delta .drow .dlbl { color: var(--muted); }
+.delta .drow .dval { color: var(--green); font-weight: 500; }
+.delta .drow .dval.neutral { color: var(--muted-2); }
+.delta .drow .dval.amber { color: var(--amber); }
+
+/* Success ribbon */
+.closed-loop {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(90deg, rgba(29,158,117,0.18), rgba(29,158,117,0.05));
+  border: 1px solid rgba(29,158,117,0.4);
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--green);
+  letter-spacing: 1.8px;
+  text-align: center;
+}
+
+/* Captions */
+.caption {
+  max-width: 1800px;
+  margin: 12px auto 0;
+  padding: 18px 28px;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.5;
+  text-align: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgba(27,184,255,0.02);
+}
+.caption .blue {
+  color: var(--blue);
+  font-style: normal;
+  font-family: var(--display);
+  font-size: 15px;
+  letter-spacing: 1.5px;
+}
+.caption .white { color: var(--white); font-family: var(--sans); font-style: normal; }
+
+.page-foot {
+  max-width: 1800px;
+  margin: 50px auto 0;
+  padding: 20px 28px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2.5px;
+  text-align: center;
+}
+.page-foot .blue { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="left">
+    <div class="eyebrow">CANON v47 · DRAFT · PANELS 18 · 19 · 20</div>
+    <h1>THE TRAVEL<br><span class="accent">DOSSIER.</span></h1>
+    <div class="sub">Six questions. Dynamic compilation. Two forms of the same truth — and a third form that closes the loop. The phone is the <em>above</em>. The folded paper in your pack is the <em>below</em>. The return scan is <em>paper becoming data again.</em></div>
+  </div>
+  <div class="right">
+    <div class="blue">◆</div>
+    <div class="big">ABOVE</div>
+    <div class="big">BELOW</div>
+    <div class="big">RETURN</div>
+    <div>APRIL 23 · 2026</div>
+    <div>I AM THE RECEIPT</div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">SCENARIO · HUNTING · CHIRIQUÍ HIGHLANDS · 3 DAYS · SOLO · TACTIX 8 + OURA · CIVILIAN LAYER</div><div class="ln"></div></div>
+
+<div class="stage">
+
+  <!-- ═══════════ PANEL 18 · ON-GRID · ABOVE ═══════════ -->
+  <div class="stage-col">
+    <div class="panel-label">
+      <span class="num">18 / 20 · BEFORE</span>
+      <span class="sec-lbl">THE ABOVE</span>
+    </div>
+    <div class="stage-eyebrow">THE COMPILER · SIX QUESTIONS</div>
+    <div class="stage-title">THE PHONE.<br><span class="accent">BEFORE YOU LEAVE.</span></div>
+    <div class="stage-sub">No presets. AA2 asks six questions and builds one dossier for one trip. A hunting trip with a 3-mile hike to a waterfall has nothing in common with a Caribbean crossing — so the dossier has nothing in common either.</div>
+
+    <div class="phone-wrap">
+      <div class="phone"><div class="screen">
+        <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">TRAVEL DOSSIER</span></div>
+        <div class="s-eye">BUILD YOUR DOSSIER · 6 QUESTIONS</div>
+        <div class="s-h1">COMPILE<br><span class="accent">FOR THIS TRIP.</span></div>
+        <div class="s-sub">Answer six. AA2 compiles a dossier no one has ever printed before.</div>
+
+        <div class="qstack">
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q1 · WHERE</span><span class="qs">✓</span></div>
+            <div class="qt">CHIRIQUÍ HIGHLANDS</div>
+            <div class="qv">Cerro Horqueta · 8.84°N 82.55°W<div class="q-hint">Forager · Panic cards · Embassy · Anti-venom routing</div></div>
+          </div>
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q2 · WHEN / DURATION</span><span class="qs">✓</span></div>
+            <div class="qt">OCT 14 → OCT 16 · 3 DAYS</div>
+            <div class="qv">Sunrise 6:07a · Moon waxing · Alt 2,100 m<div class="q-hint">Decay clock · Daylight · Temp envelope 48–72°F</div></div>
+          </div>
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q3 · ACTIVITIES</span><span class="qs">✓</span></div>
+            <div class="qt">HUNT · HIKE · WATER</div>
+            <div class="qv">
+              <span class="tag">HUNT</span>
+              <span class="tag">3-MI HIKE</span>
+              <span class="tag">WATERFALL</span>
+              <span class="tag">CWD</span>
+              <div class="q-hint">Ballistic · Water doctrine · Game handling · Hazards</div>
+            </div>
+          </div>
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q4 · WHO'S GOING</span><span class="qs">✓</span></div>
+            <div class="qt">SOLO</div>
+            <div class="qv">JRP · BYAR loaded<div class="q-hint">Solo emergency · SPOT check-in · Next-of-kin</div></div>
+          </div>
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q5 · DEVICE STACK</span><span class="qs">✓</span></div>
+            <div class="qt">TACTIX 8 · OURA 4</div>
+            <div class="qv">
+              <span class="tag green">TACTIX · BALLISTIC</span>
+              <span class="tag green">OURA · BASELINE</span>
+              <div class="q-hint">Device exports → paper backup</div>
+            </div>
+          </div>
+          <div class="q active">
+            <div class="qhead"><span class="qn">Q6 · COMMANDER LAYER</span><span class="qs" style="color:var(--amber);">◆ ACTIVE</span></div>
+            <div class="qt">WADA / FEI / DoD / USADA?</div>
+            <div class="qv">
+              <span class="tag">NONE</span>
+              <span class="tag amber">WADA</span>
+              <span class="tag amber">FEI</span>
+              <span class="tag amber">DoD</span>
+              <span class="tag amber">USADA</span>
+              <div class="q-hint">Filters every supplement, med, game-meat against the regulatory framework. Civilian default.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="compile">
+          <div class="ch">◆ AA2 WILL COMPILE</div>
+          <div class="cm">
+            <span class="mod">ROUTE</span>
+            <span class="mod">BALLISTIC</span>
+            <span class="mod">WATER</span>
+            <span class="mod">PANTRY</span>
+            <span class="mod">DISPENSARY</span>
+            <span class="mod">FORAGER</span>
+            <span class="mod">WILDLIFE</span>
+            <span class="mod">LANG</span>
+            <span class="mod">MEDICAL</span>
+            <span class="mod">OURA</span>
+            <span class="mod">TACTIX</span>
+            <span class="mod">EMERGENCY</span>
+          </div>
+          <div class="btn">COMPILE · PRINT · ◆ XHD7</div>
+        </div>
+
+        <div class="p-foot">◆ ADAPTIVE NERVE ADAPTS · NO PRESETS · <span class="blue">v47</span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL 19 · OFF-GRID · BELOW ═══════════ -->
+  <div class="stage-col">
+    <div class="panel-label">
+      <span class="num">19 / 20 · DURING</span>
+      <span class="sec-lbl">THE BELOW</span>
+    </div>
+    <div class="stage-eyebrow">THE ARTIFACT · TRI-FOLD POCKET</div>
+    <div class="stage-title">THE PAPER.<br><span class="accent">IN YOUR PACK.</span></div>
+    <div class="stage-sub">Compiled from the six answers. Waterproof-treated, folded to pocket size. The Tactix 8 battery dies on day 2 — the ballistic page does not. The phone is gone — the waterfall protocol remains.</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- COVER -->
+      <div class="doc cover">
+        <div class="cover-stamp">OFF-GRID · READY</div>
+        <div class="corner-glyph">◆</div>
+        <div class="cover-eye">AA2 TRAVEL DOSSIER</div>
+        <h2>CERRO<br>HORQUETA</h2>
+        <div class="tagline">Chiriquí highlands. Three days. Solo hunt. Waterfall camp at mile 2.2. The paper you carry when the grid is gone.</div>
+
+        <div class="cover-fields">
+          <div class="fl">TRIP</div>    <div class="fv">HORQUETA · SOLO HUNT</div>
+          <div class="fl">DEPART</div>  <div class="fv">OCT 14 · 04:30 LOCAL</div>
+          <div class="fl">RETURN</div>  <div class="fv">OCT 16 · by sunset</div>
+          <div class="fl">ACTIVITY</div><div class="fv">HUNT · 3-MI HIKE · WATERFALL</div>
+          <div class="fl">PARTY</div>   <div class="fv">1 · SOLO</div>
+          <div class="fl">STACK</div>   <div class="fv">TACTIX 8 · OURA 4</div>
+          <div class="fl">CMDR</div>    <div class="fv">CIVILIAN</div>
+        </div>
+
+        <div class="cover-contents">
+          <div class="cch">◆ CONTENTS</div>
+          <div class="ci"><span class="cin">§1 Route &amp; waypoints</span><span class="cip">2</span></div>
+          <div class="ci"><span class="cin">§2 Ballistic · Tactix 8 export</span><span class="cip">3</span></div>
+          <div class="ci"><span class="cin">§3 Water doctrine</span><span class="cip">4</span></div>
+          <div class="ci"><span class="cin">§4 Pantry · Alive Codes</span><span class="cip">5</span></div>
+          <div class="ci"><span class="cin">§5 Off-grid dispensary</span><span class="cip">6</span></div>
+          <div class="ci"><span class="cin">§6 Forager bioregion</span><span class="cip">7</span></div>
+          <div class="ci"><span class="cin">§7 Wildlife · fer-de-lance</span><span class="cip">8</span></div>
+          <div class="ci"><span class="cin">§8 CWD handling</span><span class="cip">9</span></div>
+          <div class="ci"><span class="cin">§9 Survival Spanish</span><span class="cip">10</span></div>
+          <div class="ci"><span class="cin">§10 Medical · BYAR · NoK</span><span class="cip">11</span></div>
+          <div class="ci"><span class="cin">§11 Emergency · anti-venom</span><span class="cip">12</span></div>
+        </div>
+
+        <div class="cover-sig">
+          <div class="sig-l">◆ JRP · XHD7</div>
+          <div class="sig-r">COMPILED 10·13·26</div>
+        </div>
+      </div>
+
+      <!-- PAGE 2 — BALLISTIC + ROUTE -->
+      <div class="doc pg2">
+        <div class="pg-head">
+          <div class="ph-l">§2 · BALLISTIC</div>
+          <div class="ph-r">TACTIX 8 · EXPORT</div>
+        </div>
+
+        <div class="sec">
+          <h3>6.5 CREEDMOOR · 140 ELD-M</h3>
+          <table class="btable">
+            <thead><tr><th>RANGE</th><th>DROP</th><th>WIND 10</th><th>HOLD</th></tr></thead>
+            <tbody>
+              <tr><td>100 yd</td><td>0.0"</td><td>0.7"</td><td>—</td></tr>
+              <tr><td>200 yd</td><td>−3.8"</td><td>2.9"</td><td>+1.9</td></tr>
+              <tr class="sweet"><td>300 yd</td><td>−14.1"</td><td>6.9"</td><td>+4.5</td></tr>
+              <tr class="sweet"><td>400 yd</td><td>−32.6"</td><td>12.8"</td><td>+7.8</td></tr>
+              <tr><td>500 yd</td><td>−61.0"</td><td>20.9"</td><td>+11.6</td></tr>
+              <tr><td>600 yd</td><td>−101.5"</td><td>31.7"</td><td>+16.1</td></tr>
+            </tbody>
+          </table>
+          <div class="context-line">2,100 m · 48°F AM / 72°F PM · 24.8 inHg · zero 100 yd. Green = expected ridge window.</div>
+        </div>
+
+        <div class="sec">
+          <h3>ROUTE · TRAILHEAD → CAMP</h3>
+          <div class="rteline"><span class="rt-t">0.0</span><span>Trailhead · truck staging</span><span class="rt-n">04:30 · 1,680 m</span></div>
+          <div class="rteline"><span class="rt-t">1.1</span><span>Fence · cell ends · Tactix last sync</span><span class="rt-n">~05:15</span></div>
+          <div class="rteline"><span class="rt-t">2.2</span><span>Río Cotito · <b>filter downstream</b></span><span class="rt-n">~05:55</span></div>
+          <div class="rteline"><span class="rt-t">2.8</span><span>First ridge · glass NE face 300–450</span><span class="rt-n">~06:20 · 2,010</span></div>
+          <div class="rteline"><span class="rt-t">3.0</span><span>◆ <b>WATERFALL CAMP</b></span><span class="rt-n">~06:30 · 2,100</span></div>
+
+          <div class="elev-strip">
+            <svg viewBox="0 0 300 40" preserveAspectRatio="none">
+              <defs><linearGradient id="eg" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#1BB8FF" stop-opacity="0.4"/><stop offset="100%" stop-color="#1BB8FF" stop-opacity="0.08"/></linearGradient></defs>
+              <path d="M0,34 L30,31 L60,28 L100,24 L150,22 L200,14 L240,10 L280,8 L300,7 L300,40 L0,40 Z" fill="url(#eg)"/>
+              <path d="M0,34 L30,31 L60,28 L100,24 L150,22 L200,14 L240,10 L280,8 L300,7" stroke="#1BB8FF" stroke-width="1.2" fill="none"/>
+              <circle cx="280" cy="8" r="2.3" fill="#1BB8FF"/>
+              <circle cx="0" cy="34" r="2" fill="#1BB8FF"/>
+            </svg>
+          </div>
+          <div class="context-line">Gain 420 m · est. 2h 15m at your Oura pace</div>
+        </div>
+
+        <div class="panic">
+          <div class="ph">◆ IF TACTIX 8 DIES</div>
+          <div class="pb">This dope is current to <b>OCT 14 · 0500</b>. Zero is 100 yd. Do not shoot past the <b>green window</b> without confirming wind.</div>
+        </div>
+
+        <div class="pg-foot">
+          <span class="pf-sig">◆ JRP · XHD7</span>
+          <span>HORQUETA · §2</span>
+          <span class="pf-p">2 / 12</span>
+        </div>
+      </div>
+
+      <!-- PAGE 3 — FIELD COMBINED -->
+      <div class="doc pg3">
+        <div class="pg-head">
+          <div class="ph-l">§5 · §7 · §9 · §11</div>
+          <div class="ph-r">OFF-GRID FIELD</div>
+        </div>
+
+        <div class="sec">
+          <h3>PANTRY ON YOUR BACK</h3>
+          <div class="grid2">
+            <div class="pcol">
+              <h4>ALIVE · ★</h4>
+              <div class="pi"><span>Coffee W</span><span class="pk">W 4·1 G▲</span></div>
+              <div class="pi"><span>Ginger F</span><span class="pk">F 4·20 R</span></div>
+              <div class="pi"><span>Honey raw</span><span class="pk">H · ★</span></div>
+              <div class="pi"><span>Electrolytes</span><span class="pk">7 sachets</span></div>
+              <div class="pi"><span>Elderberry TN</span><span class="pk">TN 10·15 AM</span></div>
+              <div class="pi"><span>Jerky grass-fed</span><span class="pk">VAC 4·10</span></div>
+            </div>
+            <div class="pcol">
+              <h4>WATCH · ◐</h4>
+              <div class="pi"><span>Nettle L</span><span class="pk">L 11·20</span></div>
+              <h4 style="margin-top:8px;">WATER</h4>
+              <div class="pi"><span>Sawyer</span><span class="pk">★ 2 yr</span></div>
+              <div class="pi"><span>Tabs backup</span><span class="pk">TAB 3·1</span></div>
+              <div class="pi"><span>Boil @ 2,100m</span><span class="pk">5 min</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h3>SURVIVAL SPANISH</h3>
+          <div class="lang-grid">
+            <div class="lr"><span class="en">I need a doctor.</span><span class="es">Necesito un médico.</span></div>
+            <div class="lr"><span class="en">Snake bit me.</span><span class="es">Me mordió una serpiente.</span></div>
+            <div class="lr"><span class="en">Where is the hospital?</span><span class="es">¿Dónde está el hospital?</span></div>
+            <div class="lr"><span class="en">Blood type O+.</span><span class="es">Tipo de sangre O+.</span></div>
+          </div>
+        </div>
+
+        <div class="panic">
+          <div class="ph">◆ FER-DE-LANCE · BOTHROPS ASPER</div>
+          <div class="pb">
+            <b>1.</b>  Do not run. Keep limb below heart.<br>
+            <b>2.</b>  Remove rings, Tactix 8, tight clothing.<br>
+            <b>3.</b>  Mark bite edge · note time.<br>
+            <b>4.</b>  <b>+507 316-1616</b> David anti-venom.<br>
+            <b>5.</b>  SPOT → CUSTOM-2 · Maribel + ER.<br>
+            <b>6.</b>  Transport window <b>&lt; 6 hr</b> · 1h 55m.
+          </div>
+        </div>
+
+        <div class="pg-foot">
+          <span class="pf-sig">◆ JRP · XHD7</span>
+          <span>HORQUETA · §5·7·9·11</span>
+          <span class="pf-p">11 / 12</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL 20 · RETURN · THE CLOSE ═══════════ -->
+  <div class="stage-col">
+    <div class="panel-label">
+      <span class="num">20 / 20 · AFTER</span>
+      <span class="sec-lbl">THE RETURN</span>
+    </div>
+    <div class="stage-eyebrow">THE SCAN · PAPER BECOMES DATA AGAIN</div>
+    <div class="stage-title">THE COVER.<br><span class="accent">BACK IN SIGNAL.</span></div>
+    <div class="stage-sub">You scan the dossier cover you carried for three days — sunburned, sweat-stained, annotated in the margins with a pen. AA2 reads the ◆ XHD7 anchor and ingests every mark you made. The paper becomes data again. The baseline updates.</div>
+
+    <div class="return-phone-wrap">
+      <div class="phone"><div class="screen">
+
+        <div class="top-bar">
+          <span class="ts">6:42 PM</span>
+          <span class="glyph">◆</span>
+          <span class="ind green">SIGNAL · RESTORED</span>
+        </div>
+
+        <div class="s-eye">RETURN INGEST · DOSSIER XHD7</div>
+        <div class="s-h1">SCAN THE<br><span class="green">COVER.</span></div>
+        <div class="s-sub">Hold the cover flat. AA2 reads the ◆ anchor and every pen mark between it and the seal.</div>
+
+        <!-- VIEWFINDER -->
+        <div class="viewfinder">
+          <div class="scan-line"></div>
+
+          <div class="mini-dossier">
+            <div class="md-eye">◆ AA2 TRAVEL DOSSIER</div>
+            <div class="md-h">CERRO<br>HORQUETA</div>
+            <div class="md-sig">
+              <span>◆ JRP · XHD7</span>
+              <span class="dt">10·13·26</span>
+            </div>
+
+            <!-- Pen annotations over the paper -->
+            <div class="pen-mark" style="top:-4px;right:-24px;color:#1a1a6e;">✓ trip ok</div>
+            <div class="pen-mark" style="bottom:-18px;left:2px;font-size:9.5px;transform:rotate(-4deg);">2 elderberry d.3</div>
+            <div class="pen-mark" style="top:52%;right:-44px;font-size:9px;transform:rotate(8deg);">ridge: 320 yd ✓</div>
+            <div class="pen-mark" style="bottom:-3px;right:-30px;font-size:9px;color:#8a1a1a;transform:rotate(-10deg);">no snake</div>
+          </div>
+
+          <div class="reading">
+            <span>◆ READING...</span>
+            <span>XHD7 · MATCH</span>
+          </div>
+        </div>
+
+        <!-- INGEST -->
+        <div class="ingest">
+          <div class="ih">
+            <span>◆ ANNOTATIONS READ</span>
+            <span class="cnt">4 FOUND</span>
+          </div>
+
+          <div class="ingest-row ok">
+            <div class="ir-dot"></div>
+            <div class="ir-body">
+              <div class="ir-src">MARGIN · COVER · TOP-RIGHT</div>
+              <div class="ir-note">"✓ trip ok"</div>
+              <div class="ir-effect">→ TRIP STATUS: COMPLETE · NO INCIDENT</div>
+            </div>
+          </div>
+
+          <div class="ingest-row note">
+            <div class="ir-dot"></div>
+            <div class="ir-body">
+              <div class="ir-src">MARGIN · COVER · BOTTOM-LEFT</div>
+              <div class="ir-note">"2 elderberry d.3"</div>
+              <div class="ir-effect">→ DISPENSARY · ELDERBERRY TN · −2 DOSES · DECAY ADJUSTED</div>
+            </div>
+          </div>
+
+          <div class="ingest-row ok">
+            <div class="ir-dot"></div>
+            <div class="ir-body">
+              <div class="ir-src">MARGIN · §2 BALLISTIC PAGE</div>
+              <div class="ir-note">"ridge: 320 yd ✓"</div>
+              <div class="ir-effect">→ BALLISTIC · LIVE ENGAGEMENT LOGGED · TACTIX 8 DOPE CONFIRMED</div>
+            </div>
+          </div>
+
+          <div class="ingest-row flag">
+            <div class="ir-dot"></div>
+            <div class="ir-body">
+              <div class="ir-src">MARGIN · §7 WILDLIFE PAGE</div>
+              <div class="ir-note">"no snake"</div>
+              <div class="ir-effect">→ FER-DE-LANCE PROTOCOL: NOT INVOKED · READ FOR REFERENCE</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BASELINE DELTA -->
+        <div class="delta">
+          <div class="dh">◆ BASELINE · UPDATED</div>
+          <div class="drow"><span class="dlbl">Oura HRV · 3-day</span><span class="dval">+12 ms</span></div>
+          <div class="drow"><span class="dlbl">Sleep at altitude</span><span class="dval">84 / 100</span></div>
+          <div class="drow"><span class="dlbl">Tactix 8 · 4 ballistic solves</span><span class="dval">LOGGED</span></div>
+          <div class="drow"><span class="dlbl">Pantry · used on trip</span><span class="dval amber">6 ITEMS</span></div>
+          <div class="drow"><span class="dlbl">Alive Codes · replenish list</span><span class="dval neutral">3 QUEUED</span></div>
+        </div>
+
+        <div class="closed-loop">◆ CLOSED LOOP · DOSSIER XHD7 · ARCHIVED</div>
+
+        <div class="p-foot">PAPER → DATA → BASELINE · <span class="blue">◆</span></div>
+      </div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="caption">
+  <span class="blue">AS ABOVE</span> &nbsp;·&nbsp; the dashboard, live and listening &nbsp;·&nbsp; <span class="blue">SO BELOW</span> &nbsp;·&nbsp; the paper in your pack, silent and ready &nbsp;·&nbsp; <span class="blue">SO RETURNED</span> &nbsp;·&nbsp; the scan that makes paper data again.<br>
+  <span class="white">Three forms of one truth. Same six answers. Same ◆ XHD7. The loop closes.</span>
+</div>
+
+<div class="page-foot">
+  ◆ &nbsp;TRAVEL DOSSIER · PANELS 18 · 19 · 20 ·&nbsp; <span class="blue">CANON v47 DRAFT</span> &nbsp;· JAMES R. PITTS II · APPLIED BIOSIGNAL SCIENTIST · FOUNDER · AA2 · I AM THE RECEIPT&nbsp; ◆
+</div>
+
+</body>
+</html>

@@ -373,7 +373,7 @@ export default function ScannerScreen() {
 
     if (activeTab==='scan') {
       if (false) { /* v50 W3.2: SCAN tab always uses vision */ }
-      else Alert.alert('Frame It First','Wait for the gold border — then tap.');
+      else { handleCapture(); }
       return;
     }
 

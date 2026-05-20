@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AA2 — The Membrane</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1BB8FF;
+  --blue-dim:rgba(27,184,255,0.10);
+  --blue-border:rgba(27,184,255,0.22);
+  --green:#1D9E75;
+  --green-dim:rgba(29,158,117,0.10);
+  --green-border:rgba(29,158,117,0.22);
+  --gold:#C49A2A;
+  --gold-dim:rgba(196,154,42,0.10);
+  --gold-border:rgba(196,154,42,0.22);
+  --red:#E05252;
+  --red-dim:rgba(224,82,82,0.10);
+  --red-border:rgba(224,82,82,0.22);
+  --orange:#E8873A;
+  --orange-dim:rgba(232,135,58,0.10);
+  --white:#FFFFFF;
+  --muted:rgba(255,255,255,0.52);
+  --dim:rgba(255,255,255,0.12);
+  --bg:#0A0804;
+  --card:#120D08;
+  --card2:#1A1209;
+  --border:rgba(255,255,255,0.055);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);}
+
+/* BOOK */
+.book{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* PANELS */
+.panel{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;
+  padding:44px 24px 84px;
+  opacity:0;
+  transform:translateX(100%);
+  transition:opacity 0.48s cubic-bezier(.4,0,.2,1),transform 0.48s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.panel::-webkit-scrollbar{display:none;}
+.panel.active{opacity:1;transform:translateX(0);}
+.panel.exit-left{opacity:0;transform:translateX(-48px);}
+
+/* PANEL INNER */
+.pi{
+  width:100%;max-width:390px;
+  display:flex;flex-direction:column;
+  align-items:flex-start;
+  gap:0;
+}
+
+/* STAGGER ANIM */
+@keyframes up{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+.panel.active .pi>*{animation:up 0.45s ease both;}
+.panel.active .pi>*:nth-child(1){animation-delay:.08s;}
+.panel.active .pi>*:nth-child(2){animation-delay:.16s;}
+.panel.active .pi>*:nth-child(3){animation-delay:.24s;}
+.panel.active .pi>*:nth-child(4){animation-delay:.32s;}
+.panel.active .pi>*:nth-child(5){animation-delay:.40s;}
+.panel.active .pi>*:nth-child(6){animation-delay:.48s;}
+.panel.active .pi>*:nth-child(7){animation-delay:.54s;}
+.panel.active .pi>*:nth-child(8){animation-delay:.60s;}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:3px;
+  color:var(--blue);
+  margin-bottom:6px;
+}
+.eyebrow.gold{color:var(--gold);}
+.eyebrow.green{color:var(--green);}
+.eyebrow.muted{color:var(--muted);}
+
+.headline{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(30px,8vw,46px);
+  line-height:1.08;
+  color:var(--white);
+  margin-bottom:10px;
+  font-weight:400;
+}
+.headline em{font-style:italic;color:var(--blue);}
+.headline.gold em{color:var(--gold);}
+.headline.green em{color:var(--green);}
+
+.sub{
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;line-height:1.75;
+  color:var(--muted);
+  margin-bottom:14px;
+}
+.sub strong{color:var(--white);font-weight:500;}
+
+.mono{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--muted);
+}
+
+/* ── DIVIDER ── */
+.div{
+  width:36px;height:1px;
+  background:var(--blue-border);
+  margin:10px 0 16px;
+}
+.div.gold{background:var(--gold-border);}
+.div.green{background:var(--green-border);}
+
+/* ── CARD ── */
+.card{
+  width:100%;
+  background:var(--card);
+  border-radius:14px;
+  border:1px solid var(--border);
+  padding:14px 16px;
+  margin-bottom:10px;
+}
+.card.blue{border-color:var(--blue-border);background:rgba(27,184,255,0.04);}
+.card.gold{border-color:var(--gold-border);background:rgba(196,154,42,0.04);}
+.card.green{border-color:var(--green-border);background:rgba(29,158,117,0.04);}
+.card.red{border-color:var(--red-border);background:rgba(224,82,82,0.04);}
+
+/* ── CARD HEADER ── */
+.ch{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.ch-label{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--blue);
+}
+.ch-label.gold{color:var(--gold);}
+.ch-label.green{color:var(--green);}
+.ch-label.red{color:var(--red);}
+.ch-label.muted{color:var(--muted);}
+
+/* ── ROW ── */
+.row{
+  display:flex;align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid var(--border);
+  gap:10px;
+}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.row:first-child{padding-top:0;}
+
+.dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+.row-name{
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  color:var(--white);
+  flex:1;
+  line-height:1.3;
+}
+.row-name small{
+  display:block;
+  font-size:10px;
+  color:var(--muted);
+  font-family:'DM Mono',monospace;
+  letter-spacing:1px;
+  margin-top:1px;
+}
+
+.row-val{
+  font-family:'DM Mono',monospace;
+  font-size:10px;
+  flex-shrink:0;
+}
+
+/* ── CHIP ── */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  border:1px solid var(--blue-border);
+  background:var(--blue-dim);
+  border-radius:20px;
+  padding:5px 11px;
+  font-family:'DM Mono',monospace;
+  font-size:8px;
+  letter-spacing:1.5px;
+  color:var(--blue);
+}
+.chip.gold{border-color:var(--gold-border);background:var(--gold-dim);color:var(--gold);}
+.chip.green{border-color:var(--green-border);background:var(--green-dim);color:var(--green);}
+.chip.muted{border-color:var(--dim);background:rgba(255,255,255,0.03);color:var(--muted);}
+
+/* ── QUOTE ── */
+.quote{
+  width:100%;
+  border-left:2.5px solid var(--blue);
+  background:var(--blue-dim);
+  border-radius:0 10px 10px 0;
+  padding:12px 14px;
+  margin-bottom:10px;
+}
+.quote p{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:16px;
+  line-height:1.55;
+  color:var(--white);
+}
+.quote.gold{border-left-color:var(--gold);background:var(--gold-dim);}
+.quote.green{border-left-color:var(--green);background:var(--green-dim);}
+
+/* ── SPLIT 2-COL ── */
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  width:100%;
+  margin-bottom:10px;
+}
+.g2card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+}
+.g2label{
+  font-family:'DM Mono',monospace;
+  font-size:8px;letter-spacing:2px;
+  margin-bottom:9px;
+}
+.g2item{
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  color:var(--muted);
+  padding:4px 0;
+  border-bottom:1px solid var(--border);
+  line-height:1.4;
+}
+.g2item:last-child{border-bottom:none;}
+.g2item.green{color:var(--green);}
+.g2item.red{color:var(--red);}
+
+/* ── DIS/HARM ── */
+.dis-harm{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;width:100%;
+  margin-bottom:10px;
+}
+.dcard{border-radius:12px;padding:12px;border:1px solid;}
+.dcard.dis{
+  background:rgba(224,82,82,0.05);
+  border-color:rgba(224,82,82,0.18);
+}
+.dcard.har{
+  background:rgba(29,158,117,0.05);
+  border-color:rgba(29,158,117,0.18);
+}
+.dh-label{
+  font-family:'DM Mono',monospace;
+  font-size:8px;letter-spacing:2px;
+  margin-bottom:9px;
+}
+.dh-item{
+  display:flex;align-items:center;
+  gap:6px;
+  font-family:'DM Sans',sans-serif;
+  font-size:10px;
+  color:var(--muted);
+  padding:4px 0;
+  border-bottom:1px solid var(--border);
+  line-height:1.3;
+}
+.dh-item:last-child{border-bottom:none;}
+.dh-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+
+/* ── WHO LIST ── */
+.who{
+  display:flex;align-items:flex-start;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--border);
+  width:100%;
+}
+.who:last-child{border-bottom:none;}
+.who-icon{font-size:15px;width:24px;text-align:center;flex-shrink:0;margin-top:2px;}
+.who-title{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--white);
+  margin-bottom:3px;
+}
+.who-desc{
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;color:var(--muted);
+  line-height:1.5;
+}
+
+/* ── CTA ── */
+.cta{
+  width:100%;
+  background:var(--blue);
+  color:#03050A;
+  border:none;
+  border-radius:14px;
+  padding:17px;
+  font-family:'DM Mono',monospace;
+  font-size:12px;letter-spacing:2px;
+  cursor:pointer;
+  margin-top:4px;
+  transition:opacity .2s,transform .2s;
+}
+.cta:hover{opacity:.9;transform:translateY(-1px);}
+
+/* ── STATUS DOT ── */
+.status-row{
+  display:flex;align-items:center;
+  gap:6px;
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:1.5px;
+}
+.sdot{width:6px;height:6px;border-radius:50%;}
+
+/* ── PANEL 8 SPECIAL ── */
+#p7{justify-content:center;align-items:center;}
+#p7 .pi{align-items:center;text-align:center;}
+#p7 .headline{text-align:center;font-size:clamp(32px,8.5vw,50px);}
+#p7 .sub{text-align:center;}
+#p7 .div{margin:10px auto 16px;}
+
+/* ── DEVICE LIST EXPAND ── */
+.device-toggle{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:2px;
+  color:var(--blue);
+  cursor:pointer;
+  display:flex;align-items:center;
+  gap:6px;
+  padding:8px 0 0;
+  border:none;background:none;
+  text-align:left;
+}
+.device-toggle span{
+  transition:transform .25s;
+  display:inline-block;
+}
+.device-list{
+  display:none;
+  padding-top:8px;
+  border-top:1px solid var(--border);
+  margin-top:4px;
+}
+.device-list.open{display:block;}
+.dlist-item{
+  display:flex;align-items:flex-start;
+  gap:8px;
+  padding:6px 0;
+  border-bottom:1px solid var(--border);
+}
+.dlist-item:last-child{border-bottom:none;}
+.dlist-brand{
+  font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:1px;
+  color:var(--white);
+  min-width:80px;
+  flex-shrink:0;
+}
+.dlist-models{
+  font-family:'DM Sans',sans-serif;
+  font-size:11px;
+  color:var(--muted);
+  line-height:1.4;
+}
+
+/* ── PROGRESS BAR MINI ── */
+.prog-bar{
+  width:100%;height:3px;
+  background:rgba(255,255,255,0.06);
+  border-radius:2px;
+  margin-bottom:12px;
+  overflow:hidden;
+}
+.prog-fill{
+  height:100%;
+  border-radius:2px;
+  background:var(--blue);
+  transition:width .5s ease;
+}
+
+/* ── DOTS & NAV ── */
+.dots{
+  position:fixed;
+  bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;gap:5px;z-index:100;
+}
+.d{
+  width:5px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,0.18);
+  transition:all .3s ease;cursor:pointer;
+}
+.d.active{width:18px;background:var(--blue);}
+
+.nav{
+  position:fixed;bottom:56px;
+  display:flex;gap:10px;
+  left:50%;transform:translateX(-50%);
+  z-index:100;
+}
+.nb{
+  width:40px;height:40px;border-radius:50%;
+  border:1px solid var(--blue-border);
+  background:var(--blue-dim);
+  color:var(--blue);
+  font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.nb:hover{background:rgba(27,184,255,0.18);}
+.nb:disabled{opacity:.18;cursor:default;}
+
+.hint{
+  position:fixed;bottom:104px;
+  left:50%;transform:translateX(-50%);
+  font-family:'DM Mono',monospace;
+  font-size:8px;letter-spacing:2px;
+  color:rgba(255,255,255,0.14);
+  z-index:99;pointer-events:none;
+  transition:opacity .4s;
+}
+
+/* NUMBER BADGE */
+.num{
+  display:inline-flex;
+  align-items:center;justify-content:center;
+  width:20px;height:20px;
+  border-radius:50%;
+  border:1px solid var(--blue-border);
+  font-family:'DM Mono',monospace;
+  font-size:8px;letter-spacing:1px;
+  color:var(--blue);
+  flex-shrink:0;
+}
+
+/* CONCIERGE END CARD */
+.concierge-card{
+  width:100%;
+  background:rgba(27,184,255,0.06);
+  border:1px solid var(--blue-border);
+  border-radius:14px;
+  padding:14px 16px;
+  margin-bottom:10px;
+}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 1 — WELCOME · YOU FINALLY ARRIVED    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel active" id="p0">
+<div class="pi">
+  <div class="eyebrow">AA2 ADAPTIVE ADVANTAGE LABORATORIES, S.A.</div>
+  <h1 class="headline">You finally<br><em>arrived.</em></h1>
+  <div class="div"></div>
+
+  <p class="sub">
+    The one place that reunites everything you've collected — your watch, your ring, your glasses, your earbuds — and transforms their raw signals into something that actually makes sense for <strong>your life.</strong>
+  </p>
+
+  <div class="card blue">
+    <div class="ch"><div class="ch-label">NOT A MIRROR. AN INTERPRETATION.</div></div>
+    <p style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);line-height:1.7;">
+      Any app can reflect what your devices already say.<br>
+      <strong style="color:var(--white);">AA2 transforms what's there into a correct clarification</strong> — via The Clarifier — because interpretation requires knowing you.
+    </p>
+  </div>
+
+  <div class="quote">
+    <p>"The membrane works on organic and inorganic material alike. The same intelligence that reads your biosignals reads the label on your food."</p>
+  </div>
+
+  <div class="mono" style="margin-top:4px;">8 PANELS · SWIPE TO CONTINUE → </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 2 — WHAT THIS SYSTEM DOES           -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p1">
+<div class="pi">
+  <div class="eyebrow">THE MEMBRANE COVERS</div>
+  <h1 class="headline">One system.<br><em>Everything.</em></h1>
+  <div class="div"></div>
+
+  <div class="card">
+    <div class="ch-label" style="margin-bottom:10px;">SAFETY INTELLIGENCE</div>
+    <div class="chips">
+      <span class="chip">FOOD SAFETY</span>
+      <span class="chip">ALLERGEN DETECTION</span>
+      <span class="chip">PATHOGEN SCREENING</span>
+      <span class="chip">CWD · PRION DISEASE</span>
+      <span class="chip">WILD GAME HARVEST</span>
+      <span class="chip">FORAGING IDENTIFICATION</span>
+      <span class="chip">DRUG INTERACTIONS</span>
+      <span class="chip">SKIN INGESTION</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch-label gold" style="margin-bottom:10px;">LIFE INTELLIGENCE</div>
+    <div class="chips">
+      <span class="chip gold">LIVE INTERNATIONAL COOKING</span>
+      <span class="chip gold">LANGUAGE LEARNING</span>
+      <span class="chip gold">TRAVEL SAFETY ENGINE</span>
+      <span class="chip gold">FINANCIAL SAVINGS</span>
+      <span class="chip gold">VISION BOARD</span>
+      <span class="chip gold">ACT RIGHT DOLLARS</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ch-label green" style="margin-bottom:10px;">SPECIES INTELLIGENCE</div>
+    <div class="chips">
+      <span class="chip green">K9 · CANINE</span>
+      <span class="chip green">FELINE</span>
+      <span class="chip green">EQUESTRIAN</span>
+      <span class="chip green">AGRICULTURAL</span>
+      <span class="chip green">TACTICAL K9</span>
+    </div>
+  </div>
+
+  <p class="sub">
+    AT&T makes the connection.<br>
+    <strong>AA2 makes the interpretation.</strong>
+  </p>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 3 — HARDWARE REVIVAL               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p2">
+<div class="pi">
+  <div class="eyebrow gold">THE HARDWARE DRAWER DOCTRINE</div>
+  <h1 class="headline gold">Your old device<br><em>has new life.</em></h1>
+  <div class="div gold"></div>
+
+  <p class="sub">You had years of bios locked inside. They were waiting for a system smart enough to set them free. The device didn't lose value — it lost a nervous system. <strong>AA2 gives it one back.</strong></p>
+
+  <div class="card" style="border-color:var(--gold-border);margin-bottom:6px;">
+    <div class="ch">
+      <div class="ch-label gold">STEP 1 — UPLOAD YOUR PDF MANUAL</div>
+    </div>
+    <p style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);line-height:1.65;">
+      AA2 reads the manual so you never have to. Every sensor. Every metric. Every setting optimized for your specific activity profile.
+    </p>
+  </div>
+
+  <div class="card" style="border-color:var(--blue-border);">
+    <div class="ch-label" style="margin-bottom:10px;">COMPATIBLE DEVICES</div>
+    <div class="row">
+      <div class="dot" style="background:var(--blue);"></div>
+      <div class="row-name">Garmin<small>Tactix 8 · Fenix 7/8 · Forerunner · Venu · Vivoactive · any .FIT export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name">Oura Ring<small>Gen 3 · Gen 4 · personal API token</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="row-name">Beats Pro 2<small>HRV via Strava / Apple Health export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:#9B59B6;"></div>
+      <div class="row-name">Oakley Meta HSTN · Ray-Ban Meta<small>Smart glasses · live assist layer</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="row-name">Apple Watch · AirPods Pro 2<small>Series 6+ · Apple Health export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="row-name">WHOOP 4.0 · Polar H10 · Suunto<small>.FIT or CSV export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="row-name">Muse S Athena · Muse 2<small>EEG layer · Mind Monitor CSV</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="row-name">Fitbit · Any downloadable device<small>If the data exports — it belongs here</small></div>
+    </div>
+  </div>
+
+  <p class="sub" style="font-size:12px;">When you're ready to upgrade — upgrade. Until then, <strong>what you already own is enough.</strong></p>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 4 — DISRUPTION VS HARMONY          -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p3">
+<div class="pi">
+  <div class="eyebrow">THE TRANSFORMATION</div>
+  <h1 class="headline">Disruption<br>vs <em>Harmony.</em></h1>
+  <div class="div"></div>
+
+  <div class="dis-harm">
+    <div class="dcard dis">
+      <div class="dh-label" style="color:var(--red);">DISRUPTION</div>
+      <div class="dh-item"><div class="dh-dot" style="background:var(--red);"></div>Garmin: 118bpm</div>
+      <div class="dh-item"><div class="dh-dot" style="background:var(--red);"></div>Ring: stress 74</div>
+      <div class="dh-item"><div class="dh-dot" style="background:var(--red);"></div>No context</div>
+      <div class="dh-item" style="border-bottom:none;"><div class="dh-dot" style="background:var(--red);"></div>No meaning</div>
+    </div>
+    <div class="dcard har">
+      <div class="dh-label" style="color:var(--green);">HARMONY</div>
+      <div class="dh-item"><div class="dh-dot" style="background:var(--green);"></div>All signals read</div>
+      <div class="dh-item"><div class="dh-dot" style="background:var(--green);"></div>Context applied</div>
+      <div class="dh-item"><div class="dh-dot" style="background:var(--green);"></div>Clarified</div>
+      <div class="dh-item" style="border-bottom:none;"><div class="dh-dot" style="background:var(--green);"></div>Interpreted</div>
+    </div>
+  </div>
+
+  <div class="card blue">
+    <div class="ch-label" style="margin-bottom:10px;">THE CLARIFIER DIFFERENCE</div>
+    <div class="row" style="padding-top:0;">
+      <div class="num">1</div>
+      <div class="row-name" style="font-size:12px;">Biosignal spike detected<small style="color:var(--red);">Garmin HR 118bpm · Oura Stress 74</small></div>
+    </div>
+    <div class="row">
+      <div class="num">2</div>
+      <div class="row-name" style="font-size:12px;">Clarifier asks<small style="color:var(--muted);">"Bios reported as stress. Is that accurate?"</small></div>
+    </div>
+    <div class="row">
+      <div class="num">3</div>
+      <div class="row-name" style="font-size:12px;">Member responds<small style="color:var(--white);">"I just got approved for my new house."</small></div>
+    </div>
+    <div class="row">
+      <div class="num">4</div>
+      <div class="row-name" style="font-size:12px;">Membrane updates<small style="color:var(--green);">STRESS → EXCITEMENT · Positive event logged</small></div>
+    </div>
+  </div>
+
+  <p class="sub" style="font-size:12px;"><strong>No other platform knows the difference between your stress and your excitement.</strong> AA2 does — because you told it, and the membrane remembered.</p>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 5 — BYOB / BYOH / BYMR             -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p4">
+<div class="pi">
+  <div class="eyebrow">YOUR DATA. ALWAYS YOURS.</div>
+  <h1 class="headline">Bring<br><em>everything.</em></h1>
+  <div class="div"></div>
+
+  <div class="grid2">
+    <div class="g2card" style="border-color:var(--blue-border);">
+      <div class="g2label" style="color:var(--blue);">BYOB</div>
+      <div class="g2item">Biosignal history</div>
+      <div class="g2item">HRV baselines</div>
+      <div class="g2item">Recovery trends</div>
+      <div class="g2item green">Yours forever</div>
+    </div>
+    <div class="g2card" style="border-color:var(--gold-border);">
+      <div class="g2label" style="color:var(--gold);">BYOH</div>
+      <div class="g2item">Any wearable</div>
+      <div class="g2item">Device manuals</div>
+      <div class="g2item">Old or new</div>
+      <div class="g2item green">All compatible</div>
+    </div>
+    <div class="g2card" style="border-color:var(--green-border);">
+      <div class="g2label" style="color:var(--green);">BYMR</div>
+      <div class="g2item">Allergy records</div>
+      <div class="g2item">Medications</div>
+      <div class="g2item">Pet history</div>
+      <div class="g2item green">Full profile</div>
+    </div>
+    <div class="g2card" style="border-color:var(--border);">
+      <div class="g2label" style="color:var(--muted);">EXPORT</div>
+      <div class="g2item">Full data CSV</div>
+      <div class="g2item">Cookbook PDF</div>
+      <div class="g2item">Vision board</div>
+      <div class="g2item green">Leave anytime</div>
+    </div>
+  </div>
+
+  <div class="quote">
+    <p>"When we say it's your data — it's your data. The system holds nothing hostage. The value of staying is the living intelligence that keeps growing."</p>
+  </div>
+
+  <div class="card">
+    <div class="ch-label green" style="margin-bottom:10px;">WHAT YOU LEAVE WITH</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name" style="font-size:12px;">Full biosignal history · HRV · readiness · stress baseline</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name" style="font-size:12px;">Complete Cookbook PDF — every saved recipe, membrane notes</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name" style="font-size:12px;">Allergy records, medication history, species profiles</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name" style="font-size:12px;">Vision board, bucket list entries, clarifier portrait</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 6 — WHO THIS IS FOR                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p5">
+<div class="pi">
+  <div class="eyebrow">NO MATTER YOUR PATH</div>
+  <h1 class="headline">Built for<br><em>every life.</em></h1>
+  <div class="div"></div>
+
+  <div class="card" style="padding:10px 14px;">
+    <div class="who">
+      <div class="who-icon">👨‍👩‍👧‍👦</div>
+      <div>
+        <div class="who-title">FAMILIES · HOUSEHOLDS</div>
+        <div class="who-desc">Every person and animal you protect. One membrane. One dashboard. Every device on one channel.</div>
+      </div>
+    </div>
+    <div class="who">
+      <div class="who-icon">🎯</div>
+      <div>
+        <div class="who-title">TACTICAL · LAW ENFORCEMENT</div>
+        <div class="who-desc">Handler and K9 biosignals unified. Stress transfer detected before the mission starts.</div>
+      </div>
+    </div>
+    <div class="who">
+      <div class="who-icon">🏇</div>
+      <div>
+        <div class="who-title">EQUESTRIAN · AGRICULTURAL</div>
+        <div class="who-desc">Jockey and horse in biosignal sync. Feed mycotoxin detection. Herd-level intelligence.</div>
+      </div>
+    </div>
+    <div class="who">
+      <div class="who-icon">🏆</div>
+      <div>
+        <div class="who-title">PROFESSIONAL SPORTS · F1 · OLYMPIC</div>
+        <div class="who-desc">Every athlete a channel on the master bus. Coaches, trainers, players — all visible at once.</div>
+      </div>
+    </div>
+    <div class="who">
+      <div class="who-icon">✈️</div>
+      <div>
+        <div class="who-title">GLOBAL TRAVELERS · EXPATS</div>
+        <div class="who-desc">Safe routes pre-cleared. Local food intelligence. Language learned through survival relevance.</div>
+      </div>
+    </div>
+    <div class="who" style="border-bottom:none;">
+      <div class="who-icon">🏡</div>
+      <div>
+        <div class="who-title">HIGH NET WORTH · HOUSEHOLD STAFF</div>
+        <div class="who-desc">Quiet protection. Delegated intelligence. Long-term optimization. Invisible. Effortless.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 7 — THE BIO CONTROL PANEL          -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p6">
+<div class="pi">
+  <div class="eyebrow">THE LARGE SCREEN EXPERIENCE</div>
+  <h1 class="headline">The Bio<br><em>Control Panel.</em></h1>
+  <div class="div"></div>
+
+  <p class="sub">On a phone, AA2 feels personal. <strong>On a 65-inch screen, AA2 feels like a living operational system.</strong> The same book you see at CES is on the website is in this app.</p>
+
+  <div class="card blue">
+    <div class="ch">
+      <div class="ch-label">NFL COACHING STAFF · LIVE MONITOR</div>
+      <div class="status-row"><div class="sdot" style="background:var(--green);"></div><span class="mono" style="color:var(--green);">LIVE</span></div>
+    </div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name">Head Coach<small>HRV 74 · Readiness OPTIMAL</small></div>
+      <div class="row-val" style="color:var(--green);">OPTIMAL</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="row-name">QB · #12<small>HRV 58 · Stress elevated</small></div>
+      <div class="row-val" style="color:var(--gold);">MONITOR</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name">Lead Athletic Trainer<small>HRV 82 · Recovery 91</small></div>
+      <div class="row-val" style="color:var(--green);">OPTIMAL</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--red);"></div>
+      <div class="row-name">RB · #23<small>HRV drop · Flagged pre-game</small></div>
+      <div class="row-val" style="color:var(--red);">ATTENTION</div>
+    </div>
+  </div>
+
+  <div class="card gold">
+    <div class="ch-label gold" style="margin-bottom:10px;">EQUESTRIAN · RACE DAY</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="row-name">Horse · Thoroughbred #4<small>HR 42 · Feed verified · No mycotoxin</small></div>
+      <div class="row-val" style="color:var(--green);">READY</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="row-name">Jockey · #4<small>Stress 48 · HRV 61 · Monitor</small></div>
+      <div class="row-val" style="color:var(--gold);">SYNC CHECK</div>
+    </div>
+  </div>
+
+  <p class="sub" style="font-size:12px;"><strong>F1 · 87 seats · 24 countries · WADA layer.</strong> Enterprise licensing. Every member a channel on the master bus.</p>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- PANEL 8 — THE DOORWAY                     -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="panel" id="p7">
+<div class="pi" style="align-items:center;text-align:center;">
+
+  <div class="eyebrow" style="text-align:center;letter-spacing:4px;">THE MEMBRANE · AA2 BIOSIGNAL SYSTEM</div>
+
+  <div style="margin:12px 0 8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:4px;color:rgba(27,184,255,0.30);">✦ ✦ ✦</div>
+
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(30px,8vw,46px);line-height:1.1;color:var(--white);font-weight:400;margin-bottom:4px;text-align:center;">
+    The more of yourself<br>you bring to this system —
+  </h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(30px,8vw,46px);line-height:1.1;color:var(--blue);font-weight:400;margin-bottom:20px;text-align:center;">
+    the more the system's<br>mirror reflects you.
+  </h1>
+
+  <div class="div" style="margin:0 auto 20px;"></div>
+
+  <!-- Concierge card — transition point -->
+  <div class="concierge-card" style="text-align:left;">
+    <div class="ch-label" style="margin-bottom:8px;">🧬 THE CONCIERGE</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.65;color:var(--white);">
+      "Don't be shy — you can ask me anything about any food, plant, meat, species, wine, or spirits. No barcode? No problem. I listen just as well as I scan."
+    </p>
+    <div class="mono" style="margin-top:8px;color:rgba(27,184,255,0.40);">TAP TO DISMISS WHEN READY</div>
+  </div>
+
+  <div class="mono" style="margin-bottom:20px;text-align:center;">
+    5 MINUTES · 8 BLOCKS · ONE MEMBRANE
+  </div>
+
+  <button class="cta" onclick="alert('→ Routes to onboarding Block 1')">
+    BUILD MY MEMBRANE →
+  </button>
+
+  <div class="mono" style="margin-top:16px;text-align:center;opacity:0.35;">
+    I AM THE RECEIPT
+  </div>
+
+</div>
+</div>
+
+</div><!-- /book -->
+
+<!-- DOTS -->
+<div class="dots" id="dots"></div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nb" id="pb" onclick="go(-1)" disabled>←</button>
+  <button class="nb" id="nb" onclick="go(1)">→</button>
+</div>
+
+<div class="hint" id="hint">SWIPE OR USE ARROWS</div>
+
+<script>
+const TOTAL = 8;
+let cur = 0, anim = false;
+let tx = 0, ty = 0;
+
+// build dots
+const dotsEl = document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d = document.createElement('div');
+  d.className='d'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(i){
+  if(anim||i===cur||i<0||i>=TOTAL) return;
+  anim=true;
+  const prev=document.getElementById('p'+cur);
+  const next=document.getElementById('p'+i);
+  prev.classList.remove('active');
+  prev.classList.add('exit-left');
+  setTimeout(()=>prev.classList.remove('exit-left'),500);
+  next.classList.add('active');
+  cur=i;
+  document.querySelectorAll('.d').forEach((d,j)=>d.classList.toggle('active',j===cur));
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb').disabled=cur===TOTAL-1;
+  if(cur>0) document.getElementById('hint').style.opacity='0';
+  setTimeout(()=>anim=false,510);
+}
+function go(d){goTo(cur+d);}
+
+// touch
+document.getElementById('book').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('book').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40) go(dx<0?1:-1);
+},{passive:true});
+
+// keyboard
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') go(1);
+  if(e.key==='ArrowLeft') go(-1);
+});
+</script>
+</body>
+</html>

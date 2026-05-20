@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AA2 — The Chauffeur · Kelly's Story · 8 Panels</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1BB8FF;--bdim:rgba(27,184,255,0.09);--bb:rgba(27,184,255,0.22);
+  --green:#1D9E75;--gdim:rgba(29,158,117,0.09);--gb:rgba(29,158,117,0.22);
+  --gold:#C49A2A;--ydim:rgba(196,154,42,0.09);--yb:rgba(196,154,42,0.22);
+  --red:#E05252;--rdim:rgba(224,82,82,0.09);--rb:rgba(224,82,82,0.22);
+  --orange:#E8873A;--odim:rgba(232,135,58,0.09);--ob:rgba(232,135,58,0.22);
+  --white:#FFFFFF;--muted:rgba(255,255,255,0.50);--dim:rgba(255,255,255,0.09);
+  --bg:#09070A;--card:#110C08;--border:rgba(255,255,255,0.052);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);}
+.book{width:100%;height:100%;position:relative;overflow:hidden;}
+
+.panel{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;opacity:0;transform:translateX(100%);transition:opacity .46s cubic-bezier(.4,0,.2,1),transform .46s cubic-bezier(.4,0,.2,1);overflow:hidden;}
+.panel.active{opacity:1;transform:translateX(0);}
+.panel.exit{opacity:0;transform:translateX(-42px);}
+.panel.ctr .pb{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+
+.ph{padding:46px 24px 10px;flex-shrink:0;width:100%;max-width:430px;margin:0 auto;}
+.pb{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 24px 82px;width:100%;max-width:430px;margin:0 auto;}
+.pb::-webkit-scrollbar{display:none;}
+
+@keyframes up{from{opacity:0;transform:translateY(11px);}to{opacity:1;transform:translateY(0);}}
+.panel.active .ph>*{animation:up .4s ease both;}
+.panel.active .ph>*:nth-child(1){animation-delay:.06s;}
+.panel.active .ph>*:nth-child(2){animation-delay:.13s;}
+.panel.active .ph>*:nth-child(3){animation-delay:.20s;}
+.panel.active .pb>*{animation:up .4s ease both;}
+.panel.active .pb>*:nth-child(1){animation-delay:.13s;}
+.panel.active .pb>*:nth-child(2){animation-delay:.20s;}
+.panel.active .pb>*:nth-child(3){animation-delay:.27s;}
+.panel.active .pb>*:nth-child(4){animation-delay:.34s;}
+.panel.active .pb>*:nth-child(5){animation-delay:.41s;}
+.panel.active .pb>*:nth-child(6){animation-delay:.48s;}
+.panel.active .pb>*:nth-child(7){animation-delay:.55s;}
+.panel.active .pb>*:nth-child(8){animation-delay:.62s;}
+
+.ey{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--blue);margin-bottom:5px;}
+.ey.g{color:var(--gold);}.ey.gr{color:var(--green);}.ey.r{color:var(--red);}.ey.m{color:var(--muted);}
+h1.hl{font-family:'Cormorant Garamond',serif;font-size:clamp(27px,7.2vw,42px);line-height:1.08;font-weight:400;margin-bottom:8px;}
+h1.hl em{font-style:italic;color:var(--blue);}
+h1.hl.g em{color:var(--gold);}h1.hl.gr em{color:var(--green);}h1.hl.r em{color:var(--red);}
+.sub{font-size:13px;line-height:1.78;color:var(--muted);margin-bottom:10px;}
+.sub strong{color:var(--white);font-weight:500;}
+.mn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);}
+.mn.b{color:var(--blue);}.mn.g{color:var(--gold);}.mn.gr{color:var(--green);}.mn.r{color:var(--red);}
+
+.dv{width:32px;height:1px;background:var(--bb);margin:5px 0 12px;}
+.dv.g{background:var(--yb);}.dv.gr{background:var(--gb);}.dv.r{background:var(--rb);}.dv.c{margin-left:auto;margin-right:auto;}
+
+.card{width:100%;background:var(--card);border-radius:13px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;}
+.card.b{border-color:var(--bb);background:rgba(27,184,255,0.03);}
+.card.g{border-color:var(--yb);background:rgba(196,154,42,0.03);}
+.card.gr{border-color:var(--gb);background:rgba(29,158,117,0.03);}
+.card.r{border-color:var(--rb);background:rgba(224,82,82,0.04);}
+.card.o{border-color:var(--ob);background:rgba(232,135,58,0.03);}
+
+.cl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:8px;}
+.cl.g{color:var(--gold);}.cl.gr{color:var(--green);}.cl.r{color:var(--red);}.cl.m{color:var(--muted);}
+
+.row{display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.row:first-child{padding-top:0;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.rn{font-size:13px;color:var(--white);flex:1;line-height:1.4;}
+.rn small{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.8px;margin-top:2px;}
+.rv{font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0;padding-top:1px;}
+
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.chip{display:inline-flex;border:1px solid var(--bb);background:var(--bdim);border-radius:20px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.2px;color:var(--blue);}
+.chip.g{border-color:var(--yb);background:var(--ydim);color:var(--gold);}
+.chip.gr{border-color:var(--gb);background:var(--gdim);color:var(--green);}
+.chip.r{border-color:var(--rb);background:var(--rdim);color:var(--red);}
+.chip.m{border-color:var(--dim);background:rgba(255,255,255,0.02);color:var(--muted);}
+
+.qt{width:100%;border-left:2.5px solid var(--blue);background:var(--bdim);border-radius:0 10px 10px 0;padding:11px 13px;margin-bottom:8px;}
+.qt p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.6;color:var(--white);}
+.qt.gr{border-left-color:var(--green);background:var(--gdim);}
+.qt.g{border-left-color:var(--gold);background:var(--ydim);}
+.qt.r{border-left-color:var(--red);background:var(--rdim);}
+
+.sev{width:100%;border-radius:11px;border:1px solid;padding:11px 13px;margin-bottom:8px;}
+.sev.danger{border-color:var(--rb);background:rgba(224,82,82,0.06);border-left:3px solid var(--red);}
+.sev.caution{border-color:var(--ob);background:rgba(232,135,58,0.05);border-left:3px solid var(--orange);}
+.sev.clear{border-color:var(--gb);background:rgba(29,158,117,0.05);border-left:3px solid var(--green);}
+.sev.info{border-color:var(--bb);background:rgba(27,184,255,0.05);border-left:3px solid var(--blue);}
+.sev-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;margin-bottom:5px;}
+.sev-ttl{font-size:15px;font-weight:500;margin-bottom:6px;}
+.sev-body{font-size:12.5px;color:var(--muted);line-height:1.65;}
+
+/* GOAL ROW */
+.goal{display:flex;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);gap:10px;}
+.goal:last-child{border-bottom:none;}
+.goal-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:8px;flex-shrink:0;margin-top:1px;}
+.goal-main{flex:1;}
+.goal-title{font-size:13px;color:var(--white);margin-bottom:3px;line-height:1.3;}
+.goal-meta{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;}
+.goal-status{font-family:'DM Mono',monospace;font-size:9px;flex-shrink:0;padding-top:2px;}
+
+/* PROGRESS */
+.prog{width:100%;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;margin-bottom:4px;overflow:hidden;}
+.progf{height:100%;border-radius:2px;}
+
+/* TIMELINE */
+.tl{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.tl-item:last-child{border-bottom:none;}
+.tl-left{display:flex;flex-direction:column;align-items:center;gap:0;flex-shrink:0;width:32px;}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.tl-line{flex:1;width:1px;background:var(--border);margin-top:4px;}
+.tl-content{flex:1;padding-top:0;}
+.tl-date{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;color:var(--muted);margin-bottom:3px;}
+.tl-title{font-size:13px;color:var(--white);margin-bottom:3px;line-height:1.3;}
+.tl-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.8px;}
+
+/* ROUTE WAYPOINT */
+.wp{display:flex;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;}
+.wp:last-child{border-bottom:none;}
+.wp-num{width:22px;height:22px;border-radius:50%;border:1px solid var(--gb);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:8px;color:var(--green);flex-shrink:0;margin-top:1px;}
+.wp-main{flex:1;}
+.wp-place{font-size:13px;color:var(--white);margin-bottom:3px;}
+.wp-detail{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.8px;color:var(--muted);}
+.wp-status{flex-shrink:0;}
+
+/* ALERT BUTTON */
+.alert-btn{
+  width:100%;
+  background:rgba(224,82,82,0.12);
+  border:2px solid var(--red);
+  border-radius:16px;
+  padding:20px;
+  text-align:center;
+  cursor:pointer;
+  margin-bottom:10px;
+  position:relative;
+  overflow:hidden;
+}
+.alert-btn::before{
+  content:'';
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:0;height:0;
+  border-radius:50%;
+  background:rgba(224,82,82,0.15);
+  animation:ripple 2s infinite;
+}
+@keyframes ripple{0%{width:0;height:0;opacity:1;}100%{width:200%;height:200%;opacity:0;}}
+
+/* WHATSAPP */
+.wa-card{
+  width:100%;
+  background:rgba(37,211,102,0.08);
+  border:1px solid rgba(37,211,102,0.25);
+  border-radius:13px;
+  padding:12px 14px;
+  margin-bottom:8px;
+}
+.wa-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.wa-icon{width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.wa-name{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:#25D366;}
+.wa-msg{font-size:13px;color:var(--white);line-height:1.65;margin-bottom:8px;}
+.wa-meta{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.30);}
+
+/* BIOSIGNAL PULSE */
+.bio-pulse{
+  display:flex;gap:10px;
+  margin-bottom:8px;
+  align-items:center;
+}
+.pulse-device{flex:1;background:var(--card);border-radius:10px;border:1px solid var(--border);padding:10px;text-align:center;}
+.pulse-device.alert{border-color:var(--rb);background:rgba(224,82,82,0.06);}
+.pulse-val{font-family:'DM Mono',monospace;font-size:20px;line-height:1;margin-bottom:3px;}
+.pulse-label{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;color:var(--muted);}
+
+/* VOCAB ROW */
+.vocab{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:10px;}
+.vocab:last-child{border-bottom:none;}
+.vocab-es{font-size:14px;color:var(--white);flex:1;font-weight:500;}
+.vocab-en{font-size:12px;color:var(--muted);flex:1;}
+.vocab-why{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;flex-shrink:0;}
+
+/* SAVINGS ROW */
+.save-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;}
+.save-row:last-child{border-bottom:none;}
+.save-cat{flex:1;font-size:13px;color:var(--white);line-height:1.3;}
+.save-cat small{display:block;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.8px;color:var(--muted);margin-top:2px;}
+.save-amt{font-family:'DM Mono',monospace;font-size:14px;color:var(--gold);flex-shrink:0;}
+
+/* CTA */
+.cta{width:100%;background:var(--blue);color:#03050A;border:none;border-radius:13px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;}
+
+/* CAPTION */
+.cap{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:rgba(255,255,255,0.36);text-align:center;line-height:1.5;margin-top:4px;padding:0 8px;}
+
+/* DOTS & NAV */
+.pcount{position:fixed;top:14px;right:16px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.18);z-index:200;}
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:100;}
+.d{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.14);transition:all .3s;cursor:pointer;}
+.d.active{width:14px;background:var(--blue);}
+.nav{position:fixed;bottom:50px;display:flex;gap:8px;left:50%;transform:translateX(-50%);z-index:100;}
+.nb{width:36px;height:36px;border-radius:50%;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.nb:disabled{opacity:.14;cursor:default;}
+.hint{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.10);z-index:99;pointer-events:none;transition:opacity .4s;}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+<div class="pcount" id="pcount">1 / 8</div>
+
+<!-- ═══════════════════════════════════════
+     P1 — THE SETUP
+═══════════════════════════════════════ -->
+<div class="panel active" id="p0">
+<div class="ph">
+  <div class="ey">THE CHAUFFEUR · MAYA'S STORY</div>
+  <h1 class="hl">First trip abroad.<br><em>Mom is home.</em></h1>
+  <div class="dv"></div>
+</div>
+<div class="pb">
+  <p class="sub">Kelly is 21. College student. She qualified for a surfing competition in <strong>Nosara, Costa Rica.</strong> She's never traveled internationally alone. Her mom Linda is at home in Arizona. Kelly has AA2.</p>
+
+  <div class="card b">
+    <div class="cl">MAYA'S MEMBRANE · ACTIVE PROFILE</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--blue);"></div>
+      <div class="rn">Garmin Forerunner 265<small>Connected · .FIT export · HRV + HR live</small></div>
+      <div class="rv" style="color:var(--green);">LIVE</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="rn">Oura Ring Gen 4<small>Readiness · sleep · stress baseline</small></div>
+      <div class="rv" style="color:var(--green);">LIVE</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="rn">Apple AirPods Pro 2 → Strava<small>Heart rate during activity · exported to membrane</small></div>
+      <div class="rv" style="color:var(--green);">CONNECTED</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="rn">WhatsApp + FaceTime<small>Emergency trigger connected to Garmin button</small></div>
+      <div class="rv" style="color:var(--gold);">CONFIGURED</div>
+    </div>
+  </div>
+
+  <div class="card r">
+    <div class="cl r">EMERGENCY LIST · "THE GIRLS"</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--red);"></div>
+      <div class="rn">Linda<small style="color:var(--white);">Kelly's Mom · Phoenix, AZ</small></div>
+      <div class="rv" style="color:var(--red);">CONTACT 1</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--red);"></div>
+      <div class="rn">David<small style="color:var(--white);">Kelly's Husband · Phoenix, AZ</small></div>
+      <div class="rv" style="color:var(--red);">CONTACT 2</div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--red);"></div>
+      <div class="rn">Jade<small style="color:var(--white);">Kelly's Daughter · Phoenix, AZ</small></div>
+      <div class="rv" style="color:var(--red);">CONTACT 3</div>
+    </div>
+    <div class="mn" style="margin-top:8px;color:rgba(255,255,255,0.30);">Group name "THE GIRLS" — real list stays private</div>
+  </div>
+
+  <div class="qt"><p>"She doesn't need to be afraid. She needs a system that makes the people who love her feel like they're standing right beside her — even from 3,000 miles away."</p></div>
+  <div class="cap">AA2 is the membrane between her freedom and their fear.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P2 — GOAL SETTER
+═══════════════════════════════════════ -->
+<div class="panel" id="p1">
+<div class="ph">
+  <div class="ey g">AA2 GOAL SETTER · VISION BOARD</div>
+  <h1 class="hl g">Her goals.<br><em>Her timeline.</em></h1>
+  <div class="dv g"></div>
+</div>
+<div class="pb">
+  <p class="sub">Kelly set her goals 6 months ago inside AA2. Date. Budget. Location. Language. <strong>AA2 keeps every goal on track — reminding her only when she asked, the way she asked, set up in onboarding.</strong></p>
+
+  <div class="card g">
+    <div class="cl g">ACTIVE GOALS · COSTA RICA TRIP</div>
+
+    <div class="goal">
+      <div class="goal-num" style="background:var(--gdim);border:1px solid var(--green);color:var(--green);">1</div>
+      <div class="goal-main">
+        <div class="goal-title">🏄 Nosara Surf Competition · Costa Rica</div>
+        <div class="goal-meta" style="color:var(--green);">MAY 18, 2026 · LOCKED IN · 36 DAYS AWAY</div>
+        <div class="prog" style="margin-top:6px;"><div class="progf" style="width:82%;background:var(--green);"></div></div>
+        <div class="mn gr">82% PREPARED</div>
+      </div>
+      <div class="goal-status" style="color:var(--green);">ON TRACK</div>
+    </div>
+
+    <div class="goal">
+      <div class="goal-num" style="background:var(--gdim);border:1px solid var(--green);color:var(--green);">2</div>
+      <div class="goal-main">
+        <div class="goal-title">💰 Trip Budget · $2,400 total</div>
+        <div class="goal-meta" style="color:var(--green);">FLIGHT + HOTEL COVERED BY ACT RIGHT DOLLARS</div>
+        <div class="prog" style="margin-top:6px;"><div class="progf" style="width:100%;background:var(--green);"></div></div>
+        <div class="mn gr">FUNDED · VAULT BALANCE APPLIED</div>
+      </div>
+      <div class="goal-status" style="color:var(--green);">COMPLETE</div>
+    </div>
+
+    <div class="goal">
+      <div class="goal-num" style="background:var(--bdim);border:1px solid var(--blue);color:var(--blue);">3</div>
+      <div class="goal-main">
+        <div class="goal-title">🗣 Learn Spanish · Survival Level</div>
+        <div class="goal-meta" style="color:var(--blue);">SCANNER ACTIVATES IN-COUNTRY · REAL-TIME TRANSLATION</div>
+        <div class="prog" style="margin-top:6px;"><div class="progf" style="width:68%;background:var(--blue);"></div></div>
+        <div class="mn b">68% · 94 WORDS LEARNED · 34 DAYS LEFT</div>
+      </div>
+      <div class="goal-status" style="color:var(--blue);">IN PROGRESS</div>
+    </div>
+
+    <div class="goal">
+      <div class="goal-num" style="background:var(--gdim);border:1px solid var(--green);color:var(--green);">4</div>
+      <div class="goal-main">
+        <div class="goal-title">🗺 Safe Itinerary · AA2 Pre-Built</div>
+        <div class="goal-meta" style="color:var(--green);">ROUTES CLEARED · NO SINGLE-ENTRY LOCATIONS</div>
+        <div class="prog" style="margin-top:6px;"><div class="progf" style="width:100%;background:var(--green);"></div></div>
+        <div class="mn gr">COMPLETE · READY TO DEPLOY</div>
+      </div>
+      <div class="goal-status" style="color:var(--green);">COMPLETE</div>
+    </div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">HOW AA2 REMINDS HER · SET IN ONBOARDING</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Notification style<small>Weekly summary only — no daily pings. Her preference, locked in onboarding.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Communication tone<small>Concierge — calm, confident, no urgency unless she sets it</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Milestone triggers<small>Alerts only when a goal hits 100% or drops below her set threshold</small></div></div>
+  </div>
+
+  <div class="cap">AA2 doesn't nag. It holds the line exactly where she drew it.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P3 — ACT RIGHT DOLLARS
+═══════════════════════════════════════ -->
+<div class="panel" id="p2">
+<div class="ph">
+  <div class="ey g">AA2 DEBIT CARD · ADAPTIVE ADVANTAGE LEDGER</div>
+  <h1 class="hl g">Her money.<br><em>Her goals.</em></h1>
+  <div class="dv g"></div>
+</div>
+<div class="pb">
+  <p class="sub">Kelly set a goal. AA2 built the plan. Every smart scan moved money from her checking to her savings — her own money, allocated by her own choices, guided by the intelligence she set in motion.</p>
+
+  <div class="card g">
+    <div class="cl g">AA2 DEBIT CARD · ADAPTIVE ADVANTAGE LEDGER</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div style="background:rgba(196,154,42,0.08);border:1px solid var(--yb);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;">CHECKING</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--white);line-height:1;">$412.30</div>
+        <div class="mn" style="margin-top:4px;">DAILY SPENDING</div>
+      </div>
+      <div style="background:rgba(29,158,117,0.08);border:1px solid var(--gb);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--green);margin-bottom:6px;">SAVINGS</div>
+        <div style="font-family:'DM Mono',monospace;font-size:22px;color:var(--green);line-height:1;">$1,847.20</div>
+        <div class="mn gr" style="margin-top:4px;">COSTA RICA GOAL</div>
+      </div>
+    </div>
+    <div class="mn" style="margin-bottom:10px;">HOW THE SAVINGS SIDE BUILT UP</div>
+    <div class="save-row">
+      <div class="save-cat">Direct deposit contribution<small>$300/month × 5 months · Kelly's committed amount</small></div>
+      <div class="save-amt" style="color:var(--green);">$1,500.00</div>
+    </div>
+    <div class="save-row">
+      <div class="save-cat">Grocery scan transfers<small>Checking → savings when cheaper alt chosen</small></div>
+      <div class="save-amt" style="color:var(--gold);">$187.40</div>
+    </div>
+    <div class="save-row">
+      <div class="save-cat">Personal care scan transfers<small>Cosmo Chemist switches · delta moved to savings</small></div>
+      <div class="save-amt" style="color:var(--gold);">$94.20</div>
+    </div>
+    <div class="save-row">
+      <div class="save-cat">Wine & Spirits alternatives<small>Sommelier recommendations · delta transferred</small></div>
+      <div class="save-amt" style="color:var(--gold);">$65.60</div>
+    </div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">AA2 GOAL PROJECTION · COSTA RICA</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;line-height:1.65;color:var(--white);margin-bottom:10px;">"Keep scanning. Keep your $300 monthly contribution. Your current Act Right transfer rate adds $65/month. You'll hit $2,500 in 2 months. You will be on that beach right on time."</p>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">$300 × 2 more months<small style="color:var(--green);">$600 direct deposit contribution remaining</small></div><div class="rv" style="color:var(--green);">+$600</div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Projected Act Right transfers<small>Based on current scan rate · $65/month</small></div><div class="rv" style="color:var(--gold);">+$130</div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Projected total at goal date<small style="color:var(--green);">Her money. Her goal. Her timeline.</small></div><div class="rv" style="color:var(--green);">$2,577</div></div>
+  </div>
+
+  <div class="qt g"><p>"AA2 doesn't print money. It makes sure the money she already committed actually reaches the goal she already set — and every smart scan accelerates the timeline."</p></div>
+  <div class="cap">Her money. Her goals. AA2 is the intelligence that gets her there.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P4 — LANGUAGE LEARNING
+═══════════════════════════════════════ -->
+<div class="panel" id="p3">
+<div class="ph">
+  <div class="ey b">LANGUAGE LEARNING · SURVIVAL RELEVANCE</div>
+  <h1 class="hl">Learning Spanish<br><em>to survive.</em></h1>
+  <div class="dv"></div>
+</div>
+<div class="pb">
+  <p class="sub">AA2 teaches language through survival relevance. Not conjugation tables. Words that <strong>keep you safe, fed, and understood</strong> in the country you're going to. The scanner activates in-country and teaches in real time.</p>
+
+  <div class="card b">
+    <div class="cl">MAYA'S PROGRESS · 94 WORDS LEARNED</div>
+    <div class="prog" style="margin-bottom:8px;"><div class="progf" style="width:68%;background:var(--blue);"></div></div>
+    <div class="mn b" style="margin-bottom:12px;">68% TOWARD SURVIVAL LEVEL · 34 DAYS TO DEPARTURE</div>
+
+    <div class="mn" style="margin-bottom:8px;">THIS WEEK'S VOCABULARY · WHY IT MATTERS IN COSTA RICA</div>
+
+    <div class="vocab">
+      <div class="vocab-es">¿Dónde está el hospital?</div>
+      <div class="vocab-en">Where is the hospital?</div>
+      <div class="vocab-why" style="color:var(--red);">SAFETY</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-es">Soy alérgica a los mariscos</div>
+      <div class="vocab-en">I am allergic to shellfish</div>
+      <div class="vocab-why" style="color:var(--red);">ALLERGEN</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-es">¿Cuánto cuesta?</div>
+      <div class="vocab-en">How much does it cost?</div>
+      <div class="vocab-why" style="color:var(--gold);">FINANCIAL</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-es">Llame a la policía</div>
+      <div class="vocab-en">Call the police</div>
+      <div class="vocab-why" style="color:var(--red);">EMERGENCY</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-es">¿Tiene ingredientes sin gluten?</div>
+      <div class="vocab-en">Do you have gluten-free ingredients?</div>
+      <div class="vocab-why" style="color:var(--blue);">NUTRITION</div>
+    </div>
+    <div class="vocab">
+      <div class="vocab-es">La tabla de surf</div>
+      <div class="vocab-en">The surfboard</div>
+      <div class="vocab-why" style="color:var(--green);">SPORT</div>
+    </div>
+  </div>
+
+  <div class="card gr">
+    <div class="cl gr">IN-COUNTRY · SCANNER ACTIVATES IN SPANISH</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Menus translate instantly<small>Ingredient names · allergen flags in Spanish · preparation warnings</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Product labels<small>Scan the label · AA2 reads Spanish · flags in English</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Street food identification<small>Point at any food · get ingredients · safety · price context</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Live Cooking credit<small>Every in-country food interaction earns language learning milestones</small></div></div>
+  </div>
+
+  <div class="cap">She's not learning Spanish. She's learning how to stay alive and fed in another country. That sticks forever.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P5 — THE ITINERARY
+═══════════════════════════════════════ -->
+<div class="panel" id="p4">
+<div class="ph">
+  <div class="ey gr">THE CHAUFFEUR · SAFE ITINERARY</div>
+  <h1 class="hl gr">Her biggest<br><em>flex.</em></h1>
+  <div class="dv gr"></div>
+</div>
+<div class="pb">
+  <p class="sub">AA2 built her full Costa Rica itinerary. Every location. Every route. <strong>No one-way in, no one-way out. No issues in the area. No marches, traffic alerts, or local disturbances.</strong> Pre-cleared before she lands.</p>
+
+  <div class="card gr">
+    <div class="cl gr">NOSARA · COSTA RICA · SAFE ROUTES CLEARED</div>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <span class="chip gr">NO ACTIVE ALERTS</span>
+      <span class="chip gr">ROUTES VERIFIED</span>
+      <span class="chip gr">MULTI-EXIT CONFIRMED</span>
+    </div>
+
+    <div class="tl">
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot" style="background:var(--blue);"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-date">MAY 18 · ARRIVAL</div><div class="tl-title">LIR Airport → Nosara · 3.5hr drive</div><div class="tl-sub" style="color:var(--green);">Pre-booked shuttle · Verified company · License plate confirmed ahead</div></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot" style="background:var(--green);"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-date">MAY 18-19 · SETTLE IN</div><div class="tl-title">Selina Nosara · Check in</div><div class="tl-sub" style="color:var(--green);">Safe neighborhood · 3 exit routes mapped · Nearest hospital: 12km</div></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot" style="background:var(--gold);"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-date">MAY 20-22 · COMPETITION</div><div class="tl-title">Playa Guiones · Surf Competition</div><div class="tl-sub" style="color:var(--green);">Beach route: 2 access roads confirmed · No single-entry points · Rip current alerts off</div></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot" style="background:var(--green);"></div><div class="tl-line"></div></div>
+        <div class="tl-content"><div class="tl-date">MAY 22-24 · EXPLORE</div><div class="tl-title">Montezuma Day Trip</div><div class="tl-sub" style="color:var(--green);">Ferry route verified · No local advisories · Safe walking areas marked</div></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-left"><div class="tl-dot" style="background:var(--blue);"></div></div>
+        <div class="tl-content"><div class="tl-date">MAY 25 · DEPARTURE</div><div class="tl-title">Nosara → LIR Airport · Return</div><div class="tl-sub" style="color:var(--green);">Pre-booked · Same verified company · 4hr buffer built in</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card r">
+    <div class="cl r">MONITORING WHILE SHE'S THERE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">Local news feed · Costa Rica<small>Political events · weather · road closures · updated every 6hrs</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">State Department travel alerts<small>Auto-pushed to Kelly and Linda if advisory changes</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Weather · rip current · surf conditions<small>Playa Guiones real-time · 72hr forecast</small></div></div>
+  </div>
+
+  <div class="cap">Her friends asked how she planned it. She said the system built it. That is the flex.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P6 — THE BIOSIGNAL SPIKE
+═══════════════════════════════════════ -->
+<div class="panel" id="p5">
+<div class="ph">
+  <div class="ey r">BIOSIGNAL EVENT · NOSARA · 9:42 PM</div>
+  <h1 class="hl r">The Uber driver<br><em>makes her nervous.</em></h1>
+  <div class="dv r"></div>
+</div>
+<div class="pb">
+  <p class="sub">It's the third night. Kelly got in an Uber after dinner. Something feels off. She doesn't say anything. <strong>She doesn't have to. The membrane already knows.</strong></p>
+
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">⚡ BIOSIGNAL SPIKE · THREE DEVICE CONFIRMATION</div>
+    <div class="sev-ttl" style="color:var(--white);">Elevated stress pattern detected · 9:42 PM local</div>
+    <p class="sev-body" style="margin-bottom:10px;">Three independent biosignal sources confirm simultaneous elevation. Cross-device agreement triggers alert protocol.</p>
+  </div>
+
+  <div class="card r" style="margin-bottom:8px;">
+    <div class="cl r" style="margin-bottom:10px;">LIVE BIOSIGNAL · THREE DEVICES · SIMULTANEOUS SPIKE</div>
+    <div id="ks1"></div>
+    <div id="ks2"></div>
+    <div id="ks3"></div>
+  </div>
+
+  <div class="card r">
+    <div class="cl r">CROSS-DEVICE ANALYSIS · MEMBRANE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">Garmin Forerunner<small style="color:var(--red);">HR 122bpm · 47% above Kelly's baseline of 83bpm · Resting confirmed by Strava</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">Oura Ring<small style="color:var(--red);">Stress score 89 · Highest recorded · HRV collapsed to 18ms from baseline 42ms</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">AirPods Pro 2 via Strava<small style="color:var(--red);">HR 128bpm · No workout active · Unexplained elevation confirmed</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Location context<small style="color:var(--gold);">In moving vehicle · 9:42 PM · Rural Nosara road · No known workout</small></div></div>
+  </div>
+
+  <div class="card b">
+    <div class="cl">MEMBRANE ASSESSMENT</div>
+    <p style="font-size:13px;color:var(--white);line-height:1.75;">Three devices. Same spike. Same moment. No physical activity to explain it. Location: moving vehicle at night. This is not exercise. <strong>This is fear.</strong></p>
+  </div>
+
+  <div class="cap">The membrane doesn't panic. It prepares. Quietly. Completely. Ready for her next move.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P7 — THE TRIGGER
+═══════════════════════════════════════ -->
+<div class="panel" id="p6">
+<div class="ph">
+  <div class="ey r">GARMIN BUTTON · EMERGENCY TRIGGER · 9:43 PM</div>
+  <h1 class="hl r">She hits<br><em>the button.</em></h1>
+  <div class="dv r"></div>
+</div>
+<div class="pb">
+  <p class="sub">The assigned Garmin button. One press. <strong>"THE GIRLS"</strong> — Mom, Husband, Daughter — receive the WhatsApp group text AND the FaceTime call simultaneously. No typing. No explaining. Just the press.</p>
+
+  <div class="alert-btn">
+    <div style="font-size:32px;margin-bottom:6px;">🆘</div>
+    <div style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:3px;color:var(--red);">EMERGENCY TRIGGER · ACTIVATED</div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.40);margin-top:4px;">GARMIN BUTTON HELD 2 SECONDS · 9:43 PM</div>
+  </div>
+
+  <div class="wa-card">
+    <div class="wa-hdr">
+      <div class="wa-icon">💬</div>
+      <div>
+        <div class="wa-name">WHATSAPP · GROUP "THE GIRLS" · SENT 9:43 PM</div>
+      </div>
+    </div>
+    <div class="wa-msg">"🆘 MAYA TRIGGERED AN EMERGENCY ALERT<br><br>📍 Location: Nosara, Costa Rica — Route 160, moving vehicle<br>⏰ Time: 9:43 PM local<br>💓 Biosignal: HR 122bpm · Stress 89 · Three devices confirmed<br><br>She pressed her Garmin emergency button. Her membrane flagged elevated stress in a moving vehicle at night. Contact her immediately.<br><br>📞 Kelly's number: +1 (602) 555-0147"</div>
+    <div class="wa-meta">DELIVERED TO: Linda · David · Jade · READ RECEIPTS ON</div>
+  </div>
+
+  <div class="card r">
+    <div class="cl r">FACETIME · SIMULTANEOUS CALL · 9:43 PM</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">FaceTime initiated<small style="color:var(--red);">Group FaceTime to Linda, David, Jade — all three simultaneously</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Live location shared<small style="color:var(--gold);">Real-time GPS from Garmin · Updates every 30 seconds until she clears the alert</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Biosignal broadcast<small>Live HR + stress streaming to family FaceTime · They can see what the membrane sees</small></div></div>
+  </div>
+
+  <div class="card gr">
+    <div class="cl gr">LINDA ANSWERED IN 12 SECONDS</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;line-height:1.65;color:var(--white);">"Baby I'm here. I see you. Tell me everything or just stay on with me. I'm not going anywhere."</p>
+    <div class="mn" style="margin-top:8px;color:rgba(29,158,117,0.60);">MAYA'S HR DROPPED TO 94BPM WITHIN 90 SECONDS OF LINDA'S VOICE</div>
+  </div>
+
+  <div class="cap">She didn't need to type. She didn't need to explain. One button. Three thousand miles. Zero seconds of being alone.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     P8 — THE CLOSE
+═══════════════════════════════════════ -->
+<div class="panel ctr" id="p7">
+<div class="ph">
+  <div class="ey" style="text-align:center;letter-spacing:4px;">THE CHAUFFEUR · AA2 BIOSIGNAL SYSTEM</div>
+</div>
+<div class="pb">
+  <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:5px;color:rgba(27,184,255,0.20);margin-bottom:14px;">✦ ✦ ✦</div>
+
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(26px,7vw,40px);line-height:1.1;font-weight:400;margin-bottom:6px;text-align:center;color:var(--white);">This is what connected<br>devices actually do.</h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(26px,7vw,40px);line-height:1.1;font-weight:400;margin-bottom:16px;text-align:center;color:var(--blue);">This is the membrane<br>at full power.</h1>
+
+  <div class="dv c"></div>
+
+  <div class="card b" style="text-align:left;margin-bottom:8px;">
+    <div class="cl" style="margin-bottom:10px;">WHAT THE CHAUFFEUR DOES</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Goal setting + timeline + budget<small>Tracks every milestone. Reminds her the way she asked.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Act Right scan transfers accelerated her savings<small>Every smart scan moved delta from checking to savings — her money, her goal, her timeline.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Language through survival relevance<small>94 Spanish words. All of them matter in Costa Rica.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Safe itinerary · no one-way routes<small>Pre-cleared. Multi-exit. Updated in real time while she's there.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">Three-device biosignal confirmation<small>Garmin + Oura + AirPods agreed. No false alarm. Real fear.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12px;">One button. WhatsApp + FaceTime. Simultaneously.<small>"THE GIRLS" — Mom, Husband, Daughter. In 12 seconds.</small></div></div>
+  </div>
+
+  <div class="qt r"><p>"AA2 didn't save Kelly from anything. It made sure she was never truly alone — even at 9:43 PM on a rural Costa Rica road 3,000 miles from everyone who loves her."</p></div>
+
+  <div class="mn" style="margin-bottom:16px;text-align:center;">THIS IS THE MEMBRANE. THIS IS THE POINT OF ALL OF IT.</div>
+
+  <button class="cta">BUILD MY MEMBRANE →</button>
+  <div class="mn" style="margin-top:12px;text-align:center;opacity:.25;">I AM THE RECEIPT</div>
+</div>
+</div>
+
+</div><!-- /book -->
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button class="nb" id="pb" onclick="go(-1)" disabled>←</button>
+  <button class="nb" id="nbtn" onclick="go(1)">→</button>
+</div>
+<div class="hint" id="hint">SWIPE OR USE ARROWS · 8 PANELS</div>
+
+<script>
+const TOTAL=8;
+let cur=0,anim=false,tx=0,ty=0;
+const dotsEl=document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');d.className='d'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);dotsEl.appendChild(d);
+}
+function goTo(i){
+  if(anim||i===cur||i<0||i>=TOTAL)return;
+  anim=true;
+  document.getElementById('p'+cur).classList.remove('active');
+  document.getElementById('p'+cur).classList.add('exit');
+  setTimeout(()=>{const el=document.getElementById('p'+cur);if(el)el.classList.remove('exit');},460);
+  document.getElementById('p'+i).classList.add('active');
+  cur=i;
+  document.querySelectorAll('.d').forEach((d,j)=>d.classList.toggle('active',j===cur));
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nbtn').disabled=cur===TOTAL-1;
+  document.getElementById('pcount').textContent=(cur+1)+' / '+TOTAL;
+  if(cur>0)document.getElementById('hint').style.opacity='0';
+  setTimeout(()=>anim=false,470);
+}
+function go(d){goTo(cur+d);}
+// ── EKG ENGINE ──
+function ekgPath(ctx,w,h,type,color,t){
+  ctx.clearRect(0,0,w,h);ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.shadowBlur=8;ctx.shadowColor=color;ctx.beginPath();
+  const pts=[];const spd={calm:.18,stress:.26,active:.20}[type]||.18;const freq={calm:4,stress:3.5,active:4.5}[type]||4;
+  for(let x=0;x<=w;x++){
+    const p=(x/w*freq+t*spd)%1;let y=h/2;
+    if(type==='stress'){
+      if(p<.10)y=h/2+Math.sin(p/.10*Math.PI)*(h*.22);
+      else if(p<.20)y=h/2-Math.sin((p-.10)/.10*Math.PI)*(h*.20);
+      else if(p<.28)y=h/2;else if(p<.30)y=h/2+(p-.28)/.02*(h*.34);
+      else if(p<.32)y=h/2+h*.34-(p-.30)/.02*h*.98;
+      else if(p<.34)y=h/2-h*.64+(p-.32)/.02*h*.82;
+      else if(p<.40)y=h/2+h*.18-(p-.34)/.06*h*.18;
+      else if(p<.54)y=h/2-Math.sin((p-.40)/.14*Math.PI)*(h*.26);
+      else y=h/2+Math.sin((p-.54)*5)*(h*.05);
+    }else{
+      if(p<.15)y=h/2+Math.sin(p/.15*Math.PI)*(h*.14);
+      else if(p<.25)y=h/2-Math.sin((p-.15)/.10*Math.PI)*(h*.13);
+      else if(p<.32)y=h/2;else if(p<.34)y=h/2+(p-.32)/.02*(h*.26);
+      else if(p<.36)y=h/2+h*.26-(p-.34)/.02*h*.78;
+      else if(p<.38)y=h/2-h*.52+(p-.36)/.02*h*.65;
+      else if(p<.42)y=h/2+h*.13-(p-.38)/.04*h*.13;
+      else if(p<.54)y=h/2-Math.sin((p-.42)/.12*Math.PI)*(h*.17);
+      else y=h/2;
+    }
+    pts.push({x,y:Math.max(2,Math.min(h-2,y))});
+  }
+  ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+  ctx.stroke();ctx.shadowBlur=0;
+}
+function makeWave(id,name,val,color,type){
+  const c=document.getElementById(id);if(!c)return;
+  const w=document.createElement('div');w.style.cssText='margin-bottom:7px;';
+  const h=document.createElement('div');h.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;';
+  const l=document.createElement('div');l.style.cssText='display:flex;align-items:center;gap:6px;';
+  const dt=document.createElement('div');dt.style.cssText=`width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;`;
+  const nm=document.createElement('span');nm.style.cssText='font-family:"DM Mono",monospace;font-size:9px;letter-spacing:1px;color:#fff;';nm.textContent=name;
+  l.appendChild(dt);l.appendChild(nm);
+  const v=document.createElement('span');v.style.cssText=`font-family:"DM Mono",monospace;font-size:10px;color:${color};`;v.textContent=val;
+  h.appendChild(l);h.appendChild(v);
+  const cv=document.createElement('canvas');cv.style.cssText='width:100%;height:36px;display:block;';cv.height=36;
+  cv.dataset.color=color;cv.dataset.type=type;cv.dataset.t=(Math.random()*10).toString();
+  w.appendChild(h);w.appendChild(cv);c.appendChild(w);
+}
+function drawWaves(){
+  const t=performance.now()/1000;
+  document.querySelectorAll('canvas[data-color]').forEach(cv=>{
+    if(!document.body.contains(cv))return;
+    const r=cv.getBoundingClientRect();if(r.width<10)return;
+    const dpr=window.devicePixelRatio||1;cv.width=r.width*dpr;cv.height=r.height*dpr;
+    const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+    ekgPath(ctx,r.width,r.height,cv.dataset.type||'stress',cv.dataset.color||'#E05252',t+parseFloat(cv.dataset.t||0));
+  });
+}
+window.addEventListener('load',()=>{
+  makeWave('ks1','Garmin Forerunner · HR 122bpm','47% ABOVE BASELINE','#E05252','stress');
+  makeWave('ks2','Oura Ring · Stress 89 · HRV 18ms','HIGHEST RECORDED','#E8873A','stress');
+  makeWave('ks3','AirPods Pro 2 via Strava · HR 128bpm','NO WORKOUT ACTIVE','#E05252','stress');
+  (function loop(){drawWaves();requestAnimationFrame(loop);})();
+});
+
+document.getElementById('book').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('book').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>36)go(dx<0?1:-1);
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+</script>
+</body>
+</html>

@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AA2 · Travel Dossier · Panels 18 &amp; 19 · Canon v47</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1BB8FF;
+  --blue-dim: rgba(27,184,255,0.12);
+  --blue-border: rgba(27,184,255,0.38);
+  --green: #1D9E75;
+  --green-dim: rgba(29,158,117,0.12);
+  --amber: #C49A2A;
+  --amber-dim: rgba(196,154,42,0.12);
+  --red: #E05252;
+  --red-dim: rgba(224,82,82,0.10);
+  --bg: #0A0804;
+  --page: #050403;
+  --card: #150F0A;
+  --card-elev: #1C140D;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.14);
+  --white: #FFFFFF;
+  --muted: rgba(255,255,255,0.55);
+  --muted-2: rgba(255,255,255,0.35);
+  --paper: #f5f1e8;
+  --ink: #1a1a1a;
+  --paper-muted: #5a5450;
+  --display: 'Bebas Neue', sans-serif;
+  --serif: 'Cormorant Garamond', serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--page);
+  color: var(--white);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+.page-head {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 40px 28px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.page-head .eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+.page-head h1 {
+  font-family: var(--display);
+  font-size: 56px;
+  line-height: 0.92;
+  letter-spacing: 1.5px;
+}
+.page-head h1 .accent { color: var(--blue); }
+.page-head .sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 8px;
+  max-width: 640px;
+  line-height: 1.4;
+}
+.page-head .right {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted-2);
+  text-align: right;
+  line-height: 1.8;
+}
+.page-head .right .blue { color: var(--blue); }
+.page-head .right .big {
+  font-family: var(--display);
+  font-size: 26px;
+  color: var(--white);
+  letter-spacing: 2px;
+}
+
+.sec-divider {
+  max-width: 1560px;
+  margin: 10px auto 0;
+  padding: 36px 28px 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sec-divider .lbl {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.sec-divider .ln { flex: 1; height: 1px; background: var(--line); }
+
+/* Above/Below grid layout */
+.stage {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 36px 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+@media (max-width: 880px) {
+  .stage { grid-template-columns: 1fr; }
+}
+
+.stage-col { display: flex; flex-direction: column; gap: 14px; }
+.stage-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.stage-title {
+  font-family: var(--display);
+  font-size: 42px;
+  line-height: 0.92;
+  letter-spacing: 1.5px;
+  line-height: 0.95;
+}
+.stage-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  margin-top: 4px;
+}
+
+/* ===== PANEL 18 · ON-GRID · PHONE FRAME ===== */
+.phone-wrap { display: flex; justify-content: center; margin-top: 10px; }
+.phone {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 40px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 30px 60px rgba(0,0,0,0.7),
+    inset 0 0 0 2px rgba(0,0,0,0.7),
+    inset 0 0 0 3px rgba(255,255,255,0.03);
+  position: relative;
+}
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 24px;
+  background: #000;
+  border-radius: 24px;
+  z-index: 10;
+}
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 52px 18px 22px;
+  overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse 300px 200px at 50% -50px, rgba(27,184,255,0.05), transparent),
+    var(--bg);
+  min-height: 780px;
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding: 0 6px;
+}
+.top-bar .ts {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 1.5px;
+}
+.top-bar .glyph { color: var(--blue); font-size: 11px; }
+.top-bar .ind {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--blue);
+  letter-spacing: 1.8px;
+}
+
+.s-eye {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+  margin-bottom: 4px;
+}
+.s-h1 {
+  font-family: var(--display);
+  font-size: 34px;
+  line-height: 0.9;
+  letter-spacing: 1.2px;
+  margin-bottom: 8px;
+}
+.s-h1 .accent { color: var(--blue); }
+.s-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+/* Question stack */
+.qstack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  position: relative;
+}
+.q.active {
+  border: 1px solid var(--blue-border);
+  background: linear-gradient(180deg, rgba(27,184,255,0.05), var(--card));
+  box-shadow: 0 0 0 3px rgba(27,184,255,0.08);
+}
+.q.done { border-left: 2px solid var(--green); }
+.q .qhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.q .qn {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--blue);
+  letter-spacing: 1.8px;
+}
+.q.done .qn { color: var(--green); }
+.q .qs {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--muted-2);
+}
+.q.done .qs { color: var(--green); }
+.q .qt {
+  font-family: var(--display);
+  font-size: 17px;
+  letter-spacing: 0.8px;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.q .qv {
+  font-family: var(--sans);
+  font-size: 10.5px;
+  color: var(--white);
+  line-height: 1.35;
+}
+.q .qv .tag {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 2px 3px 0 0;
+  background: var(--blue-dim);
+  border: 1px solid var(--blue-border);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 8px;
+  border-radius: 3px;
+  letter-spacing: 0.8px;
+}
+.q .qv .tag.green { background: var(--green-dim); border-color: rgba(29,158,117,0.35); color: var(--green); }
+.q .qv .tag.amber { background: var(--amber-dim); border-color: rgba(196,154,42,0.35); color: var(--amber); }
+.q .qv .tag.red { background: var(--red-dim); border-color: rgba(224,82,82,0.35); color: var(--red); }
+
+.q-hint {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 10px;
+  color: var(--muted-2);
+  line-height: 1.35;
+  margin-top: 4px;
+}
+
+/* Compile panel */
+.compile {
+  margin-top: 12px;
+  padding: 14px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--blue-border);
+  background:
+    radial-gradient(ellipse at top right, rgba(27,184,255,0.08), transparent 55%),
+    var(--card);
+}
+.compile .ch {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.compile .cm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+.compile .cm .mod {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--white);
+  background: rgba(27,184,255,0.1);
+  border: 1px solid rgba(27,184,255,0.28);
+  padding: 3px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.compile .cm .mod::before {
+  content: "◆";
+  color: var(--blue);
+  font-size: 7.5px;
+}
+.compile .btn {
+  margin-top: 4px;
+  padding: 12px;
+  background: var(--blue);
+  color: #03050A;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-align: center;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.p-foot {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted-2);
+  letter-spacing: 2.5px;
+  text-align: center;
+}
+.p-foot .blue { color: var(--blue); }
+
+/* ===== PANEL 19 · OFF-GRID · PRINTED DOSSIER ===== */
+.dossier-wrap {
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.doc {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 36px 36px 34px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  position: relative;
+  box-shadow:
+    0 24px 50px rgba(0,0,0,0.55),
+    0 6px 18px rgba(0,0,0,0.35),
+    inset 0 0 0 1px rgba(0,0,0,0.06);
+  transform: rotate(-0.3deg);
+}
+.doc::before {
+  content: "";
+  position: absolute;
+  top: -14px; left: 36%; right: 36%;
+  height: 22px;
+  background: repeating-linear-gradient(90deg, rgba(255,230,150,0.85) 0px, rgba(255,230,150,0.85) 4px, rgba(255,230,150,0.55) 4px, rgba(255,230,150,0.55) 8px);
+  border-radius: 1px;
+  opacity: 0.85;
+  transform: rotate(-1deg);
+}
+
+.doc.pg2 {
+  transform: rotate(0.2deg);
+  margin-top: -6px;
+}
+.doc.pg3 {
+  transform: rotate(-0.15deg);
+  margin-top: -6px;
+}
+
+/* Cover */
+.cover .corner-glyph {
+  font-family: var(--display);
+  font-size: 24px;
+  color: #1BB8FF;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.cover .cover-eye {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 2.8px;
+  color: #1BB8FF;
+  text-transform: uppercase;
+}
+.cover h2 {
+  font-family: var(--display);
+  font-size: 44px;
+  letter-spacing: 2px;
+  line-height: 0.95;
+  color: var(--ink);
+  margin: 12px 0 6px;
+}
+.cover .tagline {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--paper-muted);
+  line-height: 1.4;
+  margin-bottom: 28px;
+  padding-left: 10px;
+  border-left: 2px solid #1BB8FF;
+}
+
+.cover-fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  font-size: 10px;
+  margin-bottom: 24px;
+}
+.cover-fields .fl {
+  color: #1BB8FF;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+}
+.cover-fields .fv {
+  color: var(--ink);
+  letter-spacing: 0.3px;
+}
+
+.cover-contents {
+  border-top: 1px dashed rgba(0,0,0,0.2);
+  padding-top: 16px;
+  margin-bottom: 24px;
+}
+.cover-contents .cch {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #1BB8FF;
+  margin-bottom: 10px;
+}
+.cover-contents .ci {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  padding: 3px 0;
+  border-bottom: 1px dotted rgba(0,0,0,0.12);
+}
+.cover-contents .ci .cin { color: var(--ink); }
+.cover-contents .ci .cip { color: var(--paper-muted); }
+
+.cover-sig {
+  border-top: 2px solid #1BB8FF;
+  padding-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 9px;
+  letter-spacing: 1.8px;
+}
+.cover-sig .sig-l { color: #1BB8FF; font-weight: 700; }
+.cover-sig .sig-r { color: var(--ink); font-weight: 500; }
+
+.cover-stamp {
+  position: absolute;
+  top: 36px; right: 28px;
+  transform: rotate(8deg);
+  border: 2px solid rgba(224,82,82,0.7);
+  color: rgba(224,82,82,0.75);
+  padding: 4px 10px 3px;
+  font-family: var(--mono);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border-radius: 3px;
+}
+
+/* Page 2 — ballistic + route */
+.pg-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid #1BB8FF;
+  padding-bottom: 6px;
+  margin-bottom: 14px;
+}
+.pg-head .ph-l {
+  font-family: var(--display);
+  font-size: 20px;
+  letter-spacing: 1.5px;
+  color: var(--ink);
+}
+.pg-head .ph-r {
+  font-size: 8px;
+  color: #1BB8FF;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+}
+
+.sec {
+  margin-bottom: 20px;
+}
+.sec h3 {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #1BB8FF;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sec h3::before {
+  content: "◆";
+  color: #1BB8FF;
+}
+
+/* Ballistic table */
+.btable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 9px;
+}
+.btable thead th {
+  background: rgba(27,184,255,0.15);
+  color: var(--ink);
+  font-weight: 700;
+  padding: 5px 6px;
+  border: 1px solid rgba(0,0,0,0.15);
+  text-align: right;
+  letter-spacing: 0.5px;
+  font-size: 8px;
+  text-transform: uppercase;
+}
+.btable thead th:first-child { text-align: left; }
+.btable tbody td {
+  padding: 4px 6px;
+  border: 1px solid rgba(0,0,0,0.1);
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 9px;
+}
+.btable tbody td:first-child { text-align: left; font-weight: 700; color: #1BB8FF; }
+.btable tbody tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+.btable .sweet td { background: rgba(29,158,117,0.14) !important; color: var(--ink); }
+.btable .sweet td:first-child { color: #0e6b4f; }
+
+.context-line {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 10px;
+  color: var(--paper-muted);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Route */
+.rteline {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  color: var(--ink);
+  line-height: 1.7;
+  display: grid;
+  grid-template-columns: 52px 1fr max-content;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px dotted rgba(0,0,0,0.12);
+}
+.rteline .rt-t { color: #1BB8FF; font-weight: 700; }
+.rteline .rt-n { color: var(--paper-muted); font-size: 8.5px; font-family: var(--serif); font-style: italic; text-align: right; }
+
+/* Panic card */
+.panic {
+  border: 2px solid rgba(224,82,82,0.7);
+  background: rgba(224,82,82,0.05);
+  padding: 10px 12px;
+  border-radius: 3px;
+  margin-top: 10px;
+}
+.panic .ph {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #c23c3c;
+  margin-bottom: 6px;
+}
+.panic .pb {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.panic .pb b { color: #c23c3c; }
+
+/* Off-grid indicator on page */
+.pg-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(0,0,0,0.25);
+  font-size: 8px;
+  color: var(--paper-muted);
+  letter-spacing: 1.8px;
+}
+.pg-foot .pf-sig { color: #1BB8FF; font-weight: 700; }
+.pg-foot .pf-p { font-family: var(--mono); }
+
+/* Pantry / dispensary */
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 9px;
+}
+.grid2 .pcol h4 {
+  font-size: 8px;
+  font-weight: 700;
+  color: #1BB8FF;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+.grid2 .pi {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--ink);
+  padding: 2px 0;
+  display: flex;
+  justify-content: space-between;
+}
+.grid2 .pi .pk { color: var(--paper-muted); font-size: 7.5px; }
+
+/* Language card */
+.lang-grid {
+  font-size: 9px;
+  line-height: 1.55;
+}
+.lang-grid .lr {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 4px 0;
+  border-bottom: 1px dotted rgba(0,0,0,0.12);
+}
+.lang-grid .lr .en { color: var(--paper-muted); font-family: var(--serif); font-style: italic; }
+.lang-grid .lr .es { color: var(--ink); font-weight: 500; font-family: var(--mono); font-size: 9px; }
+
+/* Waterfall / elevation visual */
+.elev-strip {
+  height: 44px;
+  background: linear-gradient(180deg, rgba(27,184,255,0.08) 0%, rgba(27,184,255,0.03) 100%);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.elev-strip svg { width: 100%; height: 100%; display: block; }
+
+/* Below/above caption */
+.caption {
+  max-width: 1560px;
+  margin: 12px auto 0;
+  padding: 16px 28px;
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+  text-align: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgba(27,184,255,0.02);
+}
+.caption .blue { color: var(--blue); font-style: normal; font-family: var(--display); font-size: 15px; letter-spacing: 1.5px; }
+
+.page-foot {
+  max-width: 1560px;
+  margin: 50px auto 0;
+  padding: 20px 28px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2.5px;
+  text-align: center;
+}
+.page-foot .blue { color: var(--blue); }
+
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 6px;
+  margin-bottom: 4px;
+}
+.panel-label .num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+}
+.panel-label .sec-lbl {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="left">
+    <div class="eyebrow">CANON v47 · DRAFT · PANELS 18 &amp; 19</div>
+    <h1>THE TRAVEL<br><span class="accent">DOSSIER.</span></h1>
+    <div class="sub">Six questions. Dynamic compilation. Two forms of the same truth. The phone is the <em>above</em>. The folded paper in your pack is the <em>below</em>. Both stamped ◆. Both AA2.</div>
+  </div>
+  <div class="right">
+    <div class="blue">◆</div>
+    <div class="big">AS ABOVE</div>
+    <div class="big">SO BELOW</div>
+    <div>APRIL 23, 2026</div>
+    <div>I AM THE RECEIPT</div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">SCENARIO · HUNTING · CHIRIQUÍ HIGHLANDS · 3 DAYS · SOLO · TACTIX 8 + OURA</div><div class="ln"></div></div>
+
+<div class="stage">
+
+  <!-- ─── PANEL 18 · ON-GRID ──────────────────────── -->
+  <div class="stage-col">
+    <div class="panel-label">
+      <span class="num">18 / 19 · ON-GRID</span>
+      <span class="sec-lbl">THE ABOVE</span>
+    </div>
+    <div class="stage-eyebrow">THE COMPILER · SIX QUESTIONS</div>
+    <div class="stage-title">THE PHONE.<br>BEFORE YOU LEAVE.</div>
+    <div class="stage-sub">Dynamic compilation. No presets. AA2 asks six questions and builds one dossier for one trip. A hunting trip with a 3-mile hike to a waterfall has nothing in common with a Caribbean crossing — so the dossier has nothing in common either.</div>
+
+    <div class="phone-wrap">
+      <div class="phone"><div class="screen">
+        <div class="top-bar">
+          <span class="ts">9:41</span>
+          <span class="glyph">◆</span>
+          <span class="ind">TRAVEL DOSSIER</span>
+        </div>
+        <div class="s-eye">BUILD YOUR DOSSIER · 6 QUESTIONS</div>
+        <div class="s-h1">COMPILE<br><span class="accent">FOR THIS TRIP.</span></div>
+        <div class="s-sub">Answer six. AA2 compiles a dossier no one has ever printed before. Your trip. Your stack. Your protocols.</div>
+
+        <div class="qstack">
+
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q1  ·  WHERE</span><span class="qs">✓ ANSWERED</span></div>
+            <div class="qt">CHIRIQUÍ HIGHLANDS</div>
+            <div class="qv">Trailhead 8.84°N 82.55°W · Cerro Horqueta · Panama<div class="q-hint">Triggers: Forager bioregion · Panic cards (fer-de-lance, altitude) · Embassy · Anti-venom routing</div></div>
+          </div>
+
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q2  ·  WHEN / DURATION</span><span class="qs">✓ ANSWERED</span></div>
+            <div class="qt">OCT 14 → OCT 16 · 3 DAYS</div>
+            <div class="qv">Sunrise 6:07a · Sunset 5:58p · Moon phase: waxing gibbous · Altitude 2,100 m<div class="q-hint">Triggers: Grocery decay clock · Daylight budget · Temperature envelope 48–72°F</div></div>
+          </div>
+
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q3  ·  ACTIVITIES</span><span class="qs">✓ ANSWERED</span></div>
+            <div class="qt">HUNTING · HIKING · WATER SOURCE</div>
+            <div class="qv">
+              <span class="tag">HUNT</span>
+              <span class="tag">3-MI HIKE</span>
+              <span class="tag">WATERFALL CAMP</span>
+              <span class="tag">CWD PROTOCOL</span>
+              <div class="q-hint">Triggers: Ballistic tables · Water doctrine · Game handling · Wildlife hazards</div>
+            </div>
+          </div>
+
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q4  ·  WHO'S GOING</span><span class="qs">✓ ANSWERED</span></div>
+            <div class="qt">SOLO · NO ANIMALS</div>
+            <div class="qv">JRP · BYAR loaded<div class="q-hint">Triggers: Solo emergency protocol · SPOT check-in schedule · Next-of-kin routing</div></div>
+          </div>
+
+          <div class="q done">
+            <div class="qhead"><span class="qn">Q5  ·  DEVICE STACK</span><span class="qs">✓ ANSWERED</span></div>
+            <div class="qt">GARMIN TACTIX 8  ·  OURA 4</div>
+            <div class="qv">
+              <span class="tag green">TACTIX 8 · BALLISTIC</span>
+              <span class="tag green">OURA · BASELINE</span>
+              <div class="q-hint">Triggers: Tactix 8 ballistic export · Oura sleep window · Paper backup for device failure</div>
+            </div>
+          </div>
+
+          <div class="q active">
+            <div class="qhead"><span class="qn">Q6  ·  COMMANDER LAYER</span><span class="qs" style="color:var(--amber);">◆ ACTIVE</span></div>
+            <div class="qt">WADA / FEI / DoD / USADA?</div>
+            <div class="qv">
+              <span class="tag">NONE</span>
+              <span class="tag amber">WADA</span>
+              <span class="tag amber">FEI</span>
+              <span class="tag amber">DoD</span>
+              <span class="tag amber">USADA</span>
+              <div class="q-hint">Filters every supplement, medication, and game-meat flag against the selected regulatory framework. Civilian default = none.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="compile">
+          <div class="ch">◆ AA2 WILL COMPILE</div>
+          <div class="cm">
+            <span class="mod">ROUTE</span>
+            <span class="mod">BALLISTIC</span>
+            <span class="mod">WATER</span>
+            <span class="mod">PANTRY</span>
+            <span class="mod">DISPENSARY</span>
+            <span class="mod">FORAGER</span>
+            <span class="mod">WILDLIFE</span>
+            <span class="mod">LANG</span>
+            <span class="mod">MEDICAL</span>
+            <span class="mod">OURA</span>
+            <span class="mod">TACTIX</span>
+            <span class="mod">EMERGENCY</span>
+          </div>
+          <div class="btn">COMPILE DOSSIER  ·  PRINT  ·  XHD7</div>
+        </div>
+
+        <div class="p-foot">◆ ADAPTIVE NERVE ADAPTS  ·  NO PRESETS  ·  <span class="blue">v47</span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ─── PANEL 19 · OFF-GRID · PRINTED DOSSIER ────── -->
+  <div class="stage-col">
+    <div class="panel-label">
+      <span class="num">19 / 19 · OFF-GRID</span>
+      <span class="sec-lbl">THE BELOW</span>
+    </div>
+    <div class="stage-eyebrow">THE ARTIFACT · TRI-FOLD POCKET</div>
+    <div class="stage-title">THE PAPER.<br>IN YOUR PACK.</div>
+    <div class="stage-sub">Compiled from the six answers. Waterproof-treated, folded to pocket size. The Tactix 8 battery dies on day 2 — the ballistic page does not. The phone is gone — the waterfall protocol remains. Every page stamped ◆ JRP · XHD7.</div>
+
+    <div class="dossier-wrap">
+
+      <!-- PAGE 1 — COVER -->
+      <div class="doc cover">
+        <div class="cover-stamp">OFF-GRID · READY</div>
+        <div class="corner-glyph">◆</div>
+        <div class="cover-eye">AA2 TRAVEL DOSSIER</div>
+        <h2>CERRO<br>HORQUETA</h2>
+        <div class="tagline">Chiriquí highlands. Three days. Solo hunt. Waterfall camp at mile 2.2. The paper you carry when the grid is gone.</div>
+
+        <div class="cover-fields">
+          <div class="fl">TRIP</div>    <div class="fv">HORQUETA · SOLO HUNT</div>
+          <div class="fl">DEPART</div>  <div class="fv">OCT 14 · 04:30 LOCAL</div>
+          <div class="fl">RETURN</div>  <div class="fv">OCT 16 · by sunset</div>
+          <div class="fl">ACTIVITY</div><div class="fv">HUNT · 3-MI HIKE · WATERFALL CAMP</div>
+          <div class="fl">PARTY</div>   <div class="fv">1  ·  SOLO</div>
+          <div class="fl">STACK</div>   <div class="fv">TACTIX 8  ·  OURA 4</div>
+          <div class="fl">CMDR LAYER</div><div class="fv">CIVILIAN</div>
+        </div>
+
+        <div class="cover-contents">
+          <div class="cch">◆ CONTENTS</div>
+          <div class="ci"><span class="cin">§1 · Route &amp; waypoints</span><span class="cip">pg 2</span></div>
+          <div class="ci"><span class="cin">§2 · Ballistic reference · Tactix 8 export</span><span class="cip">pg 3</span></div>
+          <div class="ci"><span class="cin">§3 · Water doctrine · Waterfall source</span><span class="cip">pg 4</span></div>
+          <div class="ci"><span class="cin">§4 · Pantry manifest · Alive Codes</span><span class="cip">pg 5</span></div>
+          <div class="ci"><span class="cin">§5 · Off-grid dispensary</span><span class="cip">pg 6</span></div>
+          <div class="ci"><span class="cin">§6 · Forager · bioregion plants</span><span class="cip">pg 7</span></div>
+          <div class="ci"><span class="cin">§7 · Wildlife · fer-de-lance protocol</span><span class="cip">pg 8</span></div>
+          <div class="ci"><span class="cin">§8 · CWD game handling</span><span class="cip">pg 9</span></div>
+          <div class="ci"><span class="cin">§9 · Language · survival Spanish</span><span class="cip">pg 10</span></div>
+          <div class="ci"><span class="cin">§10 · Medical · BYAR · next-of-kin</span><span class="cip">pg 11</span></div>
+          <div class="ci"><span class="cin">§11 · Emergency · anti-venom routing</span><span class="cip">pg 12</span></div>
+        </div>
+
+        <div class="cover-sig">
+          <div class="sig-l">◆ JRP  ·  XHD7</div>
+          <div class="sig-r">COMPILED 4·23·26</div>
+        </div>
+      </div>
+
+      <!-- PAGE 2 — BALLISTIC + ROUTE -->
+      <div class="doc pg2">
+        <div class="pg-head">
+          <div class="ph-l">§2  ·  BALLISTIC</div>
+          <div class="ph-r">TACTIX 8 · EXPORT</div>
+        </div>
+
+        <div class="sec">
+          <h3>LOAD · 6.5 CREEDMOOR · 140 ELD-M</h3>
+          <table class="btable">
+            <thead><tr><th>RANGE</th><th>DROP</th><th>WIND 10MPH</th><th>HOLD</th></tr></thead>
+            <tbody>
+              <tr><td>100 yd</td><td>0.0"</td><td>0.7"</td><td>—</td></tr>
+              <tr><td>200 yd</td><td>−3.8"</td><td>2.9"</td><td>+1.9 MOA</td></tr>
+              <tr class="sweet"><td>300 yd</td><td>−14.1"</td><td>6.9"</td><td>+4.5 MOA</td></tr>
+              <tr class="sweet"><td>400 yd</td><td>−32.6"</td><td>12.8"</td><td>+7.8 MOA</td></tr>
+              <tr><td>500 yd</td><td>−61.0"</td><td>20.9"</td><td>+11.6 MOA</td></tr>
+              <tr><td>600 yd</td><td>−101.5"</td><td>31.7"</td><td>+16.1 MOA</td></tr>
+            </tbody>
+          </table>
+          <div class="context-line">Computed at 2,100 m · 48°F morning · 72°F afternoon · barometric 24.8 inHg · zero 100 yd. Tactix 8 live values supersede. Green rows = expected ridge engagement window.</div>
+        </div>
+
+        <div class="sec">
+          <h3>ROUTE · TRAILHEAD → WATERFALL CAMP</h3>
+          <div class="rteline"><span class="rt-t">0.0 mi</span><span>Trailhead · Volcán Barú trail junction · truck staging</span><span class="rt-n">04:30 · 1,680 m</span></div>
+          <div class="rteline"><span class="rt-t">1.1 mi</span><span>Fence line ·   cell signal ends · Tactix 8 last sync here</span><span class="rt-n">~05:15</span></div>
+          <div class="rteline"><span class="rt-t">2.2 mi</span><span>Río Cotito crossing · knee-deep · slick stones · <b>filter required downstream</b></span><span class="rt-n">~05:55</span></div>
+          <div class="rteline"><span class="rt-t">2.8 mi</span><span>First ridge · glassing window 300–450 yd · NE face</span><span class="rt-n">~06:20 · 2,010 m</span></div>
+          <div class="rteline"><span class="rt-t">3.0 mi</span><span>◆ <b>WATERFALL CAMP</b> · flat ground · fire ring · bear-bag tree</span><span class="rt-n">~06:30 · 2,100 m</span></div>
+
+          <div class="elev-strip">
+            <svg viewBox="0 0 300 44" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="eg" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#1BB8FF" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#1BB8FF" stop-opacity="0.08"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,38 L30,34 L60,30 L100,26 L150,24 L200,16 L240,12 L280,10 L300,8 L300,44 L0,44 Z" fill="url(#eg)"/>
+              <path d="M0,38 L30,34 L60,30 L100,26 L150,24 L200,16 L240,12 L280,10 L300,8" stroke="#1BB8FF" stroke-width="1.2" fill="none"/>
+              <circle cx="280" cy="10" r="2.5" fill="#1BB8FF"/>
+              <circle cx="150" cy="24" r="2" fill="#1BB8FF"/>
+              <circle cx="0" cy="38" r="2" fill="#1BB8FF"/>
+            </svg>
+          </div>
+          <div class="context-line">Elevation gain 420 m over 3 mi · est. 2h 15m at your Oura-archive pace</div>
+        </div>
+
+        <div class="panic">
+          <div class="ph">◆ IF TACTIX 8 DIES</div>
+          <div class="pb">You have this page. Dope is current to <b>OCT 14 · 0500</b>. Recompute wind on the ridge from cloud speed. Your zero is 100 yd. Do not shoot past the <b>green window</b> without confirming wind.</div>
+        </div>
+
+        <div class="pg-foot">
+          <span class="pf-sig">◆ JRP  ·  XHD7</span>
+          <span>CERRO HORQUETA  ·  §2</span>
+          <span class="pf-p">2 / 12</span>
+        </div>
+      </div>
+
+      <!-- PAGE 3 — DISPENSARY + LANGUAGE + SNAKE -->
+      <div class="doc pg3">
+        <div class="pg-head">
+          <div class="ph-l">§5  ·  §7  ·  §9  ·  §11</div>
+          <div class="ph-r">OFF-GRID FIELD PAGE</div>
+        </div>
+
+        <div class="sec">
+          <h3>PANTRY ON YOUR BACK</h3>
+          <div class="grid2">
+            <div class="pcol">
+              <h4>ALIVE · PEAK</h4>
+              <div class="pi"><span>Coffee · W</span><span class="pk">W 4·1 G▲ ★</span></div>
+              <div class="pi"><span>Ginger · F</span><span class="pk">F 4·20 R ★</span></div>
+              <div class="pi"><span>Honey raw</span><span class="pk">H · shelf ★</span></div>
+              <div class="pi"><span>Electrolytes</span><span class="pk">7 sachets ★</span></div>
+              <div class="pi"><span>Elderberry TN</span><span class="pk">TN 10·15 AM ★</span></div>
+              <div class="pi"><span>Jerky · grass-fed</span><span class="pk">VAC 4·10 ★</span></div>
+            </div>
+            <div class="pcol">
+              <h4>WATCH · ◐</h4>
+              <div class="pi"><span>Nettle leaf</span><span class="pk">L 11·20 ◐</span></div>
+              <div class="pi"><span>Cumin · G</span><span class="pk">G 11·8 ◐</span></div>
+              <h4 style="margin-top:10px;">WATER</h4>
+              <div class="pi"><span>Sawyer Squeeze</span><span class="pk">★ 2 yr</span></div>
+              <div class="pi"><span>Tabs · backup</span><span class="pk">TAB 3·1 ★</span></div>
+              <div class="pi"><span>Boil · alt 2,100 m</span><span class="pk">5 min rolling</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <h3>LANGUAGE · SURVIVAL SPANISH</h3>
+          <div class="lang-grid">
+            <div class="lr"><span class="en">I need a doctor.</span><span class="es">Necesito un médico.</span></div>
+            <div class="lr"><span class="en">I've been bitten by a snake.</span><span class="es">Me mordió una serpiente.</span></div>
+            <div class="lr"><span class="en">Where is the hospital?</span><span class="es">¿Dónde está el hospital?</span></div>
+            <div class="lr"><span class="en">My blood type is O+.</span><span class="es">Mi tipo de sangre es O positivo.</span></div>
+            <div class="lr"><span class="en">Call this number.</span><span class="es">Llame a este número.</span></div>
+            <div class="lr"><span class="en">I am allergic to…</span><span class="es">Soy alérgico a…</span></div>
+          </div>
+        </div>
+
+        <div class="panic">
+          <div class="ph">◆ FER-DE-LANCE · BOTHROPS ASPER</div>
+          <div class="pb">
+            <b>1.</b>  Do not run. Keep bitten limb below heart.<br>
+            <b>2.</b>  Remove rings, watch (Tactix 8), tight clothing.<br>
+            <b>3.</b>  Mark bite edge with pen · note time · photograph if light.<br>
+            <b>4.</b>  Call <b>+507 316-1616</b> (Hospital Regional David — anti-venom stocked).<br>
+            <b>5.</b>  SPOT device → <b>CUSTOM-2</b> · Maribel + David ER.<br>
+            <b>6.</b>  Transport window: <b>&lt; 6 hr</b>. Trailhead-to-hospital est. 1h 55m.
+          </div>
+        </div>
+
+        <div class="pg-foot">
+          <span class="pf-sig">◆ JRP  ·  XHD7</span>
+          <span>CERRO HORQUETA  ·  §5·7·9·11</span>
+          <span class="pf-p">11 / 12</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="caption">
+  <span class="blue">AS ABOVE</span> &nbsp;·&nbsp; the dashboard on your phone, live, listening, adapting &nbsp;·&nbsp; <span class="blue">SO BELOW</span> &nbsp;·&nbsp; the folded paper in your pack, silent, printed, ready.<br>
+  Same dossier. Same six answers. Same ◆ XHD7. Two forms of one truth.
+</div>
+
+<div class="page-foot">
+  ◆ &nbsp;TRAVEL DOSSIER · PANELS 18 &amp; 19 ·&nbsp; <span class="blue">CANON v47 DRAFT</span> &nbsp;· JAMES R. PITTS II · APPLIED BIOSIGNAL SCIENTIST · FOUNDER · AA2 · I AM THE RECEIPT&nbsp; ◆
+</div>
+
+</body>
+</html>

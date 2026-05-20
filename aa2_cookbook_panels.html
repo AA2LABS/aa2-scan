@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AA2 — Cookbook Vault Panels</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1BB8FF;--bdim:rgba(27,184,255,0.10);--bb:rgba(27,184,255,0.22);
+  --green:#1D9E75;--gdim:rgba(29,158,117,0.10);--gb:rgba(29,158,117,0.22);
+  --gold:#C49A2A;--ydim:rgba(196,154,42,0.10);--yb:rgba(196,154,42,0.22);
+  --red:#E05252;--rdim:rgba(224,82,82,0.10);--rb:rgba(224,82,82,0.22);
+  --orange:#E8873A;
+  --white:#FFFFFF;--muted:rgba(255,255,255,0.52);--dim:rgba(255,255,255,0.10);
+  --bg:#0A0804;--card:#120D08;--card2:#160E09;--border:rgba(255,255,255,0.055);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);}
+.book{width:100%;height:100%;position:relative;overflow:hidden;}
+
+.panel{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;
+  opacity:0;transform:translateX(100%);
+  transition:opacity .44s cubic-bezier(.4,0,.2,1),transform .44s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.panel.active{opacity:1;transform:translateX(0);}
+.panel.exit{opacity:0;transform:translateX(-40px);}
+
+/* FIXED HEADER */
+.panel-header{
+  padding:44px 22px 12px;
+  flex-shrink:0;
+  max-width:420px;width:100%;margin:0 auto;
+}
+
+/* SCROLLABLE CONTENT AREA */
+.panel-scroll{
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:0 22px 76px;
+  max-width:420px;width:100%;margin:0 auto;
+}
+.panel-scroll::-webkit-scrollbar{display:none;}
+
+@keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.panel.active .panel-header>*{animation:up .38s ease both;}
+.panel.active .panel-header>*:nth-child(1){animation-delay:.07s;}
+.panel.active .panel-header>*:nth-child(2){animation-delay:.14s;}
+.panel.active .panel-header>*:nth-child(3){animation-delay:.21s;}
+
+/* TYPO */
+.ey{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--gold);margin-bottom:5px;}
+.mn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);}
+.mn.b{color:var(--blue);}.mn.g{color:var(--gold);}.mn.gr{color:var(--green);}
+
+/* SECTION SEPARATOR */
+.section-sep{
+  display:flex;align-items:center;gap:10px;
+  margin:14px 0 10px;
+}
+.sep-line{flex:1;height:1px;background:var(--border);}
+.sep-label{
+  font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;
+  color:var(--muted);white-space:nowrap;
+}
+
+/* LIVE COOKING SEPARATOR */
+.live-sep{
+  display:flex;align-items:center;gap:10px;
+  margin:16px 0 10px;
+}
+.live-sep-line{flex:1;height:1px;background:rgba(27,184,255,0.25);}
+.live-sep-label{
+  font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;
+  color:var(--blue);white-space:nowrap;
+  display:flex;align-items:center;gap:5px;
+}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* RECIPE CARD */
+.recipe-card{
+  width:100%;background:var(--card);
+  border-radius:12px;border:1px solid var(--border);
+  padding:12px 13px;margin-bottom:7px;
+  display:flex;align-items:flex-start;gap:11px;
+  cursor:pointer;
+  transition:border-color .2s;
+}
+.recipe-card:hover{border-color:rgba(196,154,42,0.30);}
+.recipe-card.live{border-color:var(--bb);background:rgba(27,184,255,0.03);}
+.recipe-card.live:hover{border-color:rgba(27,184,255,0.45);}
+
+.recipe-flag{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;margin-top:1px;
+}
+
+.recipe-main{flex:1;}
+.recipe-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px;font-weight:400;
+  color:var(--white);line-height:1.2;
+  margin-bottom:4px;
+}
+.recipe-meta{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.recipe-tag{
+  font-family:'DM Mono',monospace;font-size:7.5px;
+  letter-spacing:1px;color:var(--muted);
+}
+.recipe-tag.flag{color:var(--red);}
+.recipe-tag.save{color:var(--green);}
+.recipe-tag.live{color:var(--blue);}
+
+.recipe-right{
+  display:flex;flex-direction:column;
+  align-items:flex-end;gap:4px;flex-shrink:0;
+}
+.recipe-date{
+  font-family:'DM Mono',monospace;font-size:7.5px;
+  letter-spacing:1px;color:rgba(255,255,255,0.25);
+}
+.recipe-arrow{color:rgba(255,255,255,0.20);font-size:14px;}
+
+/* LIVE COOKING BADGE */
+.live-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--bdim);border:1px solid var(--bb);
+  border-radius:6px;padding:2px 7px;
+  font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;
+  color:var(--blue);
+}
+
+/* STATS ROW */
+.stats-row{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:6px;margin-bottom:12px;
+}
+.stat-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:10px;text-align:center;
+}
+.stat-num{
+  font-family:'DM Mono',monospace;
+  font-size:22px;color:var(--gold);
+  line-height:1;margin-bottom:3px;
+}
+.stat-label{
+  font-family:'DM Mono',monospace;font-size:7.5px;
+  letter-spacing:1.5px;color:var(--muted);
+}
+
+/* DOWNLOAD ROW */
+.dl-row{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:7px;margin-bottom:10px;
+}
+.dl-btn{
+  border:none;border-radius:11px;padding:13px;
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;cursor:pointer;
+}
+.dl-btn.primary{background:var(--gold);color:#03050A;}
+.dl-btn.secondary{background:transparent;color:var(--blue);border:1px solid var(--bb);}
+
+/* DOTS & NAV */
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:100;}
+.d{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.14);transition:all .3s;cursor:pointer;}
+.d.active{width:14px;background:var(--gold);}
+.nav{position:fixed;bottom:50px;display:flex;gap:8px;left:50%;transform:translateX(-50%);z-index:100;}
+.nb{width:36px;height:36px;border-radius:50%;border:1px solid var(--yb);background:var(--ydim);color:var(--gold);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.nb:disabled{opacity:.14;cursor:default;}
+.pcount{position:fixed;top:14px;right:16px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.20);z-index:200;}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+<div class="pcount" id="pcount">1 / 2</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PANEL 1 — THE VAULT · COOKBOOK LIBRARY         -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="panel active" id="p0">
+
+  <div class="panel-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="mn">I AM THE RECEIPT</div>
+      <div class="mn g">THE VAULT · COOKBOOK</div>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;line-height:1.0;margin-bottom:6px;">Your Living<br><em style="color:var(--gold);">Gourmet Library.</em></div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-num">23</div>
+        <div class="stat-label">RECIPES SAVED</div>
+      </div>
+      <div class="stat-box" style="border-color:var(--bb);">
+        <div class="stat-num" style="color:var(--blue);">7</div>
+        <div class="stat-label">LIVE COOKS</div>
+      </div>
+      <div class="stat-box" style="border-color:var(--gb);">
+        <div class="stat-num" style="color:var(--green);">4</div>
+        <div class="stat-label">COUNTRIES</div>
+      </div>
+    </div>
+
+    <div class="dl-row">
+      <button class="dl-btn primary">DOWNLOAD PDF →</button>
+      <button class="dl-btn secondary">SHARE COOKBOOK</button>
+    </div>
+  </div>
+
+  <div class="panel-scroll">
+
+    <!-- LIVE COOKING SESSIONS -->
+    <div class="live-sep">
+      <div class="live-sep-line"></div>
+      <div class="live-sep-label"><div class="live-dot"></div>LIVE COOKING SESSIONS · 7</div>
+      <div class="live-sep-line"></div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Takoyaki · たこ焼き</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇯🇵 OSAKA · WITH KENJI</span>
+          <span class="recipe-tag">22 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · APR 9</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">APR 9</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Jollof Rice</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇳🇬 LAGOS · WITH AMARA</span>
+          <span class="recipe-tag">55 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · APR 6</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">APR 6</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Cacio e Pepe</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇮🇹 ROME · WITH LUCIA</span>
+          <span class="recipe-tag">18 MIN</span>
+          <span class="recipe-tag flag">1 FLAGGED</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · MAR 29</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 29</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Kimchi Jjigae</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇰🇷 SEOUL · WITH JIYEON</span>
+          <span class="recipe-tag">35 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · MAR 22</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 22</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Mole Negro</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇲🇽 OAXACA · WITH ELENA</span>
+          <span class="recipe-tag">90 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · MAR 15</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 15</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Shakshuka</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇮🇱 TEL AVIV · WITH MAYA</span>
+          <span class="recipe-tag">28 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · MAR 8</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 8</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card live">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🌐</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Pad Thai</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag live">🇹🇭 BANGKOK · WITH NONG</span>
+          <span class="recipe-tag">25 MIN</span>
+          <span class="recipe-tag flag">2 FLAGGED</span>
+        </div>
+        <div style="margin-top:5px;"><span class="live-badge">LIVE COOK · FEB 28</span></div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">FEB 28</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <!-- MY KITCHEN SEPARATOR -->
+    <div class="section-sep">
+      <div class="sep-line"></div>
+      <div class="sep-label">MY KITCHEN · 16 RECIPES</div>
+      <div class="sep-line"></div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(196,154,42,0.10);">🍝</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Spaghetti Bolognese</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇮🇹 ITALIAN · 45 MIN</span>
+          <span class="recipe-tag flag">2 FLAGGED</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">APR 7</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(29,158,117,0.10);">🥩</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Elk Backstrap Grill</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🏔 MONTANA · 22 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">APR 5</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(196,154,42,0.10);">🍳</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Eggs Benedict</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇺🇸 AMERICAN · 30 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">APR 3</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🍜</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Chicken Pho</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇻🇳 VIETNAMESE · 3 HR</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 31</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(224,82,82,0.10);">🌮</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Carne Asada Tacos</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇲🇽 MEXICAN · 35 MIN</span>
+          <span class="recipe-tag flag">1 FLAGGED</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 27</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(196,154,42,0.10);">🍛</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Lamb Rogan Josh</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇮🇳 INDIAN · 65 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 24</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(29,158,117,0.10);">🥗</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Greek Village Salad</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇬🇷 GREEK · 12 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 21</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(196,154,42,0.10);">🫕</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Beef Bourguignon</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇫🇷 FRENCH · 3.5 HR</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 18</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🍱</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Salmon Teriyaki</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇯🇵 JAPANESE · 20 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 14</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(232,135,58,0.10);">🍲</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Moroccan Chicken Tagine</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇲🇦 MOROCCAN · 80 MIN</span>
+          <span class="recipe-tag flag">1 FLAGGED</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 10</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(29,158,117,0.10);">🥘</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Rainbow Trout Almondine</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🏔 MONTANA · 15 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR · FRESH CAUGHT</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">MAR 5</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(196,154,42,0.10);">🍕</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Neapolitan Margherita</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇮🇹 ITALIAN · 45 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">FEB 28</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(27,184,255,0.10);">🍜</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Dan Dan Noodles</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇨🇳 SICHUAN · 30 MIN</span>
+          <span class="recipe-tag flag">2 FLAGGED</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">FEB 22</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(29,158,117,0.10);">🫙</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Slow Smoked Brisket</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇺🇸 TEXAS · 14 HR</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">FEB 16</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(196,154,42,0.10);">🧆</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Lebanese Falafel</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇱🇧 LEBANESE · 40 MIN</span>
+          <span class="recipe-tag save">ALL CLEAR</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">FEB 9</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="recipe-card">
+      <div class="recipe-flag" style="background:rgba(224,82,82,0.10);">🍝</div>
+      <div class="recipe-main">
+        <div class="recipe-title">Puttanesca</div>
+        <div class="recipe-meta">
+          <span class="recipe-tag">🇮🇹 ITALIAN · 25 MIN</span>
+          <span class="recipe-tag flag">1 FLAGGED</span>
+        </div>
+      </div>
+      <div class="recipe-right">
+        <div class="recipe-date">FEB 3</div>
+        <div class="recipe-arrow">›</div>
+      </div>
+    </div>
+
+  </div><!-- /scroll -->
+</div>
+
+<!-- ════════════════════════════════════════════════ -->
+<!-- PANEL 2 — RECIPE DETAIL VIEW                    -->
+<!-- ════════════════════════════════════════════════ -->
+<div class="panel" id="p1">
+
+  <div class="panel-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <button onclick="goTo(0)" style="background:transparent;border:none;color:var(--blue);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;cursor:pointer;">← COOKBOOK</button>
+      <div style="background:rgba(27,184,255,0.10);border:1px solid var(--bb);border-radius:20px;padding:3px 10px;display:flex;align-items:center;gap:5px;">
+        <div style="width:5px;height:5px;border-radius:50%;background:var(--blue);animation:pulse 2s infinite;"></div>
+        <div class="mn b">LIVE COOK · KENJI · OSAKA</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+      <span class="mn">🇯🇵 JAPANESE</span>
+      <span class="mn">22 MIN</span>
+      <span class="mn">SERVES 4</span>
+    </div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:400;margin-bottom:6px;">Takoyaki · たこ焼き</div>
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);margin-bottom:10px;">APR 9, 2026 · LIVE SESSION WITH KENJI · OSAKA · VIA RAY-BAN META</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:0;">
+      <button style="background:var(--gold);color:#03050A;border:none;border-radius:10px;padding:12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;">SHARE RECIPE →</button>
+      <button style="background:transparent;color:var(--blue);border:1px solid var(--bb);border-radius:10px;padding:12px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;cursor:pointer;">REPLAY SESSION</button>
+    </div>
+  </div>
+
+  <div class="panel-scroll">
+
+    <div style="background:var(--card);border:1px solid var(--gb);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+      <div class="mn gr" style="margin-bottom:8px;">✓ ALL INGREDIENTS VERIFIED · NO MEMBRANE FLAGS</div>
+      <div style="display:flex;flex-direction:column;gap:0;">
+
+        <div style="display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Takoyaki batter mix<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">200g · Scanned · Nissin verified · ALL CLEAR</span></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Octopus — tako<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">200g cooked · No membrane flags · Shellfish sensitivity: LOW RISK</span></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Tempura scraps — tenkasu<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">50g · Scanned · ALL CLEAR</span></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Green onion<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">3 stalks · Produce · no scan needed</span></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Takoyaki sauce<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">Bulldog · Scanned · ALL CLEAR</span></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Japanese mayo<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">Kewpie · Scanned · ALL CLEAR</span></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;padding:8px 0;gap:9px;">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--blue);flex-shrink:0;margin-top:4px;"></div>
+          <div style="flex:1;font-size:13px;color:var(--white);">Bonito flakes · Aonori<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);display:block;margin-top:2px;">For topping · Produce · no scan needed</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:var(--bdim);border:1px solid var(--bb);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+      <div class="mn b" style="margin-bottom:7px;">KENJI'S NOTES · LIVE SESSION</div>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.65;color:var(--white);">"The secret is the batter consistency — it should flow like heavy cream. And you must rotate them before the outside fully sets. That is where the round shape is born."</p>
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">
+      <div class="mn" style="margin-bottom:7px;">SESSION DETAILS</div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div style="display:flex;justify-content:space-between;"><span class="mn">DATE</span><span class="mn" style="color:var(--white);">APR 9, 2026 · 6:42 PM MT</span></div>
+        <div style="display:flex;justify-content:space-between;"><span class="mn">PARTNER</span><span class="mn" style="color:var(--white);">Kenji · Osaka, Japan</span></div>
+        <div style="display:flex;justify-content:space-between;"><span class="mn">PLATFORM</span><span class="mn" style="color:var(--white);">Ray-Ban Meta · WhatsApp</span></div>
+        <div style="display:flex;justify-content:space-between;"><span class="mn">LANGUAGE</span><span class="mn" style="color:var(--blue);">+12 Japanese words learned</span></div>
+        <div style="display:flex;justify-content:space-between;"><span class="mn">ACT RIGHT</span><span class="mn" style="color:var(--gold);">+$2.40 earned</span></div>
+      </div>
+    </div>
+
+    <div style="background:rgba(29,158,117,0.06);border:1px solid var(--gb);border-radius:12px;padding:12px 14px;">
+      <div class="mn gr" style="margin-bottom:4px;">MEMBRANE NOTES · PRIVATE · SAVED WITH RECIPE</div>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--muted);line-height:1.6;">"All ingredients verified. Shellfish sensitivity noted but octopus rated LOW RISK at this serving size. Shared version shows clean list — membrane flags stay private."</p>
+    </div>
+
+  </div><!-- /scroll -->
+</div>
+
+</div><!-- /book -->
+
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button class="nb" id="pb" onclick="go(-1)" disabled>←</button>
+  <button class="nb" id="nbtn" onclick="go(1)">→</button>
+</div>
+
+<script>
+const TOTAL=2;
+let cur=0,anim=false,tx=0,ty=0;
+const dotsEl=document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');d.className='d'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);dotsEl.appendChild(d);
+}
+function goTo(i){
+  if(anim||i===cur||i<0||i>=TOTAL)return;
+  anim=true;
+  document.getElementById('p'+cur).classList.remove('active');
+  document.getElementById('p'+cur).classList.add('exit');
+  setTimeout(()=>{const el=document.getElementById('p'+cur);if(el)el.classList.remove('exit');},460);
+  document.getElementById('p'+i).classList.add('active');
+  cur=i;
+  document.querySelectorAll('.d').forEach((d,j)=>d.classList.toggle('active',j===cur));
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nbtn').disabled=cur===TOTAL-1;
+  document.getElementById('pcount').textContent=(cur+1)+' / '+TOTAL;
+  setTimeout(()=>anim=false,470);
+}
+function go(d){goTo(cur+d);}
+document.getElementById('book').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('book').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>36)go(dx<0?1:-1);
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+</script>
+</body>
+</html>

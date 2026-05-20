@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AA2 · Spoke 34 Storybook · 17 Panels · Canon v46</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #1BB8FF;
+  --blue-dim: rgba(27,184,255,0.12);
+  --blue-border: rgba(27,184,255,0.38);
+  --green: #1D9E75;
+  --green-dim: rgba(29,158,117,0.12);
+  --amber: #C49A2A;
+  --amber-dim: rgba(196,154,42,0.12);
+  --red: #E05252;
+  --red-dim: rgba(224,82,82,0.10);
+  --bg: #0A0804;
+  --page: #050403;
+  --card: #150F0A;
+  --card-elev: #1C140D;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.14);
+  --white: #FFFFFF;
+  --muted: rgba(255,255,255,0.55);
+  --muted-2: rgba(255,255,255,0.35);
+  --display: 'Bebas Neue', sans-serif;
+  --serif: 'Cormorant Garamond', serif;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--page);
+  color: var(--white);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* ── PAGE HEADER ──────────────────────────────── */
+.page-head {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 40px 28px 24px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.page-head .left { display: flex; flex-direction: column; gap: 6px; }
+.page-head .eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.page-head h1 {
+  font-family: var(--display);
+  font-size: 58px;
+  line-height: 0.92;
+  letter-spacing: 1.5px;
+  color: var(--white);
+}
+.page-head h1 .accent { color: var(--blue); }
+.page-head .sub {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 15px;
+  margin-top: 6px;
+  max-width: 640px;
+  line-height: 1.4;
+}
+.page-head .right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--muted-2);
+}
+.page-head .right .blue { color: var(--blue); }
+.page-head .right .big {
+  font-family: var(--display);
+  font-size: 28px;
+  color: var(--white);
+  letter-spacing: 2px;
+}
+
+/* ── PANEL GRID ───────────────────────────────── */
+.grid {
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 36px 20px 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px 24px;
+  align-items: start;
+}
+
+/* ── PHONE FRAME ──────────────────────────────── */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.panel-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 6px;
+}
+.panel-label .num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+}
+.panel-label .sec {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+}
+.panel-label .ttl {
+  font-family: var(--display);
+  font-size: 17px;
+  letter-spacing: 1.5px;
+  color: var(--white);
+  padding: 0 6px;
+  line-height: 1;
+}
+
+.phone {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 9 / 19.5;
+  background: var(--bg);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 34px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 22px 48px rgba(0,0,0,0.65),
+    inset 0 0 0 2px rgba(0,0,0,0.7),
+    inset 0 0 0 3px rgba(255,255,255,0.03);
+  position: relative;
+}
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 20px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 10;
+}
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 16px 18px;
+  overflow: hidden;
+  position: relative;
+  background:
+    radial-gradient(ellipse 300px 200px at 50% -50px, rgba(27,184,255,0.05), transparent),
+    var(--bg);
+}
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.top-bar .ts {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--muted-2);
+  letter-spacing: 1.5px;
+}
+.top-bar .glyph {
+  color: var(--blue);
+  font-size: 9px;
+}
+.top-bar .ind {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--blue);
+  letter-spacing: 1.5px;
+}
+
+/* Typography atoms inside phones */
+.p-eye {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--blue);
+  letter-spacing: 2.5px;
+  margin-bottom: 4px;
+}
+.p-h1 {
+  font-family: var(--display);
+  font-size: 32px;
+  line-height: 0.9;
+  letter-spacing: 1.2px;
+  margin-bottom: 8px;
+}
+.p-h1 .accent { color: var(--blue); }
+.p-h1 .red { color: var(--red); }
+.p-h1 .green { color: var(--green); }
+.p-h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  line-height: 0.95;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+.p-sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+.p-body {
+  font-family: var(--sans);
+  font-size: 10px;
+  color: var(--white);
+  line-height: 1.4;
+}
+.p-mono {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--white);
+  letter-spacing: 0.5px;
+}
+.p-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--muted-2);
+  letter-spacing: 2px;
+  text-align: center;
+}
+.p-foot .blue { color: var(--blue); }
+
+/* Common sub-components */
+.split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 4px;
+}
+.split-col {
+  border-radius: 8px;
+  padding: 8px 7px;
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+.split-col.alive { border-top: 2px solid var(--green); }
+.split-col.toss { border-top: 2px solid var(--red); }
+.split-col .sc-head {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+.split-col.alive .sc-head { color: var(--green); }
+.split-col.toss .sc-head { color: var(--red); }
+.split-col .row {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+.split-col .row:last-child { border-bottom: none; }
+.split-col .row .rn {
+  font-family: var(--sans);
+  font-size: 8px;
+  color: var(--white);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.split-col .row .dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  display: inline-block;
+}
+.split-col.alive .dot { background: var(--green); }
+.split-col.toss .dot { background: var(--red); }
+.split-col.alive .row.warn .dot { background: var(--amber); }
+.split-col .row .rm {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: var(--muted-2);
+  letter-spacing: 0.5px;
+}
+
+.chip-row {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.chip {
+  padding: 3px 7px;
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 1px;
+  line-height: 1.4;
+}
+.chip.blue { background: var(--blue-dim); border: 1px solid var(--blue-border); color: var(--blue); }
+.chip.green { background: var(--green-dim); border: 1px solid rgba(29,158,117,0.3); color: var(--green); }
+.chip.amber { background: var(--amber-dim); border: 1px solid rgba(196,154,42,0.3); color: var(--amber); }
+.chip.red { background: var(--red-dim); border: 1px solid rgba(224,82,82,0.3); color: var(--red); }
+
+.pair-card {
+  border: 1px solid var(--blue-border);
+  border-radius: 10px;
+  padding: 12px;
+  background:
+    linear-gradient(180deg, rgba(27,184,255,0.04), transparent 40%),
+    var(--card);
+  margin-top: 8px;
+}
+.pair-card .pc-eye {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--blue);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.pair-card .pc-items {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.pair-card .pc-items .plus { color: var(--blue); font-weight: 400; margin: 0 2px; }
+.pair-card .pc-effect {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+.pair-card .pc-delta {
+  font-family: var(--mono);
+  font-size: 8px;
+  color: var(--green);
+  letter-spacing: 1px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+/* Label preview (masking tape) */
+.tape {
+  background: #f5f1e8;
+  color: #1a1a1a;
+  padding: 8px 10px 7px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  margin: 8px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  position: relative;
+  transform: rotate(-0.5deg);
+}
+.tape::before {
+  content: "";
+  position: absolute;
+  top: -6px; left: 25%; right: 25%;
+  height: 12px;
+  background: repeating-linear-gradient(90deg, rgba(255,230,150,0.85) 0px, rgba(255,230,150,0.85) 2.5px, rgba(255,230,150,0.55) 2.5px, rgba(255,230,150,0.55) 5px);
+  border-radius: 1px;
+  opacity: 0.75;
+  transform: rotate(-2deg);
+}
+.tape .tn {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.tape .ts {
+  font-size: 8px;
+  color: #3a3a3a;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+.tape .tsig {
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 3px;
+  border-top: 1px dashed rgba(0,0,0,0.15);
+}
+.tape .tsig .g { color: #1BB8FF; font-size: 8px; }
+.tape .tsig .s { color: #1D9E75; }
+
+/* Layer stack for generator */
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 4px;
+}
+.layer {
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--blue);
+  background: rgba(0,0,0,0.3);
+  padding: 6px 9px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.layer-n {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: var(--muted-2);
+  letter-spacing: 1.5px;
+  min-width: 42px;
+}
+.layer-v {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  color: var(--white);
+  flex: 1;
+  text-align: right;
+  letter-spacing: 0.3px;
+}
+.layer-v .blue { color: var(--blue); }
+.layer-v .gr { color: var(--green); }
+
+/* CTA row */
+.ctas {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.cta {
+  flex: 1;
+  padding: 7px 4px;
+  border-radius: 6px;
+  border: 1px solid var(--blue-border);
+  background: var(--blue-dim);
+  color: var(--blue);
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: 1.2px;
+  text-align: center;
+}
+.cta.primary { background: var(--blue); color: #03050A; border-color: var(--blue); font-weight: 500; }
+
+/* Legend grid */
+.leg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 6px;
+  margin-top: 6px;
+}
+.leg-col h4 {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--blue);
+  letter-spacing: 1.8px;
+  margin-bottom: 4px;
+}
+.leg-col .lr {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--white);
+  margin-bottom: 2px;
+  display: flex;
+  gap: 6px;
+}
+.leg-col .lr .lc {
+  color: var(--blue);
+  min-width: 18px;
+  font-weight: 500;
+}
+.leg-col .lr .ld { color: var(--muted); font-family: var(--sans); }
+
+/* Device / mode tile grid */
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-top: 6px;
+}
+.mode-tile {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 9px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mode-tile.primary { border: 1px solid var(--blue-border); background: linear-gradient(180deg, rgba(27,184,255,0.06), var(--card)); }
+.mode-tile .mn {
+  font-family: var(--display);
+  font-size: 13px;
+  letter-spacing: 0.8px;
+  line-height: 1;
+}
+.mode-tile .md {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 8.5px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+.mode-tile .mc {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: var(--blue);
+  letter-spacing: 1.3px;
+  margin-top: 2px;
+}
+
+/* Jar viz */
+.jar {
+  width: 50px;
+  min-width: 50px;
+  height: 70px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.jar .cap {
+  width: 36px;
+  height: 10px;
+  background: linear-gradient(180deg, #4a3620, #2a1e12);
+  border: 1px solid rgba(196,154,42,0.35);
+  border-radius: 2px 2px 0 0;
+}
+.jar .body {
+  width: 46px;
+  flex: 1;
+  background: linear-gradient(180deg, #2a1f14 0%, #1a1008 100%);
+  border: 1px solid rgba(196,154,42,0.25);
+  border-top: none;
+  border-radius: 3px 3px 5px 5px;
+  position: relative;
+  overflow: hidden;
+}
+.jar .body::before {
+  content: "";
+  position: absolute;
+  top: 3px; left: 6px;
+  width: 1.5px; height: 24px;
+  background: rgba(255,255,255,0.12);
+}
+.jar .label {
+  position: absolute;
+  bottom: 6px;
+  left: 3px; right: 3px;
+  background: #f5f1e8;
+  color: #1a1a1a;
+  padding: 2px 1px 2px;
+  font-family: var(--mono);
+  font-size: 4px;
+  text-align: center;
+  line-height: 1.2;
+  border-radius: 1px;
+  transform: rotate(-1deg);
+}
+.jar .label .sg { color: #1BB8FF; font-size: 4px; font-weight: 600; }
+
+/* Dispensary card */
+.disp {
+  background: var(--card);
+  border: 1px solid var(--amber-dim);
+  border-left: 2px solid var(--amber);
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin-top: 6px;
+}
+.disp .dh {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--amber);
+  letter-spacing: 1.5px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+.disp .dt {
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+.disp .de {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--green);
+  letter-spacing: 0.5px;
+}
+
+/* Print receipt */
+.receipt {
+  background: #f5f1e8;
+  color: #1a1a1a;
+  padding: 10px 10px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  margin-top: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.receipt .rh {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed rgba(0,0,0,0.2);
+  margin-bottom: 5px;
+}
+.receipt .rl {
+  font-size: 7px;
+  color: #2a2a2a;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+.receipt .rl .lab { color: #1BB8FF; font-weight: 600; }
+.receipt .rsig {
+  font-size: 7.5px;
+  color: #1BB8FF;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-align: center;
+  padding-top: 5px;
+  border-top: 1px dashed rgba(0,0,0,0.2);
+  margin-top: 5px;
+}
+
+/* Seg chips for B2B */
+.segs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.segs .s {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  border-radius: 3px;
+  letter-spacing: 1.1px;
+}
+
+/* Indicator bar for off-grid */
+.indicator {
+  background: linear-gradient(90deg, rgba(196,154,42,0.14), rgba(196,154,42,0.04));
+  border: 1px solid rgba(196,154,42,0.3);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  color: var(--amber);
+  letter-spacing: 1.8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+.indicator .dot-amber {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 6px var(--amber);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Finale panel */
+.finale {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(27,184,255,0.14), transparent 60%),
+    var(--bg);
+}
+.finale .glyph-big {
+  font-family: var(--display);
+  font-size: 72px;
+  color: var(--blue);
+  text-align: center;
+  line-height: 1;
+  margin-bottom: 12px;
+}
+.finale .big-line {
+  font-family: var(--display);
+  font-size: 28px;
+  text-align: center;
+  letter-spacing: 1.5px;
+  line-height: 0.95;
+  margin-bottom: 6px;
+}
+.finale .big-line .a { color: var(--blue); }
+
+/* Section divider on page */
+.sec-divider {
+  max-width: 1560px;
+  margin: 10px auto 0;
+  padding: 36px 28px 8px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sec-divider .lbl {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--blue);
+  letter-spacing: 3px;
+}
+.sec-divider .ln { flex: 1; height: 1px; background: var(--line); }
+
+.page-foot {
+  max-width: 1560px;
+  margin: 40px auto 0;
+  padding: 20px 28px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--muted-2);
+  letter-spacing: 2.5px;
+  text-align: center;
+}
+.page-foot .blue { color: var(--blue); }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="left">
+    <div class="eyebrow">CANON v46 · SEALED · SPOKE 34 STORYBOOK</div>
+    <h1>STILL ALIVE<br><span class="accent">&amp; SAFE.</span> · 17 PANELS.</h1>
+    <div class="sub">The full doctrine — cabinet scan, synergy, Alive Code, sharpie shorthand, four delivery modes, Cloves expanded, Off-Grid Dispensary, Paper Layer, B2B enterprise — rendered as a seventeen-panel walkthrough. Every screen dark UI, every print on masking tape, every signature bearing ◆.</div>
+  </div>
+  <div class="right">
+    <div class="blue">◆</div>
+    <div class="big">17 / 17</div>
+    <div>APRIL 23, 2026</div>
+    <div>I AM THE RECEIPT</div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">PANELS 01 — 04 · THE CABINET</div><div class="ln"></div></div>
+
+<div class="grid">
+
+  <!-- ─── PANEL 01 · HERO ─────────────────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">01 / 17</span><span class="sec">OPEN</span></div>
+    <div class="ttl">The Cold Open</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">100%</span></div>
+      <div class="p-eye">APOTHECARY · THE EQUALIZER</div>
+      <div class="p-h1">STILL ALIVE<br><span class="accent">&amp; SAFE.</span></div>
+      <div class="p-sub">Your kitchen has been lying to you. The best-by dates were written by someone who has never met you.</div>
+      <div class="p-sub" style="color:var(--white);font-style:normal;font-family:var(--sans);font-size:10px;margin-top:14px;line-height:1.45;">AA2 writes the truth of what you own — in your handwriting, dated the day you opened it.</div>
+      <div style="margin-top:16px;padding:10px;border:1px solid var(--blue-border);border-radius:8px;background:var(--blue-dim);">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--blue);letter-spacing:1.5px;text-align:center;">TAP TO SCAN YOUR CABINET</div>
+      </div>
+      <div class="p-foot">I AM THE RECEIPT  ·  <span class="blue">◆</span>  ·  v46</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 02 · SCAN · SPLIT COLUMN ──────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">02 / 17</span><span class="sec">SCAN</span></div>
+    <div class="ttl">The Cabinet</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">SCAN 4·23</span></div>
+      <div style="display:flex;gap:4px;margin-bottom:6px;">
+        <div style="flex:1;background:var(--card);border-top:2px solid var(--green);border-radius:6px;padding:6px 0;text-align:center;font-family:var(--display);font-size:18px;color:var(--green);">14</div>
+        <div style="flex:1;background:var(--card);border-top:2px solid var(--amber);border-radius:6px;padding:6px 0;text-align:center;font-family:var(--display);font-size:18px;color:var(--amber);">06</div>
+        <div style="flex:1;background:var(--card);border-top:2px solid var(--red);border-radius:6px;padding:6px 0;text-align:center;font-family:var(--display);font-size:18px;color:var(--red);">09</div>
+      </div>
+      <div class="split">
+        <div class="split-col alive">
+          <div class="sc-head"><span>ALIVE</span><span>14</span></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Cloves · W</div><div class="rm">W 2·14·26 G▲</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Cinnamon stick</div><div class="rm">W 1·20·26</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Tulsi leaf</div><div class="rm">L 1·5·26 ★</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Turmeric FZ</div><div class="rm">FZ 3·1·26</div></div>
+          <div class="row warn"><div class="rn"><span class="dot"></span>Cumin · G</div><div class="rm">G 11·8 ◐</div></div>
+          <div class="row warn"><div class="rn"><span class="dot"></span>Nettle leaf</div><div class="rm">L 11·20 ◐</div></div>
+        </div>
+        <div class="split-col toss">
+          <div class="sc-head"><span>TOSS</span><span>9</span></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Cinnamon · G</div><div class="rm">✕ 18 MO</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Turmeric · G</div><div class="rm">✕ △ 8%</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Bay leaves</div><div class="rm">✕ FADED</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Green tea</div><div class="rm">✕ FLAT</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Rosemary oil</div><div class="rm">✕ RISK</div></div>
+          <div class="row"><div class="rn"><span class="dot"></span>Paprika</div><div class="rm">✕ NO COLOR</div></div>
+        </div>
+      </div>
+      <div class="p-foot">9 TOSS IN 30 SECONDS  ·  <span class="blue">◆</span></div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 03 · THE PROBLEM ──────────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">03 / 17</span><span class="sec">TRUTH</span></div>
+    <div class="ttl">The Lie</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">100%</span></div>
+      <div class="p-eye">THE DOCTRINE</div>
+      <div class="p-h1">THE <span class="red">DATE</span><br>ON THE JAR<br>IS NOT THE<br>TRUTH.</div>
+      <div style="margin-top:14px;padding:10px 12px;border-left:2px solid var(--blue);background:rgba(27,184,255,0.04);">
+        <div class="p-sub" style="margin:0;font-size:11px;">The manufacturer does not know when you opened it. The manufacturer does not know your kitchen temperature. The manufacturer does not know your life.</div>
+      </div>
+      <div style="margin-top:14px;padding:10px 12px;border-left:2px solid var(--green);background:rgba(29,158,117,0.04);">
+        <div class="p-sub" style="margin:0;font-size:11px;color:var(--white);font-style:normal;font-family:var(--sans);">You know. And AA2 writes what you know, directly on the jar.</div>
+      </div>
+      <div class="p-mono" style="margin-top:14px;text-align:center;color:var(--blue);">Sharpie  date  =  truth.</div>
+      <div class="p-foot">SPOKE 34 DOCTRINE  ·  <span class="blue">◆</span></div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 04 · SYNERGY 1 — TURMERIC ─────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">04 / 17</span><span class="sec">SYNERGY</span></div>
+    <div class="ttl">The First Pair</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">RIBBON 1/6</span></div>
+      <div class="p-eye">SYNERGY · SWIPE →</div>
+      <div class="p-h2">INFLAMMATION</div>
+      <div class="pair-card" style="margin-top:14px;padding:14px;">
+        <div class="pc-eye">ROUTE: GUT · JOINT · RECOVERY</div>
+        <div class="pc-items" style="font-size:17px;">Turmeric <span class="plus">+</span> Black Pepper</div>
+        <div class="pc-effect" style="font-size:11px;">Piperine unlocks curcumin across the gut wall. Without pepper, most of the curcumin you eat never reaches your blood.</div>
+        <div class="pc-delta" style="font-size:9px;">▲ 2000% ABSORPTION</div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:var(--card);border-radius:6px;border:1px solid var(--line);">
+        <div class="p-mono" style="font-size:7.5px;color:var(--muted-2);letter-spacing:1.5px;margin-bottom:3px;">IN YOUR CABINET:</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Turmeric FZ 3·1·26 · ready</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Peppercorn W 9·1·24 · ready</div>
+      </div>
+      <div class="p-foot">ONE PAIR  ·  TWO SPOKES ALIVE</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">PANELS 05 — 08 · THE SYNERGY RIBBON</div><div class="ln"></div></div>
+<div class="grid">
+
+  <!-- ─── PANEL 05 · GINGER HONEY LEMON ───────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">05 / 17</span><span class="sec">SYNERGY</span></div>
+    <div class="ttl">Respiratory</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">RIBBON 2/6</span></div>
+      <div class="p-eye">SYNERGY · SWIPE →</div>
+      <div class="p-h2">RESPIRATORY</div>
+      <div class="pair-card" style="margin-top:14px;padding:14px;">
+        <div class="pc-eye">ROUTE: THROAT · MUCOSA · IMMUNE</div>
+        <div class="pc-items" style="font-size:16px;">Ginger <span class="plus">+</span> Honey <span class="plus">+</span> Lemon</div>
+        <div class="pc-effect" style="font-size:11px;">Gingerol opens the airway. Raw honey coats. Vitamin C buffers oxidative stress. Old medicine, still correct.</div>
+        <div class="pc-delta" style="font-size:9px;">▲ MUCOSA · IMMUNE BUFFER</div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:var(--card);border-radius:6px;border:1px solid var(--line);">
+        <div class="p-mono" style="font-size:7.5px;color:var(--muted-2);letter-spacing:1.5px;margin-bottom:3px;">IN YOUR CABINET:</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Ginger F 3·15·26 · firm</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Honey · 1 yr+ · shelf-stable</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--amber);">◐  Lemon F · pick fresh</div>
+      </div>
+      <div class="p-foot">THE CHEF WILL BREW THIS</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 06 · ROSEMARY OLIVE OIL ───────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">06 / 17</span><span class="sec">SYNERGY</span></div>
+    <div class="ttl">Circulatory</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">RIBBON 3/6</span></div>
+      <div class="p-eye">SYNERGY · SWIPE →</div>
+      <div class="p-h2">CIRCULATORY</div>
+      <div class="pair-card" style="margin-top:14px;padding:14px;">
+        <div class="pc-eye">ROUTE: VESSELS · COGNITION</div>
+        <div class="pc-items" style="font-size:17px;">Rosemary <span class="plus">+</span> Olive Oil</div>
+        <div class="pc-effect" style="font-size:11px;">Carnosic acid is fat-soluble. Water cannot carry it. Never steep rosemary in water and expect it to work — infuse in oil.</div>
+        <div class="pc-delta" style="font-size:9px;">▲ BIOAVAILABILITY</div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:rgba(224,82,82,0.06);border-radius:6px;border:1px solid rgba(224,82,82,0.3);">
+        <div class="p-mono" style="font-size:7.5px;color:var(--red);letter-spacing:1.5px;margin-bottom:3px;">◆ TAKE NOTICE</div>
+        <div class="p-mono" style="font-size:8px;color:var(--muted);line-height:1.35;font-family:var(--serif);font-style:italic;">Fresh herb in oil is a botulism risk. Refrigerate and use within 2–4 weeks. AA2 watches the clock.</div>
+      </div>
+      <div class="p-foot">CHEMISTRY RESPECTS NO TRADITION</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 07 · METABOLIC STACK ──────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">07 / 17</span><span class="sec">SYNERGY</span></div>
+    <div class="ttl">Metabolic</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">RIBBON 4/6</span></div>
+      <div class="p-eye">SYNERGY · SWIPE →</div>
+      <div class="p-h2">METABOLIC</div>
+      <div class="pair-card" style="margin-top:14px;padding:14px;">
+        <div class="pc-eye">ROUTE: GLUCOSE · WARMING</div>
+        <div class="pc-items" style="font-size:15px;">Cinnamon <span class="plus">+</span> Clove <span class="plus">+</span> Cardamom</div>
+        <div class="pc-effect" style="font-size:11px;">Eugenol stack. Three warming spices that modulate insulin response together — gentler than any one of them alone.</div>
+        <div class="pc-delta" style="font-size:9px;">▲ INSULIN RESPONSE</div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:var(--card);border-radius:6px;border:1px solid var(--line);">
+        <div class="p-mono" style="font-size:7.5px;color:var(--muted-2);letter-spacing:1.5px;margin-bottom:3px;">IN YOUR CABINET:</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Cinnamon stick W 1·20·26</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Cloves W 2·14·26 · 3-5 yr</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--amber);">◐  Cardamom · needs replace</div>
+      </div>
+      <div class="p-foot">TWO READY  ·  ONE TO RESTOCK</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 08 · NERVINE ──────────────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">08 / 17</span><span class="sec">SYNERGY</span></div>
+    <div class="ttl">Nervine</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">RIBBON 5/6</span></div>
+      <div class="p-eye">SYNERGY · SWIPE →</div>
+      <div class="p-h2">NERVINE</div>
+      <div class="pair-card" style="margin-top:14px;padding:14px;">
+        <div class="pc-eye">ROUTE: HPA AXIS · SLEEP · RECOVERY</div>
+        <div class="pc-items" style="font-size:17px;">Tulsi <span class="plus">+</span> Ashwagandha</div>
+        <div class="pc-effect" style="font-size:11px;">Adaptogen stack. Cortisol buffer for the HPA axis. Takes four to six weeks to feel it; worth every day.</div>
+        <div class="pc-delta" style="font-size:9px;">▲ SLEEP · RECOVERY</div>
+      </div>
+      <div style="margin-top:12px;padding:8px 10px;background:var(--card);border-radius:6px;border:1px solid var(--line);">
+        <div class="p-mono" style="font-size:7.5px;color:var(--muted-2);letter-spacing:1.5px;margin-bottom:3px;">IN YOUR CABINET:</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--green);">★  Tulsi L 1·5·26 · peak</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--amber);">◐  Ashwagandha TN 12·1·23</div>
+      </div>
+      <div style="margin-top:8px;padding:6px 9px;border-radius:6px;background:var(--blue-dim);border:1px solid var(--blue-border);">
+        <div class="p-mono" style="font-size:7px;color:var(--blue);letter-spacing:1.3px;text-align:center;">BIO BUDDY: YOUR SLEEP SCORE IS DOWN 12% — BREW TULSI TONIGHT</div>
+      </div>
+      <div class="p-foot">TWO INTELLIGENCES AGREE</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">PANELS 09 — 12 · THE ALIVE CODE</div><div class="ln"></div></div>
+<div class="grid">
+
+  <!-- ─── PANEL 09 · GENERATOR ────────────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">09 / 17</span><span class="sec">GENERATOR</span></div>
+    <div class="ttl">The 3 Layers</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">ALIVE CODE</span></div>
+      <div class="p-eye">BAR · CODE · OF · SAFETY</div>
+      <div class="p-h1">GENERATE.<br><span class="accent">PEEL.</span> STICK.</div>
+      <div class="layers">
+        <div class="layer"><div class="layer-n">LAYER 1</div><div class="layer-v"><span class="blue">CLOVES · WHOLE</span></div></div>
+        <div class="layer"><div class="layer-n">LAYER 2</div><div class="layer-v">W · 2·14·26 · G▲</div></div>
+        <div class="layer"><div class="layer-n">LAYER 3</div><div class="layer-v"><span class="blue">◆ TRQ8</span> · <span class="gr">★ 3·5 YR</span></div></div>
+      </div>
+      <div class="tape">
+        <div class="tn">CLOVES · WHOLE</div>
+        <div class="ts">W 2·14·26 G▲</div>
+        <div class="tsig"><span class="g">◆ TRQ8</span><span class="s">★ ALIVE 3·5 YR</span></div>
+      </div>
+      <div class="ctas">
+        <div class="cta primary">WRITE</div>
+        <div class="cta">PNG</div>
+        <div class="cta">THERMAL</div>
+      </div>
+      <div class="p-foot">FOUR MODES  ·  ZERO MEMORIZATION</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 10 · SHARPIE LEGEND ───────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">10 / 17</span><span class="sec">LEGEND</span></div>
+    <div class="ttl">Your Sharpie</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">SHORTHAND</span></div>
+      <div class="p-eye">THE AA2 SHORTHAND</div>
+      <div class="p-h2">YOUR SHARPIE<br>IS YOUR SCANNER.</div>
+      <div class="p-sub" style="margin-top:4px;">One line per jar. Cabinet readable in a glance.</div>
+      <div class="leg-grid" style="margin-top:10px;">
+        <div class="leg-col">
+          <h4>FORM</h4>
+          <div class="lr"><span class="lc">W</span><span class="ld">Whole</span></div>
+          <div class="lr"><span class="lc">G</span><span class="ld">Ground</span></div>
+          <div class="lr"><span class="lc">L</span><span class="ld">Leaf</span></div>
+          <div class="lr"><span class="lc">F</span><span class="ld">Fresh</span></div>
+          <div class="lr"><span class="lc">TN</span><span class="ld">Tincture</span></div>
+          <div class="lr"><span class="lc">TB</span><span class="ld">Tea</span></div>
+          <div class="lr"><span class="lc">O</span><span class="ld">Oil</span></div>
+          <div class="lr"><span class="lc">H</span><span class="ld">Honey</span></div>
+        </div>
+        <div class="leg-col">
+          <h4>STORAGE</h4>
+          <div class="lr"><span class="lc">G▲</span><span class="ld">Glass</span></div>
+          <div class="lr"><span class="lc">P▼</span><span class="ld">Paper</span></div>
+          <div class="lr"><span class="lc">R</span><span class="ld">Fridge</span></div>
+          <div class="lr"><span class="lc">FZ</span><span class="ld">Frozen</span></div>
+          <div class="lr"><span class="lc">AM</span><span class="ld">Amber</span></div>
+          <div class="lr"><span class="lc">VAC</span><span class="ld">Vacuum</span></div>
+          <h4 style="margin-top:8px;">STATUS</h4>
+          <div class="lr"><span class="lc">★</span><span class="ld">Peak</span></div>
+          <div class="lr"><span class="lc">◐</span><span class="ld">Half</span></div>
+        </div>
+      </div>
+      <div class="p-foot">LEARN IT ONCE  ·  USE IT FOREVER</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 11 · 4 DELIVERY MODES ─────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">11 / 17</span><span class="sec">DELIVERY</span></div>
+    <div class="ttl">Four Modes</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">CHOOSE</span></div>
+      <div class="p-eye">HOW YOU PRINT IT</div>
+      <div class="p-h2">CHOOSE YOUR<br>DELIVERY.</div>
+      <div class="mode-grid">
+        <div class="mode-tile primary">
+          <div class="mn">WRITE</div>
+          <div class="md">Sharpie on masking tape. Zero hardware.</div>
+          <div class="mc">FREE · ANYONE</div>
+        </div>
+        <div class="mode-tile">
+          <div class="mn">PNG</div>
+          <div class="md">Print from any phone-connected printer.</div>
+          <div class="mc">FREE</div>
+        </div>
+        <div class="mode-tile">
+          <div class="mn">THERMAL</div>
+          <div class="md">2-inch Bluetooth sticker printer.</div>
+          <div class="mc">PAID · HARDWARE</div>
+        </div>
+        <div class="mode-tile">
+          <div class="mn">ROLL</div>
+          <div class="md">AA2 pre-printed ◆ glyph rolls.</div>
+          <div class="mc">MERCH</div>
+        </div>
+      </div>
+      <div class="p-foot">CABIN  ·  KITCHEN  ·  YACHT  ·  RANCH</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 12 · CLOVES EXPANDED ──────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">12 / 17</span><span class="sec">DETAIL</span></div>
+    <div class="ttl">Tap to Expand</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">TRQ8</span></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;">
+        <div class="jar">
+          <div class="cap"></div>
+          <div class="body">
+            <div class="label">
+              <div>CLOVES W</div>
+              <div>2·14·26</div>
+              <div class="sg">◆ TRQ8</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;">
+          <div class="p-h2" style="font-size:26px;">CLOVES</div>
+          <div class="p-sub" style="font-size:10px;margin:0;">Syzygium aromaticum</div>
+          <div class="chip-row" style="margin-top:5px;">
+            <span class="chip blue">◆ TRQ8</span>
+            <span class="chip green">★ 3·5 YR</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:8px;">
+        <div style="background:var(--card);padding:8px;border-left:2px solid var(--green);">
+          <div class="p-mono" style="font-size:6.5px;color:var(--muted-2);letter-spacing:1.5px;">WHOLE</div>
+          <div style="font-family:var(--serif);font-size:16px;font-weight:500;">3–5 <span style="font-family:var(--mono);font-size:8px;color:var(--muted);">YR</span></div>
+        </div>
+        <div style="background:var(--card);padding:8px;border-left:2px solid var(--red);">
+          <div class="p-mono" style="font-size:6.5px;color:var(--muted-2);letter-spacing:1.5px;">GROUND</div>
+          <div style="font-family:var(--serif);font-size:16px;font-weight:500;">6 <span style="font-family:var(--mono);font-size:8px;color:var(--muted);">MO</span></div>
+        </div>
+      </div>
+      <div style="background:rgba(29,158,117,0.08);border:1px solid rgba(29,158,117,0.3);border-radius:5px;padding:6px 8px;margin-bottom:4px;">
+        <div class="p-mono" style="font-size:7px;color:var(--green);letter-spacing:1.2px;margin-bottom:2px;">CHEF</div>
+        <div class="p-sub" style="font-size:9px;margin:0;color:var(--muted);font-family:var(--serif);font-style:italic;">Crush one whole clove into ghee before onions. Never add ground at the end.</div>
+      </div>
+      <div style="background:rgba(224,82,82,0.06);border:1px solid rgba(224,82,82,0.3);border-radius:5px;padding:6px 8px;">
+        <div class="p-mono" style="font-size:7px;color:var(--red);letter-spacing:1.2px;margin-bottom:2px;">EQUALIZER</div>
+        <div class="p-sub" style="font-size:9px;margin:0;color:var(--muted);font-family:var(--serif);font-style:italic;">Eugenol 82% · heat-stable to 180°C · metabolic stack anchor.</div>
+      </div>
+      <div class="p-foot">TAP ◆ UNLOCK  ·  $9/MO</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">PANELS 13 — 14 · OFF-GRID DISPENSARY</div><div class="ln"></div></div>
+<div class="grid">
+
+  <!-- ─── PANEL 13 · OFF-GRID MODE ACTIVE ─────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">13 / 17</span><span class="sec">OFF-GRID</span></div>
+    <div class="ttl">Grid Down</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind" style="color:var(--amber);">NO SIGNAL</span></div>
+      <div class="indicator">
+        <span class="dot-amber"></span>
+        ◆ OFF-GRID · DISPENSARY ACTIVE
+      </div>
+      <div class="p-eye" style="color:var(--amber);">THE APOTHECARY STILL RUNS</div>
+      <div class="p-h1" style="font-size:28px;">WHEN THE<br>TOWER <span class="red">DIES.</span><br>AA2 <span class="accent">DOES NOT.</span></div>
+      <div style="margin-top:14px;padding:9px 10px;background:var(--card);border-radius:6px;border:1px solid var(--line);">
+        <div class="p-mono" style="font-size:7px;color:var(--muted-2);letter-spacing:1.5px;margin-bottom:5px;">LOCAL CACHE · READY</div>
+        <div class="p-mono" style="font-size:8px;color:var(--green);line-height:1.6;">✓  Full pantry + Alive Codes</div>
+        <div class="p-mono" style="font-size:8px;color:var(--green);line-height:1.6;">✓  Forager Chiriquí bioregion</div>
+        <div class="p-mono" style="font-size:8px;color:var(--green);line-height:1.6;">✓  Body Map routes</div>
+        <div class="p-mono" style="font-size:8px;color:var(--green);line-height:1.6;">✓  Offline Concierge</div>
+        <div class="p-mono" style="font-size:8px;color:var(--green);line-height:1.6;">✓  Sync queue armed</div>
+      </div>
+      <div class="p-foot">ARCHITECTED FOR GRID FAILURE  ·  <span class="blue">◆</span></div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 14 · DISPENSARY LOOKUP ────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">14 / 17</span><span class="sec">LOOKUP</span></div>
+    <div class="ttl">Symptom In</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">2:13</span><span class="glyph">◆</span><span class="ind" style="color:var(--amber);">OFFLINE</span></div>
+      <div class="indicator">
+        <span class="dot-amber"></span>
+        ◆ DISPENSARY · QUERY
+      </div>
+      <div class="p-eye">SYMPTOM IN · PROTOCOL OUT</div>
+      <div class="p-h2">CHILD · FEVER<br>101.3°F</div>
+      <div class="p-sub" style="margin-top:4px;">From your pantry. Right now. Nothing needs the cloud.</div>
+      <div class="disp">
+        <div class="dh"><span>★ PEAK · AVAILABLE</span><span>◆ EB45</span></div>
+        <div class="dt">Elderberry tincture</div>
+        <div class="p-mono" style="font-size:7.5px;color:var(--muted);letter-spacing:0.5px;line-height:1.3;margin-top:3px;">TN 10·15·25 AM · 1/2 tsp every 3 hrs · under tongue</div>
+      </div>
+      <div class="disp">
+        <div class="dh"><span>★ PEAK · AVAILABLE</span><span>◆ GI22</span></div>
+        <div class="dt">Ginger + Honey + Lemon</div>
+        <div class="p-mono" style="font-size:7.5px;color:var(--muted);letter-spacing:0.5px;line-height:1.3;margin-top:3px;">Brew · warm · small sips · calm + hydrate</div>
+      </div>
+      <div class="disp" style="border-left-color:var(--red);">
+        <div class="dh" style="color:var(--red);"><span>TAKE NOTICE</span><span></span></div>
+        <div class="p-sub" style="margin:0;font-size:9px;">Fever above 103°F or lasting 48h+ — emergency. Offline routing: nearest facility 47 min.</div>
+      </div>
+      <div class="p-foot">LOCAL DECISION TREE  ·  ZERO API CALLS</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">PANELS 15 — 16 · THE PAPER LAYER</div><div class="ln"></div></div>
+<div class="grid">
+
+  <!-- ─── PANEL 15 · WHAT PRINTS ──────────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">15 / 17</span><span class="sec">PAPER</span></div>
+    <div class="ttl">Everything Prints</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">PRINT</span></div>
+      <div class="p-eye">THE SOVEREIGNTY STACK</div>
+      <div class="p-h1" style="font-size:30px;">CLOUD.<br>LOCAL.<br><span class="accent">PAPER.</span></div>
+      <div class="p-sub" style="margin-top:4px;">Three-layer redundancy. The device can die. The print cannot.</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;">
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ ALIVE CODES</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ SCAN VERDICTS</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ CHEF RECIPES</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ WINE PAIRINGS</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ PILL CLARIFIER</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ TRAVEL ROUTES</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ DISPENSARY CARDS</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ FAMILY PROTOCOLS</div>
+        <div class="p-mono" style="font-size:8.5px;color:var(--white);padding:5px 8px;background:var(--card);border-left:2px solid var(--blue);border-radius:3px;">◆ PANIC CARDS</div>
+      </div>
+      <div class="p-foot">EVERY RESULT · PRINTABLE · FOREVER</div>
+    </div></div>
+  </div>
+
+  <!-- ─── PANEL 16 · PRINTED ARTIFACT ─────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">16 / 17</span><span class="sec">ARTIFACT</span></div>
+    <div class="ttl">The Print</div>
+    <div class="phone"><div class="screen">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">A4 · READY</span></div>
+      <div class="p-eye">FRIDGE SHEET · FAMILY PROTOCOL</div>
+      <div class="p-h2" style="font-size:18px;">MAYA · AGE 7<br>PEANUT · DAIRY</div>
+      <div class="receipt">
+        <div class="rh">◆ AA2 · PROTOCOL ◆</div>
+        <div class="rl"><span class="lab">FOR</span><span>MAYA PITTS</span></div>
+        <div class="rl"><span class="lab">AGE</span><span>7</span></div>
+        <div class="rl"><span class="lab">FLAG</span><span>PEANUT · DAIRY</span></div>
+        <div class="rl"><span class="lab">EPIPEN</span><span>FRIDGE · TOP</span></div>
+        <div class="rl"><span class="lab">EMERGENCY</span><span>911 · MOM (555)</span></div>
+        <div class="rl"><span class="lab">SAFE SNACKS</span><span>SUNBUTTER · RICE CAKES</span></div>
+        <div class="rl"><span class="lab">IF EXPOSED</span><span>EPIPEN · CALL 911</span></div>
+        <div class="rsig">◆ JRP · 4·23·26 · M7PN</div>
+      </div>
+      <div class="p-sub" style="font-size:9.5px;margin-top:8px;">Tape to the fridge. The babysitter does not need AA2. The paper IS AA2.</div>
+      <div class="ctas" style="margin-top:8px;">
+        <div class="cta primary">PRINT</div>
+        <div class="cta">THERMAL</div>
+        <div class="cta">PDF</div>
+      </div>
+      <div class="p-foot">HANDOFF READY  ·  <span class="blue">◆ M7PN</span></div>
+    </div></div>
+  </div>
+</div>
+
+<div class="sec-divider"><div class="lbl">PANELS 17 · B2B + THE CLOSE</div><div class="ln"></div></div>
+<div class="grid">
+
+  <!-- ─── PANEL 17 · B2B + FINALE ─────────────────── -->
+  <div class="panel">
+    <div class="panel-label"><span class="num">17 / 17</span><span class="sec">SEAL</span></div>
+    <div class="ttl">The Close</div>
+    <div class="phone"><div class="screen finale">
+      <div class="top-bar"><span class="ts">9:41</span><span class="glyph">◆</span><span class="ind">v46 SEALED</span></div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px 0;">
+        <div class="glyph-big">◆</div>
+        <div class="big-line">YOUR KITCHEN.</div>
+        <div class="big-line">YOUR RESTAURANT.</div>
+        <div class="big-line"><span class="a">YOUR MESS HALL.</span></div>
+        <div class="p-sub" style="text-align:center;margin-top:16px;font-size:11px;padding:0 8px;">Same code in a Boquete kitchen as a Michelin kitchen in Paris. Same system on a yacht as in a school cafeteria.</div>
+        <div class="segs" style="justify-content:center;margin-top:14px;max-width:260px;">
+          <span class="s">RESTAURANTS</span>
+          <span class="s">SCHOOLS</span>
+          <span class="s">HOTELS</span>
+          <span class="s">CATERERS</span>
+          <span class="s">MEAL KITS</span>
+          <span class="s">F1 KITCHEN</span>
+          <span class="s">PANAMA GOV</span>
+          <span class="s">PRIVATE JET</span>
+        </div>
+      </div>
+      <div style="padding:14px 0 6px;border-top:1px solid var(--blue-border);">
+        <div style="text-align:center;font-family:var(--display);font-size:16px;color:var(--blue);letter-spacing:2.5px;">I AM THE RECEIPT</div>
+      </div>
+      <div class="p-foot">CANON v46 · SEALED  ·  <span class="blue">◆</span>  ·  APRIL 23, 2026</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="page-foot">
+  ◆ &nbsp;SPOKE 34 · STILL ALIVE & SAFE · STORYBOOK ·&nbsp; <span class="blue">17 PANELS</span> &nbsp;· CANON v46 SEALED · JAMES R. PITTS II · FOUNDER · AA2 · I AM THE RECEIPT&nbsp; ◆
+</div>
+
+</body>
+</html>

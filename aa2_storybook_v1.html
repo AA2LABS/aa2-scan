@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AA2 — Complete Storybook · 27 Panels</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1BB8FF;--bdim:rgba(27,184,255,0.10);--bb:rgba(27,184,255,0.22);
+  --green:#1D9E75;--gdim:rgba(29,158,117,0.10);--gb:rgba(29,158,117,0.22);
+  --gold:#C49A2A;--ydim:rgba(196,154,42,0.10);--yb:rgba(196,154,42,0.22);
+  --red:#E05252;--rdim:rgba(224,82,82,0.10);--rb:rgba(224,82,82,0.22);
+  --orange:#E8873A;--odim:rgba(232,135,58,0.10);--ob:rgba(232,135,58,0.22);
+  --purple:#9B59B6;
+  --white:#FFFFFF;--muted:rgba(255,255,255,0.52);--dim:rgba(255,255,255,0.10);
+  --bg:#0A0804;--card:#120D08;--border:rgba(255,255,255,0.055);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);}
+.book{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* PANELS — NO SCROLL */
+.panel{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:0;
+  opacity:0;transform:translateX(100%);
+  transition:opacity .44s cubic-bezier(.4,0,.2,1),transform .44s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;
+}
+.panel.active{opacity:1;transform:translateX(0);}
+.panel.exit{opacity:0;transform:translateX(-40px);}
+
+/* PANEL INNER — fills height, no scroll */
+.pi{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:44px 22px 76px;
+  max-width:420px;
+  margin:0 auto;
+}
+
+/* CENTERED PANELS */
+.panel.center .pi{justify-content:center;align-items:center;text-align:center;}
+
+/* STAGGER */
+@keyframes up{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.panel.active .pi>*{animation:up .38s ease both;}
+.panel.active .pi>*:nth-child(1){animation-delay:.06s;}
+.panel.active .pi>*:nth-child(2){animation-delay:.12s;}
+.panel.active .pi>*:nth-child(3){animation-delay:.18s;}
+.panel.active .pi>*:nth-child(4){animation-delay:.24s;}
+.panel.active .pi>*:nth-child(5){animation-delay:.30s;}
+.panel.active .pi>*:nth-child(6){animation-delay:.36s;}
+.panel.active .pi>*:nth-child(7){animation-delay:.42s;}
+.panel.active .pi>*:nth-child(8){animation-delay:.48s;}
+.panel.active .pi>*:nth-child(9){animation-delay:.54s;}
+
+/* FLEX SPACER */
+.sp{flex:1;}
+
+/* TYPOGRAPHY */
+.ey{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--blue);margin-bottom:6px;}
+.ey.g{color:var(--gold);}.ey.gr{color:var(--green);}.ey.m{color:var(--muted);}.ey.r{color:var(--red);}.ey.o{color:var(--orange);}
+h1.hl{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,7.5vw,44px);line-height:1.08;font-weight:400;margin-bottom:10px;}
+h1.hl em{font-style:italic;color:var(--blue);}
+h1.hl.g em{color:var(--gold);}h1.hl.gr em{color:var(--green);}h1.hl.r em{color:var(--red);}
+.sub{font-size:13.5px;line-height:1.75;color:var(--muted);margin-bottom:10px;}
+.sub strong{color:var(--white);font-weight:500;}
+.mn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);}
+.mn.b{color:var(--blue);}.mn.g{color:var(--gold);}.mn.gr{color:var(--green);}.mn.r{color:var(--red);}
+
+/* DIVIDER */
+.dv{width:32px;height:1px;background:var(--bb);margin:6px 0 12px;flex-shrink:0;}
+.dv.g{background:var(--yb);}.dv.gr{background:var(--gb);}.dv.c{margin-left:auto;margin-right:auto;}
+
+/* CARD */
+.card{width:100%;background:var(--card);border-radius:13px;border:1px solid var(--border);padding:12px 14px;margin-bottom:8px;flex-shrink:0;}
+.card.b{border-color:var(--bb);background:rgba(27,184,255,0.03);}
+.card.g{border-color:var(--yb);background:rgba(196,154,42,0.03);}
+.card.gr{border-color:var(--gb);background:rgba(29,158,117,0.03);}
+.card.r{border-color:var(--rb);background:rgba(224,82,82,0.04);}
+.card.o{border-color:var(--ob);background:rgba(232,135,58,0.03);}
+.card.p{border-color:rgba(155,89,182,0.25);background:rgba(155,89,182,0.04);}
+
+/* CARD LABEL */
+.cl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:8px;flex-shrink:0;}
+.cl.g{color:var(--gold);}.cl.gr{color:var(--green);}.cl.r{color:var(--red);}.cl.m{color:var(--muted);}.cl.o{color:var(--orange);}
+
+/* ROW */
+.row{display:flex;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--border);gap:8px;flex-shrink:0;}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.row:first-child{padding-top:0;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.rn{font-size:13px;color:var(--white);flex:1;line-height:1.4;}
+.rn small{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.8px;margin-top:2px;}
+.rv{font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0;padding-top:1px;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;flex-shrink:0;}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--bb);background:var(--bdim);border-radius:20px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.2px;color:var(--blue);}
+.chip.g{border-color:var(--yb);background:var(--ydim);color:var(--gold);}
+.chip.gr{border-color:var(--gb);background:var(--gdim);color:var(--green);}
+.chip.r{border-color:var(--rb);background:var(--rdim);color:var(--red);}
+.chip.m{border-color:var(--dim);background:rgba(255,255,255,0.02);color:var(--muted);}
+.chip.o{border-color:var(--ob);background:var(--odim);color:var(--orange);}
+
+/* QUOTE */
+.qt{width:100%;border-left:2.5px solid var(--blue);background:var(--bdim);border-radius:0 10px 10px 0;padding:11px 13px;margin-bottom:8px;flex-shrink:0;}
+.qt p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.6;color:var(--white);}
+.qt.g{border-left-color:var(--gold);background:var(--ydim);}
+.qt.gr{border-left-color:var(--green);background:var(--gdim);}
+.qt.r{border-left-color:var(--red);background:var(--rdim);}
+
+/* SEVERITY */
+.sev{width:100%;border-radius:11px;border:1px solid;padding:11px 13px;margin-bottom:8px;flex-shrink:0;}
+.sev.danger{border-color:var(--rb);background:rgba(224,82,82,0.06);border-left:3px solid var(--red);}
+.sev.caution{border-color:var(--ob);background:rgba(232,135,58,0.05);border-left:3px solid var(--orange);}
+.sev.notice{border-color:var(--yb);background:rgba(196,154,42,0.05);border-left:3px solid var(--gold);}
+.sev.info{border-color:var(--bb);background:rgba(27,184,255,0.05);border-left:3px solid var(--blue);}
+.sev.clear{border-color:var(--gb);background:rgba(29,158,117,0.05);border-left:3px solid var(--green);}
+.sev-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;margin-bottom:5px;}
+.sev-ttl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;margin-bottom:5px;font-weight:500;}
+.sev-body{font-size:12.5px;color:var(--muted);line-height:1.65;}
+
+/* GRID 2 */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;margin-bottom:8px;flex-shrink:0;}
+.g2c{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px 12px;}
+.g2l{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;margin-bottom:7px;}
+.g2i{font-size:11px;color:var(--muted);padding:3px 0;border-bottom:1px solid var(--border);line-height:1.4;}
+.g2i:last-child{border-bottom:none;}.g2i.gr{color:var(--green);}
+
+/* WHO */
+.who{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid var(--border);width:100%;flex-shrink:0;}
+.who:last-child{border-bottom:none;}
+.wi{font-size:15px;width:22px;text-align:center;flex-shrink:0;margin-top:1px;}
+.wt{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--white);margin-bottom:3px;}
+.wd{font-size:12px;color:var(--muted);line-height:1.55;}
+
+/* EKG */
+canvas.ekg{width:100%;height:36px;display:block;margin-top:4px;flex-shrink:0;}
+.wave-row{display:flex;flex-direction:column;gap:2px;margin-bottom:7px;flex-shrink:0;}
+.wave-hdr{display:flex;align-items:center;justify-content:space-between;}
+
+/* STEP BADGE */
+.step-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--card);border:1px solid var(--gb);
+  border-radius:20px;padding:5px 14px;
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;
+  color:var(--green);margin-bottom:10px;flex-shrink:0;
+}
+
+/* STATUS BADGE */
+.sb{display:inline-flex;align-items:center;gap:3px;border-radius:5px;padding:2px 7px;font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1px;flex-shrink:0;}
+.sb.on{background:rgba(29,158,117,0.15);color:var(--green);}
+.sb.wa{background:rgba(196,154,42,0.15);color:var(--gold);}
+.sb.al{background:rgba(224,82,82,0.15);color:var(--red);}
+.sb.st{background:rgba(255,255,255,0.05);color:var(--muted);}
+.sd{width:4px;height:4px;border-radius:50%;}
+
+/* NUM */
+.num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--bb);font-family:'DM Mono',monospace;font-size:8px;color:var(--blue);flex-shrink:0;margin-top:1px;}
+
+/* CAPTION */
+.caption{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:16px;color:rgba(255,255,255,0.42);
+  text-align:center;line-height:1.5;flex-shrink:0;
+  margin-top:4px;
+}
+
+/* CTA */
+.cta{width:100%;background:var(--blue);color:#03050A;border:none;border-radius:13px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;flex-shrink:0;transition:opacity .2s;}
+.cta:hover{opacity:.9;}
+.cta.gr{background:var(--green);}
+.cta.g{background:var(--gold);}
+
+/* CHEF INGREDIENT ROW */
+.ing-row{
+  display:flex;align-items:flex-start;
+  padding:9px 0;border-bottom:1px solid var(--border);
+  gap:9px;flex-shrink:0;
+}
+.ing-row:last-child{border-bottom:none;}
+.ing-status{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.ing-name{flex:1;font-size:13px;color:var(--white);line-height:1.35;}
+.ing-name small{display:block;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.8px;margin-top:2px;}
+.ing-action{font-family:'DM Mono',monospace;font-size:9px;flex-shrink:0;padding-top:2px;}
+
+/* PROGRESS BAR */
+.prog-bar{width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px;margin-bottom:10px;overflow:hidden;flex-shrink:0;}
+.prog-fill{height:100%;border-radius:2px;background:var(--green);}
+
+/* UPGRADE GATE */
+.upgrade-gate{
+  width:100%;border:1px solid var(--yb);background:rgba(196,154,42,0.06);
+  border-radius:11px;padding:12px 14px;margin-bottom:8px;flex-shrink:0;
+}
+.upgrade-blur{
+  filter:blur(3px);pointer-events:none;
+  font-size:13px;color:var(--muted);line-height:1.6;
+  margin-bottom:10px;
+}
+
+/* SHOPPING CHECK */
+.shop-row{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:9px 0;border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.shop-row:last-child{border-bottom:none;}
+.check-box{
+  width:18px;height:18px;border-radius:4px;
+  border:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;
+}
+.check-box.done{background:var(--green);border-color:var(--green);}
+.check-box.flag{background:var(--rdim);border-color:var(--red);}
+.shop-name{flex:1;font-size:13px;color:var(--white);line-height:1.35;}
+.shop-name small{display:block;font-size:10px;font-family:'DM Mono',monospace;letter-spacing:.8px;margin-top:2px;color:var(--muted);}
+.scan-btn{
+  font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;
+  border:1px solid var(--bb);background:var(--bdim);
+  color:var(--blue);border-radius:6px;padding:3px 8px;
+  flex-shrink:0;cursor:pointer;margin-top:2px;
+}
+
+/* DASH TILE */
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;margin-bottom:8px;flex-shrink:0;}
+.dt{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px 11px;}
+.dt.b{border-color:var(--bb);}.dt.g{border-color:var(--yb);}.dt.gr{border-color:var(--gb);}
+.dt.r{border-color:var(--rb);}.dt.o{border-color:var(--ob);}.dt.p{border-color:rgba(155,89,182,0.3);}
+.dtl{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;margin-bottom:5px;}
+.dts{font-size:10px;color:var(--muted);line-height:1.4;margin-top:3px;}
+canvas.dw{width:100%;height:26px;display:block;margin-top:3px;}
+
+/* PANEL COUNT */
+.pcount{position:fixed;top:14px;right:16px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.20);z-index:200;}
+
+/* DOTS & NAV */
+.dots{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:100;flex-wrap:wrap;justify-content:center;max-width:320px;}
+.d{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.14);transition:all .3s;cursor:pointer;}
+.d.active{width:14px;background:var(--blue);}
+.nav{position:fixed;bottom:50px;display:flex;gap:8px;left:50%;transform:translateX(-50%);z-index:100;}
+.nb{width:36px;height:36px;border-radius:50%;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.nb:disabled{opacity:.14;cursor:default;}
+.hint{position:fixed;bottom:92px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.11);z-index:99;pointer-events:none;transition:opacity .4s;}
+
+/* SECTION LABEL */
+.sec-label{
+  font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;
+  color:rgba(27,184,255,0.35);text-align:center;
+  margin-bottom:12px;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+<div class="pcount" id="pcount">1 / 27</div>
+
+<!-- ═══════════════════════════════ INTRO 1-9 ═══════════════════════════════ -->
+
+<!-- P1 WELCOME -->
+<div class="panel active" id="p0">
+<div class="pi">
+  <div class="ey">AA2 ADAPTIVE ADVANTAGE LABORATORIES, S.A.</div>
+  <h1 class="hl">You finally<br><em>arrived.</em></h1>
+  <div class="dv"></div>
+  <p class="sub">The one place that reunites everything you've collected — your watch, your ring, your glasses, your earbuds — and transforms their raw signals into something that actually makes sense for <strong>your life.</strong></p>
+  <div class="card b">
+    <div class="cl">NOT A MIRROR. AN INTERPRETATION.</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.75;">Any app can reflect what your devices already say. AA2 runs every signal through <strong style="color:var(--white);">The Clarifier</strong> — the only system that knows the difference between your stress and your excitement, your workout and your housecleaning, your fear and your joy.</p>
+  </div>
+  <div class="qt"><p>"The membrane works on organic and inorganic material alike. The same intelligence that reads your biosignals reads the label on your food, the mushroom in the woods, and the elk you just harvested."</p></div>
+  <div class="sp"></div>
+  <div class="mn" style="text-align:center;width:100%;">PANEL 1 OF 27 · SWIPE OR USE ARROWS →</div>
+</div>
+</div>
+
+<!-- P2 WHAT IT DOES -->
+<div class="panel" id="p1">
+<div class="pi">
+  <div class="ey">THE MEMBRANE COVERS</div>
+  <h1 class="hl">One system.<br><em>Everything.</em></h1>
+  <div class="dv"></div>
+  <div class="card">
+    <div class="cl">SAFETY · PROTECTION</div>
+    <div class="chips"><span class="chip">FOOD SAFETY</span><span class="chip">ALLERGEN DETECTION</span><span class="chip">PATHOGEN SCREENING</span><span class="chip">CWD · PRION DISEASE</span><span class="chip">WILD GAME HARVEST</span><span class="chip">FORAGING ID</span><span class="chip">DRUG INTERACTIONS</span><span class="chip">SKIN INGESTION</span></div>
+  </div>
+  <div class="card">
+    <div class="cl g">LIFE INTELLIGENCE</div>
+    <div class="chips"><span class="chip g">LIVE INTERNATIONAL COOKING</span><span class="chip g">LANGUAGE LEARNING</span><span class="chip g">TRAVEL SAFETY ENGINE</span><span class="chip g">FINANCIAL SAVINGS</span><span class="chip g">VISION BOARD</span><span class="chip g">ACT RIGHT DOLLARS</span><span class="chip g">GLOBAL GROCERY MATCH</span></div>
+  </div>
+  <div class="card">
+    <div class="cl gr">SPECIES INTELLIGENCE</div>
+    <div class="chips"><span class="chip gr">K9 · CANINE</span><span class="chip gr">FELINE</span><span class="chip gr">EQUESTRIAN</span><span class="chip gr">CATTLE</span><span class="chip gr">GOAT</span><span class="chip gr">RABBIT</span><span class="chip gr">TACTICAL K9</span></div>
+  </div>
+  <div class="sp"></div>
+  <div class="qt"><p>"AT&T makes the connection. AA2 makes the interpretation."</p></div>
+</div>
+</div>
+
+<!-- P3 HARDWARE REVIVAL -->
+<div class="panel" id="p2">
+<div class="pi">
+  <div class="ey g">THE HARDWARE DRAWER DOCTRINE</div>
+  <h1 class="hl g">Your old device<br><em>has new life.</em></h1>
+  <div class="dv g"></div>
+  <p class="sub">Just when you thought that old device was just old — you didn't realize you had <strong>years of bios already locked inside,</strong> begging to come out and be reinterpreted the way they should. Upload the PDF manual. AA2 reads it so you never have to.</p>
+  <div class="card g">
+    <div class="cl g">COMPATIBLE DEVICES — VERIFIED</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);margin-top:5px;"></div><div class="rn">Garmin<small>Tactix 8 · Fenix 7/8 · Forerunner · Venu · Vivoactive · any .FIT export</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);margin-top:5px;"></div><div class="rn">Oura Ring<small>Gen 3 · Gen 4 · personal API token at cloud.ouraring.com</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);margin-top:5px;"></div><div class="rn">Beats Pro 2 · Apple AirPods Pro 2<small>HRV via Strava / Apple Health export</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--purple);margin-top:5px;"></div><div class="rn">Oakley Meta HSTN · Ray-Ban Meta<small>Smart glasses · live cooking assist · language layer</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--muted);margin-top:5px;"></div><div class="rn">Apple Watch Series 6+ · WHOOP 4.0 · Polar H10 · Suunto<small>.FIT, CSV, or Apple Health export</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--muted);margin-top:5px;"></div><div class="rn">Muse S Athena · Muse 2 — The Crown<small>EEG layer · Mind Monitor CSV export</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--muted);margin-top:5px;"></div><div class="rn">Fitbit · Any downloadable device<small>If the data exports — it belongs here. Upgrade when you're ready.</small></div></div>
+  </div>
+</div>
+</div>
+
+<!-- P4 DISRUPTION VS HARMONY -->
+<div class="panel" id="p3">
+<div class="pi">
+  <div class="ey">THE TRANSFORMATION</div>
+  <h1 class="hl">Disruption<br>vs <em>Harmony.</em></h1>
+  <div class="dv"></div>
+  <div class="g2">
+    <div class="g2c" style="border-color:var(--rb);background:var(--rdim);"><div class="g2l" style="color:var(--red);">DISRUPTION</div><div class="g2i">Garmin says 118bpm</div><div class="g2i">Ring says stress 74</div><div class="g2i">No context attached</div><div class="g2i" style="color:var(--red);">No meaning produced</div></div>
+    <div class="g2c" style="border-color:var(--gb);background:var(--gdim);"><div class="g2l" style="color:var(--green);">HARMONY</div><div class="g2i">All signals unified</div><div class="g2i">Context applied</div><div class="g2i">Clarified by you</div><div class="g2i gr">Correctly interpreted</div></div>
+  </div>
+  <div class="card b">
+    <div class="cl">THE CLARIFIER IN ACTION — REAL EXAMPLE</div>
+    <div class="row" style="padding-top:0;"><div class="num">1</div><div class="rn">Biosignal spike detected<small style="color:var(--red);">Garmin HR 118bpm · Oura Stress 74 · Strava: no activity</small></div></div>
+    <div class="row"><div class="num">2</div><div class="rn">Bio Buddy asks<small>"Bios reported as stress at 2:47 PM. Is that accurate, or would you like to clarify?"</small></div></div>
+    <div class="row"><div class="num">3</div><div class="rn">Member responds<small style="color:var(--white);">"That is not stress. I just got promoted and got approved for my new house. That's excitement."</small></div></div>
+    <div class="row"><div class="num">4</div><div class="rn">Membrane updates<small style="color:var(--green);">STRESS → EXCITEMENT reclassified · Oura stress 74 excluded from baseline · Positive life event logged</small></div></div>
+  </div>
+  <div class="sp"></div>
+  <p class="sub" style="font-size:12px;margin-bottom:0;"><strong>No other platform knows the difference.</strong> AA2 does — because the clarifier asked, and the membrane never forgot.</p>
+</div>
+</div>
+
+<!-- P5 BYOB/BYOH/BYMR -->
+<div class="panel" id="p4">
+<div class="pi">
+  <div class="ey">YOUR DATA. ALWAYS YOURS.</div>
+  <h1 class="hl">Bring<br><em>everything.</em></h1>
+  <div class="dv"></div>
+  <div class="g2">
+    <div class="g2c" style="border-color:var(--bb);"><div class="g2l" style="color:var(--blue);">BYOB</div><div class="g2i">Biosignal history</div><div class="g2i">HRV baselines</div><div class="g2i">Recovery trends</div><div class="g2i">Stress history</div><div class="g2i gr">Yours forever</div></div>
+    <div class="g2c" style="border-color:var(--yb);"><div class="g2l" style="color:var(--gold);">BYOH</div><div class="g2i">Device manuals</div><div class="g2i">Old or new hardware</div><div class="g2i">.FIT · CSV · API</div><div class="g2i">Any export format</div><div class="g2i gr">All compatible</div></div>
+    <div class="g2c" style="border-color:var(--gb);"><div class="g2l" style="color:var(--green);">BYMR</div><div class="g2i">Allergy records</div><div class="g2i">Medications</div><div class="g2i">Medical conditions</div><div class="g2i">Pet history</div><div class="g2i gr">Full profile</div></div>
+    <div class="g2c"><div class="g2l" style="color:var(--muted);">EXPORT ANYTIME</div><div class="g2i">Full biosignal CSV</div><div class="g2i">Cookbook PDF</div><div class="g2i">Vision board</div><div class="g2i">Clarifier portrait</div><div class="g2i gr">Leave anytime</div></div>
+  </div>
+  <div class="qt"><p>"When we say it's your data — it's your data. The system holds nothing hostage. The value of staying is the living intelligence that keeps growing."</p></div>
+</div>
+</div>
+
+<!-- P6 WHO THIS IS FOR -->
+<div class="panel" id="p5">
+<div class="pi">
+  <div class="ey">NO MATTER YOUR PATH</div>
+  <h1 class="hl">Built for<br><em>every life.</em></h1>
+  <div class="dv"></div>
+  <div class="card" style="padding:8px 13px;">
+    <div class="who"><div class="wi">👨‍👩‍👧‍👦</div><div><div class="wt">FAMILIES · HOUSEHOLDS</div><div class="wd">Every person and animal you protect. One membrane. One dashboard. Every device on one channel.</div></div></div>
+    <div class="who"><div class="wi">🎯</div><div><div class="wt">TACTICAL · LAW ENFORCEMENT</div><div class="wd">Handler and K9 biosignals unified. Stress transfer detected before deployment starts.</div></div></div>
+    <div class="who"><div class="wi">🏇</div><div><div class="wt">EQUESTRIAN · HORSE RACING</div><div class="wd">Jockey and horse in biosignal sync. Feed safety verified. Race-day readiness confirmed.</div></div></div>
+    <div class="who"><div class="wi">🚜</div><div><div class="wt">AGRICULTURAL · FARMING</div><div class="wd">Cattle, goat, and rabbit herd monitoring. Mycotoxin detection at scale. Feed safety every batch.</div></div></div>
+    <div class="who"><div class="wi">🏆</div><div><div class="wt">PROFESSIONAL SPORTS · F1 · OLYMPIC</div><div class="wd">Every athlete a channel on the master bus. 87 seats. 24 countries. WADA layer active.</div></div></div>
+    <div class="who" style="border-bottom:none;"><div class="wi">🏡</div><div><div class="wt">HIGH NET WORTH · ENTERPRISE</div><div class="wd">Quiet protection. Delegated intelligence. Long-term optimization. Invisible. Effortless. Accumulative.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- P7 BIO CONTROL PANEL A -->
+<div class="panel" id="p6">
+<div class="pi">
+  <div class="ey">THE LIVING MONITORING SYSTEM</div>
+  <h1 class="hl">The Bio<br><em>Control Panel.</em></h1>
+  <div class="dv"></div>
+  <p class="sub">On a phone, AA2 feels personal. <strong>On an 85-inch screen, AA2 becomes a living command surface.</strong> Every member a channel. Every biosignal a live wave — not a number.</p>
+  <div class="card b">
+    <div class="cl" style="margin-bottom:9px;">CIVILIAN HOUSEHOLD · LIVE BIOSIGNAL FEED</div>
+    <div id="wc1"></div><div id="wc2"></div><div id="wc3"></div><div id="wc4"></div>
+  </div>
+  <div class="card r">
+    <div class="cl r" style="margin-bottom:9px;">TACTICAL UNIT · FIELD STATUS</div>
+    <div id="wt1"></div><div id="wt2"></div><div id="wt3"></div>
+  </div>
+</div>
+</div>
+
+<!-- P8 BIO CONTROL PANEL B — ENTERPRISE -->
+<div class="panel" id="p7">
+<div class="pi">
+  <div class="ey">ENTERPRISE · 85-INCH+ LANDSCAPE</div>
+  <h1 class="hl">Every context.<br><em>One canvas.</em></h1>
+  <div class="dv"></div>
+  <p class="sub" style="font-size:12.5px;"><strong>Six industries. One system.</strong> The same membrane that runs on a phone renders as a full bio-command surface on any screen. Legible at distance. Actionable in real time.</p>
+  <div class="dg">
+    <div class="dt b"><div class="dtl" style="color:var(--blue);">🏈 NFL ROSTER</div><canvas class="dw" id="d1"></canvas><div class="dts">53 players · coaches · trainers · live feed</div></div>
+    <div class="dt g"><div class="dtl" style="color:var(--gold);">🏇 HORSE RACING</div><canvas class="dw" id="d2"></canvas><div class="dts">Jockey + horse biosync · feed verified</div></div>
+    <div class="dt r"><div class="dtl" style="color:var(--red);">🎯 TACTICAL UNIT</div><canvas class="dw" id="d3"></canvas><div class="dts">Handlers online/standby · K9 alerts</div></div>
+    <div class="dt gr"><div class="dtl" style="color:var(--green);">🚜 AGRICULTURE</div><canvas class="dw" id="d4"></canvas><div class="dts">Cattle · goat · rabbit · herd biosignal</div></div>
+    <div class="dt o"><div class="dtl" style="color:var(--orange);">🏎 F1 · 87 SEATS</div><canvas class="dw" id="d5"></canvas><div class="dts">24 countries · WADA layer active</div></div>
+    <div class="dt p"><div class="dtl" style="color:var(--purple);">🥇 OLYMPIC TEAM</div><canvas class="dw" id="d6"></canvas><div class="dts">Full team · recovery · peak timing</div></div>
+  </div>
+  <div class="card gr">
+    <div class="cl gr">AGRICULTURE · BIO BLANKET STATUS</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Cattle herd — 47 head<small style="color:var(--green);">Feed verified · No mycotoxin · DON below 2.0 ppm threshold</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Goat herd — 23 head<small style="color:var(--gold);">Supplement interaction flagged · Iron overload risk · TAKE NOTICE</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Rabbit colony — 84 animals<small style="color:var(--green);">Feed clean · ASPCA verified · All clear</small></div></div>
+  </div>
+</div>
+</div>
+
+<!-- P9 DOORWAY -->
+<div class="panel center" id="p8">
+<div class="pi">
+  <div class="ey" style="letter-spacing:4px;text-align:center;">THE MEMBRANE · AA2 BIOSIGNAL SYSTEM</div>
+  <div style="margin:8px 0;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:5px;color:rgba(27,184,255,0.22);">✦ ✦ ✦</div>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(26px,7vw,42px);line-height:1.1;font-weight:400;margin-bottom:4px;text-align:center;">The greatest, safest, most intelligent membrane —</h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(26px,7vw,42px);line-height:1.1;font-weight:400;margin-bottom:14px;text-align:center;color:var(--blue);">designed and monitored<br>by its living occupant.</h1>
+  <div class="dv c"></div>
+  <div class="card b" style="text-align:left;">
+    <div class="cl" style="margin-bottom:7px;">🧬 THE CONCIERGE</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.65;color:var(--white);">"Don't be shy — you can ask me anything about any food, plant, meat, species, wine, or spirits. No barcode? No problem. I listen just as well as I scan."</p>
+    <div class="mn" style="margin-top:8px;color:rgba(27,184,255,0.35);">TAP TO DISMISS · SWIPE TO SEE THE SCANNER →</div>
+  </div>
+  <div class="sp"></div>
+  <button class="cta" onclick="goTo(9)">SEE THE SCANNER IN ACTION →</button>
+  <div class="mn" style="margin-top:12px;text-align:center;width:100%;opacity:.28;">I AM THE RECEIPT</div>
+</div>
+</div>
+
+<!-- ════════════ SCANNER PREVIEW PANELS 10-27 ════════════ -->
+
+<!-- P10 MEMBRANE LIVE -->
+<div class="panel" id="p9">
+<div class="pi">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-shrink:0;">
+    <div class="mn">I AM THE RECEIPT</div>
+    <div style="display:flex;align-items:center;gap:5px;"><div class="dot" style="background:var(--green);margin-top:0;"></div><div class="mn gr">MEMBRANE LIVE</div></div>
+  </div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,8vw,48px);line-height:1.0;font-weight:400;margin-bottom:2px;flex-shrink:0;">James Pitts</div>
+  <div class="mn" style="margin-bottom:12px;">BELGRADE, MT</div>
+  <div class="card">
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);"></div><div class="rn">Garmin Tactix 8</div><div class="rv" style="color:var(--blue);">74 HRV</div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Oura Ring 4</div><div class="rv" style="color:var(--green);">68 Readiness</div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn">Beats Pro 2</div><div class="rv" style="color:var(--gold);">42ms HRV</div></div>
+    <div class="row"><div class="dot" style="background:var(--purple);"></div><div class="rn">Oakley Meta HSTN</div><div class="rv" style="color:var(--purple);">58 bpm</div></div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px;flex-shrink:0;">
+    <div style="height:2px;border-radius:1px;background:var(--blue);width:78%;"></div>
+    <div style="height:2px;border-radius:1px;background:var(--green);width:68%;"></div>
+    <div style="height:2px;border-radius:1px;background:var(--gold);width:55%;"></div>
+    <div style="height:2px;border-radius:1px;background:var(--purple);width:62%;"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;margin-bottom:12px;flex-shrink:0;">
+    <div style="text-align:center;"><div style="font-family:'DM Mono',monospace;font-size:26px;color:var(--blue);line-height:1;">74</div><div class="mn">HRV</div></div>
+    <div style="text-align:center;"><div style="font-family:'DM Mono',monospace;font-size:26px;color:var(--green);line-height:1;">68</div><div class="mn">READINESS</div></div>
+    <div style="text-align:center;"><div style="font-family:'DM Mono',monospace;font-size:26px;color:var(--gold);line-height:1;">42</div><div class="mn">HRV MS</div></div>
+    <div style="text-align:center;"><div style="font-family:'DM Mono',monospace;font-size:26px;color:var(--purple);line-height:1;">58</div><div class="mn">BPM</div></div>
+  </div>
+  <div class="card g">
+    <div class="cl g">ACT RIGHT DOLLARS</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-family:'DM Mono',monospace;font-size:30px;color:var(--gold);">$47.20</div>
+      <div style="border:1px solid var(--yb);border-radius:8px;padding:5px 10px;"><div class="mn g">AA2 · ACT RIGHT</div><div class="mn g">**** 4021</div></div>
+    </div>
+  </div>
+  <div class="caption">This is what your morning looks like. Every device. Every signal. One rhythm.</div>
+</div>
+</div>
+
+<!-- P11 BIO BUDDY -->
+<div class="panel" id="p10">
+<div class="pi">
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">BIO BUDDY · BIOSIGNAL EVENT</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:20px;">⚡</span><div style="font-size:17px;font-weight:500;color:var(--white);">Elevated Stress Pattern Detected</div></div>
+    <div class="mn" style="margin-bottom:6px;">TODAY · 2:47 PM</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <span class="mn r">Garmin HR 118bpm</span>
+      <span class="mn g" style="color:var(--gold);">Oura Stress 74</span>
+      <span class="mn">Strava: No activity</span>
+    </div>
+  </div>
+  <div class="card b">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span style="font-size:18px;">🧠</span><div class="cl">BIO BUDDY · CLARIFIER</div></div>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:18px;line-height:1.6;color:var(--white);margin-bottom:12px;">"Bios reported as stress at 2:47 PM. Is that accurate, or would you like to clarify?"</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div style="background:var(--blue);border-radius:10px;padding:13px;text-align:center;cursor:pointer;"><div class="mn" style="color:#03050A;letter-spacing:1px;">YES · LOG AS STRESS</div></div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center;cursor:pointer;"><div class="mn">I'D LIKE TO CLARIFY</div></div>
+    </div>
+  </div>
+  <div class="card gr">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;"><span style="color:var(--green);font-size:12px;">✓</span><div class="cl gr">CLARIFICATION LOGGED · 2:53 PM</div></div>
+    <p style="font-family:'Cormorant Garamond',serif;font-size:17px;line-height:1.6;color:var(--white);margin-bottom:10px;">"That is not stress. I just got promoted and got approved for my new house. That's excitement."</p>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Garmin HR spike — reclassified STRESS → EXCITEMENT</div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Oura stress 74 — excluded from stress baseline</div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12px;">Positive life event logged to membrane</div></div>
+  </div>
+  <div class="caption">The more you clarify, the more precisely the membrane reflects you — not the population average.</div>
+</div>
+</div>
+
+<!-- P12 CHEF STEP 01 — SCAN + ALLERGEN + GATE -->
+<div class="panel" id="p11">
+<div class="pi">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-shrink:0;">
+    <div style="background:var(--card);border:1px solid var(--gb);border-radius:20px;padding:4px 12px;"><div class="mn gr">STEP 01 OF 04</div></div>
+    <div class="mn">THE EQUALIZER · THE CHEF</div>
+  </div>
+  <div class="mn" style="margin-bottom:6px;">Scan result · Allergy flag fires · W/WO gate · Tappable recipe chips</div>
+  <div class="sev notice">
+    <div class="sev-lbl" style="color:var(--gold);">⚠ HEADS UP · Read before you buy</div>
+  </div>
+  <div class="card r">
+    <div class="cl r">MEMBRANE FLAG · PEANUT ALLERGEN</div>
+    <p style="font-size:13px;color:var(--white);line-height:1.7;margin-bottom:10px;">This tomato paste <span style="color:var(--red);font-weight:500;">contains traces of peanut oil</span> from shared equipment. Your membrane flags peanut sensitivity.</p>
+    <div class="chips"><span class="chip gr">Muir Glen ✓</span><span class="chip gr">Bianco DiNapoli ✓</span><span class="chip gr">Jovial ✓</span></div>
+  </div>
+  <div class="upgrade-gate">
+    <div class="cl g" style="margin-bottom:8px;">WITHOUT / WITH AA2</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div><div class="mn" style="margin-bottom:5px;">WITHOUT</div><p class="upgrade-blur">You buy this. Reaction at dinner. No warning given. Recipe guesswork. No substitutes shown.</p></div>
+      <div><div class="mn" style="margin-bottom:5px;">WITH AA2</div><p style="font-size:12px;color:var(--muted);line-height:1.6;filter:blur(3px);">Full scanner · allergy layer · chef recipes · cookbook</p></div>
+    </div>
+    <button style="width:100%;background:var(--gold);color:#03050A;border:none;border-radius:10px;padding:11px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;">🔒 UPGRADE TO UNLOCK</button>
+  </div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:2px;flex-shrink:0;">The Chef</div>
+  <div class="mn" style="margin-bottom:8px;">TAP A RECIPE TO BUILD YOUR LIST</div>
+  <div class="card b" style="cursor:pointer;">
+    <div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:16px;margin-bottom:2px;">Spaghetti Bolognese</div><div class="mn">8 ingredients · 45 min · 3 still needed</div></div><div style="color:var(--muted);font-size:18px;">›</div></div>
+  </div>
+  <div class="card" style="cursor:pointer;">
+    <div style="display:flex;align-items:center;justify-content:space-between;"><div><div style="font-size:15px;margin-bottom:2px;">Shakshuka</div><div class="mn">7 ingredients · 25 min · 4 still needed</div></div><div style="color:var(--muted);font-size:18px;">›</div></div>
+  </div>
+</div>
+</div>
+
+<!-- P13 CHEF STEP 02 — FULL RECIPE -->
+<div class="panel" id="p12">
+<div class="pi">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0;">
+    <div style="background:var(--card);border:1px solid var(--gb);border-radius:20px;padding:4px 12px;"><div class="mn gr">STEP 02 OF 04</div></div>
+    <div style="background:var(--rdim);border:1px solid var(--rb);border-radius:20px;padding:4px 12px;"><div class="mn r">2 FLAGGED</div></div>
+  </div>
+  <div class="mn" style="margin-bottom:8px;">← BACK · THE CHEF · FULL RECIPE</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:400;margin-bottom:2px;flex-shrink:0;">Spaghetti Bolognese</div>
+  <div class="chips" style="margin-bottom:10px;"><span class="chip m">45 MIN</span><span class="chip m">SERVES 4</span><span class="chip m">ITALIAN</span></div>
+  <div class="card gr" style="margin-bottom:5px;">
+    <div class="cl gr">✓ YOU HAVE (1 OF 8)</div>
+    <div class="ing-row" style="padding-top:0;"><div class="ing-status" style="background:var(--green);"></div><div class="ing-name">Tomato paste<small style="color:var(--green);">1 can · just scanned · ALL CLEAR</small></div><div class="ing-action" style="color:var(--green);">HAVE</div></div>
+  </div>
+  <div class="card r" style="margin-bottom:5px;">
+    <div class="cl r">⚠ FLAGGED BY YOUR MEMBRANE (2)</div>
+    <div class="ing-row" style="padding-top:0;"><div class="ing-status" style="background:var(--red);"></div><div class="ing-name">Peanut oil (some brands)<small style="color:var(--red);">PEANUT ALLERGEN IN YOUR MEMBRANE — Most recipes use olive oil. Confirm brand before buying. Safe: California Olive Ranch ✓ · Kirkland EVOO ✓</small></div><div class="ing-action" style="color:var(--red);">FLAG</div></div>
+    <div class="ing-row"><div class="ing-status" style="background:var(--orange);"></div><div class="ing-name">Worcestershire sauce<small style="color:var(--orange);">CONTAINS ANCHOVIES — CHECK SENSITIVITY. Your membrane flags shellfish sensitivity. Skip or substitute: Coconut aminos ✓ · Soy + vinegar ✓</small></div><div class="ing-action" style="color:var(--orange);">CHECK</div></div>
+  </div>
+  <div class="card" style="margin-bottom:5px;">
+    <div class="cl m">STILL NEED (5 OF 8)</div>
+    <div class="ing-row" style="padding-top:0;"><div class="ing-status" style="background:var(--dim);"></div><div class="ing-name">Ground beef 80/20<small>500g</small></div><div class="ing-action">NEED</div></div>
+    <div class="ing-row"><div class="ing-status" style="background:var(--dim);"></div><div class="ing-name">Spaghetti noodles<small>400g</small></div><div class="ing-action">NEED</div></div>
+    <div class="ing-row"><div class="ing-status" style="background:var(--dim);"></div><div class="ing-name">Yellow onion<small>1 large</small></div><div class="ing-action">NEED</div></div>
+  </div>
+  <div class="card g">
+    <div class="mn g" style="margin-bottom:6px;">Add this to your Cookbook?</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px;">Saves the full recipe, your ingredient list, and membrane notes. Share via Live Cooking anytime.</p>
+    <button style="background:var(--gold);color:#03050A;border:none;border-radius:10px;padding:11px 20px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;">YES · SAVE TO COOKBOOK</button>
+  </div>
+</div>
+</div>
+
+<!-- P14 CHEF STEP 03 — SHOPPING LIST -->
+<div class="panel" id="p13">
+<div class="pi">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0;">
+    <div style="background:var(--card);border:1px solid var(--gb);border-radius:20px;padding:4px 12px;"><div class="mn gr">STEP 03 OF 04</div></div>
+    <div class="mn">SHOPPING LIST · BOLOGNESE</div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0;">
+    <div style="font-size:20px;font-weight:500;">Spaghetti Bolognese</div>
+    <div class="mn gr">2 of 8 done</div>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" style="width:25%;"></div></div>
+  <div class="card" style="padding:10px 13px;">
+    <div class="shop-row"><div class="check-box done">✓</div><div class="shop-name">Tomato paste — 2 tbsp<small style="color:var(--green);">Scanned · Jovial · substituted</small></div></div>
+    <div class="shop-row"><div class="check-box done">✓</div><div class="shop-name">Spaghetti noodles — 400g<small style="color:var(--green);">Scanned · Barilla · ALL CLEAR</small></div></div>
+    <div class="shop-row"><div class="check-box flag"></div><div class="shop-name">Tomato sauce — 1 can<small style="color:var(--red);">Verify peanut free before buying. Some brands use shared peanut equipment. Muir Glen ✓ · Rao's ✓ · Bianco ✓</small></div><div class="scan-btn">SCAN TO VERIFY →</div></div>
+    <div class="shop-row"><div class="check-box flag"></div><div class="shop-name">Ground beef 80/20 — 500g<small>Scan label to verify in store</small></div><div class="scan-btn">SCAN NOW →</div></div>
+    <div class="shop-row"><div class="check-box"></div><div class="shop-name">Yellow onion — 1 large<small style="color:var(--blue);">Produce · no scan needed</small></div></div>
+    <div class="shop-row"><div class="check-box"></div><div class="shop-name">Garlic — 4 cloves<small style="color:var(--blue);">Produce · no scan needed</small></div></div>
+  </div>
+  <div class="card b">
+    <div class="cl" style="margin-bottom:6px;">THE CHEF · PREP NOTE</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.6;color:var(--white);">"Brown the beef in batches. Never crowd the pan. That's where the flavor lives."</p>
+  </div>
+</div>
+</div>
+
+<!-- P15 CHEF STEP 04 — COOKBOOK SAVED -->
+<div class="panel" id="p14">
+<div class="pi">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-shrink:0;">
+    <div style="background:var(--card);border:1px solid var(--gb);border-radius:20px;padding:4px 12px;"><div class="mn gr">STEP 04 OF 04</div></div>
+    <div class="mn">THE VAULT · COOKBOOK</div>
+  </div>
+  <div class="card gr" style="overflow:hidden;padding:0;margin-bottom:8px;">
+    <div style="background:rgba(29,158,117,0.20);padding:9px 13px;display:flex;align-items:center;gap:8px;">
+      <span style="color:var(--green);font-family:'DM Mono',monospace;font-size:11px;">✓</span>
+      <div class="mn gr">SAVED TO COOKBOOK</div>
+      <div class="mn" style="margin-left:auto;">APR 7, 2026 · IN-STORE SCAN · BELGRADE, MT</div>
+    </div>
+    <div style="padding:12px 13px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);">🇮🇹 ITALIAN</span><span class="mn">45 MIN · SERVES 4</span></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:400;margin-bottom:10px;">Spaghetti Bolognese</div>
+      <div class="ing-row" style="padding-top:0;"><div class="ing-status" style="background:var(--green);"></div><div class="ing-name" style="font-size:12px;">Tomato paste · 2 tbsp<small style="color:var(--green);">Scanned · substituted</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--green);"></div><div class="ing-name" style="font-size:12px;">Spaghetti noodles · 400g<small style="color:var(--green);">Scanned · clear</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--red);"></div><div class="ing-name" style="font-size:12px;">Olive oil · 2 tbsp<small style="color:var(--red);">Verify peanut-free brand</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--gold);"></div><div class="ing-name" style="font-size:12px;">Ground beef 80/20 · 500g<small style="color:var(--gold);">Not yet scanned</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--blue);"></div><div class="ing-name" style="font-size:12px;">Yellow onion · 1 large<small style="color:var(--blue);">Produce</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--blue);"></div><div class="ing-name" style="font-size:12px;">Garlic · 4 cloves<small style="color:var(--blue);">Produce</small></div></div>
+      <div class="mn" style="margin:8px 0 4px;color:var(--green);">THE CHEF IS ASSEMBLING THIS ENTRY</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;flex-shrink:0;margin-bottom:8px;">
+    <button style="background:var(--gold);color:#03050A;border:none;border-radius:10px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;">SHARE RECIPE →</button>
+    <button style="background:transparent;color:var(--blue);border:1px solid var(--bb);border-radius:10px;padding:13px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;">LIVE COOK SESSION</button>
+  </div>
+  <div class="card">
+    <div class="mn" style="margin-bottom:4px;">MEMBRANE NOTES · PRIVATE · SAVED WITH RECIPE</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--muted);line-height:1.6;">"2 ingredients flagged. Substitutes confirmed. Shared version shows clean ingredient list only — membrane flags stay private."</p>
+  </div>
+</div>
+</div>
+
+<!-- P16 FORAGER -->
+<div class="panel" id="p15">
+<div class="pi">
+  <div class="card" style="margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:20px;">🌿</span><div><div class="cl">THE EQUALIZER · FORAGER LAYER</div><div style="font-size:17px;font-weight:500;">Fish & Water</div></div></div>
+  </div>
+  <div class="card gr">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;"><div class="dot" style="background:var(--green);margin-top:0;"></div><div class="cl gr" style="margin-bottom:0;">ALL CLEAR · EDIBLE</div><div class="mn" style="margin-left:auto;">Identified with high confidence</div></div>
+    <div style="font-size:28px;font-weight:500;margin-bottom:2px;">Rainbow Trout</div>
+    <div class="mn" style="margin-bottom:10px;">Oncorhynchus mykiss · Salmonidae</div>
+    <div class="chips" style="margin-bottom:12px;"><span class="chip gr">SAFE TO EAT</span><span class="chip">NATIVE · MT</span><span class="chip g">IN SEASON</span></div>
+    <div class="row" style="padding-top:0;"><div class="mn" style="min-width:90px;color:var(--muted);">HABITAT</div><div class="rn" style="font-size:12.5px;">Cold, clear mountain streams. Yellowstone drainage. Thrives in Montana's Clark Fork system.</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;color:var(--muted);">EDIBILITY</div><div class="rn" style="font-size:12.5px;color:var(--green);">Excellent. Mild, clean flavor. Best pan-fried or grilled over open flame within 24 hours.</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;color:var(--muted);">NUTRITION</div><div class="rn" style="font-size:12.5px;">High Omega-3 (1.9g/100g). 20g protein. Low mercury. Vitamin D, B12, selenium.</div></div>
+    <div class="row"><div class="mn" style="min-width:90px;color:var(--muted);">REGULATIONS</div><div class="rn" style="font-size:12.5px;color:var(--red);">Montana FWP: 5 fish/day limit. Local water restrictions. License required.</div></div>
+  </div>
+  <div class="caption">Roadside stand in Montana. Market in Tokyo. Wild river in Iceland. Point. Scan. Know.</div>
+</div>
+</div>
+
+<!-- P17 HUNTER -->
+<div class="panel" id="p16">
+<div class="pi">
+  <div class="card o" style="margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:20px;">🦌</span><div><div class="cl o">HUNTER INTELLIGENCE</div><div style="font-size:15px;">Wild Game · Field Safety · Harvest Intelligence</div></div></div>
+  </div>
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">☠ IMMEDIATE DANGER · CWD STATUS</div>
+    <div style="font-size:20px;font-weight:500;color:var(--white);margin-bottom:8px;">Rocky Mountain Elk · Bull · 3-4 years</div>
+    <div style="background:rgba(224,82,82,0.12);border-radius:8px;padding:10px 12px;margin-bottom:0;">
+      <div class="mn r" style="margin-bottom:5px;">CASES DETECTED · GALLATIN COUNTY</div>
+      <p style="font-size:12.5px;color:var(--white);line-height:1.65;">Do not consume brain, spinal cord, eyes, spleen, or lymph nodes regardless of test results. Contact Montana FWP for free testing kit before consumption. Bone-in cuts carry higher risk than deboned muscle meat.</p>
+    </div>
+  </div>
+  <div class="sev caution">
+    <div class="sev-lbl" style="color:var(--orange);">⚠ SERIOUS CAUTION · FIELD SAFETY</div>
+    <p class="sev-body">Liver fluke risk in elk from wet regions. Inspect liver before consumption. Lead fragmentation possible — rifle harvest: trim 6 inches around wound channel before processing.</p>
+  </div>
+  <div class="sev notice">
+    <div class="sev-lbl" style="color:var(--gold);">◉ TAKE NOTICE · REGULATIONS</div>
+    <p class="sev-body">Montana FWP · Bull elk · 1 per season · Tag within 24hrs · Report to FWP within 24hrs of harvest · License required · Antler restrictions apply in some units.</p>
+  </div>
+  <div class="sev info">
+    <div class="sev-lbl" style="color:var(--blue);">● INFO · CHEF NOTES</div>
+    <p class="sev-body">Age 7-14 days at 34-38°F for best flavor. Backstrap first — grill medium-rare. Shoulders for ground. High protein, low fat, rich in iron and B12.</p>
+  </div>
+  <div class="caption">Your buddies got the elk. The system tells you what to do next.</div>
+</div>
+</div>
+
+<!-- P18 FAMILY DASHBOARD -->
+<div class="panel" id="p17">
+<div class="pi">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-shrink:0;">
+    <div class="mn">I AM THE RECEIPT</div>
+    <div style="display:flex;align-items:center;gap:5px;"><div class="dot" style="background:var(--green);margin-top:0;"></div><div class="mn gr">MEMBRANE LIVE</div></div>
+  </div>
+  <div class="card b" style="margin-bottom:6px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;">James Pitts</div><div class="mn">BELGRADE, MT</div></div>
+      <div style="background:var(--bdim);border:1px solid var(--bb);border-radius:6px;padding:4px 9px;"><div class="mn b">MEMBRANE LIVE</div></div>
+    </div>
+    <div style="display:flex;gap:14px;margin-bottom:8px;"><span class="mn b">74 HRV</span><span class="mn gr">68 RDY</span><span class="mn gr">ALL CLEAR</span></div>
+    <div id="wfam1"></div>
+  </div>
+  <div class="card" style="border-color:var(--yb);margin-bottom:6px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div><div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:21px;">Sarah M.</div><div class="mn">BELGRADE, MT</div></div>
+      <div style="background:var(--ydim);border:1px solid var(--yb);border-radius:6px;padding:4px 9px;"><div class="mn g">SCANNER ACTIVE</div></div>
+    </div>
+    <div style="display:flex;gap:14px;margin-bottom:8px;"><span class="mn r">PAY ATTENTION</span><span class="mn">Nestle Pure Life flagged</span></div>
+    <div id="wfam2"></div>
+  </div>
+  <div class="card" style="margin-bottom:6px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:14px;">Child 1 · 8 years</div><div class="mn gr">PROTECTED · ALL CLEAR</div></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;"><div style="font-size:14px;">Child 2 · 11 years</div><div class="mn gr">PROTECTED · ALL CLEAR</div></div>
+  </div>
+  <div class="caption">Everyone you protect. One membrane.</div>
+</div>
+</div>
+
+<!-- P19 K9/FELINE -->
+<div class="panel" id="p18">
+<div class="pi">
+  <div class="card" style="margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:20px;">🐾</span><div><div class="cl">K9 / FELINE INTELLIGENCE</div><div style="font-size:14px;color:var(--muted);">ASPCA Animal Poison Control Database Active</div></div></div>
+  </div>
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">LEVEL 1 · IMMEDIATE DANGER</div>
+    <div class="sev-ttl" style="color:var(--red);">XYLITOL DETECTED · TOXIC TO CANINES</div>
+    <p class="sev-body" style="margin-bottom:8px;">This product contains xylitol. Even small amounts cause rapid insulin release and liver failure in dogs. Do not give to any canine regardless of serving size.</p>
+    <div class="mn r">Also dangerous: Grapes · Raisins · Onions · Chocolate · Macadamia nuts · Xylitol</div>
+  </div>
+  <div class="card gr">
+    <div class="cl gr">CANINE-SAFE ALTERNATIVES</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn">Zuke's Mini Naturals<small>Chicken recipe · No xylitol · ASPCA verified</small></div><div class="rv" style="color:var(--green);">SAFE ✓</div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Wellness Soft WellBites<small>Real meat · No artificial preservatives · Verified</small></div><div class="rv" style="color:var(--green);">SAFE ✓</div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn">Blue Buffalo Bits<small>Natural ingredients · Vet recommended</small></div><div class="rv" style="color:var(--green);">SAFE ✓</div></div>
+  </div>
+  <div class="card b">
+    <div class="cl">FELINE INTELLIGENCE NOTE</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.65;">Cats are more toxicologically sensitive than dogs. ASPCA database covers canine, feline, and equine natively. Species-specific toxicology applied automatically based on your pet profile.</p>
+  </div>
+  <div class="caption">They cannot read labels. You can. Because the system reads them first.</div>
+</div>
+</div>
+
+<!-- P20 K9 TACTICAL -->
+<div class="panel" id="p19">
+<div class="pi">
+  <div class="ey r">SPOKE 27 · TACTICAL</div>
+  <h1 class="hl r">K9 Tactical.<br><em>Mission ready.</em></h1>
+  <div class="dv" style="background:var(--rb);"></div>
+  <div class="card b" style="margin-bottom:6px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="dot" style="background:var(--blue);margin-top:0;"></div><div class="mn b">HANDLER · ALPHA</div></div>
+      <div class="sb on"><div class="sd" style="background:var(--green);"></div>ONLINE</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:6px;"><span class="mn">HR 94bpm</span><span class="mn">STRESS 42</span><span class="mn gr">HRV STABLE</span></div>
+    <div id="htac1"></div>
+  </div>
+  <div class="card r" style="margin-bottom:6px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:7px;"><div class="dot" style="background:var(--red);margin-top:0;"></div><div class="mn r">K9 UNIT · REX</div></div>
+      <div class="sb wa"><div class="sd" style="background:var(--gold);"></div>ELEVATED</div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:6px;"><span class="mn r">HR 118bpm</span><span class="mn r">STRESS ELEVATED</span></div>
+    <div id="htac2"></div>
+  </div>
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">⚠ HANDLER STRESS TRANSFERRING TO K9</div>
+    <p class="sev-body">Handler biosignal elevation is being mirrored in K9 stress response. Recommend handler recovery protocol before deployment. Both units flagged for check-in.</p>
+  </div>
+  <div class="card" style="margin-bottom:0;">
+    <div style="display:flex;gap:8px;">
+      <div style="flex:1;text-align:center;"><div class="mn b">HANDLER · BRAVO</div><div class="mn" style="margin-top:4px;">STANDBY</div></div>
+      <div style="width:1px;background:var(--border);"></div>
+      <div style="flex:1;text-align:center;"><div class="mn b">K9 · ZEUS</div><div class="mn gr" style="margin-top:4px;">READY</div></div>
+    </div>
+  </div>
+  <div class="caption">Handler biology transfers. The system knows before the mission starts.</div>
+</div>
+</div>
+
+<!-- P21 EQUESTRIAN -->
+<div class="panel" id="p20">
+<div class="pi">
+  <div class="ey g">SPOKE 28 · EQUESTRIAN</div>
+  <h1 class="hl g">Equine<br><em>Intelligence.</em></h1>
+  <div class="dv g"></div>
+  <div class="card gr" style="margin-bottom:8px;">
+    <div class="cl gr">FEED SCAN RESULT</div>
+    <div style="font-size:16px;font-weight:500;margin-bottom:6px;">Standlee Premium Timothy Grass</div>
+    <div class="chips"><span class="chip gr">SAFE</span><span class="chip">LOW SUGAR</span><span class="chip">LOW STARCH</span><span class="chip gr">VERIFIED</span></div>
+    <div class="row" style="padding-top:0;"><div class="mn" style="min-width:80px;color:var(--muted);">PROTEIN</div><div class="rn" style="font-size:12px;">8.2% · within normal range for performance horses</div></div>
+    <div class="row"><div class="mn" style="min-width:80px;color:var(--muted);">CALCIUM</div><div class="rn" style="font-size:12px;">0.43% · Ca:P ratio balanced · no correction needed</div></div>
+    <div class="row"><div class="mn" style="min-width:80px;color:var(--muted);">SELENIUM</div><div class="rn" style="font-size:12px;">0.18 ppm · within safe range</div></div>
+  </div>
+  <div class="sev caution">
+    <div class="sev-lbl" style="color:var(--orange);">LEVEL 2 · SUPPLEMENT INTERACTION DETECTED</div>
+    <div class="sev-ttl" style="color:var(--orange);">IRON OVERLOAD RISK</div>
+    <p class="sev-body">Current iron supplement combined with this hay exceeds safe threshold for your horse's weight and breed. Reduce iron supplement by 50% or switch hay source. Chronic iron overload leads to liver damage and metabolic disruption in horses.</p>
+  </div>
+  <div class="card b">
+    <div class="cl">EQUINE NUTRITIONIST · RECOMMENDATION</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.65;">Switch to Standlee Certified Orchard Grass to reduce iron load while maintaining fiber. Recheck bloodwork in 30 days. Log supplement change in membrane for baseline update.</p>
+  </div>
+  <div class="caption">Feed consistency is performance. Biosignal sync is trust.</div>
+</div>
+</div>
+
+<!-- P22 AGRICULTURAL -->
+<div class="panel" id="p21">
+<div class="pi">
+  <div class="ey gr">SPOKE 29 · AGRICULTURAL</div>
+  <h1 class="hl gr">Agricultural<br><em>Intelligence.</em></h1>
+  <div class="dv gr"></div>
+  <div class="sev danger">
+    <div class="sev-lbl" style="color:var(--red);">LEVEL 1 · IMMEDIATE DANGER · FEED LOT #4</div>
+    <div class="sev-ttl" style="color:var(--red);">MYCOTOXIN DETECTED</div>
+    <div class="mn r" style="margin-bottom:8px;">DON · DEOXYNIVALENOL · ABOVE SAFE THRESHOLD</div>
+    <p class="sev-body">Deoxynivalenol detected at 2.4 ppm. Safe threshold for cattle is 2.0 ppm. Do not feed this lot. Risk: reduced feed intake, immune suppression, reproductive issues, reduced weight gain.</p>
+  </div>
+  <div class="sev info">
+    <div class="sev-lbl" style="color:var(--blue);">RECOMMENDED ACTION</div>
+    <p class="sev-body">Quarantine Feed Lot #4. Contact supplier for replacement and testing certificate. Test remaining inventory before use. Document for herd health records.</p>
+  </div>
+  <div class="card gr">
+    <div class="cl gr">HERD STATUS · BIO BLANKET</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Cattle · 47 head<small style="color:var(--green);">Lots 1-3 verified clean · feeding from cleared inventory</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--gold);"></div><div class="rn" style="font-size:12px;">Goat · 23 head<small style="color:var(--gold);">Supplement interaction flagged · iron overload risk · reduce dosage</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Rabbit colony · 84 animals<small style="color:var(--green);">Feed clean · ASPCA verified · all clear</small></div></div>
+  </div>
+  <div class="caption">Mycotoxins do not announce themselves. The system catches what the eye misses.</div>
+</div>
+</div>
+
+<!-- P23 CHAUFFEUR -->
+<div class="panel" id="p22">
+<div class="pi">
+  <div class="ey m">INTELLIGENCE 0X04</div>
+  <h1 class="hl">The<br><em>Chauffeur.</em></h1>
+  <div class="dv"></div>
+  <div class="card gr">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div class="cl gr" style="margin-bottom:0;">SAFE ROUTE · PRE-CLEARED</div>
+      <div style="display:flex;align-items:center;gap:5px;"><div class="dot" style="background:var(--green);margin-top:0;"></div><div class="mn gr">LIVE</div></div>
+    </div>
+    <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:500;margin-bottom:12px;">BELGRADE, MT → BOZEMAN, MT</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12.5px;">Belgrade I-90 On-Ramp<small>Safe departure · No restrictions · 0.4 mi</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12.5px;">Belgrade-Amsterdam Road<small>Cleared · Weather nominal · 3.2 mi</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--blue);"></div><div class="rn" style="font-size:12.5px;">Bozeman City Center<small>Destination briefed · Parking verified · 8.1 mi</small></div></div>
+  </div>
+  <div class="card g">
+    <div class="cl g">GLOBAL GROCERY MATCH · TOKYO TRIP PREP</div>
+    <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px;">Your shopping list matched against Tokyo stores. Local names and store locations pre-loaded.</p>
+    <div class="row" style="padding-top:0;"><div class="rn" style="font-size:12px;color:var(--muted);">Olive oil</div><div style="color:var(--muted);padding:0 6px;">→</div><div class="rn" style="font-size:12px;">Yamaki Olive Oil · Aeon supermarket</div></div>
+    <div class="row"><div class="rn" style="font-size:12px;color:var(--muted);">Greek yogurt</div><div style="color:var(--muted);padding:0 6px;">→</div><div class="rn" style="font-size:12px;">Meiji Bulgaria Yogurt · 7-Eleven</div></div>
+    <div class="row"><div class="rn" style="font-size:12px;color:var(--muted);">Sourdough bread</div><div style="color:var(--muted);padding:0 6px;">→</div><div class="rn" style="font-size:12px;">Viron Baguette · Marunouchi area</div></div>
+  </div>
+  <div class="caption">Every destination briefed. Every route pre-cleared. You move. We prepare.</div>
+</div>
+</div>
+
+<!-- P24 WINE & SPIRITS -->
+<div class="panel" id="p23">
+<div class="pi">
+  <div class="ey g">WINE & SPIRITS INTELLIGENCE · THE SOMMELIER</div>
+  <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:30px;margin-bottom:2px;flex-shrink:0;">Macallan 12</div>
+  <div class="mn" style="margin-bottom:10px;">Highland Single Malt Scotch Whisky · 12 Year · 40% ABV</div>
+  <div class="chips"><span class="chip gr">ALL CLEAR</span><span class="chip">40% ABV</span><span class="chip gr">GLUTEN FREE</span><span class="chip m">NO MEMBRANE FLAGS</span></div>
+  <div class="card" style="margin-bottom:8px;">
+    <div class="cl m">MODERATION NOTE · YOUR MEMBRANE</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.7;">Clean distillation, fewer congeners than blended. Same liver processing required regardless of quality. No medication interactions detected in your membrane.</p>
+  </div>
+  <div class="card b">
+    <div class="cl" style="margin-bottom:10px;">BETTER ALTERNATIVES · THE SOMMELIER SAYS</div>
+    <div class="row" style="padding-top:0;">
+      <div class="rn">→ Glenfiddich 12<small>Similar sherry-oak profile · $12 less per bottle · same region</small></div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);border-radius:5px;padding:2px 7px;cursor:pointer;text-align:center;">WHY?</div>
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;background:var(--blue);color:#03050A;border-radius:5px;padding:2px 7px;cursor:pointer;text-align:center;">WHERE →</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="rn">→ Glenlivet 12<small>Lighter · citrus and vanilla · better value by $18</small></div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);border-radius:5px;padding:2px 7px;cursor:pointer;text-align:center;">WHY?</div>
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;background:var(--blue);color:#03050A;border-radius:5px;padding:2px 7px;cursor:pointer;text-align:center;">WHERE →</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="rn">→ Monkey Shoulder<small>Blended malt · budget-friendly · excellent for cocktails</small></div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);border-radius:5px;padding:2px 7px;cursor:pointer;text-align:center;">WHY?</div>
+        <div style="font-family:'DM Mono',monospace;font-size:7.5px;background:var(--blue);color:#03050A;border-radius:5px;padding:2px 7px;cursor:pointer;text-align:center;">WHERE →</div>
+      </div>
+    </div>
+  </div>
+  <div class="card g">
+    <div style="display:flex;align-items:center;gap:7px;"><span style="color:var(--green);">◆</span><div class="cl gr" style="margin-bottom:0;">ACT RIGHT DOLLARS · SWITCHING SAVES $8-12 PER BOTTLE</div></div>
+    <p style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6;">Savings calculated from 12-month scan history. Goes directly to your AA2 Vault toward Travel My Planet destinations.</p>
+  </div>
+</div>
+</div>
+
+<!-- P25 PERSONAL CARE -->
+<div class="panel" id="p24">
+<div class="pi">
+  <div class="card p" style="margin-bottom:8px;">
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--purple);margin-bottom:7px;">SKIN INGESTION DOCTRINE · THE COSMO CHEMIST</div>
+    <p style="font-size:13px;color:var(--white);line-height:1.7;">The skin is not a barrier — it is an organ. What touches your skin enters your bloodstream within minutes. The Cosmo Chemist reads every formula and names every chemical.</p>
+  </div>
+  <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;margin-bottom:2px;flex-shrink:0;">Neutrogena T/Gel Shampoo</div>
+  <div class="mn" style="margin-bottom:10px;">SCANNED · PERSONAL CARE · 4 fl oz</div>
+  <div class="card r">
+    <div class="cl r">FLAGGED INGREDIENTS · EWG DATABASE ACTIVE</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12.5px;">Coal Tar (0.5%)<small style="color:var(--red);">Known carcinogen. EWG Hazard Score 10. Linked to increased cancer risk with prolonged use. EU restricted.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--red);"></div><div class="rn" style="font-size:12.5px;">Sodium Lauryl Sulfate<small>Skin irritant. Acts as penetration enhancer — increases absorption of other chemicals.</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--orange);"></div><div class="rn" style="font-size:12.5px;">Fragrance (undisclosed)<small style="color:var(--orange);">May contain phthalates. Allergen risk. No disclosure required under FDA labeling rules.</small></div></div>
+  </div>
+  <div class="card gr">
+    <div class="cl gr">SAFER ALTERNATIVES · VERIFIED</div>
+    <div class="row" style="padding-top:0;"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Vanicream Shampoo<small style="color:var(--green);">No SLS · No fragrance · EWG verified · Dermatologist recommended</small></div></div>
+    <div class="row"><div class="dot" style="background:var(--green);"></div><div class="rn" style="font-size:12px;">Free & Clear Shampoo<small style="color:var(--green);">Clinical formula · No dyes · No fragrance · Allergy tested</small></div></div>
+  </div>
+  <div class="caption">The skin is not a barrier. It is an organ. The Cosmo Chemist reads every formula.</div>
+</div>
+</div>
+
+<!-- P26 COOKBOOK SAVED -->
+<div class="panel" id="p25">
+<div class="pi">
+  <div class="ey g">THE VAULT · YOUR LIVING GOURMET LIBRARY</div>
+  <div class="mn" style="margin-bottom:10px;">Every saved recipe builds your personal cookbook. Download it. Share it. It grows for life.</div>
+  <div class="card g" style="overflow:hidden;padding:0;">
+    <div style="background:rgba(29,158,117,0.20);padding:9px 13px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <span style="color:var(--green);font-family:'DM Mono',monospace;font-size:12px;">✓</span>
+      <div class="mn gr">SAVED TO COOKBOOK</div>
+      <div class="mn" style="margin-left:auto;">APR 7, 2026 · IN-STORE SCAN · BELGRADE, MT</div>
+    </div>
+    <div style="padding:12px 13px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span class="mn">🇮🇹 ITALIAN</span><span class="mn">45 MIN · SERVES 4</span></div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:400;margin-bottom:10px;">Spaghetti Bolognese</div>
+      <div class="ing-row" style="padding-top:0;"><div class="ing-status" style="background:var(--green);"></div><div class="ing-name" style="font-size:12px;">Tomato paste · 2 tbsp<small style="color:var(--green);">Scanned · substituted</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--green);"></div><div class="ing-name" style="font-size:12px;">Spaghetti noodles · 400g<small style="color:var(--green);">Scanned · clear</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--red);"></div><div class="ing-name" style="font-size:12px;">Olive oil · 2 tbsp<small style="color:var(--red);">Verify peanut-free brand before use</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--gold);"></div><div class="ing-name" style="font-size:12px;">Ground beef 80/20 · 500g<small style="color:var(--gold);">Not yet scanned · set reminder</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--blue);"></div><div class="ing-name" style="font-size:12px;">Yellow onion · 1 large<small style="color:var(--blue);">Produce</small></div></div>
+      <div class="ing-row"><div class="ing-status" style="background:var(--blue);"></div><div class="ing-name" style="font-size:12px;">Garlic · 4 cloves<small style="color:var(--blue);">Produce</small></div></div>
+      <div class="mn gr" style="margin:8px 0 0;">THE CHEF IS ASSEMBLING THIS ENTRY</div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;flex-shrink:0;margin-top:8px;">
+    <button style="background:var(--gold);color:#03050A;border:none;border-radius:10px;padding:14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;">SHARE RECIPE →</button>
+    <button style="background:transparent;color:var(--blue);border:1px solid var(--bb);border-radius:10px;padding:14px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;cursor:pointer;">DOWNLOAD PDF</button>
+  </div>
+  <div class="card" style="margin-top:8px;">
+    <div class="mn" style="margin-bottom:4px;">MEMBRANE NOTES · PRIVATE · SAVED WITH RECIPE</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--muted);line-height:1.6;">"2 ingredients flagged. Substitutes confirmed. Shared version shows clean ingredient list only — membrane flags stay private."</p>
+  </div>
+</div>
+</div>
+
+<!-- P27 NORTH STAR -->
+<div class="panel center" id="p26">
+<div class="pi">
+  <div class="ey" style="letter-spacing:4px;text-align:center;">THE MEMBRANE · AA2 BIOSIGNAL SYSTEM</div>
+  <div style="margin:10px 0;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:5px;color:rgba(27,184,255,0.22);">✦ ✦ ✦</div>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,7.5vw,44px);line-height:1.1;font-weight:400;margin-bottom:8px;text-align:center;color:var(--white);">"The more of yourself you bring to this system —</h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(28px,7.5vw,44px);line-height:1.1;font-weight:400;margin-bottom:20px;text-align:center;color:var(--blue);">the more the system's mirror can reflect back to you."</h1>
+  <div class="dv c"></div>
+  <div class="mn" style="margin-bottom:20px;text-align:center;width:100%;">5 MINUTES · 8 BLOCKS · ONE MEMBRANE</div>
+  <button class="cta">BUILD MY MEMBRANE →</button>
+  <div class="mn" style="margin-top:14px;text-align:center;width:100%;opacity:.28;">I AM THE RECEIPT</div>
+</div>
+</div>
+
+</div><!-- /book -->
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button class="nb" id="pb" onclick="go(-1)" disabled>←</button>
+  <button class="nb" id="nbtn" onclick="go(1)">→</button>
+</div>
+<div class="hint" id="hint">SWIPE OR USE ARROWS · 27 PANELS</div>
+
+<script>
+const TOTAL=27;
+let cur=0,anim=false,tx=0,ty=0;
+const dotsEl=document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');d.className='d'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);dotsEl.appendChild(d);
+}
+function goTo(i){
+  if(anim||i===cur||i<0||i>=TOTAL)return;
+  anim=true;
+  document.getElementById('p'+cur).classList.remove('active');
+  document.getElementById('p'+cur).classList.add('exit');
+  setTimeout(()=>{const el=document.getElementById('p'+cur);if(el)el.classList.remove('exit');},460);
+  document.getElementById('p'+i).classList.add('active');
+  cur=i;
+  document.querySelectorAll('.d').forEach((d,j)=>d.classList.toggle('active',j===cur));
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nbtn').disabled=cur===TOTAL-1;
+  document.getElementById('pcount').textContent=(cur+1)+' / '+TOTAL;
+  if(cur>0)document.getElementById('hint').style.opacity='0';
+  setTimeout(()=>{anim=false;},470);
+}
+function go(d){goTo(cur+d);}
+document.getElementById('book').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('book').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>36)go(dx<0?1:-1);
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+
+// ══ EKG ENGINE ══
+function ekgPath(ctx,w,h,type,color,t){
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.shadowBlur=7;ctx.shadowColor=color;ctx.beginPath();
+  const pts=[];
+  const speeds={calm:0.18,stress:0.22,active:0.20};
+  const spd=speeds[type]||0.18;
+  for(let x=0;x<=w;x++){
+    let freq=type==='stress'?3.5:type==='active'?4.5:4.0;
+    const p=(x/w*freq+t*spd)%1;
+    let y=h/2;
+    if(type==='calm'){
+      if(p<0.15)y=h/2+Math.sin(p/0.15*Math.PI)*(h*.15);
+      else if(p<0.25)y=h/2-Math.sin((p-.15)/.10*Math.PI)*(h*.13);
+      else if(p<0.32)y=h/2;
+      else if(p<0.34)y=h/2+(p-.32)/.02*(h*.26);
+      else if(p<0.36)y=h/2+h*.26-(p-.34)/.02*h*.78;
+      else if(p<0.38)y=h/2-h*.52+(p-.36)/.02*h*.65;
+      else if(p<0.42)y=h/2+h*.13-(p-.38)/.04*h*.13;
+      else if(p<0.54)y=h/2-Math.sin((p-.42)/.12*Math.PI)*(h*.17);
+      else y=h/2;
+    }else if(type==='stress'){
+      if(p<0.10)y=h/2+Math.sin(p/.10*Math.PI)*(h*.19);
+      else if(p<0.20)y=h/2-Math.sin((p-.10)/.10*Math.PI)*(h*.17);
+      else if(p<0.28)y=h/2;
+      else if(p<0.30)y=h/2+(p-.28)/.02*(h*.30);
+      else if(p<0.32)y=h/2+h*.30-(p-.30)/.02*h*.92;
+      else if(p<0.34)y=h/2-h*.62+(p-.32)/.02*h*.78;
+      else if(p<0.40)y=h/2+h*.16-(p-.34)/.06*h*.16;
+      else if(p<0.54)y=h/2-Math.sin((p-.40)/.14*Math.PI)*(h*.22);
+      else y=h/2+Math.sin((p-.54)*5)*(h*.04);
+    }else{
+      if(p<0.12)y=h/2+Math.sin(p/.12*Math.PI)*(h*.14);
+      else if(p<0.22)y=h/2-Math.sin((p-.12)/.10*Math.PI)*(h*.16);
+      else if(p<0.28)y=h/2;
+      else if(p<0.30)y=h/2+(p-.28)/.02*(h*.25);
+      else if(p<0.32)y=h/2+h*.25-(p-.30)/.02*h*.84;
+      else if(p<0.34)y=h/2-h*.59+(p-.32)/.02*h*.72;
+      else if(p<0.40)y=h/2+h*.13-(p-.34)/.06*h*.13;
+      else if(p<0.52)y=h/2-Math.sin((p-.40)/.12*Math.PI)*(h*.19);
+      else y=h/2;
+    }
+    pts.push({x,y:Math.max(2,Math.min(h-2,y))});
+  }
+  ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+  ctx.stroke();ctx.shadowBlur=0;
+}
+
+function makeWaveRow(containerId,name,val,color,type,badge,badgeLabel){
+  const c=document.getElementById(containerId);if(!c)return;
+  const wrap=document.createElement('div');wrap.style.cssText='margin-bottom:5px;';
+  const hdr=document.createElement('div');hdr.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;';
+  const lft=document.createElement('div');lft.style.cssText='display:flex;align-items:center;gap:6px;';
+  const dot=document.createElement('div');dot.style.cssText=`width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;`;
+  const nm=document.createElement('span');nm.style.cssText='font-family:"DM Mono",monospace;font-size:9px;letter-spacing:1px;color:#fff;';nm.textContent=name;
+  lft.appendChild(dot);lft.appendChild(nm);
+  const rt=document.createElement('div');
+  if(badge){
+    const b=document.createElement('span');
+    const cls={'on':'on','wa':'wa','al':'al','st':'st'}[badge]||'st';
+    b.className='sb '+cls;
+    const bd=document.createElement('div');bd.className='sd';
+    bd.style.background={on:'#1D9E75',wa:'#C49A2A',al:'#E05252',st:'#888'}[cls]||'#888';
+    b.appendChild(bd);b.appendChild(document.createTextNode(badgeLabel||val));rt.appendChild(b);
+  }else{
+    const v=document.createElement('span');v.style.cssText=`font-family:"DM Mono",monospace;font-size:10px;color:${color};`;v.textContent=val;rt.appendChild(v);
+  }
+  hdr.appendChild(lft);hdr.appendChild(rt);
+  const cv=document.createElement('canvas');cv.style.cssText='width:100%;height:34px;display:block;';cv.height=34;
+  cv.dataset.color=color;cv.dataset.type=type;cv.dataset.t=(Math.random()*12).toString();
+  wrap.appendChild(hdr);wrap.appendChild(cv);c.appendChild(wrap);
+}
+
+function drawWaves(){
+  const t=performance.now()/1000;
+  document.querySelectorAll('canvas[data-color]').forEach(cv=>{
+    if(!document.body.contains(cv))return;
+    const r=cv.getBoundingClientRect();if(r.width<10)return;
+    const dpr=window.devicePixelRatio||1;
+    cv.width=r.width*dpr;cv.height=r.height*dpr;
+    const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
+    ekgPath(ctx,r.width,r.height,cv.dataset.type||'calm',cv.dataset.color||'#1BB8FF',t+parseFloat(cv.dataset.t||0));
+  });
+}
+
+window.addEventListener('load',()=>{
+  // Panel 7 — Civilian
+  makeWaveRow('wc1','James Pitts','74 HRV','#1BB8FF','calm');
+  makeWaveRow('wc2','Sarah M.','68 RDY','#1D9E75','calm');
+  makeWaveRow('wc3','Child 1','88 RDY','#C49A2A','active');
+  makeWaveRow('wc4','Max · K9','62bpm','#9B59B6','calm');
+  // Panel 7 — Tactical
+  makeWaveRow('wt1','Handler · Alpha','ONLINE','#E05252','stress','on','ONLINE');
+  makeWaveRow('wt2','K9 Unit · Rex','ELEVATED','#E8873A','stress','wa','ELEVATED');
+  makeWaveRow('wt3','Handler · Bravo','STANDBY','#1BB8FF','calm','st','STANDBY');
+  // Panel 18 — Family
+  makeWaveRow('wfam1','James · Garmin + Oura','74 HRV','#1BB8FF','calm');
+  makeWaveRow('wfam2','Sarah · Oura Ring','68 RDY','#C49A2A','active');
+  // Panel 20 — K9 Tactical
+  makeWaveRow('htac1','Handler Alpha','HR 94','#1BB8FF','calm');
+  makeWaveRow('htac2','K9 Rex','HR 118 STRESS','#E05252','stress');
+  // Panel 8 — Enterprise dash
+  [{id:'d1',color:'#1BB8FF',type:'stress'},{id:'d2',color:'#C49A2A',type:'active'},
+   {id:'d3',color:'#E05252',type:'stress'},{id:'d4',color:'#1D9E75',type:'calm'},
+   {id:'d5',color:'#E8873A',type:'active'},{id:'d6',color:'#9B59B6',type:'calm'}]
+  .forEach(d=>{const cv=document.getElementById(d.id);if(cv){cv.dataset.color=d.color;cv.dataset.type=d.type;cv.dataset.t=(Math.random()*12).toString();}});
+
+  (function loop(){drawWaves();requestAnimationFrame(loop);})();
+});
+</script>
+</body>
+</html>

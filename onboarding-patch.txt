@@ -1,0 +1,237 @@
+# SCANNER-VS-SCANNER-WITH-STACK SURGICAL PATCH
+# Target: /Users/jamespitts/Downloads/aa2-scan/app/(tabs)/onboarding.tsx
+# Base commit: ae40f78
+# Changes: 3 additive. Zero deletions of existing features.
+#
+# Javier is NOT added. Block 7 personalities stay: The Coach / The Stable / COMMAND / THE BRIEF.
+#
+# ══════════════════════════════════════════════════════════════════════════
+# CHANGE 1 — Scanner-vs-Stack visual card on north_star_intro screen
+# ══════════════════════════════════════════════════════════════════════════
+# Location: inside the `step === 'north_star_intro'` block.
+# Current version has quote + sub + button. We add a two-column path card
+# between the sub and the button.
+#
+# FIND this block (around line 478–492 of your live file):
+
+        <ScrollView contentContainerStyle={st.northWrap} keyboardShouldPersistTaps="handled">
+          <Text style={st.northQuote}>
+            "The more of yourself you bring to this system — the more the system's mirror can reflect back to you."
+          </Text>
+          <Text style={st.northSub}>
+            5 MINUTES. 8 QUESTIONS. ONE MEMBRANE.
+          </Text>
+          <TouchableOpacity style={st.northBtn} onPress={() => setStep('briefing_1')} activeOpacity={0.85}>
+            <Text style={st.northBtnText}>BUILD MY MEMBRANE →</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+# REPLACE with this block (adds the two-column path card — nothing else changes):
+
+        <ScrollView contentContainerStyle={st.northWrap} keyboardShouldPersistTaps="handled">
+          <Text style={st.northQuote}>
+            "The more of yourself you bring to this system — the more the system's mirror can reflect back to you."
+          </Text>
+          <Text style={st.northSub}>
+            5 MINUTES. 8 QUESTIONS. ONE MEMBRANE.
+          </Text>
+
+          {/* ── SCANNER VS SCANNER+STACK — TWO PATHS, SAME MEMBRANE ─────────── */}
+          <View style={st.pathCard}>
+            <Text style={st.pathLabel}>TWO WAYS IN. SAME MEMBRANE.</Text>
+            <View style={st.pathRow}>
+              <View style={[st.pathCol, { borderColor: BLUE }]}>
+                <Text style={[st.pathTitle, { color: BLUE }]}>SCANNER</Text>
+                <Text style={st.pathBody}>
+                  Your phone is the membrane. Scanner, Equalizer, Chef, Chauffeur — all live on day one.
+                </Text>
+              </View>
+              <View style={[st.pathCol, { borderColor: BLUE_BORDER }]}>
+                <Text style={[st.pathTitle, { color: BLUE }]}>SCANNER + STACK</Text>
+                <Text style={st.pathBody}>
+                  Phone plus anything you already wear. Bio Buddy wakes up. Every device lights up its own band.
+                </Text>
+              </View>
+            </View>
+            <Text style={st.pathFooter}>
+              Same 20 questions. Your stack declares itself in Block 5.
+            </Text>
+          </View>
+
+          <TouchableOpacity style={st.northBtn} onPress={() => setStep('briefing_1')} activeOpacity={0.85}>
+            <Text style={st.northBtnText}>BUILD MY MEMBRANE →</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+
+# Then at the bottom of the file, inside the StyleSheet.create({ st }) block,
+# FIND the closing brace of the style sheet (the last `}); ` of `const st = StyleSheet.create`).
+# BEFORE that closing brace, ADD these new style rules:
+
+  // ── Scanner vs Stack path card ─────────────────────────────────────
+  pathCard: {
+    width: '100%',
+    backgroundColor: CARD_BG,
+    borderWidth: 1,
+    borderColor: BLUE_BORDER,
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 32,
+  },
+  pathLabel: {
+    fontFamily: F.mono,
+    fontSize: 9,
+    color: MUTED,
+    letterSpacing: 3,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  pathRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  pathCol: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+  },
+  pathTitle: {
+    fontFamily: F.monoMd,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  },
+  pathBody: {
+    fontFamily: F.sans,
+    fontSize: 11,
+    color: MUTED,
+    lineHeight: 16,
+  },
+  pathFooter: {
+    fontFamily: F.serifIt,
+    fontSize: 12,
+    color: BLUE,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# CHANGE 2 — Sharpen Block 5 briefing text
+# ══════════════════════════════════════════════════════════════════════════
+# Location: inside the `step === 'briefing_5'` block.
+#
+# FIND this block (around line 537–544):
+
+      {step === 'briefing_5' && (
+        <BriefingCard
+          blockLabel="BLOCK 5 · HARDWARE"
+          text="Tell me what is connected. The more signal I receive, the more precise I become. But even without hardware, the membrane works. Start with what you have."
+          onBegin={() => setStep('block_5')}
+        />
+      )}
+
+# REPLACE with:
+
+      {step === 'briefing_5' && (
+        <BriefingCard
+          blockLabel="BLOCK 5 · HARDWARE"
+          text="Two paths here. Scanner-only: the phone is the membrane, and everything runs. Scanner + Stack: any device you already own deepens the picture. Both are valid. Start with what you have — the dashboard lights up band by band as you add more."
+          onBegin={() => setStep('block_5')}
+        />
+      )}
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# CHANGE 3 — Dynamic stack confirmation line under Block 5 wearables chips
+# ══════════════════════════════════════════════════════════════════════════
+# Location: inside the `step === 'block_5'` block, right after the wearables
+# ChipSelector closes and before the Oura token fieldGroup begins.
+#
+# FIND this block (around line 1060–1071):
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="WHICH WEARABLES DO YOU USE?" />
+              <ChipSelector
+                options={['Garmin','Oura Ring','Apple Watch','Whoop','Fitbit','Polar','Samsung Watch','None']}
+                selected={wearables}
+                multi
+                onSelect={toggleWearable}
+              />
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="OURA PERSONAL API TOKEN" />
+
+# REPLACE with (adds the stack confirmation line as the final element inside
+# the wearables fieldGroup, before the Oura fieldGroup starts):
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="WHICH WEARABLES DO YOU USE?" />
+              <ChipSelector
+                options={['Garmin','Oura Ring','Apple Watch','Whoop','Fitbit','Polar','Samsung Watch','None']}
+                selected={wearables}
+                multi
+                onSelect={toggleWearable}
+              />
+              {/* ── STACK PATH CONFIRMATION — reflects scanner vs stack doctrine ─ */}
+              <Text style={st.stackConfirm}>
+                {(() => {
+                  const hasReal = wearables.filter(w => w !== 'None').length > 0;
+                  return hasReal
+                    ? '✓ Scanner + Stack path — Bio Buddy activates with your first data.'
+                    : 'Scanner path active. Phone is the membrane. Add devices anytime.';
+                })()}
+              </Text>
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="OURA PERSONAL API TOKEN" />
+
+
+# Then in the StyleSheet.create({ st }) block, ADD this style rule
+# (can go right after the pathFooter style you added in Change 1):
+
+  stackConfirm: {
+    fontFamily: F.serifIt,
+    fontSize: 13,
+    color: BLUE,
+    marginTop: 12,
+    lineHeight: 18,
+  },
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# END OF CHANGES
+# ══════════════════════════════════════════════════════════════════════════
+#
+# Summary of what was added:
+#   • 1 new visual card on north_star_intro (scanner vs stack paths)
+#   • 1 sharpened briefing text on Block 5
+#   • 1 dynamic confirmation line under Block 5 wearables
+#   • 8 new style entries in StyleSheet
+#
+# Summary of what was removed:
+#   • NOTHING
+#
+# What was NOT changed:
+#   • Preview panels (external component, untouched)
+#   • BiomarkerManager (external component, untouched)
+#   • Block 7 personalities — still The Coach / The Stable / COMMAND / THE BRIEF
+#   • All 8 blocks — structure intact
+#   • 27-field progress calculation — unchanged
+#   • N/A doctrine — unchanged
+#   • saveField() — unchanged
+#   • Activity grid, allergen chips, Oura token, Garmin export — unchanged
+#   • All fonts, colors, palette — unchanged
+#
+# Build sequence (after you paste these three changes into onboarding.tsx):
+#
+#   cd /Users/jamespitts/Downloads/aa2-scan
+#   npx expo export --platform android       # local bundle test
+#   git add "app/(tabs)/onboarding.tsx"
+#   git commit -m "onboarding: scanner-vs-stack doctrine visible in UI"
+#   git push origin HEAD
+#   eas build --platform android --profile preview --clear-cache

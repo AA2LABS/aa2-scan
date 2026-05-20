@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AA2 — The Membrane</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --blue:#1BB8FF;--bdim:rgba(27,184,255,0.10);--bb:rgba(27,184,255,0.22);
+  --green:#1D9E75;--gdim:rgba(29,158,117,0.10);--gb:rgba(29,158,117,0.22);
+  --gold:#C49A2A;--ydim:rgba(196,154,42,0.10);--yb:rgba(196,154,42,0.22);
+  --red:#E05252;--rdim:rgba(224,82,82,0.10);--rb:rgba(224,82,82,0.22);
+  --orange:#E8873A;
+  --white:#FFFFFF;--muted:rgba(255,255,255,0.52);--dim:rgba(255,255,255,0.10);
+  --bg:#0A0804;--card:#120D08;--border:rgba(255,255,255,0.055);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'DM Sans',sans-serif;color:var(--white);}
+.book{width:100%;height:100%;position:relative;overflow:hidden;}
+
+/* PANELS */
+.panel{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;
+  padding:40px 22px 82px;
+  opacity:0;transform:translateX(100%);
+  transition:opacity .46s cubic-bezier(.4,0,.2,1),transform .46s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+}
+.panel::-webkit-scrollbar{display:none;}
+.panel.active{opacity:1;transform:translateX(0);}
+.panel.exit{opacity:0;transform:translateX(-44px);}
+
+.pi{width:100%;max-width:400px;display:flex;flex-direction:column;align-items:flex-start;}
+
+@keyframes up{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.panel.active .pi>*{animation:up .42s ease both;}
+.panel.active .pi>*:nth-child(1){animation-delay:.07s;}
+.panel.active .pi>*:nth-child(2){animation-delay:.14s;}
+.panel.active .pi>*:nth-child(3){animation-delay:.21s;}
+.panel.active .pi>*:nth-child(4){animation-delay:.28s;}
+.panel.active .pi>*:nth-child(5){animation-delay:.35s;}
+.panel.active .pi>*:nth-child(6){animation-delay:.42s;}
+.panel.active .pi>*:nth-child(7){animation-delay:.49s;}
+.panel.active .pi>*:nth-child(8){animation-delay:.56s;}
+
+/* TYPO */
+.ey{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--blue);margin-bottom:6px;}
+.ey.g{color:var(--gold);}
+.ey.gr{color:var(--green);}
+.ey.m{color:var(--muted);}
+h1.hl{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,7.5vw,44px);line-height:1.08;font-weight:400;margin-bottom:10px;}
+h1.hl em{font-style:italic;color:var(--blue);}
+h1.hl.g em{color:var(--gold);}
+h1.hl.gr em{color:var(--green);}
+.sub{font-family:'DM Sans',sans-serif;font-size:13.5px;line-height:1.75;color:var(--muted);margin-bottom:12px;width:100%;}
+.sub strong{color:var(--white);font-weight:500;}
+.mn{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);}
+
+/* DIVIDER */
+.dv{width:32px;height:1px;background:var(--bb);margin:8px 0 14px;}
+.dv.g{background:var(--yb);}
+.dv.gr{background:var(--gb);}
+
+/* CARD */
+.card{width:100%;background:var(--card);border-radius:14px;border:1px solid var(--border);padding:13px 15px;margin-bottom:9px;}
+.card.b{border-color:var(--bb);background:rgba(27,184,255,0.03);}
+.card.g{border-color:var(--yb);background:rgba(196,154,42,0.03);}
+.card.gr{border-color:var(--gb);background:rgba(29,158,117,0.03);}
+.card.r{border-color:var(--rb);background:rgba(224,82,82,0.03);}
+
+.cl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--blue);margin-bottom:9px;}
+.cl.g{color:var(--gold);}
+.cl.gr{color:var(--green);}
+.cl.r{color:var(--red);}
+.cl.m{color:var(--muted);}
+
+/* ROW */
+.row{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);gap:9px;}
+.row:last-child{border-bottom:none;padding-bottom:0;}
+.row:first-child{padding-top:0;}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.rn{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--white);flex:1;line-height:1.3;}
+.rn small{display:block;font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:.8px;margin-top:1px;}
+.rv{font-family:'DM Mono',monospace;font-size:10px;flex-shrink:0;}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px;width:100%;}
+.chip{display:inline-flex;align-items:center;border:1px solid var(--bb);background:var(--bdim);border-radius:20px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.2px;color:var(--blue);}
+.chip.g{border-color:var(--yb);background:var(--ydim);color:var(--gold);}
+.chip.gr{border-color:var(--gb);background:var(--gdim);color:var(--green);}
+.chip.m{border-color:var(--dim);background:rgba(255,255,255,0.02);color:var(--muted);}
+
+/* QUOTE */
+.qt{width:100%;border-left:2.5px solid var(--blue);background:var(--bdim);border-radius:0 10px 10px 0;padding:11px 14px;margin-bottom:9px;}
+.qt p{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;line-height:1.6;color:var(--white);}
+.qt.g{border-left-color:var(--gold);background:var(--ydim);}
+
+/* GRID 2 */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;margin-bottom:9px;}
+.g2c{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 12px;}
+.g2l{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;margin-bottom:8px;}
+.g2i{font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);padding:3px 0;border-bottom:1px solid var(--border);line-height:1.4;}
+.g2i:last-child{border-bottom:none;}
+.g2i.gr{color:var(--green);}
+
+/* WHO LIST */
+.who{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);width:100%;}
+.who:last-child{border-bottom:none;}
+.wi{font-size:15px;width:22px;text-align:center;flex-shrink:0;margin-top:1px;}
+.wt{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;color:var(--white);margin-bottom:2px;}
+.wd{font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* CTA */
+.cta{width:100%;background:var(--blue);color:#03050A;border:none;border-radius:14px;padding:16px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;margin-top:4px;transition:opacity .2s,transform .2s;}
+.cta:hover{opacity:.9;transform:translateY(-1px);}
+
+/* ══ EKG WAVE CANVAS ══ */
+.wave-container{
+  width:100%;background:var(--card);border-radius:12px;
+  border:1px solid var(--border);
+  padding:10px 14px 12px;
+  margin-bottom:8px;
+  overflow:hidden;
+}
+.wave-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.wave-member{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;}
+.wave-val{font-family:'DM Mono',monospace;font-size:10px;}
+canvas.ekg{width:100%;height:36px;display:block;}
+
+/* ══ DASHBOARD TILE ══ */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;margin-bottom:9px;}
+.dtile{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:10px 12px;
+  position:relative;overflow:hidden;
+}
+.dtile.b{border-color:var(--bb);}
+.dtile.g{border-color:var(--yb);}
+.dtile.gr{border-color:var(--gb);}
+.dtile.r{border-color:var(--rb);}
+.dtile.orange{border-color:rgba(232,135,58,0.22);}
+
+.dt-label{font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:2px;margin-bottom:6px;}
+.dt-sub{font-family:'DM Sans',sans-serif;font-size:10px;color:var(--muted);line-height:1.4;margin-top:4px;}
+
+canvas.dwave{width:100%;height:28px;display:block;margin-top:4px;}
+
+/* STATUS BADGE */
+.sbadge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:6px;padding:2px 7px;
+  font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;
+}
+.sbadge.on{background:rgba(29,158,117,0.15);color:var(--green);}
+.sbadge.watch{background:rgba(196,154,42,0.15);color:var(--gold);}
+.sbadge.alert{background:rgba(224,82,82,0.15);color:var(--red);}
+.sbadge.standby{background:rgba(255,255,255,0.06);color:var(--muted);}
+.sbadge-dot{width:4px;height:4px;border-radius:50%;}
+
+/* CONCIERGE CARD */
+.cc{width:100%;background:var(--bdim);border:1px solid var(--bb);border-radius:14px;padding:13px 15px;margin-bottom:9px;}
+
+/* DOTS & NAV */
+.dots{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:100;}
+.d{width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.16);transition:all .3s;cursor:pointer;}
+.d.active{width:16px;background:var(--blue);}
+.nav{position:fixed;bottom:54px;display:flex;gap:9px;left:50%;transform:translateX(-50%);z-index:100;}
+.nb{width:38px;height:38px;border-radius:50%;border:1px solid var(--bb);background:var(--bdim);color:var(--blue);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.nb:disabled{opacity:.15;cursor:default;}
+.hint{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;color:rgba(255,255,255,0.12);z-index:99;pointer-events:none;transition:opacity .4s;}
+
+/* NUM BADGE */
+.num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--bb);font-family:'DM Mono',monospace;font-size:8px;color:var(--blue);flex-shrink:0;}
+
+/* PANEL 9 CENTER */
+#p8{justify-content:center;align-items:center;}
+#p8 .pi{align-items:center;text-align:center;}
+#p8 .hl{text-align:center;}
+#p8 .dv{margin-left:auto;margin-right:auto;}
+</style>
+</head>
+<body>
+<div class="book" id="book">
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 1 — WELCOME                         -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel active" id="p0">
+<div class="pi">
+  <div class="ey">AA2 ADAPTIVE ADVANTAGE LABORATORIES, S.A.</div>
+  <h1 class="hl">You finally<br><em>arrived.</em></h1>
+  <div class="dv"></div>
+  <p class="sub">The one place that reunites everything you've collected — your watch, your ring, your glasses, your earbuds — and transforms their raw signals into something that actually makes sense for <strong>your life.</strong></p>
+  <div class="card b">
+    <div class="cl">NOT A MIRROR. AN INTERPRETATION.</div>
+    <p style="font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);line-height:1.72;">
+      Any app can reflect what your devices already say. AA2 runs every signal through <strong style="color:var(--white);">The Clarifier</strong> — the only system that knows the difference between your stress and your excitement, your workout and your housecleaning, your fear and your joy.<br><br>
+      <strong style="color:var(--white);">The membrane works on organic and inorganic material alike.</strong> The same intelligence that interprets your biosignals reads the label on your food, the mushroom in the woods, and the elk you just harvested.
+    </p>
+  </div>
+  <div class="qt">
+    <p>"This is not like Sonar or any other app putting devices in one place. AA2 transforms what's there into a correct clarification — via the clarifier — and the scanner is that clarifier."</p>
+  </div>
+  <div class="mn">PANEL 1 OF 9 · SWIPE TO CONTINUE →</div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 2 — WHAT THIS SYSTEM DOES          -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p1">
+<div class="pi">
+  <div class="ey">THE MEMBRANE COVERS</div>
+  <h1 class="hl">One system.<br><em>Everything.</em></h1>
+  <div class="dv"></div>
+  <div class="card">
+    <div class="cl">SAFETY · PROTECTION</div>
+    <div class="chips">
+      <span class="chip">FOOD SAFETY</span><span class="chip">ALLERGEN DETECTION</span>
+      <span class="chip">PATHOGEN SCREENING</span><span class="chip">CWD · PRION DISEASE</span>
+      <span class="chip">WILD GAME HARVEST</span><span class="chip">FORAGING</span>
+      <span class="chip">DRUG INTERACTIONS</span><span class="chip">SKIN INGESTION</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="cl g">LIFE INTELLIGENCE</div>
+    <div class="chips">
+      <span class="chip g">LIVE INTERNATIONAL COOKING</span>
+      <span class="chip g">LANGUAGE LEARNING</span>
+      <span class="chip g">TRAVEL SAFETY ENGINE</span>
+      <span class="chip g">FINANCIAL SAVINGS</span>
+      <span class="chip g">VISION BOARD</span>
+      <span class="chip g">ACT RIGHT DOLLARS</span>
+      <span class="chip g">GLOBAL GROCERY MATCH</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="cl gr">SPECIES INTELLIGENCE</div>
+    <div class="chips">
+      <span class="chip gr">K9 · CANINE</span>
+      <span class="chip gr">FELINE</span>
+      <span class="chip gr">EQUESTRIAN</span>
+      <span class="chip gr">CATTLE</span>
+      <span class="chip gr">GOAT</span>
+      <span class="chip gr">RABBIT</span>
+      <span class="chip gr">TACTICAL K9</span>
+    </div>
+  </div>
+  <p class="sub">AT&T makes the connection.<br><strong>AA2 makes the interpretation.</strong></p>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 3 — HARDWARE REVIVAL               -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p2">
+<div class="pi">
+  <div class="ey g">THE HARDWARE DRAWER DOCTRINE</div>
+  <h1 class="hl g">Your old device<br><em>has new life.</em></h1>
+  <div class="dv g"></div>
+  <p class="sub">Just when you thought that old device was just old — you didn't realize you had <strong>years of bios already locked inside,</strong> begging to come out and be reinterpreted the way they should. Upload the PDF manual. AA2 reads it so you never have to.</p>
+  <div class="card g">
+    <div class="cl g">COMPATIBLE DEVICES — VERIFIED</div>
+    <div class="row">
+      <div class="dot" style="background:var(--blue);"></div>
+      <div class="rn">Garmin<small>Tactix 8 · Fenix 7/8 · Forerunner · Venu · Vivoactive · any .FIT export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="rn">Oura Ring<small>Gen 3 · Gen 4 · personal API token at cloud.ouraring.com</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="rn">Beats Pro 2 · Apple AirPods Pro 2<small>HRV via Strava / Apple Health export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:#9B59B6;"></div>
+      <div class="rn">Oakley Meta HSTN · Ray-Ban Meta<small>Smart glasses · live cooking assist · language layer</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="rn">Apple Watch Series 6+<small>Apple Health export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="rn">WHOOP 4.0 · Polar H10 · Suunto Race/9<small>.FIT or CSV data export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="rn">Muse S Athena · Muse 2 — The Crown<small>EEG layer · Mind Monitor CSV export</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--muted);"></div>
+      <div class="rn">Fitbit · Any downloadable device<small>If the data exports — it belongs here</small></div>
+    </div>
+  </div>
+  <p class="sub" style="font-size:12px;">Upgrade when you're ready. Until then — <strong>what you already own is enough.</strong></p>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 4 — DISRUPTION VS HARMONY          -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p3">
+<div class="pi">
+  <div class="ey">THE TRANSFORMATION</div>
+  <h1 class="hl">Disruption<br>vs <em>Harmony.</em></h1>
+  <div class="dv"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;width:100%;margin-bottom:9px;">
+    <div class="card r" style="margin-bottom:0;">
+      <div class="cl r">DISRUPTION</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);line-height:1.6;">
+        Garmin says 118bpm.<br>Ring says stress 74.<br>No context.<br>No meaning.<br>Patchwork data.
+      </div>
+    </div>
+    <div class="card gr" style="margin-bottom:0;">
+      <div class="cl gr">HARMONY</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);line-height:1.6;">
+        All signals unified.<br>Context applied.<br>Clarified.<br>Interpreted.<br>One membrane.
+      </div>
+    </div>
+  </div>
+  <div class="card b">
+    <div class="cl" style="margin-bottom:10px;">THE CLARIFIER IN ACTION</div>
+    <div class="row" style="padding-top:0;">
+      <div class="num">1</div>
+      <div class="rn" style="font-size:12px;">Biosignal spike detected<small style="color:var(--red);">Garmin HR 118 · Oura Stress 74</small></div>
+    </div>
+    <div class="row">
+      <div class="num">2</div>
+      <div class="rn" style="font-size:12px;">Clarifier asks<small>"Bios reported as stress at 2:47 PM. Is that accurate?"</small></div>
+    </div>
+    <div class="row">
+      <div class="num">3</div>
+      <div class="rn" style="font-size:12px;">Member responds<small style="color:var(--white);">"That is not stress. I just got approved for my new house."</small></div>
+    </div>
+    <div class="row">
+      <div class="num">4</div>
+      <div class="rn" style="font-size:12px;">Membrane updates<small style="color:var(--green);">STRESS → EXCITEMENT · Positive life event logged</small></div>
+    </div>
+  </div>
+  <p class="sub" style="font-size:12px;"><strong>No other platform knows the difference.</strong> AA2 does — because the clarifier asked at the right moment, and the membrane never forgot.</p>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 5 — BYOB / BYOH / BYMR             -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p4">
+<div class="pi">
+  <div class="ey">YOUR DATA. ALWAYS YOURS.</div>
+  <h1 class="hl">Bring<br><em>everything.</em></h1>
+  <div class="dv"></div>
+  <div class="g2">
+    <div class="g2c" style="border-color:var(--bb);">
+      <div class="g2l" style="color:var(--blue);">BYOB</div>
+      <div class="g2i">Biosignal history</div>
+      <div class="g2i">HRV baselines</div>
+      <div class="g2i">Recovery trends</div>
+      <div class="g2i gr">Yours forever</div>
+    </div>
+    <div class="g2c" style="border-color:var(--yb);">
+      <div class="g2l" style="color:var(--gold);">BYOH</div>
+      <div class="g2i">Device manuals</div>
+      <div class="g2i">Old or new</div>
+      <div class="g2i">.FIT · CSV · API</div>
+      <div class="g2i gr">All compatible</div>
+    </div>
+    <div class="g2c" style="border-color:var(--gb);">
+      <div class="g2l" style="color:var(--green);">BYMR</div>
+      <div class="g2i">Allergy records</div>
+      <div class="g2i">Medications</div>
+      <div class="g2i">Pet history</div>
+      <div class="g2i gr">Full profile</div>
+    </div>
+    <div class="g2c">
+      <div class="g2l" style="color:var(--muted);">EXPORT</div>
+      <div class="g2i">Full data CSV</div>
+      <div class="g2i">Cookbook PDF</div>
+      <div class="g2i">Vision board</div>
+      <div class="g2i gr">Leave anytime</div>
+    </div>
+  </div>
+  <div class="qt">
+    <p>"When we say it's your data — it's your data. The system holds nothing hostage. The value of staying is the living intelligence that keeps growing."</p>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 6 — WHO THIS IS FOR                -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p5">
+<div class="pi">
+  <div class="ey">NO MATTER YOUR PATH</div>
+  <h1 class="hl">Built for<br><em>every life.</em></h1>
+  <div class="dv"></div>
+  <div class="card" style="padding:9px 14px;">
+    <div class="who"><div class="wi">👨‍👩‍👧‍👦</div><div><div class="wt">FAMILIES · HOUSEHOLDS</div><div class="wd">Every person and animal you protect. One membrane. One dashboard.</div></div></div>
+    <div class="who"><div class="wi">🎯</div><div><div class="wt">TACTICAL · LAW ENFORCEMENT</div><div class="wd">Handler and K9 biosignals unified. Stress transfer detected before deployment.</div></div></div>
+    <div class="who"><div class="wi">🏇</div><div><div class="wt">EQUESTRIAN · HORSE RACING</div><div class="wd">Jockey and horse in biosignal sync. Feed safety verified. Race-day readiness confirmed.</div></div></div>
+    <div class="who"><div class="wi">🚜</div><div><div class="wt">AGRICULTURAL · FARMING</div><div class="wd">Cattle, goat, and rabbit herd monitoring. Mycotoxin detection. Feed safety at scale.</div></div></div>
+    <div class="who"><div class="wi">🏆</div><div><div class="wt">PROFESSIONAL SPORTS · F1 · OLYMPIC</div><div class="wd">Every athlete a channel on the master bus. 87 seats. 24 countries. WADA layer.</div></div></div>
+    <div class="who" style="border-bottom:none;"><div class="wi">🏡</div><div><div class="wt">HIGH NET WORTH · ENTERPRISE</div><div class="wd">Quiet protection. Delegated intelligence. Long-term optimization. Invisible. Effortless.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 7A — BIO CONTROL PANEL · CIVILIAN  -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p6">
+<div class="pi">
+  <div class="ey">THE LIVING MONITORING SYSTEM</div>
+  <h1 class="hl">The Bio<br><em>Control Panel.</em></h1>
+  <div class="dv"></div>
+  <p class="sub">On a phone, AA2 feels personal. <strong>On an 85-inch screen, AA2 becomes a living operational command surface.</strong> Every member a channel. Every biosignal a wave. The same book you see at CES is on the website and in the app.</p>
+
+  <!-- CIVILIAN HOUSEHOLD -->
+  <div class="card b" style="margin-bottom:6px;">
+    <div class="cl" style="margin-bottom:10px;">CIVILIAN HOUSEHOLD · LIVE</div>
+    <div class="wave-container" style="margin-bottom:0;border:none;padding:0;background:transparent;">
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <div id="wc1" data-name="James Pitts" data-val="74 HRV" data-color="#1BB8FF" data-type="calm"></div>
+        <div id="wc2" data-name="Sarah M." data-val="68 RDY" data-color="#1D9E75" data-type="calm"></div>
+        <div id="wc3" data-name="Child 1" data-val="88 RDY" data-color="#C49A2A" data-type="active"></div>
+        <div id="wc4" data-name="Max · K9" data-val="62bpm" data-color="#9B59B6" data-type="calm"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TACTICAL -->
+  <div class="card r" style="margin-bottom:6px;">
+    <div class="cl r" style="margin-bottom:10px;">TACTICAL UNIT · FIELD STATUS</div>
+    <div id="wt1" data-name="Handler · Alpha" data-val="ONLINE" data-color="#E05252" data-type="stress" data-badge="on" data-badge-label="ONLINE"></div>
+    <div id="wt2" data-name="K9 Unit · Rex" data-val="ONLINE" data-color="#E8873A" data-type="stress" data-badge="watch" data-badge-label="ELEVATED"></div>
+    <div id="wt3" data-name="Handler · Bravo" data-val="STANDBY" data-color="#1BB8FF" data-type="calm" data-badge="standby" data-badge-label="STANDBY"></div>
+  </div>
+
+  <!-- F1 -->
+  <div class="card g" style="margin-bottom:0;">
+    <div class="cl g" style="margin-bottom:10px;">F1 RACING · PRE-RACE MONITOR</div>
+    <div id="wf1" data-name="Driver · #44" data-val="RACE READY" data-color="#C49A2A" data-type="active"></div>
+    <div id="wf2" data-name="Pit Lead" data-val="OPTIMAL" data-color="#1D9E75" data-type="calm"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 7B — ENTERPRISE SCALE DASHBOARDS   -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p7">
+<div class="pi">
+  <div class="ey">ENTERPRISE · LARGE SCREEN · 85-INCH+</div>
+  <h1 class="hl">Every context.<br><em>One canvas.</em></h1>
+  <div class="dv"></div>
+  <p class="sub" style="font-size:12.5px;">The same membrane that runs on your phone renders as a full bio-command surface on any screen. <strong>Six industries. One system.</strong></p>
+
+  <div class="dash-grid">
+    <!-- NFL -->
+    <div class="dtile b">
+      <div class="dt-label" style="color:var(--blue);">🏈 NFL ROSTER</div>
+      <canvas class="dwave" id="d1"></canvas>
+      <div class="dt-sub">53 players · coaches · trainers · live biosignal feed</div>
+    </div>
+    <!-- HORSE RACING -->
+    <div class="dtile g">
+      <div class="dt-label" style="color:var(--gold);">🏇 HORSE RACING</div>
+      <canvas class="dwave" id="d2"></canvas>
+      <div class="dt-sub">Jockey + horse biosync · feed verified · race readiness</div>
+    </div>
+    <!-- TACTICAL -->
+    <div class="dtile r">
+      <div class="dt-label" style="color:var(--red);">🎯 TACTICAL UNIT</div>
+      <canvas class="dwave" id="d3"></canvas>
+      <div class="dt-sub">Handlers online/standby · K9 stress transfer alerts</div>
+    </div>
+    <!-- AGRICULTURE -->
+    <div class="dtile gr">
+      <div class="dt-label" style="color:var(--green);">🚜 AGRICULTURE</div>
+      <canvas class="dwave" id="d4"></canvas>
+      <div class="dt-sub">Cattle · goat · rabbit · mycotoxin scan · herd biosignal</div>
+    </div>
+    <!-- F1 -->
+    <div class="dtile" style="border-color:var(--orange);">
+      <div class="dt-label" style="color:var(--orange);">🏎 F1 · 87 SEATS</div>
+      <canvas class="dwave" id="d5"></canvas>
+      <div class="dt-sub">24 countries · WADA layer · driver + pit crew unified</div>
+    </div>
+    <!-- OLYMPIC -->
+    <div class="dtile" style="border-color:rgba(155,89,182,0.35);">
+      <div class="dt-label" style="color:#9B59B6;">🥇 OLYMPIC TEAM</div>
+      <canvas class="dwave" id="d6"></canvas>
+      <div class="dt-sub">Full team biosignal · recovery tracking · peak timing</div>
+    </div>
+  </div>
+
+  <div class="card" style="border-color:rgba(255,255,255,0.10);">
+    <div class="cl m">LARGE SCREEN DOCTRINE · LOCKED</div>
+    <p style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);line-height:1.7;">
+      The web layer is not a website. It is a <strong style="color:var(--white);">Bio Control Panel</strong> — a monitoring surface, a command surface, a multi-member viewing layer. Viewable on laptops, desktops, large monitors, televisions, and enterprise screens. Legible at distance. Actionable in real time.
+    </p>
+  </div>
+
+  <div class="card gr">
+    <div class="cl gr">AGRICULTURE SPECIAL · BIO BLANKET</div>
+    <div class="row" style="padding-top:0;">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="rn" style="font-size:12px;">Cattle herd scan<small style="color:var(--green);">Feed verified · No mycotoxin · DON below threshold</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--gold);"></div>
+      <div class="rn" style="font-size:12px;">Goat herd<small style="color:var(--gold);">Supplement interaction flagged · TAKE NOTICE</small></div>
+    </div>
+    <div class="row">
+      <div class="dot" style="background:var(--green);"></div>
+      <div class="rn" style="font-size:12px;">Rabbit colony<small style="color:var(--green);">Feed clean · ASPCA verified · All clear</small></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- PANEL 9 — THE DOORWAY                    -->
+<!-- ══════════════════════════════════════════ -->
+<div class="panel" id="p8">
+<div class="pi">
+  <div class="ey" style="text-align:center;letter-spacing:4px;">THE MEMBRANE · AA2 BIOSIGNAL SYSTEM</div>
+  <div style="margin:10px 0 8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:5px;color:rgba(27,184,255,0.25);text-align:center;">✦ ✦ ✦</div>
+
+  <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,7.5vw,44px);line-height:1.1;font-weight:400;margin-bottom:6px;text-align:center;color:var(--white);">
+    The greatest, safest, most intelligent membrane —
+  </h1>
+  <h1 style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:clamp(28px,7.5vw,44px);line-height:1.1;font-weight:400;margin-bottom:6px;text-align:center;color:var(--blue);">
+    designed and monitored<br>by its living occupant.
+  </h1>
+
+  <div class="dv"></div>
+
+  <div class="cc">
+    <div class="cl" style="margin-bottom:7px;">🧬 THE CONCIERGE</div>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:1.65;color:var(--white);">
+      "Don't be shy — you can ask me anything about any food, plant, meat, species, wine, or spirits. No barcode? No problem. I listen just as well as I scan."
+    </p>
+    <div class="mn" style="margin-top:8px;color:rgba(27,184,255,0.35);">TAP TO DISMISS · CONTINUES TO SCANNER PANELS</div>
+  </div>
+
+  <div class="mn" style="margin-bottom:16px;text-align:center;width:100%;">
+    5 MINUTES · 8 BLOCKS · ONE MEMBRANE
+  </div>
+
+  <button class="cta" onclick="alert('→ Routes to scanner preview panels, then onboarding')">
+    CONTINUE TO THE MEMBRANE →
+  </button>
+
+  <div class="mn" style="margin-top:14px;text-align:center;width:100%;opacity:.3;">
+    I AM THE RECEIPT
+  </div>
+</div>
+</div>
+
+</div><!-- /book -->
+
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button class="nb" id="pb" onclick="go(-1)" disabled>←</button>
+  <button class="nb" id="nb2" onclick="go(1)">→</button>
+</div>
+<div class="hint" id="hint">SWIPE OR USE ARROWS</div>
+
+<script>
+// ══ PANEL NAV ══
+const TOTAL = 9;
+let cur = 0, anim = false, tx = 0, ty = 0;
+const dotsEl = document.getElementById('dots');
+for(let i=0;i<TOTAL;i++){
+  const d=document.createElement('div');
+  d.className='d'+(i===0?' active':'');
+  d.onclick=()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+function goTo(i){
+  if(anim||i===cur||i<0||i>=TOTAL) return;
+  anim=true;
+  document.getElementById('p'+cur).classList.remove('active');
+  document.getElementById('p'+cur).classList.add('exit');
+  setTimeout(()=>document.getElementById('p'+(i-1>=0?i:0)).classList.remove('exit'),480);
+  document.getElementById('p'+i).classList.add('active');
+  cur=i;
+  document.querySelectorAll('.d').forEach((d,j)=>d.classList.toggle('active',j===cur));
+  document.getElementById('pb').disabled=cur===0;
+  document.getElementById('nb2').disabled=cur===TOTAL-1;
+  if(cur>0) document.getElementById('hint').style.opacity='0';
+  setTimeout(()=>{anim=false; drawWaves();},500);
+}
+function go(d){goTo(cur+d);}
+document.getElementById('book').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY;},{passive:true});
+document.getElementById('book').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
+  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>38) go(dx<0?1:-1);
+},{passive:true});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1);});
+
+// ══ EKG WAVE SYSTEM ══
+function ekgPath(ctx, w, h, type, color, animated, t) {
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.shadowBlur = 8;
+  ctx.shadowColor = color;
+  ctx.beginPath();
+
+  const pts = [];
+  const seg = w / 4;
+
+  if(type === 'calm') {
+    // Steady healthy wave
+    for(let x=0;x<=w;x++){
+      const phase = (x/w * 4 + t*0.6) % 1;
+      let y = h/2;
+      if(phase < 0.15) y = h/2 + Math.sin(phase/0.15 * Math.PI) * (h*0.18);
+      else if(phase < 0.25) { // P wave
+        y = h/2 - Math.sin((phase-0.15)/0.1 * Math.PI) * (h*0.15);
+      } else if(phase < 0.32) y = h/2;
+      else if(phase < 0.34) y = h/2 + (phase-0.32)/0.02 * (h*0.3);
+      else if(phase < 0.36) { // QRS spike up
+        y = h/2 + h*0.3 - (phase-0.34)/0.02 * h*0.85;
+      } else if(phase < 0.38) { // QRS spike down
+        y = h/2 - h*0.55 + (phase-0.36)/0.02 * h*0.7;
+      } else if(phase < 0.42) y = h/2 + h*0.15 - (phase-0.38)/0.04 * h*0.15;
+      else if(phase < 0.55) { // T wave
+        y = h/2 - Math.sin((phase-0.42)/0.13 * Math.PI) * (h*0.2);
+      } else y = h/2;
+      pts.push({x,y});
+    }
+  } else if(type === 'stress') {
+    // Elevated irregular
+    for(let x=0;x<=w;x++){
+      const phase = (x/w * 3.5 + t*0.8) % 1;
+      let y = h/2;
+      if(phase < 0.1) y = h/2 + Math.sin(phase/0.1*Math.PI)*(h*0.22);
+      else if(phase < 0.2) y = h/2 - Math.sin((phase-0.1)/0.1*Math.PI)*(h*0.20);
+      else if(phase < 0.28) y = h/2;
+      else if(phase < 0.30) y = h/2 + (phase-0.28)/0.02*(h*0.35);
+      else if(phase < 0.32) y = h/2 + h*0.35 - (phase-0.30)/0.02*h*1.0;
+      else if(phase < 0.34) y = h/2 - h*0.65 + (phase-0.32)/0.02*h*0.85;
+      else if(phase < 0.40) y = h/2 + h*0.20 - (phase-0.34)/0.06*h*0.20;
+      else if(phase < 0.55) y = h/2 - Math.sin((phase-0.40)/0.15*Math.PI)*(h*0.25);
+      else y = h/2 + Math.sin((phase-0.55)*6)*(h*0.04);
+      pts.push({x,y:Math.max(2,Math.min(h-2,y))});
+    }
+  } else { // active
+    for(let x=0;x<=w;x++){
+      const phase = (x/w * 4.5 + t*0.7) % 1;
+      let y = h/2;
+      if(phase < 0.12) y = h/2 + Math.sin(phase/0.12*Math.PI)*(h*0.16);
+      else if(phase < 0.22) y = h/2 - Math.sin((phase-0.12)/0.10*Math.PI)*(h*0.18);
+      else if(phase < 0.28) y = h/2;
+      else if(phase < 0.30) y = h/2 + (phase-0.28)/0.02*(h*0.28);
+      else if(phase < 0.32) y = h/2 + h*0.28 - (phase-0.30)/0.02*h*0.90;
+      else if(phase < 0.34) y = h/2 - h*0.62 + (phase-0.32)/0.02*h*0.75;
+      else if(phase < 0.40) y = h/2 + h*0.13 - (phase-0.34)/0.06*h*0.13;
+      else if(phase < 0.52) y = h/2 - Math.sin((phase-0.40)/0.12*Math.PI)*(h*0.22);
+      else y = h/2;
+      pts.push({x,y:Math.max(2,Math.min(h-2,y))});
+    }
+  }
+
+  ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+// Build wave rows for panel 7A
+function buildWaveRow(containerId, name, val, color, type, badge, badgeLabel) {
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML = '';
+  
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:3px;margin-bottom:7px;';
+  
+  const header = document.createElement('div');
+  header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;';
+  
+  const left = document.createElement('div');
+  left.style.cssText = 'display:flex;align-items:center;gap:6px;';
+  const dot = document.createElement('div');
+  dot.style.cssText = `width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0;`;
+  const nameEl = document.createElement('span');
+  nameEl.style.cssText = 'font-family:"DM Mono",monospace;font-size:9px;letter-spacing:1px;color:#fff;';
+  nameEl.textContent = name;
+  left.appendChild(dot);
+  left.appendChild(nameEl);
+  
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;align-items:center;gap:6px;';
+  
+  if(badge) {
+    const b = document.createElement('span');
+    const cls = badge==='on'?'on':badge==='watch'?'watch':badge==='alert'?'alert':'standby';
+    b.className = 'sbadge '+cls;
+    const bd = document.createElement('div');
+    bd.className = 'sbadge-dot';
+    const bc = {on:var_('--green'),watch:var_('--gold'),alert:var_('--red'),standby:var_('--muted')};
+    bd.style.background = bc[cls]||'#888';
+    b.appendChild(bd);
+    b.appendChild(document.createTextNode(badgeLabel||val));
+    right.appendChild(b);
+  } else {
+    const valEl = document.createElement('span');
+    valEl.style.cssText = `font-family:"DM Mono",monospace;font-size:10px;color:${color};`;
+    valEl.textContent = val;
+    right.appendChild(valEl);
+  }
+  
+  header.appendChild(left);
+  header.appendChild(right);
+  
+  const cv = document.createElement('canvas');
+  cv.height = 38;
+  cv.style.cssText = 'width:100%;height:38px;display:block;';
+  cv.dataset.color = color;
+  cv.dataset.type = type;
+  cv.dataset.t = Math.random()*10;
+  
+  wrap.appendChild(header);
+  wrap.appendChild(cv);
+  container.appendChild(wrap);
+}
+
+function var_(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function buildDashWave(canvasId, color, type) {
+  // just store config, drawn in drawWaves
+  const cv = document.getElementById(canvasId);
+  if(cv){ cv.dataset.color=color; cv.dataset.type=type; cv.dataset.t=Math.random()*10; }
+}
+
+function drawWaves() {
+  const t = performance.now()/1000;
+  // Panel 7A named rows
+  document.querySelectorAll('[data-color][data-type] canvas, canvas[data-color]').forEach(cv=>{
+    if(!cv || !cv.parentElement || !document.body.contains(cv)) return;
+    const rect = cv.getBoundingClientRect();
+    if(rect.width < 10) return;
+    cv.width = rect.width * (window.devicePixelRatio||1);
+    cv.height = rect.height * (window.devicePixelRatio||1);
+    const ctx = cv.getContext('2d');
+    ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+    const color = cv.dataset.color||'#1BB8FF';
+    const type = cv.dataset.type||'calm';
+    const dt = parseFloat(cv.dataset.t||0);
+    ekgPath(ctx, rect.width, rect.height, type, color, true, t+dt);
+  });
+
+  // also draw inline canvases in wave rows
+  document.querySelectorAll('.wave-container canvas, canvas.dwave').forEach(cv=>{
+    if(!cv || !document.body.contains(cv)) return;
+    const rect = cv.getBoundingClientRect();
+    if(rect.width < 10) return;
+    cv.width = rect.width * (window.devicePixelRatio||1);
+    cv.height = rect.height * (window.devicePixelRatio||1);
+    const ctx = cv.getContext('2d');
+    ctx.scale(window.devicePixelRatio||1, window.devicePixelRatio||1);
+    const color = cv.dataset.color||'#1BB8FF';
+    const type = cv.dataset.type||'calm';
+    const dt = parseFloat(cv.dataset.t||0);
+    ekgPath(ctx, rect.width, rect.height, type, color, true, t+dt);
+  });
+}
+
+let waveRaf;
+function animWaves() {
+  drawWaves();
+  waveRaf = requestAnimationFrame(animWaves);
+}
+
+// INIT
+window.addEventListener('load', ()=>{
+  // Build panel 7A wave rows
+  buildWaveRow('wc1','James Pitts','74 HRV','#1BB8FF','calm',null,null);
+  buildWaveRow('wc2','Sarah M.','68 RDY','#1D9E75','calm',null,null);
+  buildWaveRow('wc3','Child 1','88 RDY','#C49A2A','active',null,null);
+  buildWaveRow('wc4','Max · K9','62bpm','#9B59B6','calm',null,null);
+  buildWaveRow('wt1','Handler · Alpha','ONLINE','#E05252','stress','on','ONLINE');
+  buildWaveRow('wt2','K9 Unit · Rex','ELEVATED','#E8873A','stress','watch','ELEVATED');
+  buildWaveRow('wt3','Handler · Bravo','STANDBY','#1BB8FF','calm','standby','STANDBY');
+  buildWaveRow('wf1','Driver · #44','RACE READY','#C49A2A','active',null,null);
+  buildWaveRow('wf2','Pit Lead','OPTIMAL','#1D9E75','calm',null,null);
+
+  // Dashboard canvases
+  const dashes = [
+    {id:'d1',color:'#1BB8FF',type:'stress'},
+    {id:'d2',color:'#C49A2A',type:'active'},
+    {id:'d3',color:'#E05252',type:'stress'},
+    {id:'d4',color:'#1D9E75',type:'calm'},
+    {id:'d5',color:'#E8873A',type:'active'},
+    {id:'d6',color:'#9B59B6',type:'calm'},
+  ];
+  dashes.forEach(d=>{
+    const cv=document.getElementById(d.id);
+    if(cv){cv.dataset.color=d.color;cv.dataset.type=d.type;cv.dataset.t=(Math.random()*10).toString();}
+  });
+
+  animWaves();
+});
+</script>
+</body>
+</html>
