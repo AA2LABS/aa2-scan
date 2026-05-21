@@ -371,12 +371,6 @@ export default function ScannerScreen() {
     if (loading) return;
     const barcode = lastBarcodeRef.current;
 
-    if (activeTab==='scan') {
-      if (false) { /* v50 W3.2: SCAN tab always uses vision */ }
-      else { handleCapture(); }
-      return;
-    }
-
     if (activeTab==='care') {
       if (barcode) {
         scannedRef.current=true; setScanning(false); setCameraMode(false);
