@@ -1,227 +1,217 @@
-// ─── components/AdaptiveScanner.tsx ───
-// AA2 BioMesh · v50 Mockup #12 · Adaptive Scanner Input
-// "EYES UP, PHONE DOWN. Point and Claude sees."
-// Priority: VISION → VOICE → BARCODE → TEXT
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Easing } from 'react-native';
-
-export type ScannerState = 'vision' | 'failed' | 'voice';
-
-interface AdaptiveScannerProps {
-  state?: ScannerState;
-  onCapture: () => void;
-  onVoiceStart: () => void;
-  onBarcodeOnly: () => void;
-  onTypeOpen: () => void;
-  onVoiceCancel?: () => void;
-  voiceTranscript?: string;
-  tabName?: string;
+// ─── components/AdaptiveScanner.tsx ─── AA2 BioMesh v50 Mockup #12
+// STATE 01: VISION READY · STATE 02: FALLBACK · STATE 03: VOICE ACTIVE
+import React,{useEffect,useRef} from 'react';
+import{View,Text,TouchableOpacity,StyleSheet,Animated,Easing,Platform}from 'react-native';
+export type ScannerState='vision'|'failed'|'voice';
+interface Props{
+  state?:ScannerState;
+  onCapture:()=>void;
+  onVoiceStart:()=>void;
+  onBarcodeOnly:()=>void;
+  onTypeOpen:()=>void;
+  onVoiceCancel?:()=>void;
+  voiceTranscript?:string;
+  tabName?:string;
 }
-
-const C = {
-  navy: '#0E1B33', navyCard: '#142545', navyDeep: '#0A1428',
-  gold: '#D4A847', green: '#34D399', cyan: '#1BB8FF',
-  amber: '#F59E0B', textHi: '#E6F0FF', textMid: '#8FA3C0',
-  textLow: '#5A6E8A', border: '#1F3358',
+const C={
+  navy:'#0E1B33',navyDeep:'#08111F',card:'rgba(14,27,51,0.92)',
+  line:'rgba(255,255,255,0.10)',lineHi:'rgba(255,255,255,0.18)',
+  gold:'#D4A847',goldDim:'rgba(212,168,71,0.12)',goldBord:'rgba(212,168,71,0.45)',
+  cyan:'#1BB8FF',cyanDim:'rgba(27,184,255,0.12)',cyanBord:'rgba(27,184,255,0.45)',
+  amber:'#C49A2A',
+  white:'#FFFFFF',muted:'rgba(255,255,255,0.55)',muted2:'rgba(255,255,255,0.32)',
+  mono:Platform.OS==='ios'?'Courier New':'monospace',
 };
-
-export const AdaptiveScanner: React.FC<AdaptiveScannerProps> = ({
-  state = 'vision', onCapture, onVoiceStart, onBarcodeOnly, onTypeOpen,
-  onVoiceCancel, voiceTranscript, tabName = 'SCAN',
-}) => {
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (state !== 'vision') return;
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(scanLineAnim, { toValue: 1, duration: 2500, useNativeDriver: true, easing: Easing.linear }),
-      Animated.timing(scanLineAnim, { toValue: 0, duration: 2500, useNativeDriver: true, easing: Easing.linear }),
+export function AdaptiveScanner({state='vision',onCapture,onVoiceStart,onBarcodeOnly,onTypeOpen,onVoiceCancel,voiceTranscript,tabName='SCAN'}:Props){
+  const scanLine=useRef(new Animated.Value(0)).current;
+  const pulse=useRef(new Animated.Value(1)).current;
+  const voicePulse=useRef(new Animated.Value(1)).current;
+  useEffect(()=>{
+    if(state!=='vision')return;
+    const loop=Animated.loop(Animated.sequence([
+      Animated.timing(scanLine,{toValue:1,duration:2800,useNativeDriver:true,easing:Easing.linear}),
+      Animated.timing(scanLine,{toValue:0,duration:2800,useNativeDriver:true,easing:Easing.linear}),
     ]));
-    loop.start();
-    return () => loop.stop();
-  }, [state, scanLineAnim]);
-
-  useEffect(() => {
-    const loop = Animated.loop(Animated.sequence([
-      Animated.timing(pulseAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
-      Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+    loop.start();return()=>loop.stop();
+  },[state]);
+  useEffect(()=>{
+    const loop=Animated.loop(Animated.sequence([
+      Animated.timing(pulse,{toValue:0.3,duration:900,useNativeDriver:true}),
+      Animated.timing(pulse,{toValue:1,duration:900,useNativeDriver:true}),
     ]));
-    loop.start();
-    return () => loop.stop();
-  }, [pulseAnim]);
-
-  const scanLineY = scanLineAnim.interpolate({ inputRange: [0, 1], outputRange: [80, -80] });
-
-  const Header = () => (
-    <>
-      <View style={s.brandHeader}>
-        <View style={s.brandMark}>
-          <Text style={s.glyph}>◆</Text>
-          <Text style={s.brandName}>AA2 SCAN</Text>
-        </View>
-        <View style={s.tabPill}><Text style={s.tabPillText}>{tabName}</Text></View>
-      </View>
-      <View style={s.eyebrowRow}>
-        <Text style={[s.eyebrowText, state === 'voice' && { color: C.gold }]}>
-          {state === 'voice' ? 'VOICE ACTIVE · LISTENING'
-            : state === 'failed' ? "COULDN'T READ · ADAPT"
-            : 'VISION ACTIVE · POINT AT PRODUCT'}
-        </Text>
-      </View>
-    </>
-  );
-
-  const Dock = (props: { activeMode?: 'vision' | 'voice' }) => (
-    <View style={s.inputDock}>
-      <View style={s.inputModes}>
-        <ModeBtn icon="👁" label="VIS" priority={props.activeMode==='vision'?'ACTIVE':'PRIMARY'} onPress={onCapture} active={props.activeMode==='vision'} />
-        <ModeBtn icon="🎙" label="VOICE" priority={props.activeMode==='voice'?'ACTIVE':'2ND'} onPress={onVoiceStart} activeGold={props.activeMode==='voice'} />
-        <ModeBtn icon="▭" label="BAR" priority="3" onPress={onBarcodeOnly} />
-        <ModeBtn icon="⌨" label="TYPE" priority="4TH" onPress={onTypeOpen} />
-      </View>
-      {state === 'vision' && (
-        <Text style={s.modeTip}>
-          <Text style={s.modeAccent}>EYES UP, PHONE DOWN.{'\n'}</Text>
-          Point and Claude sees.
-        </Text>
-      )}
-    </View>
-  );
-
-  return (
-    <View style={s.overlay} pointerEvents="box-none">
-      <Header />
-
-      <View style={s.viewfinderArea} pointerEvents="none">
-        {state === 'vision' && (
-          <View style={s.vfStatus}>
-            <Animated.View style={[s.vfPulse, { opacity: pulseAnim }]} />
-            <Text style={s.vfStatusText}>READING</Text>
+    loop.start();return()=>loop.stop();
+  },[]);
+  useEffect(()=>{
+    if(state!=='voice')return;
+    const loop=Animated.loop(Animated.sequence([
+      Animated.timing(voicePulse,{toValue:1.18,duration:600,useNativeDriver:true}),
+      Animated.timing(voicePulse,{toValue:1,duration:600,useNativeDriver:true}),
+    ]));
+    loop.start();return()=>loop.stop();
+  },[state]);
+  const scanLineY=scanLine.interpolate({inputRange:[0,1],outputRange:[-120,120]});
+  // ── STATE 03: VOICE ──────────────────────────────────────────────────────
+  if(state==='voice'){
+    return(
+      <View style={s.root}>
+        <View style={s.voiceWrap}>
+          <Text style={s.eyebrowMono}>STATE 03 · VOICE ACTIVE (EYES UP)</Text>
+          <View style={s.voiceHeader}>
+            <Text style={s.brand}>◆ AA2 SCAN</Text>
+            <View style={s.pill}><Text style={s.pillText}>{tabName}</Text></View>
           </View>
-        )}
-        <View style={[s.corner, s.cornerTL, state !== 'vision' && { borderColor: C.textLow, opacity: 0.4 }]} />
-        <View style={[s.corner, s.cornerTR, state !== 'vision' && { borderColor: C.textLow, opacity: 0.4 }]} />
-        <View style={[s.corner, s.cornerBL, state !== 'vision' && { borderColor: C.textLow, opacity: 0.4 }]} />
-        <View style={[s.corner, s.cornerBR, state !== 'vision' && { borderColor: C.textLow, opacity: 0.4 }]} />
-        {state === 'vision' && <Text style={s.crosshair}>◆</Text>}
-        {state === 'failed' && <Text style={[s.crosshair, { color: C.textLow, opacity: 0.4 }]}>◆</Text>}
-        {state === 'vision' && (
-          <Animated.View style={[s.scanLine, { transform: [{ translateY: scanLineY }] }]} />
-        )}
+          <View style={s.voiceBody}>
+            <Animated.View style={[s.micOuter,{transform:[{scale:voicePulse}]}]}>
+              <View style={s.micInner}><Text style={s.micIcon}>🎙</Text></View>
+            </Animated.View>
+            <Text style={s.voiceLabel}>◆ LISTENING</Text>
+            <Text style={s.voicePrompt}>"Speak the product name"</Text>
+            <Text style={s.voiceHint}>Phone down. Eyes up.{'\n'}Concierge is listening.</Text>
+            <View style={s.transcriptBox}>
+              <Text style={s.transcriptText}>{voiceTranscript?`"${voiceTranscript}"`:'◦  ◦  ◦'}</Text>
+            </View>
+            <TouchableOpacity style={s.cancelBtn} onPress={onVoiceCancel} activeOpacity={0.7}>
+              <Text style={s.cancelText}>CANCEL</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </View>
-
-      {state === 'failed' && (
+    );
+  }
+  // ── STATE 02: FALLBACK ───────────────────────────────────────────────────
+  if(state==='failed'){
+    return(
+      <View style={s.root}>
+        <View style={s.header}>
+          <Text style={s.brand}>◆ AA2 SCAN</Text>
+          <View style={s.pill}><Text style={s.pillText}>{tabName}</Text></View>
+        </View>
+        <View style={s.eyebrowRow}>
+          <Text style={s.eyebrowText}>COULDN'T READ · ADAPT</Text>
+        </View>
+        <View style={s.vfDim}>
+          <View style={[s.corner,s.cTL,{borderColor:C.muted2,opacity:0.3}]}/>
+          <View style={[s.corner,s.cTR,{borderColor:C.muted2,opacity:0.3}]}/>
+          <View style={[s.corner,s.cBL,{borderColor:C.muted2,opacity:0.3}]}/>
+          <View style={[s.corner,s.cBR,{borderColor:C.muted2,opacity:0.3}]}/>
+        </View>
         <View style={s.fallbackPanel}>
           <Text style={s.fbEyebrow}>◆ THE CONCIERGE</Text>
-          <Text style={s.fbMessage}>"Couldn't read this clearly. Want to tell me what it is?"</Text>
-          <View style={s.fallbackCtas}>
-            <TouchableOpacity style={[s.fbCta, s.fbCtaPrimary]} onPress={onVoiceStart}>
-              <Text style={[s.fbCtaIcon, { color: C.gold }]}>🎙</Text>
-              <Text style={[s.fbCtaText, { color: C.gold }]}>SPEAK IT</Text>
+          <Text style={s.fbMsg}>"Couldn't read this clearly. Want to tell me what it is?"</Text>
+          <View style={s.fbRow}>
+            <TouchableOpacity style={[s.fbBtn,{borderColor:C.gold,backgroundColor:C.goldDim}]} onPress={onVoiceStart} activeOpacity={0.75}>
+              <Text style={s.fbBtnIcon}>🎙</Text>
+              <Text style={[s.fbBtnLabel,{color:C.gold}]}>SPEAK IT</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.fbCta} onPress={onBarcodeOnly}>
-              <Text style={s.fbCtaIcon}>▭</Text>
-              <Text style={s.fbCtaText}>BARCODE</Text>
+            <TouchableOpacity style={[s.fbBtn,{borderColor:C.cyan,backgroundColor:C.cyanDim}]} onPress={onBarcodeOnly} activeOpacity={0.75}>
+              <Text style={s.fbBtnIcon}>▭</Text>
+              <Text style={[s.fbBtnLabel,{color:C.cyan}]}>BARCODE</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={s.fbCta} onPress={onTypeOpen}>
-              <Text style={s.fbCtaIcon}>⌨</Text>
-              <Text style={s.fbCtaText}>TYPE</Text>
+            <TouchableOpacity style={[s.fbBtn,{borderColor:C.line}]} onPress={onTypeOpen} activeOpacity={0.75}>
+              <Text style={s.fbBtnIcon}>⌨</Text>
+              <Text style={[s.fbBtnLabel,{color:C.muted}]}>TYPE</Text>
             </TouchableOpacity>
           </View>
         </View>
-      )}
-
-      {state === 'voice' && (
-        <View style={s.voiceOverlay}>
-          <View style={s.voiceMic}><Text style={s.voiceMicIcon}>🎙</Text></View>
-          <Text style={s.voiceEyebrow}>◆ LISTENING</Text>
-          <Text style={s.voicePrompt}>"Speak the product name"</Text>
-          <Text style={s.voiceHint}>Phone down. Eyes up.{'\n'}Concierge is listening.</Text>
-          <View style={s.voiceInputDisplay}>
-            <Text style={s.voiceLiveText}>{voiceTranscript ? `"${voiceTranscript}"` : '◦ ◦ ◦'}</Text>
-          </View>
-          <TouchableOpacity style={s.voiceCancel} onPress={onVoiceCancel}>
-            <Text style={s.voiceCancelText}>CANCEL</Text>
-          </TouchableOpacity>
+      </View>
+    );
+  }
+  // ── STATE 01: VISION READY ───────────────────────────────────────────────
+  return(
+    <View style={s.root} pointerEvents="box-none">
+      <View style={s.header}>
+        <Text style={s.brand}>◆ AA2 SCAN</Text>
+        <View style={s.pill}><Text style={s.pillText}>{tabName}</Text></View>
+      </View>
+      <View style={s.eyebrowRow}>
+        <Text style={s.eyebrowText}>VISION ACTIVE · POINT AT PRODUCT</Text>
+      </View>
+      <View style={s.vf} pointerEvents="none">
+        <View style={s.readingPill}>
+          <Animated.View style={[s.readingDot,{opacity:pulse}]}/>
+          <Text style={s.readingText}>READING</Text>
         </View>
-      )}
-
-      <Dock activeMode={state === 'voice' ? 'voice' : state === 'vision' ? 'vision' : undefined} />
+        <View style={[s.corner,s.cTL]}/>
+        <View style={[s.corner,s.cTR]}/>
+        <View style={[s.corner,s.cBL]}/>
+        <View style={[s.corner,s.cBR]}/>
+        <Animated.View style={[s.scanLine,{transform:[{translateY:scanLineY}]}]}/>
+      </View>
+      <TouchableOpacity style={s.captureZone} onPress={onCapture} activeOpacity={1}/>
+      <View style={s.dock}>
+        <ModeBtn icon="👁" label="VISION" priority="PRIMARY" color={C.cyan} bg={C.cyanDim} bord={C.cyanBord} onPress={onCapture} active/>
+        <ModeBtn icon="🎙" label="VOICE" priority="2ND" color={C.muted} bg="transparent" bord={C.line} onPress={onVoiceStart}/>
+        <ModeBtn icon="▭" label="BARCODE" priority="3RD" color={C.muted} bg="transparent" bord={C.line} onPress={onBarcodeOnly}/>
+        <ModeBtn icon="⌨" label="TYPE" priority="4TH" color={C.muted} bg="transparent" bord={C.line} onPress={onTypeOpen}/>
+      </View>
+      <View style={s.tip} pointerEvents="none">
+        <Text style={s.tipAccent}>EYES UP, PHONE DOWN.</Text>
+        <Text style={s.tipSub}>Point and Claude sees.</Text>
+      </View>
     </View>
   );
-};
-
-const ModeBtn: React.FC<{
-  icon: string; label: string; priority: string;
-  onPress?: () => void; active?: boolean; activeGold?: boolean;
-}> = ({ icon, label, priority, onPress, active, activeGold }) => {
-  const borderColor = active ? C.cyan : activeGold ? C.gold : C.border;
-  const bgColor = active ? 'rgba(27,184,255,0.08)' : activeGold ? 'rgba(212,168,71,0.10)' : 'transparent';
-  const iconColor = active ? C.cyan : activeGold ? C.gold : C.textMid;
-  const labelColor = active ? C.cyan : activeGold ? C.gold : C.textLow;
-  return (
-    <TouchableOpacity
-      style={[ms.btn, { borderColor, backgroundColor: bgColor }]}
-      onPress={onPress}
-      activeOpacity={0.7}>
-      <Text style={[ms.icon, { color: iconColor }]}>{icon}</Text>
-      <Text style={[ms.label, { color: labelColor }]}>{label}</Text>
-      <Text style={ms.priority}>{priority}</Text>
+}
+function ModeBtn({icon,label,priority,color,bg,bord,onPress,active}:{icon:string;label:string;priority:string;color:string;bg:string;bord:string;onPress:()=>void;active?:boolean}){
+  return(
+    <TouchableOpacity style={[mb.btn,{borderColor:bord,backgroundColor:bg}]} onPress={onPress} activeOpacity={0.7}>
+      <Text style={[mb.icon,{color}]}>{icon}</Text>
+      <Text style={[mb.label,{color}]}>{label}</Text>
+      <Text style={mb.priority}>{priority}</Text>
     </TouchableOpacity>
   );
-};
-
-const ms = StyleSheet.create({
-  btn: { flex: 1, borderWidth: 1, borderRadius: 6, paddingVertical: 10, paddingHorizontal: 4, alignItems: 'center', gap: 4 },
-  icon: { fontSize: 18 },
-  label: { fontSize: 8, letterSpacing: 0.5 },
-  priority: { fontSize: 7, letterSpacing: 1, color: C.textLow, opacity: 0.6 },
+}
+const mb=StyleSheet.create({
+  btn:{flex:1,borderWidth:1,borderRadius:6,paddingVertical:10,paddingHorizontal:4,alignItems:'center',gap:3},
+  icon:{fontSize:16},
+  label:{fontFamily:C.mono,fontSize:7,letterSpacing:1.5},
+  priority:{fontFamily:C.mono,fontSize:6,letterSpacing:1,color:C.muted2,opacity:0.7},
 });
-
-const s = StyleSheet.create({
-  overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  brandHeader: { paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: C.border, backgroundColor: C.navyDeep },
-  brandMark: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  glyph: { color: C.gold, fontSize: 14 },
-  brandName: { color: C.textHi, fontSize: 14, letterSpacing: 3, fontWeight: '600' },
-  tabPill: { borderWidth: 1, borderColor: C.cyan, paddingVertical: 4, paddingHorizontal: 10, borderRadius: 3 },
-  tabPillText: { fontSize:8,letterSpacing:1,color:C.cyan },
-  eyebrowRow: { paddingVertical: 10, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: C.border, backgroundColor: C.navy },
-  eyebrowText: { fontSize: 10, letterSpacing: 2, color: C.textLow },
-  viewfinderArea: { flex: 1, position: 'relative' },
-  vfStatus: { position: 'absolute', top: 24, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1, borderColor: C.cyan, backgroundColor: 'rgba(20,37,69,0.85)', zIndex: 5 },
-  vfPulse: { width: 6, height: 6, borderRadius: 3, backgroundColor: C.cyan, marginRight: 8 },
-  vfStatusText: { fontSize: 10, letterSpacing: 0.5, color: C.cyan },
-  corner: { position: 'absolute', width: 32, height: 32, borderColor: C.cyan },
-  cornerTL: { top: 60, left: 30, borderTopWidth: 2, borderLeftWidth: 2 },
-  cornerTR: { top: 60, right: 30, borderTopWidth: 2, borderRightWidth: 2 },
-  cornerBL: { bottom: 30, left: 30, borderBottomWidth: 2, borderLeftWidth: 2 },
-  cornerBR: { bottom: 30, right: 30, borderBottomWidth: 2, borderRightWidth: 2 },
-  crosshair: { position: 'absolute', top: '50%', alignSelf: 'center', color: C.gold, fontSize: 24, opacity: 0.5 },
-  scanLine: { position: 'absolute', left: 30, right: 30, top: '50%', height: 2, backgroundColor: C.cyan, shadowColor: C.cyan, shadowOpacity: 0.8, shadowRadius: 8, opacity: 0.7 },
-  inputDock: { backgroundColor: C.navyDeep, borderTopWidth: 1, borderTopColor: C.border, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 },
-  inputModes: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  modeTip: { fontSize: 12, color: C.textMid, textAlign: 'center', fontStyle: 'italic', lineHeight: 18 },
-  modeAccent: { color: C.gold, fontStyle: 'normal', fontSize: 10, letterSpacing: 0.5 },
-  fallbackPanel: { position: 'absolute', bottom: 110, left: 0, right: 0, backgroundColor: C.navyCard, borderTopWidth: 1, borderTopColor: C.amber, padding: 22 },
-  fbEyebrow: { color: C.amber, fontSize: 9, letterSpacing: 2, marginBottom: 6 },
-  fbMessage: { color: C.textHi, fontStyle: 'italic', fontSize: 16, lineHeight: 22, marginBottom: 16 },
-  fallbackCtas: { flexDirection: 'row', gap: 8 },
-  fbCta: { flex: 1, borderWidth: 1, borderColor: C.cyan, borderRadius: 4, paddingVertical: 10, paddingHorizontal: 6, alignItems: 'center', gap: 4 },
-  fbCtaPrimary: { backgroundColor: 'rgba(212,168,71,0.12)', borderColor: C.gold },
-  fbCtaIcon: { fontSize: 14, color: C.cyan },
-  fbCtaText: { fontSize: 9, letterSpacing: 0.5, color: C.cyan },
-  voiceOverlay: { position: 'absolute', top: 100, left: 0, right: 0, bottom: 110, backgroundColor: 'rgba(10,20,40,0.94)', alignItems: 'center', justifyContent: 'center', padding: 40, zIndex: 10 },
-  voiceMic: { width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(212,168,71,0.1)', borderWidth: 2, borderColor: C.gold, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
-  voiceMicIcon: { fontSize: 40 },
-  voiceEyebrow: { color: C.gold, fontSize: 10, letterSpacing: 3, marginBottom: 12 },
-  voicePrompt: { color: C.textHi, fontSize: 22, fontStyle: 'italic', textAlign: 'center', marginBottom: 8 },
-  voiceHint: { color: C.textMid, fontSize: 12, textAlign: 'center', marginBottom: 32, lineHeight: 18 },
-  voiceInputDisplay: { width: '100%', backgroundColor: C.navyCard, borderWidth: 1, borderColor: C.gold, borderRadius: 6, padding: 16, minHeight: 56, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  voiceLiveText: { color: C.gold, fontSize: 15, textAlign: 'center' },
-  voiceCancel: { borderWidth: 1, borderColor: C.textLow, borderRadius: 4, paddingVertical: 10, paddingHorizontal: 24 },
-  voiceCancelText: { color: C.textMid, fontSize: 10, letterSpacing: 2 },
+const s=StyleSheet.create({
+  root:{position:'absolute',top:0,left:0,right:0,bottom:0,flexDirection:'column'},
+  header:{paddingHorizontal:18,paddingVertical:14,flexDirection:'row',alignItems:'center',justifyContent:'space-between',backgroundColor:C.navyDeep,borderBottomWidth:1,borderBottomColor:C.line},
+  brand:{color:C.gold,fontFamily:C.mono,fontSize:13,letterSpacing:3,fontWeight:'700'},
+  pill:{borderWidth:1,borderColor:C.cyan,paddingVertical:4,paddingHorizontal:10,borderRadius:3},
+  pillText:{fontFamily:C.mono,fontSize:8,letterSpacing:1.5,color:C.cyan},
+  eyebrowRow:{paddingVertical:9,paddingHorizontal:18,borderBottomWidth:1,borderBottomColor:C.line,backgroundColor:C.navy},
+  eyebrowText:{fontFamily:C.mono,fontSize:9,letterSpacing:2.5,color:C.muted2},
+  eyebrowMono:{fontFamily:C.mono,fontSize:8,letterSpacing:1.5,color:C.muted2,textAlign:'center',paddingTop:10,paddingBottom:4},
+  vf:{flex:1,position:'relative'},
+  vfDim:{flex:1,position:'relative'},
+  readingPill:{position:'absolute',top:20,alignSelf:'center',flexDirection:'row',alignItems:'center',backgroundColor:'rgba(14,27,51,0.88)',borderWidth:1,borderColor:C.cyan,paddingVertical:7,paddingHorizontal:16,borderRadius:20,zIndex:5,gap:8},
+  readingDot:{width:7,height:7,borderRadius:3.5,backgroundColor:C.cyan},
+  readingText:{fontFamily:C.mono,fontSize:10,letterSpacing:2,color:C.cyan},
+  corner:{position:'absolute',width:28,height:28,borderColor:C.cyan},
+  cTL:{top:55,left:24,borderTopWidth:2,borderLeftWidth:2},
+  cTR:{top:55,right:24,borderTopWidth:2,borderRightWidth:2},
+  cBL:{bottom:20,left:24,borderBottomWidth:2,borderLeftWidth:2},
+  cBR:{bottom:20,right:24,borderBottomWidth:2,borderRightWidth:2},
+  scanLine:{position:'absolute',left:24,right:24,top:'50%',height:2,backgroundColor:C.cyan,shadowColor:C.cyan,shadowOpacity:0.9,shadowRadius:10,opacity:0.75},
+  captureZone:{position:'absolute',top:80,left:0,right:0,bottom:100,zIndex:10},
+  dock:{backgroundColor:C.navyDeep,borderTopWidth:1,borderTopColor:C.line,paddingHorizontal:16,paddingTop:12,paddingBottom:8,flexDirection:'row',gap:8},
+  tip:{backgroundColor:C.navyDeep,paddingBottom:18,paddingTop:2,alignItems:'center'},
+  tipAccent:{fontFamily:C.mono,fontSize:10,letterSpacing:2,color:C.gold},
+  tipSub:{fontSize:12,color:C.muted,fontStyle:'italic',marginTop:2},
+  // FALLBACK
+  fallbackPanel:{backgroundColor:C.card,borderTopWidth:1,borderTopColor:C.amber,padding:20,marginTop:'auto'},
+  fbEyebrow:{fontFamily:C.mono,fontSize:9,letterSpacing:2,color:C.amber,marginBottom:6},
+  fbMsg:{color:C.white,fontSize:15,fontStyle:'italic',lineHeight:22,marginBottom:16},
+  fbRow:{flexDirection:'row',gap:8},
+  fbBtn:{flex:1,borderWidth:1,borderRadius:6,paddingVertical:12,alignItems:'center',gap:5},
+  fbBtnIcon:{fontSize:14,color:C.white},
+  fbBtnLabel:{fontFamily:C.mono,fontSize:8,letterSpacing:1.5},
+  // VOICE
+  voiceWrap:{flex:1,backgroundColor:'rgba(8,17,31,0.97)'},
+  voiceHeader:{paddingHorizontal:18,paddingVertical:14,flexDirection:'row',alignItems:'center',justifyContent:'space-between',borderBottomWidth:1,borderBottomColor:C.line},
+  voiceBody:{flex:1,alignItems:'center',justifyContent:'center',padding:36},
+  micOuter:{width:110,height:110,borderRadius:55,backgroundColor:C.goldDim,borderWidth:2,borderColor:C.goldBord,alignItems:'center',justifyContent:'center',marginBottom:24},
+  micInner:{width:84,height:84,borderRadius:42,backgroundColor:'rgba(212,168,71,0.08)',alignItems:'center',justifyContent:'center'},
+  micIcon:{fontSize:36},
+  voiceLabel:{fontFamily:C.mono,fontSize:10,letterSpacing:3,color:C.gold,marginBottom:10},
+  voicePrompt:{color:C.white,fontSize:22,fontStyle:'italic',textAlign:'center',marginBottom:6},
+  voiceHint:{color:C.muted,fontSize:12,textAlign:'center',lineHeight:18,marginBottom:28},
+  transcriptBox:{width:'100%',borderWidth:1,borderColor:C.goldBord,backgroundColor:'rgba(212,168,71,0.07)',borderRadius:8,padding:14,minHeight:52,alignItems:'center',justifyContent:'center',marginBottom:16},
+  transcriptText:{color:C.gold,fontSize:14,textAlign:'center'},
+  cancelBtn:{borderWidth:1,borderColor:C.line,borderRadius:4,paddingVertical:10,paddingHorizontal:28},
+  cancelText:{fontFamily:C.mono,fontSize:9,letterSpacing:2,color:C.muted},
 });
-
 export default AdaptiveScanner;
