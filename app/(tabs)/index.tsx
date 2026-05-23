@@ -335,6 +335,8 @@ export default function ScannerScreen() {
   const [infoSheetText,    setInfoSheetText]     = useState('');
   const [infoSheetLoading, setInfoSheetLoading] = useState(false);
   const [showConciergeMsg, setShowConciergeMsg] = useState(true);
+  const [scannerState, setScannerState] = useState<'vision'|'failed'|'voice'>('vision');
+  const [voiceTranscript, setVoiceTranscript] = useState('');
 
   const scannedRef     = useRef(false);
   const lastBarcodeRef = useRef<string|null>(null);
@@ -365,6 +367,29 @@ export default function ScannerScreen() {
     setBarcodeReady(false);
     setCameraMode(true);
     setScanning(true);
+  };
+
+  const handleVoiceStart = () => {
+    setScannerState('voice');
+    setVoiceTranscript('');
+  };
+
+  const handleVoiceCancel = () => {
+    setScannerState('vision');
+    setVoiceTranscript('');
+  };
+
+  const handleBarcodeOnly = () => {
+    // switch to barcode-only mode — close camera, open text input pre-filled
+    setCameraMode(false);
+    setScanning(false);
+    setScannerState('vision');
+  };
+
+  const handleTypeOpen = () => {
+    setCameraMode(false);
+    setScanning(false);
+    setScannerState('vision');
   };
 
   const handleCapture = async () => {
@@ -415,10 +440,10 @@ export default function ScannerScreen() {
       return;
     }
 
-    setCameraMode(false); setScanning(false);
     setLoading(true); setResult(null);
     try {
       const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.6, skipProcessing: true });
+      setCameraMode(false); setScanning(false);
       if (!photo?.base64) {
         setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Camera capture failed — try again or speak the product name.' });
         setLoading(false);
@@ -462,6 +487,8 @@ export default function ScannerScreen() {
     scannedRef.current = false;
     setCameraMode(false);
     setScanning(false);
+    setScannerState('vision');
+    setVoiceTranscript('');
   };
 
   const runAnalysis = async (query:string, cameraCapture = false) => {
@@ -765,11 +792,13 @@ export default function ScannerScreen() {
           <CameraView ref={cameraRef} style={{flex:1}} facing="back"
             onBarcodeScanned={activeTab!=='scan'&&cameraSupportsBarcode ? handleBarcodeScanned : undefined}>
             <AdaptiveScanner
-              state="vision"
+              state={scannerState}
               onCapture={handleCapture}
-              onVoiceStart={handleCapture}
-              onBarcodeOnly={handleCapture}
-              onTypeOpen={handleCapture}
+              onVoiceStart={handleVoiceStart}
+              onBarcodeOnly={handleBarcodeOnly}
+              onTypeOpen={handleTypeOpen}
+              onVoiceCancel={handleVoiceCancel}
+              voiceTranscript={voiceTranscript}
               tabName={String(activeTab).toUpperCase()}
             />
           </CameraView>
