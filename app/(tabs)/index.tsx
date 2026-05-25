@@ -11,7 +11,6 @@ import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import DoctrineOverlay from '../../components/DoctrineOverlay';
 import type { DoctrineVerdict, Verdict as DoctrineVerdictKind } from '../../lib/chemical-doctrine';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
-import AdaptiveScanner from '../../components/AdaptiveScanner';
 import { supabase } from '../../lib/supabase';
 
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
@@ -335,8 +334,6 @@ export default function ScannerScreen() {
   const [infoSheetText,    setInfoSheetText]     = useState('');
   const [infoSheetLoading, setInfoSheetLoading] = useState(false);
   const [showConciergeMsg, setShowConciergeMsg] = useState(true);
-  const [scannerState, setScannerState] = useState<'vision'|'failed'|'voice'>('vision');
-  const [voiceTranscript, setVoiceTranscript] = useState('');
 
   const scannedRef     = useRef(false);
   const lastBarcodeRef = useRef<string|null>(null);
@@ -369,32 +366,15 @@ export default function ScannerScreen() {
     setScanning(true);
   };
 
-  const handleVoiceStart = () => {
-    setScannerState('voice');
-    setVoiceTranscript('');
-  };
-
-  const handleVoiceCancel = () => {
-    setScannerState('vision');
-    setVoiceTranscript('');
-  };
-
-  const handleBarcodeOnly = () => {
-    // switch to barcode-only mode — close camera, open text input pre-filled
-    setCameraMode(false);
-    setScanning(false);
-    setScannerState('vision');
-  };
-
-  const handleTypeOpen = () => {
-    setCameraMode(false);
-    setScanning(false);
-    setScannerState('vision');
-  };
-
   const handleCapture = async () => {
     if (loading) return;
     const barcode = lastBarcodeRef.current;
+
+    if (activeTab==='scan') {
+      if (barcode) { scannedRef.current=true; setScanning(false); setCameraMode(false); await runAnalysis(barcode, true); }
+      else Alert.alert('Frame It First','Wait for the gold border — then tap.');
+      return;
+    }
 
     if (activeTab==='care') {
       if (barcode) {
@@ -440,10 +420,10 @@ export default function ScannerScreen() {
       return;
     }
 
+    setCameraMode(false); setScanning(false);
     setLoading(true); setResult(null);
     try {
       const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.6, skipProcessing: true });
-      setCameraMode(false); setScanning(false);
       if (!photo?.base64) {
         setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Camera capture failed — try again or speak the product name.' });
         setLoading(false);
@@ -487,8 +467,6 @@ export default function ScannerScreen() {
     scannedRef.current = false;
     setCameraMode(false);
     setScanning(false);
-    setScannerState('vision');
-    setVoiceTranscript('');
   };
 
   const runAnalysis = async (query:string, cameraCapture = false) => {
@@ -786,21 +764,40 @@ export default function ScannerScreen() {
         </View>
       )}
 
-      {/* ── CAMERA FULLSCREEN ── */}
+      {/* ── CAMERA ── */}
       {cameraMode?(
-        <View style={{position:'absolute',top:0,left:0,right:0,bottom:0,zIndex:999}}>
-          <CameraView ref={cameraRef} style={{flex:1}} facing="back"
-            onBarcodeScanned={activeTab!=='scan'&&cameraSupportsBarcode ? handleBarcodeScanned : undefined}>
-            <AdaptiveScanner
-              state={scannerState}
-              onCapture={handleCapture}
-              onVoiceStart={handleVoiceStart}
-              onBarcodeOnly={handleBarcodeOnly}
-              onTypeOpen={handleTypeOpen}
-              onVoiceCancel={handleVoiceCancel}
-              voiceTranscript={voiceTranscript}
-              tabName={String(activeTab).toUpperCase()}
-            />
+        <View style={s.cameraContainer}>
+          <CameraView ref={cameraRef} style={s.camera} facing="back"
+            onBarcodeScanned={cameraSupportsBarcode ? handleBarcodeScanned : undefined}>
+            <View style={[s.cameraOverlay,{paddingTop:camPadTop,paddingBottom:camPadBot}]}>
+              <View style={s.cameraFrameGroup}>
+                <View style={[s.scanFrame,{
+                  width:frameW, height:frameH,
+                  borderColor:barcodeReady?F.gold:accentColor,
+                  borderWidth:barcodeReady?3:1.5,
+                }]}/>
+                <Text style={[s.frameDoctrine,{color:F.gold}]}>FRAME IT · CONFIRM IT · SCAN IT</Text>
+                <Text style={[s.cameraHint,{color:barcodeReady?F.gold:accentColor}]}>
+                  {cameraHintText()}
+                </Text>
+              </View>
+              <View style={s.cameraControls}>
+                <TouchableOpacity
+                  style={[s.captureOuter,{
+                    width:captureSize, height:captureSize, borderRadius:captureSize/2,
+                    borderColor:barcodeReady?F.gold:accentColor,
+                  }]}
+                  onPress={handleCapture} activeOpacity={0.85}>
+                  <View style={[s.captureInner,{
+                    width:captureSize*0.74, height:captureSize*0.74, borderRadius:captureSize*0.37,
+                    backgroundColor:barcodeReady?F.gold:accentColor,
+                  }]}/>
+                </TouchableOpacity>
+                <TouchableOpacity style={[s.cancelBtn,{borderColor:P.border}]} onPress={handleCancelCamera}>
+                  <Text style={s.cancelText}>✕ CANCEL</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </CameraView>
         </View>
       ):(
