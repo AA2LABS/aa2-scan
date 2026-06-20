@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import { router } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import {

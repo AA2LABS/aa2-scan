@@ -90,7 +90,7 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
           <Text style={styles.sectionLabel}>⚠ ALLERGEN ALERTS</Text>
           {verdict.allergenAlerts.map((a, i) => (
             <View key={`a-${i}`} style={styles.alertRow}>
-              <Text style={styles.alertName}>{a.name.toUpperCase()}</Text>
+              <Text style={styles.alertName}>{a.allergenName.toUpperCase()}</Text>
               <Text style={[styles.alertSeverity, { color: COLORS.red }]}>
                 {a.severity}
               </Text>
@@ -106,7 +106,7 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
           {verdict.goalConflicts.map((g, i) => (
             <View key={`g-${i}`} style={styles.goalRow}>
               <Text style={styles.goalLabel}>{g.goalLabel}</Text>
-              <Text style={styles.goalReason}>{g.reason}</Text>
+              <Text style={styles.goalReason}>{g.plainLanguage}</Text>
             </View>
           ))}
         </View>
