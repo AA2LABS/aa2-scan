@@ -9,6 +9,7 @@ import {
 import * as Location from 'expo-location';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import DoctrineOverlay from '../../components/DoctrineOverlay';
+import BioClearanceBand from '../../components/BioClearanceBand';
 import type { DoctrineVerdict, Verdict as DoctrineVerdictKind } from '../../lib/chemical-doctrine';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
 import { supabase } from '../../lib/supabase';
@@ -867,6 +868,8 @@ export default function ScannerScreen() {
           {/* ── RESULT ── */}
           {result&&!loading&&(
             <View style={s.resultBlock}>
+
+              <BioClearanceBand result={result} />
 
               {/* ALLERGY ALERT */}
               {result.allergyAlert?.triggered&&(
