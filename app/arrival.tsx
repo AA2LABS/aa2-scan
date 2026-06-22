@@ -183,7 +183,7 @@ function Slide({
   const handleButton = async () => {
     if (item.isLast) {
       await markArrivalDone();
-      router.replace('/(tabs)/onboarding');
+      router.replace('/(tabs)');
     } else {
       onNext();
     }

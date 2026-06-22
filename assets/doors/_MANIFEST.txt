@@ -1,0 +1,28 @@
+AA2 DOOR ART — placed 2026-06-20. Drop /assets/doors into the repo root.
+Require pattern when wiring a door: require('@/assets/doors/door-<id>.<ext>')
+
+DOOR COVERS (19):
+  The Chef ............. door-chef.jpg          (chef silhouette + market basket)
+  Wine & Spirits ....... door-wine.jpg
+  Meat ................. door-meat.jpg
+  Produce .............. door-produce.jpg
+  Seafood .............. door-seafood.jpg
+  Personal Care ........ door-personal-care.jpg
+  Apothecary ........... door-apothecary.png
+  Aficionados .......... door-aficionado.png   (cigars + cannabis)
+  Bio Buddy ............ door-biobuddy.jpg
+  The Equalizer ........ door-equalizer.jpg
+  The Concierge ........ door-concierge.jpg
+  The Chauffeur ........ door-chauffeur.webp
+  Travel ............... door-travel.png
+  K9 / Feline .......... door-k9-feline.jpg     (LOCKED: chocolate Lab + orange cat)
+  K9 Tactical .......... door-k9-tactical.jpg
+  Equine Intelligence .. door-equine.jpg
+  Agricultural Intel ... door-agricultural.jpg  (cattle in field)
+  Depth-On-Demand ...... door-depth-on-demand.png
+  Vision Board ......... door-vision-board.png
+
+IN-DOOR SCAN IMAGES (3) — the "scan this category" surface inside the intelligence:
+  K9 food scan ......... scan-k9-food.jpg       (Lab eating)
+  Equine feed scan ..... scan-equine-feed.jpg   (horse at feed)
+  Agri feed scan ....... scan-agri-feed.jpg     (hand-feeding cattle)

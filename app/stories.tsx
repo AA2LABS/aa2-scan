@@ -187,7 +187,7 @@ export default function StoriesScreen() {
   const { width } = useWindowDimensions();
   const cardW = width - 32;
   const handleDoor = (route: string) => { router.push(route as never); };
-  const handleBuildMembrane = () => { router.push('/onboarding' as never); };
+  const handleBuildMembrane = () => {};
   return (
     <View style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor="#080808" />

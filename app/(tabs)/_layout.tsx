@@ -6,7 +6,7 @@ import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-const TEAL = '#1D9E75';
+const ACTIVE = '#D4A847';
 
 const TabIcon = ({ emoji, color }: { emoji: string; color: string }) => (
   <Text style={{ fontSize: 22, color }}>{emoji}</Text>
@@ -18,49 +18,40 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: ACTIVE,
+        tabBarInactiveTintColor: '#5C6B80',
+        tabBarStyle: { backgroundColor: '#0A1426', borderTopColor: 'rgba(255,255,255,0.08)' },
         headerShown: false,
         tabBarButton: HapticTab,
       }}
     >
+      {/* ── BOTTOM TABS: Scanner · Equalizer · Bio Buddy · Chef · Chauffeur ── */}
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <TabIcon emoji="⚡" color={color} />,
-        }}
+        options={{ title: 'Scanner', tabBarIcon: ({ color }) => <TabIcon emoji="⊙" color={color} /> }}
       />
       <Tabs.Screen
-        name="apothecary"
-        options={{
-          title: 'Apothecary',
-          tabBarActiveTintColor: TEAL,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon emoji="A" color={focused ? TEAL : color} />
-          ),
-        }}
+        name="equalizer"
+        options={{ title: 'Equalizer', tabBarIcon: ({ color }) => <TabIcon emoji="≣" color={color} /> }}
       />
       <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <TabIcon emoji="▶" color={color} />,
-        }}
+        name="biobuddy"
+        options={{ title: 'Bio Buddy', tabBarIcon: ({ color }) => <TabIcon emoji="♥" color={color} /> }}
       />
       <Tabs.Screen
-        name="onboarding"
-        options={{
-          title: 'Membrane',
-          tabBarIcon: ({ color }) => <TabIcon emoji="🧬" color={color} />,
-        }}
+        name="chef"
+        options={{ title: 'Chef', tabBarIcon: ({ color }) => <TabIcon emoji="✦" color={color} /> }}
       />
       <Tabs.Screen
-        name="map"
-        options={{
-          title: 'Map',
-          tabBarIcon: ({ color }) => <TabIcon emoji="🗺" color={color} />,
-        }}
+        name="chauffeur"
+        options={{ title: 'Chauffeur', tabBarIcon: ({ color }) => <TabIcon emoji="⊳" color={color} /> }}
       />
+
+      {/* ── kept registered, hidden from the bar ── */}
+      <Tabs.Screen name="concierge" options={{ href: null }} />
+      <Tabs.Screen name="apothecary" options={{ href: null }} />
+      <Tabs.Screen name="explore" options={{ href: null }} />
+      <Tabs.Screen name="map" options={{ href: null }} />
     </Tabs>
   );
 }
