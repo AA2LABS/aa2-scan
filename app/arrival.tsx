@@ -1,5 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import {
   Dimensions,
@@ -169,7 +169,7 @@ const SCREENS: Screen[] = [
 // ─── SKIP ─────────────────────────────────────────────────────────────────────
 async function handleSkip() {
   await markArrivalDone();
-  router.replace('/');
+  router.replace('/concierge' as Href);
 }
 
 // ─── SLIDE COMPONENT ──────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ function Slide({
   const handleButton = async () => {
     if (item.isLast) {
       await markArrivalDone();
-      router.replace('/(tabs)');
+      router.replace('/concierge' as Href);
     } else {
       onNext();
     }

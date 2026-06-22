@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
-import { router, Stack } from 'expo-router';
+import { router, Stack, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -21,6 +21,8 @@ export default function RootLayout() {
         const info = await FileSystem.getInfoAsync(ARRIVAL_FLAG_PATH);
         if (!info.exists) {
           setTimeout(() => router.replace('/arrival'), 100);
+        } else {
+          setTimeout(() => router.replace('/concierge' as Href), 100);
         }
       } catch {
         setTimeout(() => router.replace('/arrival'), 100);
