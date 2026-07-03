@@ -3,7 +3,7 @@
 // Camera capture base64 → Claude vision API → verdict JSON.
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 2000;
 
 export type TabContext =

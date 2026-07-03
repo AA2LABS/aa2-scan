@@ -255,3 +255,35 @@ export async function saveMemberProfile(profile: MemberProfile): Promise<void> {
     console.log('[db.ts] saveMemberProfile failed silently:', e);
   }
 }
+
+// ─── SAVE COOKBOOK RECIPE ────────────────────────────────────────────────────
+// Sovereignty: the scanner writes cookbook recipes ONLY through here, never direct.
+export async function saveCookbookRecipe(params: {
+  memberId:       string | null;
+  recipeName:     string;
+  ingredients:    any;
+  membraneFlags:  any;
+  scannedItems:   string[];
+  prepNote?:      string;
+  cuisine?:       string;
+  cookTimeMinutes?: number;
+  servings?:      number;
+}): Promise<void> {
+  try {
+    const { error } = await supabase.from('cookbook_recipes').insert({
+      member_id:         params.memberId,
+      recipe_name:       params.recipeName,
+      ingredients:       params.ingredients,
+      membrane_flags:    params.membraneFlags,
+      scanned_items:     params.scannedItems,
+      prep_note:         params.prepNote,
+      cuisine:           params.cuisine,
+      cook_time_minutes: params.cookTimeMinutes,
+      servings:          params.servings,
+    });
+    if (error) console.log('[db.ts] saveCookbookRecipe error:', error.message);
+    else       console.log('[db.ts] cookbook recipe saved ✓');
+  } catch (e) {
+    console.log('[db.ts] saveCookbookRecipe failed silently:', e);
+  }
+}

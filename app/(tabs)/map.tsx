@@ -125,7 +125,7 @@ export default function MapScreen() {
     setRetailResult(null);
     try {
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: `You are The Chauffeur — AA2's retail intelligence engine. You fire INSIDE the store. Find what is better in this exact building right now. Cheaper. Better ingredients. Better nutrition. Calm, specific, never preachy. Return ONLY valid JSON — no markdown, no backticks: {"verdict":"string","betterOptions":[{"name":"string","why":"string","savings":"string or null"}],"chefNote":"string","storeSection":"string","actRightDollars":"string","equalizerNote":"string"}`,
         messages: [{ role: 'user', content: `I am inside ${selectedStore.name} at ${selectedStore.vicinity}. I picked up: ${scannedItem}. What else in this store is cheaper, better ingredients, or better nutrition?` }],
@@ -159,7 +159,7 @@ export default function MapScreen() {
       }
       const fullRoute = [origin, ...waypoints.map(w => w.name), destination].join(' → ');
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: `You are The Chauffeur — AA2's safety travel intelligence. Pre-program the safest route before the user ever leaves. Domestic and international. Identify safe waypoints, rest stops, fuel points, emergency services, border crossing notes, areas to avoid, best travel times, weather context. Be specific, practical, calm. Best private driver energy.`,
         messages: [{ role: 'user', content: `Route: ${fullRoute}. Give a complete safety brief before I leave.` }],

@@ -10,7 +10,7 @@ async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-4-6',
       max_tokens: opts.max_tokens,
       system: opts.system,
       messages: [{ role: 'user', content: opts.content }],
