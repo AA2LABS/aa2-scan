@@ -1,4 +1,25 @@
-import Anthropic from '@anthropic-ai/sdk';
+// AA2 mobile-safe Claude call — plain fetch, identical mechanism to scanner-vision.ts
+async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }): Promise<string> {
+  const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('API key not found in build environment');
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: opts.max_tokens,
+      system: opts.system,
+      messages: [{ role: 'user', content: opts.content }],
+    }),
+  });
+  if (!r.ok) { const t = await r.text(); throw new Error('API ' + r.status + ': ' + t.slice(0,200)); }
+  const j = await r.json();
+  return (j.content ?? []).filter((b:any)=>b?.type==='text').map((b:any)=>String(b.text??'')).join('\n').trim();
+}
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -8,9 +29,6 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
-import DoctrineOverlay from '../../components/DoctrineOverlay';
-import BioClearanceBand from '../../components/BioClearanceBand';
-import type { DoctrineVerdict, Verdict as DoctrineVerdictKind } from '../../lib/chemical-doctrine';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
 import { supabase } from '../../lib/supabase';
 
@@ -43,10 +61,7 @@ const F = {
   nearBlack:    '#03050A',
 };
 
-const anthropic = new Anthropic({
-  apiKey: process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+
 
 // ─── HEROES ──────────────────────────────────────────────────────────────────
 const TAB_HEROES: Record<string, any> = {
@@ -512,14 +527,8 @@ export default function ScannerScreen() {
         ? buildFishSystemPrompt(fishMode, personalTruth)
         : buildSystemPrompt(activeTab, personalTruth, effectiveSub);
 
-      const response = await anthropic.messages.create({
-        model:'claude-sonnet-4-20250514', max_tokens:2400,
-        system: systemPrompt,
-        messages:[{ role:'user', content }],
-      });
-      const parsed = JSON.parse(
-        ((response.content[0] as any).text??'').replace(/```json|```/g,'').trim()
-      );
+      const responseText = await aa2Claude({ system: systemPrompt, content, max_tokens: 2400 });
+      const parsed = JSON.parse(responseText.replace(/```json|```/g,'').trim());
       setResult(parsed);
       const pName = parsed.productName||parsed.speciesName||parsed.waterBody||query;
       setStoredProductName(pName);
@@ -536,8 +545,8 @@ export default function ScannerScreen() {
         query, verdict: parsed.verdict,
         productName: pName,
       }, ...prev].slice(0,50));
-    } catch {
-      Alert.alert('Analysis Error','The Equalizer could not complete the analysis. Try again.');
+    } catch (err:any) {
+      Alert.alert('Analysis Error', String(err?.message || err || 'Unknown error'));
     } finally { setLoading(false); scannedRef.current=false; }
   };
 
@@ -548,15 +557,8 @@ export default function ScannerScreen() {
     setRecipeModalVisible(true);
     setRecipeLoading(true);
     try {
-      const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1800,
-        system: CHEF_SYS,
-        messages: [{ role: 'user', content: `Recipe: ${chip.recipeName}. Scanned product: ${storedProductName}.${storedPersonalTruth}` }],
-      });
-      const parsed = JSON.parse(
-        ((res.content[0] as any).text ?? '').replace(/```json|```/g,'').trim()
-      );
+      const resText = await aa2Claude({ system: CHEF_SYS, content: `Recipe: ${chip.recipeName}. Scanned product: ${storedProductName}.${storedPersonalTruth}`, max_tokens: 1800 });
+      const parsed = JSON.parse(resText.replace(/```json|```/g,'').trim());
       setRecipeData(parsed);
     } catch {
       // leave recipeData null, modal shows empty state
@@ -598,13 +600,8 @@ export default function ScannerScreen() {
       const sys = isFlagged
         ? 'You are Cosmo Chemist inside AA2. Return exactly two sentences: what this chemical does in the product formulation, and what it does to the body with repeated skin exposure. No markdown.'
         : 'You are Cosmo Chemist inside AA2. Return exactly two sentences: what this ingredient does in the product formulation, and what specific benefit it provides to the skin or body. No markdown.';
-      const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 120,
-        system: sys,
-        messages: [{ role: 'user', content: name }],
-      });
-      setInfoSheetText((res.content[0] as any).text ?? '');
+      const resText = await aa2Claude({ system: sys, content: name, max_tokens: 120 });
+      setInfoSheetText(resText);
     } catch {
       setInfoSheetText('Could not load. Try again.');
     } finally {
@@ -618,13 +615,8 @@ export default function ScannerScreen() {
     setInfoSheetLoading(true);
     setInfoSheetVisible(true);
     try {
-      const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 100,
-        system: 'You are The Equalizer inside AA2. In one sentence, explain specifically why this alternative was recommended over the scanned product for this member — reference better value, cleaner production, or similar character. Be specific to the actual products.',
-        messages: [{ role: 'user', content: `Scanned product: ${storedProductName}. Recommended alternative: ${altName}.` }],
-      });
-      setInfoSheetText((res.content[0] as any).text ?? '');
+      const resText = await aa2Claude({ system: 'You are The Equalizer inside AA2. In one sentence, explain specifically why this alternative was recommended over the scanned product for this member — reference better value, cleaner production, or similar character. Be specific to the actual products.', content: `Scanned product: ${storedProductName}. Recommended alternative: ${altName}.`, max_tokens: 100 });
+      setInfoSheetText(resText);
     } catch {
       setInfoSheetText('Could not load. Try again.');
     } finally {
@@ -868,8 +860,6 @@ export default function ScannerScreen() {
           {/* ── RESULT ── */}
           {result&&!loading&&(
             <View style={s.resultBlock}>
-
-              <BioClearanceBand result={result} />
 
               {/* ALLERGY ALERT */}
               {result.allergyAlert?.triggered&&(
