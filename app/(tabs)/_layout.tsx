@@ -21,14 +21,14 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
       }}
     >
-      <Tabs.Screen name="index"     options={{ title: 'Scanner',   tabBarIcon: ({ color }) => <TabIcon emoji="\u229A" color={color} /> }} />
-      <Tabs.Screen name="biobuddy"  options={{ title: 'Bio Buddy', tabBarIcon: ({ color }) => <TabIcon emoji="\u2665" color={color} /> }} />
-      <Tabs.Screen name="aa2"       options={{ title: 'AA2',       tabBarIcon: ({ color }) => <TabIcon emoji="\u25C6" color={color} /> }} />
-      <Tabs.Screen name="concierge" options={{ title: 'Concierge', tabBarIcon: ({ color }) => <TabIcon emoji="\u25A4" color={color} /> }} />
-      <Tabs.Screen name="chef"      options={{ title: 'Chef',      tabBarIcon: ({ color }) => <TabIcon emoji="\u2726" color={color} /> }} />
-      <Tabs.Screen name="chauffeur" options={{ title: 'Chauffeur', tabBarIcon: ({ color }) => <TabIcon emoji="\u22B3" color={color} /> }} />
-      <Tabs.Screen name="equalizer" options={{ title: 'Equalizer', tabBarIcon: ({ color }) => <TabIcon emoji="\u2263" color={color} /> }} />
+      <Tabs.Screen name="index"     options={{ title: 'Scanner',   tabBarIcon: ({ color }) => <TabIcon emoji="🔍" color={color} /> }} />
+      <Tabs.Screen name="biobuddy"  options={{ title: 'Bio Buddy', tabBarIcon: ({ color }) => <TabIcon emoji="❤️" color={color} /> }} />
+      <Tabs.Screen name="equalizer" options={{ title: 'Equalizer', tabBarIcon: ({ color }) => <TabIcon emoji="📊" color={color} /> }} />
+      <Tabs.Screen name="concierge" options={{ title: 'Concierge', tabBarIcon: ({ color }) => <TabIcon emoji="🛎️" color={color} /> }} />
+      <Tabs.Screen name="chef"      options={{ title: 'Chef',      tabBarIcon: ({ color }) => <TabIcon emoji="🍳" color={color} /> }} />
+      <Tabs.Screen name="chauffeur" options={{ title: 'Chauffeur', tabBarIcon: ({ color }) => <TabIcon emoji="🚗" color={color} /> }} />
 
+      <Tabs.Screen name="aa2"        options={{ href: null }} />
       <Tabs.Screen name="apothecary" options={{ href: null }} />
       <Tabs.Screen name="explore"    options={{ href: null }} />
       <Tabs.Screen name="map"        options={{ href: null }} />
