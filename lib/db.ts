@@ -8,7 +8,7 @@ import { supabase } from './supabase';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── FULL MEMBER PROFILE TYPE ────────────────────────────────────────────────
-// Maps to all 9 onboarding tables simultaneously.
+// Maps to all 8 onboarding tables simultaneously.
 // This is the complete personal truth — assembled once, used everywhere.
 export type FullMemberProfile = {
   // member_profiles
@@ -19,6 +19,7 @@ export type FullMemberProfile = {
   deliveryMode?:      'video' | 'voice' | 'text';
   colorMode?:         'light' | 'system' | 'dark';
   stackTier?:         'quarter' | 'half' | 'three_quarter' | 'full';
+  doorOrder?:         string[];
   onboardingComplete: boolean;
   // goal_profiles
   primaryGoal?:       string[];
@@ -47,7 +48,7 @@ export type FullMemberProfile = {
 };
 
 // ─── LOAD MEMBER PROFILE ─────────────────────────────────────────────────────
-// Reads all 9 onboarding tables in parallel.
+// Reads all 8 onboarding tables in parallel.
 // Returns null if member has not completed onboarding.
 // Called on scanner mount — result passed to buildPersonalTruth().
 export async function loadMemberProfile(): Promise<FullMemberProfile | null> {
@@ -89,6 +90,7 @@ export async function loadMemberProfile(): Promise<FullMemberProfile | null> {
       deliveryMode:       m.delivery_mode    ?? 'voice',
       colorMode:          m.color_mode       ?? 'system',
       stackTier:          m.stack_tier       ?? 'quarter',
+      doorOrder:          m.door_order       ?? undefined,
       onboardingComplete: true,
       primaryGoal:        g?.primary_goal    ?? [],
       visionText:         g?.vision_text     ?? undefined,
@@ -220,39 +222,108 @@ export async function getScanHistory(limit = 50): Promise<any[]> {
   } catch { return []; }
 }
 
-// ─── LEGACY TYPES — kept for backward compatibility ──────────────────────────
-export type MemberProfile = {
-  id?:               string;
-  name?:             string;
-  goals?:            string;
-  targetDate?:       string;
-  allergens?:        string[];
-  dietType?:         string;
-  healthConditions?: string;
-  medications?:      string;
-  sleepBaseline?:    string;
-  stressBaseline?:   string;
-  travelProfile?:    string;
-  species?:          string;
-};
-
-export async function getMemberProfile(memberId: string): Promise<MemberProfile | null> {
+// ─── SAVE MEMBER PROFILE ─────────────────────────────────────────────────────
+// The write path. Exact inverse of loadMemberProfile — upserts all 8 onboarding
+// tables from a single assembled FullMemberProfile and flips onboarding_complete.
+// Called once, from the onboarding screen, on completion.
+// Returns true only if every table wrote clean. Any hole = false = don't proceed.
+export async function saveMemberProfile(profile: FullMemberProfile): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('members').select('*').eq('id', memberId).single();
-    if (error) { console.log('[db.ts] getMemberProfile error:', error.message); return null; }
-    return data ?? null;
-  } catch { return null; }
-}
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) { console.log('[db.ts] saveMemberProfile: no auth user'); return false; }
+    const id = user.id;
 
-export async function saveMemberProfile(profile: MemberProfile): Promise<void> {
-  try {
-    const { error } = await supabase
-      .from('members').upsert(profile, { onConflict: 'id' });
-    if (error) console.log('[db.ts] saveMemberProfile error:', error.message);
-    else       console.log('[db.ts] profile saved ✓');
+    const writes = await Promise.all([
+      supabase.from('member_profiles').upsert({
+        member_id:           id,
+        name:                profile.name             ?? null,
+        age:                 profile.age              ?? null,
+        species_protected:   profile.speciesProtected ?? [],
+        delivery_mode:       profile.deliveryMode     ?? 'voice',
+        color_mode:          profile.colorMode        ?? 'system',
+        stack_tier:          profile.stackTier        ?? 'quarter',
+        door_order:          profile.doorOrder        ?? null,
+        onboarding_complete: true,
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('goal_profiles').upsert({
+        member_id:    id,
+        primary_goal: profile.primaryGoal ?? [],
+        vision_text:  profile.visionText  ?? null,
+        target_date:  profile.targetDate  ?? null,
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('allergy_profiles').upsert({
+        member_id:                id,
+        food_allergens:           profile.foodAllergens          ?? [],
+        suspected_sensitivities:  profile.suspectedSensitivities ?? [],
+        personal_care_allergens:  profile.personalCareAllergens  ?? [],
+        environmental_triggers:   profile.environmentalTriggers  ?? [],
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('health_profiles').upsert({
+        member_id:     id,
+        conditions:    profile.conditions   ?? [],
+        active_limits: profile.activeLimits ?? [],
+        medications:   profile.medications  ?? null,
+        diet_types:    profile.dietTypes    ?? [],
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('baseline_profiles').upsert({
+        member_id:    id,
+        sleep_score:  profile.sleepScore  ?? null,
+        stress_level: profile.stressLevel ?? null,
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('travel_profiles').upsert({
+        member_id:        id,
+        travel_frequency: profile.travelFrequency ?? [],
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('device_connections').upsert({
+        member_id: id,
+        hardware:  profile.hardware ?? [],
+      }, { onConflict: 'member_id' }),
+
+      supabase.from('animal_profiles').upsert({
+        member_id:     id,
+        sensitivities: profile.animalSensitivities ?? null,
+        species:       profile.animalSpecies       ?? null,
+      }, { onConflict: 'member_id' }),
+    ]);
+
+    const failed = writes.filter(w => w.error);
+    if (failed.length) {
+      failed.forEach(w => console.log('[db.ts] saveMemberProfile table error:', w.error?.message));
+      return false;
+    }
+    console.log('[db.ts] member profile saved across 8 tables ✓');
+    return true;
   } catch (e) {
     console.log('[db.ts] saveMemberProfile failed silently:', e);
+    return false;
+  }
+}
+
+// ─── SAVE DOOR ORDER ─────────────────────────────────────────────────────────
+// Writes member_profiles.door_order only. Called on hold-press drag-reorder in
+// the door hall. The row already exists by this point (onboarding wrote it).
+export async function saveDoorOrder(order: string[]): Promise<boolean> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) { console.log('[db.ts] saveDoorOrder: no auth user'); return false; }
+
+    const { error } = await supabase
+      .from('member_profiles')
+      .update({ door_order: order })
+      .eq('member_id', user.id);
+
+    if (error) { console.log('[db.ts] saveDoorOrder error:', error.message); return false; }
+    console.log('[db.ts] door order saved ✓');
+    return true;
+  } catch (e) {
+    console.log('[db.ts] saveDoorOrder failed silently:', e);
+    return false;
   }
 }
 
