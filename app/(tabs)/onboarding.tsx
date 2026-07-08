@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
+import { saveOnboardingField } from '../../lib/db';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -58,15 +59,7 @@ function fieldOpacity(value: string | null, focused: boolean): number {
 
 // ─── SAVE FIELD ──────────────────────────────────────────────────────────────
 async function saveField(field: string, value: any): Promise<void> {
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    await supabase.from('profiles').upsert({
-      id: user.id,
-      [field]: value,
-      updated_at: new Date().toISOString(),
-    });
-  } catch {}
+  await saveOnboardingField(field, value);
 }
 
 // ─── ACTIVITIES ───────────────────────────────────────────────────────────────
