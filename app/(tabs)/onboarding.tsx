@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
-import { saveOnboardingField } from '../../lib/db';
+import { saveOnboardingField, saveAnimals, markOnboardingComplete } from '../../lib/db';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -489,10 +489,24 @@ export default function OnboardingScreen() {
   // ── Membrane complete
   const handleMembraneComplete = async () => {
     setSaving(true);
-    await saveField('membrane_complete', true);
+
+    const species = petSpecies.filter(s => s !== 'No pets');
+    const names = petNames.split(',').map(n => n.trim()).filter(Boolean);
+    if (species.length > 0) {
+      await saveAnimals(
+        species.map((s, i) => ({ species: s, name: names[i] ?? undefined }))
+      );
+    } else {
+      await saveAnimals([]);
+    }
+
+    await markOnboardingComplete();
+
     setSaving(false);
-    router.replace('/');
+
+    router.replace('/biobuddy');
   };
+
 
   // ── Loading
   if (checkingAuth) {
