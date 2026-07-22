@@ -28,6 +28,7 @@ import {
   TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
 import { supabase } from '../../lib/supabase';
@@ -85,6 +86,7 @@ const TABS = [
   { id:'care',       label:'PERSONAL CARE',  icon:'🧴', color:F.purple   },
   { id:'grownfolks', label:'WINE & SPIRITS', icon:'🍷', color:F.gold     },
   { id:'species',    label:'SPECIES',        icon:'🐾', color:F.blue     },
+  { id:'apothecary', label:'APOTHECARY',     icon:'⚗', color:F.green    },
 ];
 
 const SPECIES_SUBS = [
@@ -715,13 +717,13 @@ export default function ScannerScreen() {
 
       {/* TABS — 4+3 layout */}
       <View style={[s.tabGrid,{borderBottomColor:P.border}]}>
-        {[TABS.slice(0,4),TABS.slice(4,7)].map((row,ri)=>(
+        {[TABS.slice(0,4),TABS.slice(4,8)].map((row,ri)=>(
           <View key={ri} style={s.tabRow}>
             {row.map(tab=>(
               <TouchableOpacity key={tab.id}
                 style={[s.tabBtn,
                   activeTab===tab.id&&{borderBottomColor:tab.color,borderBottomWidth:2.5,backgroundColor:tab.color+'14'}]}
-                onPress={()=>{setActiveTab(tab.id);setResult(null);}}>
+                onPress={()=>{ if(tab.id==='apothecary'){ router.push('/apothecary' as any); return; } setActiveTab(tab.id); setResult(null); }}>
                 <Text style={s.tabIcon}>{tab.icon}</Text>
                 <Text style={[s.tabLabel,{color:activeTab===tab.id?tab.color:F.dimWhite}]}>{tab.label}</Text>
               </TouchableOpacity>
