@@ -5,6 +5,8 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import Anthropic from '@anthropic-ai/sdk';
+import { buildPersonalTruth, loadMemberProfile } from '../../lib/db';
+import { getCannabisProfile, getDispensariesByCity } from '../../lib/cannabis-layer';
 
 const C = {
   nearBlack:    '#03050a',
@@ -158,11 +160,41 @@ export default function MapScreen() {
         setRouteStats({ distance: `~${distKm} km`, stops: waypoints.length + 2 });
       }
       const fullRoute = [origin, ...waypoints.map(w => w.name), destination].join(' → ');
+      const profile = await loadMemberProfile();
+      const personalTruth = buildPersonalTruth(profile);
+      const cannabis = getCannabisProfile(destination);
+      const dispensaries = getDispensariesByCity(destination);
+      const cannabisIntel = cannabis
+        ? `Country: ${cannabis.countryName}. Status: ${cannabis.topLevelStatus}. Age minimum: ${cannabis.ageMinimum ?? 'n/a'}. Personal limit: ${cannabis.personalLimitGrams ?? 'n/a'}g. Public consumption: ${cannabis.publicConsumption}. Lounges on file: ${cannabis.loungeCount}. Border warnings: ${cannabis.borderWarnings.map(b => `${b.borderName} — ${b.note}`).join(' | ') || 'none on file'}. Rules of the road: ${cannabis.rulesOfTheRoad.join(' | ')}`
+        : 'LEGAL STATUS: not verified for this destination — state that plainly and tell the member to confirm locally.';
+      const dispensaryIntel = dispensaries.length
+        ? dispensaries.map(d => `${d.name} — ${d.address}, ${d.city} (${d.hoursLine})${d.recreational ? ' · rec' : ''}${d.medical ? ' · med' : ''}${d.delivery ? ' · delivery' : ''}`).join('; ')
+        : 'No verified dispensary records on file for this destination.';
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: `You are The Chauffeur — AA2's safety travel intelligence. Pre-program the safest route before the user ever leaves. Domestic and international. Identify safe waypoints, rest stops, fuel points, emergency services, border crossing notes, areas to avoid, best travel times, weather context. Be specific, practical, calm. Best private driver energy.`,
-        messages: [{ role: 'user', content: `Route: ${fullRoute}. Give a complete safety brief before I leave.` }],
+        max_tokens: 3000,
+        system: `You are The Chauffeur — AA2's safety travel intelligence. Pre-program the safest route before the member ever leaves. Domestic and international. Calm, specific, never alarmist. Best private driver energy.
+
+MEMBER MEMBRANE (filter every recommendation against this):
+${personalTruth}
+
+VERIFIED CANNABIS LAYER FOR DESTINATION:
+${cannabisIntel}
+Dispensary records on file: ${dispensaryIntel}
+
+You MUST return ALL sections below, in this order, every time. Never omit one. If you lack data, say exactly what is unknown and what to verify on arrival — never leave it blank.
+
+1. ROUTE & WAYPOINTS — safe stops, fuel, rest, timing, weather context.
+2. ONE WAY IN / ONE WAY OUT — egress risk. Flag any leg, town, canyon, island, peninsula, or venue with a single access route. State the alternate exit, or say there is none.
+3. ENVIRONMENTAL INTELLIGENCE ENGINE — report every one: real-time news signals and local danger reports; political gatherings and civil unrest indicators; construction disruptions; high-density events and party clusters; traffic anomalies and crime heat patterns; route deviation thresholds; rideshare deviation risk; border crossing notes.
+4. AVOIDANCES — named areas, roads, and times to avoid.
+5. EMERGENCY SERVICES — nearest hospital, urgent care, pharmacy, emergency number per leg.
+6. AFICIONADO — cigar lounges and premium venues: name, district, indoor/outdoor, smoking legality.
+7. DISPENSARIES — use ONLY the verified cannabis layer above. Never invent a dispensary or a legal status.
+8. RETAIL LOOP — cleared grocery, market, and pharmacy options that fit the member's membrane.
+
+End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier but holds it until the Equalizer clears it. State one line — CO-SIGNED · CLEARED, or HELD · ONE WAY IN / ONE WAY OUT ON [leg] — and never mark it cleared if any single-egress leg is unresolved.`,
+        messages: [{ role: 'user', content: `Route: ${fullRoute}. Destination: ${destination}. Give the complete pre-departure dossier.` }],
       });
       setTravelResult((response.content[0] as any).text || '');
     } catch {
