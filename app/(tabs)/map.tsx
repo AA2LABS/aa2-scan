@@ -333,7 +333,7 @@ export default function MapScreen() {
 
                 {retailResult.actRightDollars && (
                   <View style={s.vaultCard}>
-                    <Text style={s.vaultLabel}>💰 ACT RIGHT DOLLARS</Text>
+                    <Text style={s.vaultLabel}>💰 AWARE DOLLARS</Text>
                     <Text style={s.vaultBody}>{retailResult.actRightDollars}</Text>
                   </View>
                 )}

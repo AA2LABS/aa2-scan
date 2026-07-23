@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ImageSourcePropType } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, ImageSourcePropType, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 
 export type FloodRow = {
   icon: string; title: string; desc: string;
   chip?: string; chipKind?: 'clr' | 'watch' | 'hit' | 'accent';
+  route?: string;
 };
 export type FloodScreenProps = {
   doorImage: ImageSourcePropType;
@@ -43,8 +45,8 @@ export default function FloodScreen(props: FloodScreenProps) {
       <View style={st.rows}>
         {rows.map((r, i) => {
           const c = chipColors(r.chipKind, accent);
-          return (
-            <View key={i} style={[st.row, i > 0 ? st.rowBorder : null]}>
+          const inner = (
+            <>
               <View style={st.rowIcon}><Text style={st.rowIconTxt}>{r.icon}</Text></View>
               <View style={st.rowTx}>
                 <Text style={st.rowTitle}>{r.title}</Text>
@@ -55,6 +57,20 @@ export default function FloodScreen(props: FloodScreenProps) {
                   <Text style={[st.chipTxt, { color: c.fg }]}>{r.chip}</Text>
                 </View>
               ) : null}
+            </>
+          );
+          return r.route ? (
+            <TouchableOpacity
+              key={i}
+              activeOpacity={0.7}
+              onPress={() => router.push(r.route as any)}
+              style={[st.row, i > 0 ? st.rowBorder : null]}
+            >
+              {inner}
+            </TouchableOpacity>
+          ) : (
+            <View key={i} style={[st.row, i > 0 ? st.rowBorder : null]}>
+              {inner}
             </View>
           );
         })}

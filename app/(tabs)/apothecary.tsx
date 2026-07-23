@@ -128,7 +128,7 @@ Return this exact JSON:
   "dosageNote": "string",
   "contraindications": ["string"],
   "apothecaryNote": "REQUIRED. 3 numbered preparation or sourcing notes. Practical and specific.",
-  "actRightDollars": "REQUIRED. Estimated savings versus pharmaceutical equivalent. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
+  "actRightDollars": "REQUIRED. Estimated savings versus pharmaceutical equivalent. End exactly with: That goes directly into your AA2 Vault as AWARE DOLLARS."
 }`;
 
 const FORMULATE_SYS = SEVERITY_PREFIX + `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. You assess compound stacks for synergy, antagonism, and safety before the member ever formulates.
@@ -147,7 +147,7 @@ Return this exact JSON:
   "conflicts": ["string"],
   "sequencing": "string — optimal timing and order of intake",
   "formNote": "REQUIRED. 3 numbered formulation or sourcing notes.",
-  "actRightDollars": "REQUIRED. Estimated savings vs. pharmaceutical alternatives. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
+  "actRightDollars": "REQUIRED. Estimated savings vs. pharmaceutical alternatives. End exactly with: That goes directly into your AA2 Vault as AWARE DOLLARS."
 }`;
 
 const CONDITION_SYS = SEVERITY_PREFIX + `You are The Equalizer — AA2's apothecary intelligence for Spoke 34. Given a health goal or condition, return a complete plant-based protocol.
@@ -167,7 +167,7 @@ Return this exact JSON:
   "lifestyle": ["string"],
   "cautions": ["string"],
   "protocolNote": "REQUIRED. 3 numbered steps to implement this protocol.",
-  "actRightDollars": "REQUIRED. Estimated savings vs. pharmaceutical approaches. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
+  "actRightDollars": "REQUIRED. Estimated savings vs. pharmaceutical approaches. End exactly with: That goes directly into your AA2 Vault as AWARE DOLLARS."
 }`;
 
 const FORAGER_SYS = SEVERITY_PREFIX + `You are The Equalizer running the FORAGER LAYER — AA2's wild food intelligence for Spoke 34. Backed by 9 silent databases spanning mycology, ethnobotany, wilderness survival medicine, foraging field guides, and regional flora/fauna databases. Speak as The Equalizer: direct, calm, authoritative. A wrong identification can kill. Be exact.
@@ -196,7 +196,7 @@ Return this exact JSON:
     }
   ],
   "foragerNote": "REQUIRED. 3 numbered practical field notes — harvesting tips, storage, any warnings specific to this specimen.",
-  "actRightDollars": "REQUIRED. Estimated market value of a typical foraged haul of this species. End exactly with: That goes directly into your AA2 Vault as Act Right Dollars."
+  "actRightDollars": "REQUIRED. Estimated market value of a typical foraged haul of this species. End exactly with: That goes directly into your AA2 Vault as AWARE DOLLARS."
 }`;
 
 // ─── HUNTER PROMPT ───────────────────────────────────────────────────────────
@@ -380,7 +380,11 @@ export default function ApothecaryScreen() {
 
   const parseResponse = (text: string) => {
     const cleaned = text.replace(/```json\s?|```/g, '').trim();
-    return JSON.parse(cleaned);
+    const start = cleaned.indexOf('{');
+    const end   = cleaned.lastIndexOf('}');
+    const slice = start !== -1 && end > start ? cleaned.slice(start, end + 1) : cleaned;
+    try { return JSON.parse(slice); }
+    catch { throw new Error('The Equalizer returned an incomplete protocol. Tap RUN again.'); }
   };
 
   // ── Camera handlers ───────────────────────────────────────────────────────
@@ -545,7 +549,7 @@ export default function ApothecaryScreen() {
     try {
       const res = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1600,
+        max_tokens: 3000,
         system: CONDITION_SYS,
         messages: [{ role: 'user', content: `Build a plant protocol for Spoke 34 member. Goal or condition: ${condition.trim()}` }],
       });
@@ -1348,7 +1352,7 @@ export default function ApothecaryScreen() {
 
             {!!result.actRightDollars && (
               <View style={s.vaultCard}>
-                <Text style={s.vaultLabel}>💰  ACT RIGHT DOLLARS</Text>
+                <Text style={s.vaultLabel}>💰  AWARE DOLLARS</Text>
                 <Text style={s.vaultBody}>{result.actRightDollars}</Text>
               </View>
             )}

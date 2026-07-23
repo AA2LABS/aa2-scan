@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import { useFocusEffect, router } from 'expo-router';
 import { getScanHistory } from '../../lib/db';
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80', LINE = 'rgba(255,255,255,0.10)';
@@ -17,13 +17,14 @@ function clearanceOf(row: any) {
   return { tag: 'CLEARED', color: GREEN, dot: GREEN };
 }
 
-type GateRow = { icon: string; title: string; desc: string; chip: string; chipColor: string };
+type GateRow = { icon: string; title: string; desc: string; chip: string; chipColor: string; route?: string };
 const GATES: GateRow[] = [
-  { icon: '\u25A4', title: 'Vault', desc: 'Sealed record of every clearance & block.', chip: 'SEALED', chipColor: GREEN },
-  { icon: '\u211E', title: 'Pill', desc: 'Medication interaction gate \u2014 RxNorm.', chip: 'CLEAR', chipColor: GREEN },
-  { icon: '\u2698', title: 'Apothecary', desc: 'Plant + tincture clearance.', chip: 'CLEAR', chipColor: GREEN },
-  { icon: '\u25C9', title: 'Species', desc: 'Which body \u2014 James \u00B7 Spouse \u00B7 Lily \u00B7 K9.', chip: '4', chipColor: AMBER },
-  { icon: '\u25C8', title: 'Environmental', desc: 'Location, air, contact exposure.', chip: 'WATCHING', chipColor: AMBER },
+  { icon: '▤', title: 'Vault', desc: 'Sealed record of every clearance & block.', chip: 'SEALED', chipColor: GREEN },
+  { icon: '℞', title: 'Pill', desc: 'Medication interaction gate — RxNorm.', chip: 'CLEAR', chipColor: GREEN },
+  { icon: '⚘', title: 'Apothecary', desc: 'Plant + tincture clearance.', chip: 'CLEAR', chipColor: GREEN, route: '/apothecary' },
+  { icon: '◍', title: 'Grid', desc: 'ON GRID / OFF GRID maps — pre-synced.', chip: 'ON', chipColor: GREEN, route: '/map' },
+  { icon: '◉', title: 'Species', desc: 'Which body — James · Spouse · Lily · K9.', chip: '4', chipColor: AMBER },
+  { icon: '◈', title: 'Environmental', desc: 'Location, air, contact exposure.', chip: 'WATCHING', chipColor: AMBER },
 ];
 
 export default function EqualizerScreen() {
@@ -42,7 +43,7 @@ export default function EqualizerScreen() {
   }, [load]);
 
   const anyBlocked = scans.some(r => clearanceOf(r).tag === 'BLOCKED');
-  const heroState = anyBlocked ? 'CLEARANCES LOGGED' : 'ALL CLEAR \u00B7 STANDBY';
+  const heroState = anyBlocked ? 'CLEARANCES LOGGED' : 'ALL CLEAR · STANDBY';
   const heroColor = anyBlocked ? AMBER : GREEN;
 
   return (
@@ -88,18 +89,34 @@ export default function EqualizerScreen() {
 
       <View style={st.section}>
         <Text style={st.sectionH}>THE GATES IT GUARDS</Text>
-        {GATES.map((g, i) => (
-          <View key={i} style={st.gate}>
-            <View style={st.gateIcon}><Text style={st.gateIconTxt}>{g.icon}</Text></View>
-            <View style={{ flex: 1 }}>
-              <Text style={st.gateName}>{g.title}</Text>
-              <Text style={st.gateDesc}>{g.desc}</Text>
+        {GATES.map((g, i) => {
+          const inner = (
+            <>
+              <View style={st.gateIcon}><Text style={st.gateIconTxt}>{g.icon}</Text></View>
+              <View style={{ flex: 1 }}>
+                <Text style={st.gateName}>{g.title}</Text>
+                <Text style={st.gateDesc}>{g.desc}</Text>
+              </View>
+              <View style={[st.gateChip, { backgroundColor: g.chipColor + '1F' }]}>
+                <Text style={[st.gateChipTxt, { color: g.chipColor }]}>{g.chip}</Text>
+              </View>
+            </>
+          );
+          return g.route ? (
+            <TouchableOpacity
+              key={i}
+              activeOpacity={0.7}
+              onPress={() => router.push(g.route as any)}
+              style={st.gate}
+            >
+              {inner}
+            </TouchableOpacity>
+          ) : (
+            <View key={i} style={st.gate}>
+              {inner}
             </View>
-            <View style={[st.gateChip, { backgroundColor: g.chipColor + '1F' }]}>
-              <Text style={[st.gateChipTxt, { color: g.chipColor }]}>{g.chip}</Text>
-            </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       <Text style={st.foot}>Nothing passes without clearance.</Text>

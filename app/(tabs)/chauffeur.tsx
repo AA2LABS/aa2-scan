@@ -11,10 +11,10 @@ export default function ChauffeurScreen() {
       heroLine="Pre-programmed safe routes. Briefings at every waypoint."
       heroSub="Dossier first, then the road."
       rows={[
-        { icon: '\u25AD', title: 'Dossier', desc: 'Trip card: who, where, allergens, language.' },
-        { icon: '\u25C6', title: 'Safety bar', desc: 'Live area read along the route.', chip: 'CLEAR', chipKind: 'clr' },
-        { icon: '\u25C8', title: 'Retail intel', desc: 'Cleared stores & pharmacies en route.' },
-        { icon: '\u25CD', title: 'Grid', desc: 'ON GRID / OFF GRID maps \u2014 pre-synced.', chip: 'ON', chipKind: 'clr' },
+        { icon: '▭', title: 'Dossier', desc: 'Trip card: who, where, allergens, language.' },
+        { icon: '◆', title: 'Safety bar', desc: 'Live area read along the route.', chip: 'CLEAR', chipKind: 'clr' },
+        { icon: '◈', title: 'Retail intel', desc: 'Cleared stores & pharmacies en route.' },
+        { icon: '◍', title: 'Grid', desc: 'ON GRID / OFF GRID maps — pre-synced.', chip: 'ON', chipKind: 'clr', route: '/map' },
       ]}
       foot="Maps with memory. Routes with context."
     />

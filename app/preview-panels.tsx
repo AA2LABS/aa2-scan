@@ -145,7 +145,7 @@ function Panel1() {
       </View>
       <View style={{ marginTop: 16, backgroundColor: CARD_BG, borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(196,154,42,0.30)', flexDirection: 'row', alignItems: 'center' }}>
         <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: F.mono, fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>ACT RIGHT DOLLARS</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 8, color: GOLD, letterSpacing: 2, marginBottom: 4 }}>AWARE DOLLARS</Text>
           <Text style={{ fontFamily: F.display, fontSize: 32, color: GOLD }}>$47.20</Text>
         </View>
         <View style={{ borderWidth: 1, borderColor: GOLD, borderRadius: 8, padding: 8 }}>
@@ -616,7 +616,7 @@ function Panel12() {
       <View style={{ backgroundColor: CARD_BG, borderRadius: 10, padding: 12, marginTop: 4, borderWidth: 1, borderColor: 'rgba(196,154,42,0.25)' }}>
         <View style={{ flexDirection: 'row', gap: 6, marginBottom: 4 }}>
           <Text style={{ fontSize: 12, color: GREEN }}>◆</Text>
-          <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2 }}>ACT RIGHT DOLLARS</Text>
+          <Text style={{ fontFamily: F.mono, fontSize: 9, color: GREEN, letterSpacing: 2 }}>AWARE DOLLARS</Text>
         </View>
         <Text style={{ fontFamily: F.sans, fontSize: 12, color: MUTED, lineHeight: 16, marginTop: 4 }}>
           Switching saves $8-12 per bottle. Goes directly to your AA2 Vault.
