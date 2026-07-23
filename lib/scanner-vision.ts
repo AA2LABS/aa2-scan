@@ -15,6 +15,7 @@ export interface VisionScanInput {
   tabContext: TabContext;
   personalTruth: string;
   systemPrompt: string;
+  onPartial?: (accumulatedText: string) => void;
 }
 
 export interface VisionScanResult {
@@ -45,6 +46,20 @@ export async function scanWithVision(input: VisionScanInput): Promise<VisionScan
   ];
 
   try {
+    if (input.onPartial) {
+      const { streamClaude } = await import('./claude-stream');
+      const streamed = await streamClaude({
+        system: input.systemPrompt,
+        content: userContent,
+        max_tokens: MAX_TOKENS,
+        onPartial: input.onPartial,
+      });
+      if (!streamed) {
+        return { ok: false, rawText: '', errorMessage: 'Empty response' };
+      }
+      return { ok: true, rawText: streamed };
+    }
+
     const response = await fetch(ANTHROPIC_API_URL, {
       method: 'POST',
       headers: {

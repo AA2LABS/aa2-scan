@@ -31,6 +31,7 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
+import { streamClaude, extractVerdict } from '../../lib/claude-stream';
 import { supabase } from '../../lib/supabase';
 
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
@@ -110,7 +111,7 @@ const verdictGlyph = (v:string) =>
   v==='ALL CLEAR' ? '✓' : v==='TAKE NOTICE' ? '⚠' : '✕';
 
 // ─── SYSTEM PROMPTS ──────────────────────────────────────────────────────────
-const SEVERITY_PREFIX = 'SEVERITY RULE — NON-NEGOTIABLE:\nAlways render results in severity order from most dangerous to least dangerous.\nThe most dangerous information must appear FIRST in your response.\nNever bury a warning below informational content.\nA member should never scroll to find a lethal warning.\n\n';
+const SEVERITY_PREFIX = 'SEVERITY RULE — NON-NEGOTIABLE:\nAlways render results in severity order from most dangerous to least dangerous.\nThe most dangerous information must appear FIRST in your response.\nNever bury a warning below informational content.\nA member should never scroll to find a lethal warning.\nEMIT JSON KEYS IN EXACTLY THE ORDER GIVEN IN THE SCHEMA. "verdict" and "verdictReason" MUST be the first two keys you write, before anything else, so the member sees the decision the instant it is made.\n\n';
 
 function buildSystemPrompt(tab:string, personalTruth:string, speciesSub?:string):string {
   const base = SEVERITY_PREFIX + `You are The Equalizer — AA2's immune system and first line of truth. Backed by 9 internal databases consulted silently.\n\nCRITICAL RULES:\n1. NEVER name any database in any user-facing field.\n2. Speak as The Equalizer in first person. Direct, calm, factual.\n3. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference.\n4. Return ONLY valid JSON — no markdown, no backticks, no preamble.\n5. Alternatives NEVER shame the user's choice. Suggest alternatives only for better value, cleaner production, or similar character. No moral judgment.\n6. If any ingredient in this product matches the member's known allergens or suspected sensitivities from their personal truth, set allergyAlert.triggered to true and name the specific allergen, ingredient, and 3 safe alternative product names.${personalTruth}`;
@@ -455,6 +456,10 @@ export default function ScannerScreen() {
         tabContext,
         personalTruth,
         systemPrompt: SEVERITY_PREFIX + (personalTruth || ''),
+        onPartial: (sofar) => {
+          const early = extractVerdict(sofar);
+          if (early.verdict) setResult((prev:any) => (prev && prev.__full) ? prev : { ...early, __streaming: true });
+        },
       });
       if (!visionResult.ok || isVisionEmpty(visionResult.rawText)) {
         setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Image unclear — try again or speak the product name.' });
@@ -469,6 +474,7 @@ export default function ScannerScreen() {
       if (!parsed) {
         setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Could not parse scan result — try again.' });
       } else {
+        parsed.__full = true;
         setResult(parsed);
       }
     } catch (err: any) {
@@ -529,8 +535,17 @@ export default function ScannerScreen() {
         ? buildFishSystemPrompt(fishMode, personalTruth)
         : buildSystemPrompt(activeTab, personalTruth, effectiveSub);
 
-      const responseText = await aa2Claude({ system: systemPrompt, content, max_tokens: 2400 });
+      const responseText = await streamClaude({
+        system: systemPrompt,
+        content,
+        max_tokens: 2400,
+        onPartial: (sofar) => {
+          const early = extractVerdict(sofar);
+          if (early.verdict) setResult((prev:any) => (prev && prev.__full) ? prev : { ...early, __streaming: true });
+        },
+      });
       const parsed = JSON.parse(responseText.replace(/```json|```/g,'').trim());
+      parsed.__full = true;
       setResult(parsed);
       const pName = parsed.productName||parsed.speciesName||parsed.waterBody||query;
       setStoredProductName(pName);
