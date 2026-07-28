@@ -16,7 +16,7 @@ import {
   View,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
-import { saveOnboardingField, saveAnimals, markOnboardingComplete } from '../../lib/db';
+import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberProfile } from '../../lib/db';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -389,6 +389,15 @@ export default function OnboardingScreen() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
           await supabase.auth.signInAnonymously();
+        }
+      } catch {}
+      // The pre-onboarding flip-book (preview_panels) must ONLY appear at the
+      // genuine first build. If the membrane is already sealed, this is a CHANGE —
+      // skip the flip-book and open the edit flow directly.
+      try {
+        const prof = await loadMemberProfile();
+        if (prof?.onboardingComplete) {
+          setStep('north_star_intro');
         }
       } catch {}
       setCheckingAuth(false);

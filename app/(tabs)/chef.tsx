@@ -1,10 +1,17 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, RefreshControl } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, Pressable } from 'react-native';
+import { useFocusEffect, router, type Href } from 'expo-router';
 import { getScanHistory } from '../../lib/db';
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80', LINE = 'rgba(255,255,255,0.10)';
 const GOLD = '#E0A04A', GREEN = '#34D399';
+
+type Cap = { icon: string; title: string; desc: string };
+const CAPABILITIES: Cap[] = [
+  { icon: '🍲', title: 'International Cooking', desc: 'Cuisine by region · reads dietary + allergies' },
+  { icon: '🥩', title: 'Pairings',             desc: 'Food · drink · context' },
+  { icon: '📋', title: 'Recipes',              desc: 'Scaled to family channels' },
+];
 
 type Meal = { recipeName: string; cookTime: string; ingredientCount: number; from: string };
 
@@ -72,6 +79,30 @@ export default function ChefScreen() {
       </View>
 
       <View style={st.section}>
+        <Text style={st.sectionH}>WHAT THE CHEF DOES</Text>
+        {CAPABILITIES.map((c, i) => (
+          <View key={i} style={st.meal}>
+            <View style={st.mealIcon}><Text style={st.mealIconTxt}>{c.icon}</Text></View>
+            <View style={{ flex: 1 }}>
+              <Text style={st.mealName}>{c.title}</Text>
+              <Text style={st.mealMeta}>{c.desc}</Text>
+            </View>
+          </View>
+        ))}
+
+        <Pressable style={[st.meal, st.nested]} onPress={() => router.push('/aficionado' as Href)}>
+          <View style={st.mealIcon}><Text style={st.mealIconTxt}>{'🌿'}</Text></View>
+          <View style={{ flex: 1 }}>
+            <Text style={st.mealName}>Aficionado</Text>
+            <Text style={st.mealMeta}>CANNABIS · CIGARS · CONTAMINANTS</Text>
+          </View>
+          <View style={[st.chip, { backgroundColor: GOLD + '1F' }]}>
+            <Text style={[st.chipTxt, { color: GOLD }]}>OPT-IN · OFF</Text>
+          </View>
+        </Pressable>
+      </View>
+
+      <View style={st.section}>
         <Text style={st.sectionH}>MEALS FROM YOUR BASKET</Text>
         {!loaded ? (
           <Text style={st.empty}>Reading your scans…</Text>
@@ -114,6 +145,7 @@ const st = StyleSheet.create({
   sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: FAINT, marginBottom: 11, marginLeft: 2 },
   empty: { fontSize: 12, color: FAINT, fontStyle: 'italic', paddingVertical: 8, lineHeight: 17 },
   meal: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13, marginBottom: 10 },
+  nested: { marginLeft: 16, borderLeftWidth: 2, borderLeftColor: GOLD, backgroundColor: 'rgba(224,160,74,0.06)' },
   mealIcon: { width: 38, height: 38, borderRadius: 9, backgroundColor: 'rgba(224,160,74,0.12)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(224,160,74,0.30)', alignItems: 'center', justifyContent: 'center', marginRight: 13 },
   mealIconTxt: { fontSize: 16 },
   mealName: { fontSize: 14, fontWeight: '700', color: INK },

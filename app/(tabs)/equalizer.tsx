@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { getScanHistory } from '../../lib/db';
 
@@ -17,14 +17,28 @@ function clearanceOf(row: any) {
   return { tag: 'CLEARED', color: GREEN, dot: GREEN };
 }
 
-type GateRow = { icon: string; title: string; desc: string; chip: string; chipColor: string; route?: string };
-const GATES: GateRow[] = [
-  { icon: '▤', title: 'Vault', desc: 'Sealed record of every clearance & block.', chip: 'SEALED', chipColor: GREEN },
-  { icon: '℞', title: 'Pill', desc: 'Medication interaction gate — RxNorm.', chip: 'CLEAR', chipColor: GREEN },
-  { icon: '⚘', title: 'Apothecary', desc: 'Plant + tincture clearance.', chip: 'CLEAR', chipColor: GREEN, route: '/apothecary' },
-  { icon: '◍', title: 'Grid', desc: 'ON GRID / OFF GRID maps — pre-synced.', chip: 'ON', chipColor: GREEN, route: '/map' },
-  { icon: '◉', title: 'Species', desc: 'Which body — James · Spouse · Lily · K9.', chip: '4', chipColor: AMBER },
-  { icon: '◈', title: 'Environmental', desc: 'Location, air, contact exposure.', chip: 'WATCHING', chipColor: AMBER },
+type GateRow = { icon: string; title: string; desc: string; chip?: string; chipColor?: string; route?: string };
+
+// HUMAN FUNCTIONS
+const HUMAN: GateRow[] = [
+  { icon: '👑', title: 'Guard the Vault',         desc: 'AWARE DOLLARS · all saved items · subscription recovery', chip: 'SEALED', chipColor: GREEN },
+  { icon: '💊', title: 'Pill Clarifier',          desc: '15 databases · 5 cross-refs · interaction check', chip: 'CLEAR', chipColor: GREEN },
+  { icon: '🌿', title: 'Apothecary Intelligence', desc: 'Still Alive & Safe · synergy pairs · off-grid dispensary', chip: 'LIVE', chipColor: GREEN, route: '/apothecary' },
+  { icon: '📑', title: 'Co-sign Dossiers',        desc: 'security audit · single-exit route flag · seal approval', chip: 'READY', chipColor: GREEN },
+  { icon: '📡', title: 'Environmental Awareness', desc: 'BE AWARE · location-based threat · early warning', chip: 'WATCHING', chipColor: AMBER },
+];
+
+// SPECIES SAFETY — below the human functions
+const SPECIES: GateRow[] = [
+  { icon: '🐾', title: 'K9 / Feline',   desc: 'ASPCA toxicology', route: '/k9' },
+  { icon: '🐎', title: 'Equine',        desc: 'FEI · equine nutritionist', route: '/equine' },
+  { icon: '🐄', title: 'Agricultural',  desc: 'livestock · feed safety · mycotoxin', route: '/agricultural' },
+];
+
+// RESTRICTED LAYERS · ARM TO ENABLE — default OFF, require a YES/CANCEL confirm
+const RESTRICTED: GateRow[] = [
+  { icon: '🌿', title: 'Aficionado',                desc: 'opt-in', chip: 'OFF', chipColor: AMBER, route: '/aficionado' },
+  { icon: '⚔', title: 'Tactical · Commander Layer', desc: 'arm to enable', chip: 'OFF', chipColor: AMBER },
 ];
 
 export default function EqualizerScreen() {
@@ -41,6 +55,37 @@ export default function EqualizerScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true); await load(); setRefreshing(false);
   }, [load]);
+
+  const openRow = (g: GateRow) => {
+    if (g.route) { router.push(g.route as any); return; }
+    Alert.alert(g.title, g.desc);
+  };
+
+  const armLayer = (g: GateRow) => {
+    Alert.alert(
+      g.title,
+      'Arm this restricted layer?',
+      [
+        { text: 'CANCEL', style: 'cancel' },
+        { text: 'YES', onPress: () => { if (g.route) router.push(g.route as any); else Alert.alert(g.title, 'ARMED.'); } },
+      ],
+    );
+  };
+
+  const renderGate = (g: GateRow, i: number, onPress: () => void) => (
+    <TouchableOpacity key={i} activeOpacity={0.7} onPress={onPress} style={st.gate}>
+      <View style={st.gateIcon}><Text style={st.gateIconTxt}>{g.icon}</Text></View>
+      <View style={{ flex: 1 }}>
+        <Text style={st.gateName}>{g.title}</Text>
+        <Text style={st.gateDesc}>{g.desc}</Text>
+      </View>
+      {g.chip ? (
+        <View style={[st.gateChip, { backgroundColor: (g.chipColor ?? CYAN) + '1F' }]}>
+          <Text style={[st.gateChipTxt, { color: g.chipColor ?? CYAN }]}>{g.chip}</Text>
+        </View>
+      ) : null}
+    </TouchableOpacity>
+  );
 
   const anyBlocked = scans.some(r => clearanceOf(r).tag === 'BLOCKED');
   const heroState = anyBlocked ? 'CLEARANCES LOGGED' : 'ALL CLEAR · STANDBY';
@@ -66,57 +111,24 @@ export default function EqualizerScreen() {
         <Text style={st.bandSub}>Speaks only in emergencies. Nothing passes without clearance.</Text>
       </View>
 
-      <View style={st.section}>
-        <Text style={st.sectionH}>LAST CLEARANCES</Text>
-        {scans.length === 0 ? (
-          <Text style={st.empty}>No scans yet. Run a scan and it logs here.</Text>
-        ) : scans.map((row, i) => {
-          const c = clearanceOf(row);
-          return (
-            <View key={row.id ?? i} style={[st.logRow, i > 0 ? st.logBorder : null]}>
-              <View style={[st.dot, { backgroundColor: c.dot }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={st.logName}>{row.product_name || row.barcode || 'Scan'}</Text>
-                <Text style={st.logMeta}>{(row.scan_tab || '').toUpperCase()}</Text>
-              </View>
-              <View style={[st.logChip, { backgroundColor: c.color + '1F' }]}>
-                <Text style={[st.logChipTxt, { color: c.color }]}>{c.tag}</Text>
-              </View>
-            </View>
-          );
-        })}
+      <View style={st.ask}>
+        <Text style={st.askQ}>How can I help you?</Text>
+        <Text style={st.askH}>ask · type · speak  🎤</Text>
       </View>
 
       <View style={st.section}>
-        <Text style={st.sectionH}>THE GATES IT GUARDS</Text>
-        {GATES.map((g, i) => {
-          const inner = (
-            <>
-              <View style={st.gateIcon}><Text style={st.gateIconTxt}>{g.icon}</Text></View>
-              <View style={{ flex: 1 }}>
-                <Text style={st.gateName}>{g.title}</Text>
-                <Text style={st.gateDesc}>{g.desc}</Text>
-              </View>
-              <View style={[st.gateChip, { backgroundColor: g.chipColor + '1F' }]}>
-                <Text style={[st.gateChipTxt, { color: g.chipColor }]}>{g.chip}</Text>
-              </View>
-            </>
-          );
-          return g.route ? (
-            <TouchableOpacity
-              key={i}
-              activeOpacity={0.7}
-              onPress={() => router.push(g.route as any)}
-              style={st.gate}
-            >
-              {inner}
-            </TouchableOpacity>
-          ) : (
-            <View key={i} style={st.gate}>
-              {inner}
-            </View>
-          );
-        })}
+        <Text style={st.sectionH}>HUMAN FUNCTIONS</Text>
+        {HUMAN.map((g, i) => renderGate(g, i, () => openRow(g)))}
+      </View>
+
+      <View style={st.section}>
+        <Text style={st.sectionH}>SPECIES SAFETY</Text>
+        {SPECIES.map((g, i) => renderGate(g, i, () => openRow(g)))}
+      </View>
+
+      <View style={st.section}>
+        <Text style={st.sectionH}>RESTRICTED LAYERS · ARM TO ENABLE</Text>
+        {RESTRICTED.map((g, i) => renderGate(g, i, () => armLayer(g)))}
       </View>
 
       <Text style={st.foot}>Nothing passes without clearance.</Text>
@@ -132,6 +144,9 @@ const st = StyleSheet.create({
   heroContent: { padding: 18, paddingBottom: 16 },
   eyebrow: { fontSize: 10, letterSpacing: 2, fontWeight: '700', marginBottom: 6 },
   title: { fontSize: 30, fontWeight: '800', color: '#fff' },
+  ask: { margin: 14, borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, padding: 15 },
+  askQ: { fontSize: 19, fontWeight: '800', color: '#8fd6ff' },
+  askH: { fontSize: 11.5, color: MUT, marginTop: 4 },
   band: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE, alignItems: 'center' },
   bandLine: { fontSize: 20, fontWeight: '800', letterSpacing: 0.5 },
   bandSub: { fontSize: 12, color: MUT, marginTop: 7, textAlign: 'center', lineHeight: 17 },

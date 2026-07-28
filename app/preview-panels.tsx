@@ -750,8 +750,8 @@ function Panel15({ onComplete }: { onComplete: () => void }) {
         5 MINUTES · 8 BLOCKS · ONE MEMBRANE
       </Text>
       <TouchableOpacity onPress={onComplete} activeOpacity={0.85} style={{ width: '100%' }}>
-        <View style={{ backgroundColor: BLUE, borderRadius: 14, paddingVertical: 18, alignItems: 'center' }}>
-          <Text style={{ fontFamily: F.monoMd, fontSize: 13, color: '#03050A', letterSpacing: 2 }}>BUILD MY MEMBRANE →</Text>
+        <View style={{ borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.08)', borderRadius: 14, paddingVertical: 18, alignItems: 'center' }}>
+          <Text style={{ fontFamily: F.monoMd, fontSize: 13, color: '#8fd6ff', letterSpacing: 2 }}>CHANGE ANYTHING →</Text>
         </View>
       </TouchableOpacity>
     </View>

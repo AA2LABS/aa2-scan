@@ -41,7 +41,7 @@ export default function AA2DoorHall() {
 
       {!sealed && loaded ? (
         <Pressable style={st.cta} onPress={() => router.push('/(tabs)/onboarding' as Href)}>
-          <Text style={st.ctaTxt}>Build My Membrane →</Text>
+          <Text style={st.ctaTxt}>CHANGE ANYTHING →</Text>
         </Pressable>
       ) : null}
 
@@ -64,8 +64,8 @@ const st = StyleSheet.create({
   eyebrow: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: GOLD, marginTop: 8, marginLeft: 2 },
   title: { fontSize: 24, fontWeight: '800', color: INK, marginTop: 6, marginLeft: 2 },
   sub: { fontSize: 12.5, color: MUT, marginTop: 8, marginBottom: 16, marginLeft: 2, lineHeight: 18 },
-  cta: { backgroundColor: GOLD, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 18 },
-  ctaTxt: { color: '#15110a', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
+  cta: { borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 18 },
+  ctaTxt: { color: '#8fd6ff', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   card: { width: '48.5%', height: 190, borderRadius: 14, overflow: 'hidden', marginBottom: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, justifyContent: 'flex-end' },
   cardImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },

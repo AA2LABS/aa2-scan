@@ -182,7 +182,7 @@ export default function BioBuddyScreen() {
       ) : loaded ? (
         <View style={st.section}>
           <Pressable style={st.build} onPress={openMembrane}>
-            <Text style={st.buildTxt}>◆ BUILD MY MEMBRANE →</Text>
+            <Text style={st.buildTxt}>CHANGE ANYTHING →</Text>
           </Pressable>
           <Text style={st.empty}>
             Generic truth. A blank chart. Build the membrane and every scan reads YOUR baseline, family, pets, herd.
@@ -231,7 +231,7 @@ const st = StyleSheet.create({
   star: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13 },
   starVal: { fontSize: 13, color: INK, marginTop: 5, fontWeight: '700' },
   holdNote: { fontSize: 10.5, color: FAINT, textAlign: 'center', marginTop: 8, lineHeight: 16, fontStyle: 'italic' },
-  build: { backgroundColor: GOLD, borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 10 },
-  buildTxt: { color: '#15110a', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
+  build: { borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 10 },
+  buildTxt: { color: '#8fd6ff', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
   foot: { textAlign: 'center', fontSize: 11, color: CYAN, marginTop: 18 },
 });

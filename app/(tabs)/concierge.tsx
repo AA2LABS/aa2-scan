@@ -6,16 +6,22 @@ import { loadMemberProfile, type FullMemberProfile } from '../../lib/db';
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80';
 const LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 
-type Fn = { icon: string; title: string; desc: string };
-const FUNCTIONS: Fn[] = [
-  { icon: '\u25A4', title: 'Introduce the team',            desc: 'Equalizer \u00B7 Bio Buddy \u00B7 Chauffeur \u00B7 Chef \u2014 your whole receiving line' },
-  { icon: '\u25C9', title: 'Remember you',                  desc: 'Name \u00B7 personality \u00B7 preferences \u00B7 history \u2014 carried session to session' },
-  { icon: '\u25C8', title: 'Onboarding as initiation',      desc: 'The skin of the system \u2014 first contact, identity absorbed' },
-  { icon: '\u21BB', title: 'Continuity between sessions',   desc: 'Nothing repeated. Nothing lost. Pick up exactly where you left off.' },
-  { icon: '\u25A6', title: 'Explain any part of the system', desc: 'What a spoke does \u00B7 how the Vault works \u00B7 what AWARE DOLLARS means' },
-  { icon: '\u25CE', title: 'Cultural & language guidance',  desc: 'Foreign menus \u00B7 regional context \u00B7 survival-relevance learning' },
-  { icon: '\u25CB', title: 'Family onboarding',             desc: "Set up spouse \u00B7 children \u00B7 each member's profile and role" },
-  { icon: '\u25A0', title: 'Choose your personality',       desc: 'The Coach \u00B7 The Stable \u00B7 COMMAND \u00B7 THE BRIEF' },
+type Item = { icon: string; title: string; desc: string; route?: Href };
+
+// YOUR INTELLIGENCES \u2014 the receiving line the Concierge routes you to.
+const INTELLIGENCES: Item[] = [
+  { icon: '\uD83E\uDDEC', title: 'Bio Buddy',     desc: 'MEMBRANE \u00B7 DEVICES \u00B7 BIOSIGNALS',       route: '/biobuddy' as Href },
+  { icon: '\uD83C\uDF73', title: 'The Chef',      desc: 'INTERNATIONAL COOKING \u00B7 AFICIONADO',    route: '/chef' as Href },
+  { icon: '\u2728', title: 'The Chauffeur', desc: 'TRAVEL \u00B7 MAP \u00B7 DOSSIER \u00B7 RETAIL',        route: '/chauffeur' as Href },
+  { icon: '\u2B21', title: 'The Equalizer', desc: 'VAULT \u00B7 PILL \u00B7 APOTHECARY \u00B7 SPECIES',    route: '/equalizer' as Href },
+];
+
+// SURFACES HELD BY CONCIERGE \u2014 top to bottom.
+const SURFACES: Item[] = [
+  { icon: '\uD83D\uDCE2', title: 'Live Feed',       desc: 'NO NEGATIVE \u2014 all customers post \u00B7 app-to-app \u00B7 post to your board' },
+  { icon: '\uD83D\uDCB0', title: 'Aware Dollars',   desc: 'also in Bio Buddy \u2014 what you saved \u00B7 subscription recovery' },
+  { icon: '\u25CE', title: 'Vision Board',    desc: 'goals \u00B7 trips & travel \u00B7 language learning \u00B7 share', route: '/vision-board' as Href },
+  { icon: '\uD83D\uDCDA', title: 'Learning Center', desc: 'depth-on-demand \u00B7 languages \u00B7 financial \u00B7 devices',   route: '/depth-on-demand' as Href },
 ];
 
 export default function ConciergeScreen() {
@@ -30,7 +36,18 @@ export default function ConciergeScreen() {
 
   const sealed = !!profile?.onboardingComplete;
   const name = profile?.name ?? null;
-  const openMembrane = () => router.push('/(tabs)/onboarding' as Href);
+  const go = (route?: Href) => { if (route) router.push(route); };
+
+  const renderRow = (item: Item, i: number) => (
+    <Pressable key={i} style={st.row} onPress={() => go(item.route)}>
+      <View style={st.rowIcon}><Text style={st.rowIconTxt}>{item.icon}</Text></View>
+      <View style={{ flex: 1 }}>
+        <Text style={st.rowName}>{item.title}</Text>
+        <Text style={st.rowDesc}>{item.desc}</Text>
+      </View>
+      <Text style={st.chev}>›</Text>
+    </Pressable>
+  );
 
   return (
     <ScrollView style={st.root} contentContainerStyle={{ paddingBottom: 40 }}>
@@ -45,44 +62,20 @@ export default function ConciergeScreen() {
 
       <View style={st.ask}>
         <Text style={st.askQ}>
-          {sealed && name ? `How can I help you, ${name.split(' ')[0]}?` : 'How can I help you?'}
+          {sealed && name ? `How may I assist you, ${name.split(' ')[0]}?` : 'How may I assist you?'}
         </Text>
-        <Text style={st.askH}>speak or type anything…</Text>
+        <Text style={st.askH}>ask · type · speak  🎤</Text>
       </View>
-
-      {loaded && !sealed ? (
-        <View style={st.section}>
-          <Pressable style={st.build} onPress={openMembrane}>
-            <Text style={st.buildTxt}>◆ BUILD MY MEMBRANE →</Text>
-          </Pressable>
-          <Text style={st.buildSub}>
-            Your stack · your family · your K9 · your allergies · your goals. Customization starts here — and it never closes.
-          </Text>
-        </View>
-      ) : null}
 
       <View style={st.section}>
-        <Text style={st.sectionH}>WHAT THE CONCIERGE DOES</Text>
-        {FUNCTIONS.map((f, i) => (
-          <Pressable key={i} style={st.row} onPress={openMembrane}>
-            <View style={st.rowIcon}><Text style={st.rowIconTxt}>{f.icon}</Text></View>
-            <View style={{ flex: 1 }}>
-              <Text style={st.rowName}>{f.title}</Text>
-              <Text style={st.rowDesc}>{f.desc}</Text>
-            </View>
-            <Text style={st.chev}>›</Text>
-          </Pressable>
-        ))}
+        <Text style={st.sectionH}>YOUR INTELLIGENCES</Text>
+        {INTELLIGENCES.map(renderRow)}
       </View>
 
-      {sealed ? (
-        <View style={st.section}>
-          <Pressable style={st.adjust} onPress={openMembrane}>
-            <Text style={st.adjustQ}>CHANGE ANYTHING.</Text>
-            <Text style={st.adjustSub}>add a life, a device, a goal — the membrane adapts</Text>
-          </Pressable>
-        </View>
-      ) : null}
+      <View style={st.section}>
+        <Text style={st.sectionH}>SURFACES HELD BY CONCIERGE</Text>
+        {SURFACES.map(renderRow)}
+      </View>
 
       <Text style={st.foot}>One intelligence lets you in and routes you anywhere.</Text>
     </ScrollView>
