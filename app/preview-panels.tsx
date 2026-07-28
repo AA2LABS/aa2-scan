@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -161,6 +162,20 @@ function Panel1() {
 
 // ─── PANEL 2 — BIO BUDDY CLARIFIER ───────────────────────────────────────────
 function Panel2() {
+  // The member supplies the meaning the device could not. Their words reach the membrane.
+  const [clarifyOpen, setClarifyOpen] = useState(false);
+  const [clarifyText, setClarifyText] = useState('');
+  const [clarifySaved, setClarifySaved] = useState(false);
+  const [clarifyError, setClarifyError] = useState(false);
+
+  const submitClarify = async () => {
+    const note = clarifyText.trim();
+    if (!note) return;
+    const ok = await logMembraneEvent({ eventType: 'clarifier_corrected', sourceScreen: 'clarifier', subject: 'stress', note });
+    if (ok) { setClarifySaved(true); setClarifyText(''); setClarifyOpen(false); setClarifyError(false); }
+    else { setClarifyError(true); }
+  };
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
       <View style={{ backgroundColor: 'rgba(224,82,82,0.12)', borderRadius: 12, padding: 16, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(224,82,82,0.40)' }}>
@@ -190,20 +205,53 @@ function Panel2() {
         <Text style={{ fontFamily: F.serifIt, fontSize: 16, color: WHITE, lineHeight: 24, marginBottom: 16 }}>
           "Bios reported as stress at 2:47 PM. Is that accurate, or would you like to clarify?"
         </Text>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity
-            style={{ flex: 1, backgroundColor: BLUE, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
-            activeOpacity={0.8}
-            onPress={() => { logMembraneEvent({ eventType: 'clarifier_confirmed', sourceScreen: 'clarifier', subject: 'stress', value: { confirmed: true } }); }}>
-            <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: '#03050A', letterSpacing: 1 }}>YES · LOG AS STRESS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{ flex: 1, borderWidth: 1, borderColor: BLUE_DIM, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
-            activeOpacity={0.8}
-            onPress={() => { logMembraneEvent({ eventType: 'clarifier_corrected', sourceScreen: 'clarifier', subject: 'stress', note: "That is not stress. I just got promoted and got approved for my new house. That's excitement." }); }}>
-            <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED, letterSpacing: 1 }}>I'D LIKE TO CLARIFY</Text>
-          </TouchableOpacity>
-        </View>
+        {clarifySaved ? (
+          <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: '#8fd6ff', letterSpacing: 1, textAlign: 'center', paddingVertical: 8 }}>
+            ✓ SENT TO YOUR MEMBRANE
+          </Text>
+        ) : (
+          <>
+            <View style={{ flexDirection: 'row', gap: 10 }}>
+              <TouchableOpacity
+                style={{ flex: 1, backgroundColor: BLUE, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+                activeOpacity={0.8}
+                onPress={() => { logMembraneEvent({ eventType: 'clarifier_confirmed', sourceScreen: 'clarifier', subject: 'stress', value: { confirmed: true } }); }}>
+                <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: '#03050A', letterSpacing: 1 }}>YES · LOG AS STRESS</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ flex: 1, borderWidth: 1, borderColor: BLUE_DIM, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+                activeOpacity={0.8}
+                onPress={() => setClarifyOpen(o => !o)}>
+                <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED, letterSpacing: 1 }}>I'D LIKE TO CLARIFY</Text>
+              </TouchableOpacity>
+            </View>
+            {clarifyOpen && (
+              <View style={{ marginTop: 12 }}>
+                <TextInput
+                  style={{ borderWidth: 1, borderColor: BLUE_DIM, backgroundColor: DARK_BG, borderRadius: 8, padding: 12, minHeight: 72, color: WHITE, fontFamily: F.sans, fontSize: 13, textAlignVertical: 'top' }}
+                  placeholder="What was actually happening?"
+                  placeholderTextColor={MUTED}
+                  value={clarifyText}
+                  onChangeText={t => { setClarifyText(t); setClarifyError(false); }}
+                  autoFocus
+                  multiline
+                />
+                {clarifyError && (
+                  <Text style={{ fontFamily: F.mono, fontSize: 9, color: ORANGE, letterSpacing: 1, marginTop: 6 }}>
+                    ⚠ NOT SAVED — RETRY
+                  </Text>
+                )}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  disabled={clarifyText.trim().length === 0}
+                  onPress={submitClarify}
+                  style={{ marginTop: 10, borderWidth: 1, borderColor: '#8fd6ff', backgroundColor: 'rgba(143,214,255,0.10)', borderRadius: 8, paddingVertical: 10, alignItems: 'center', opacity: clarifyText.trim().length === 0 ? 0.4 : 1 }}>
+                  <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: '#8fd6ff', letterSpacing: 1 }}>◆ SEND TO MEMBRANE →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
+        )}
       </View>
       <View style={{ backgroundColor: 'rgba(29,158,117,0.12)', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: 'rgba(29,158,117,0.40)' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
