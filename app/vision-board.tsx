@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { DoorFlood, useProfile, type Row, GOLD, GREEN, AMBER } from '@/components/DoorFlood';
+import { getVaultLedgerTotal } from '@/lib/db';
 
 export default function VisionBoardScreen() {
   const { p } = useProfile();
@@ -8,7 +9,19 @@ export default function VisionBoardScreen() {
   const n30 = p?.northStar30d ?? null;
   const n90 = p?.northStar90d ?? null;
 
+  // Vault money tile \u2014 real AWARE DOLLARS from the ledger. Never fabricated.
+  const [vault, setVault] = useState<{ total: number; thisMonth: number; entries: number }>({ total: 0, thisMonth: 0, entries: 0 });
+  useEffect(() => { getVaultLedgerTotal().then(setVault); }, []);
+  const money = (n: number) => `$${(n ?? 0).toFixed(2)}`;
+
   const rows: Row[] = [
+    vault.entries > 0
+      ? { icon: '\uD83D\uDC8E', title: 'Vault \u00B7 Aware Dollars',
+          desc: `${money(vault.total)} saved \u00B7 ${money(vault.thisMonth)} this month`,
+          chip: money(vault.total), chipColor: GOLD }
+      : { icon: '\uD83D\uDC8E', title: 'Vault \u00B7 Aware Dollars',
+          desc: 'Follow a scanner recommendation to start your Vault.',
+          chip: '$0.00', chipColor: AMBER },
     { icon: '\u25CE', title: 'North Star \u00B7 30 Day',
       desc: n30 ?? 'Not declared yet. Set it in the membrane checklist.',
       chip: n30 ? 'SET' : 'OPEN', chipColor: n30 ? GREEN : AMBER },

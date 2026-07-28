@@ -29,7 +29,7 @@ import {
 } from 'react-native';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import { buildPersonalTruth, loadMemberProfile, saveScan } from '../../lib/db';
+import { buildPersonalTruth, loadMemberProfile, saveScan, logAwareDollarsFollowed } from '../../lib/db';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
 import { streamClaude, extractVerdict } from '../../lib/claude-stream';
 import { supabase } from '../../lib/supabase';
@@ -199,6 +199,13 @@ type ScanRecord = {
   query:string; verdict:string; productName:string;
 };
 
+// First dollar figure in the AWARE DOLLARS copy, e.g. "$12.50" → 12.5. Null if none.
+function parseAwareAmount(text?: string | null): number | null {
+  if (!text) return null;
+  const m = String(text).match(/\$\s*([0-9]+(?:\.[0-9]{1,2})?)/);
+  return m ? parseFloat(m[1]) : null;
+}
+
 async function handleWhereToBuy(productName: string): Promise<void> {
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
@@ -353,6 +360,8 @@ export default function ScannerScreen() {
   const [infoSheetText,    setInfoSheetText]     = useState('');
   const [infoSheetLoading, setInfoSheetLoading] = useState(false);
   const [showConciergeMsg, setShowConciergeMsg] = useState(true);
+  // AWARE DOLLARS · vault ledger — per-session log state for the current result
+  const [awareState, setAwareState] = useState<'idle'|'logged'|'failed'>('idle');
 
   const scannedRef     = useRef(false);
   const lastBarcodeRef = useRef<string|null>(null);
@@ -366,6 +375,22 @@ export default function ScannerScreen() {
   const heroImage = TAB_HEROES[heroKey] ?? null;
 
   useEffect(() => { loadMemberProfile().then(setMemberProfile); }, []);
+
+  // Reset the AWARE DOLLARS log affordance whenever the scan result changes.
+  useEffect(() => { setAwareState('idle'); }, [result]);
+
+  const followAwareDollars = async () => {
+    const amt = parseAwareAmount(result?.actRightDollars);
+    if (amt == null) return;
+    const ok = await logAwareDollarsFollowed({
+      productName:     result.productName ?? result.speciesName ?? result.waterBody,
+      recommendation:  result.actRightDollars,
+      alternativeName: Array.isArray(result.alternatives) ? result.alternatives[0] : undefined,
+      amountSaved:     amt,
+      scanResult:      result,
+    });
+    setAwareState(ok ? 'logged' : 'failed');
+  };
 
   const handleBarcodeScanned = ({ data }:{ data:string }) => {
     if (loading) return;
@@ -1262,6 +1287,23 @@ export default function ScannerScreen() {
                 <View style={[s.vaultCard,{borderColor:F.gold}]}>
                   <Text style={[s.vaultLabel,{color:F.gold}]}>💎 AWARE DOLLARS</Text>
                   <Text style={[s.vaultBody,{color:F.white}]}>{result.actRightDollars}</Text>
+                  {awareState==='logged'?(
+                    <View style={[s.scanAgainBtn,{borderColor:'#8fd6ff',marginTop:12}]}>
+                      <Text style={[s.scanAgainText,{color:'#8fd6ff'}]}>✓ LOGGED TO VAULT</Text>
+                    </View>
+                  ):awareState==='failed'?(
+                    <TouchableOpacity style={[s.scanAgainBtn,{borderColor:'#E0A04A',marginTop:12}]} onPress={followAwareDollars} activeOpacity={0.7}>
+                      <Text style={[s.scanAgainText,{color:'#E0A04A'}]}>⚠ NOT SAVED — RETRY</Text>
+                    </TouchableOpacity>
+                  ):(
+                    <TouchableOpacity
+                      style={[s.scanAgainBtn,{borderColor:F.gold,marginTop:12,opacity:parseAwareAmount(result.actRightDollars)==null?0.4:1}]}
+                      onPress={followAwareDollars}
+                      disabled={parseAwareAmount(result.actRightDollars)==null}
+                      activeOpacity={0.7}>
+                      <Text style={[s.scanAgainText,{color:F.gold}]}>◆ I FOLLOWED THIS →</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
 

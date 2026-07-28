@@ -11,6 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { router } from 'expo-router';
+import { logMembraneEvent } from '@/lib/db';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -189,10 +191,16 @@ function Panel2() {
           "Bios reported as stress at 2:47 PM. Is that accurate, or would you like to clarify?"
         </Text>
         <View style={{ flexDirection: 'row', gap: 10 }}>
-          <TouchableOpacity style={{ flex: 1, backgroundColor: BLUE, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: BLUE, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+            activeOpacity={0.8}
+            onPress={() => { logMembraneEvent({ eventType: 'clarifier_confirmed', sourceScreen: 'clarifier', subject: 'stress', value: { confirmed: true } }); }}>
             <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: '#03050A', letterSpacing: 1 }}>YES · LOG AS STRESS</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={{ flex: 1, borderWidth: 1, borderColor: BLUE_DIM, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={{ flex: 1, borderWidth: 1, borderColor: BLUE_DIM, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
+            activeOpacity={0.8}
+            onPress={() => { logMembraneEvent({ eventType: 'clarifier_corrected', sourceScreen: 'clarifier', subject: 'stress', note: "That is not stress. I just got promoted and got approved for my new house. That's excitement." }); }}>
             <Text style={{ fontFamily: F.mono, fontSize: 9, color: MUTED, letterSpacing: 1 }}>I'D LIKE TO CLARIFY</Text>
           </TouchableOpacity>
         </View>
@@ -720,10 +728,16 @@ function Panel14() {
 
       {/* Action buttons */}
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
-        <TouchableOpacity activeOpacity={0.85} style={{ flex: 1, backgroundColor: GOLD, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={{ flex: 1, backgroundColor: GOLD, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
+          onPress={() => { logMembraneEvent({ eventType: 'cookbook_opened', sourceScreen: 'preview-panels' }); router.push('/chef' as any); }}>
           <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: '#03050A', letterSpacing: 1 }}>SHARE RECIPE →</Text>
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.85} style={{ flex: 1, borderWidth: 1, borderColor: BLUE, backgroundColor: BLUE_DIM, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={{ flex: 1, borderWidth: 1, borderColor: BLUE, backgroundColor: BLUE_DIM, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
+          onPress={() => { logMembraneEvent({ eventType: 'cookbook_opened', sourceScreen: 'preview-panels' }); router.push('/chef' as any); }}>
           <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: BLUE, letterSpacing: 1 }}>DOWNLOAD PDF</Text>
         </TouchableOpacity>
       </View>

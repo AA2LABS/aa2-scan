@@ -266,6 +266,128 @@ export async function getScanHistory(limit = 50): Promise<any[]> {
   } catch { return []; }
 }
 
+// ─── VAULT LEDGER · AWARE DOLLARS ─────────────────────────────────────────────
+// The member followed a scanner recommendation — log the real dollars saved.
+export async function logAwareDollarsFollowed(input: {
+  productName?:     string;
+  recommendation?:  string;
+  alternativeName?: string;
+  amountSaved:      number;
+  scanResult?:      any;
+  memberId?:        string | null;
+}): Promise<boolean> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) { console.log('[db.ts] logAwareDollarsFollowed: no auth user'); return false; }
+
+    const { error } = await supabase.from('vault_ledger').insert({
+      user_id:          user.id,
+      member_id:        input.memberId ?? user.id,
+      source:           'scanner',
+      product_name:     input.productName    ?? null,
+      recommendation:   input.recommendation ?? null,
+      alternative_name: input.alternativeName ?? null,
+      amount_saved:     input.amountSaved,
+      currency:         'USD',
+      followed_at:      new Date().toISOString(),
+      scan_result:      input.scanResult ?? null,
+    });
+
+    if (error) { console.log('[db.ts] logAwareDollarsFollowed error:', error.message); return false; }
+    console.log('[db.ts] aware dollars logged ✓');
+    return true;
+  } catch (e) {
+    console.log('[db.ts] logAwareDollarsFollowed failed:', e);
+    return false;
+  }
+}
+
+// Sum the member's Vault: lifetime total, current calendar month, and entry count.
+export async function getVaultLedgerTotal(): Promise<{ total: number; thisMonth: number; entries: number }> {
+  const empty = { total: 0, thisMonth: 0, entries: 0 };
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) return empty;
+
+    const { data, error } = await supabase
+      .from('vault_ledger')
+      .select('amount_saved, followed_at')
+      .eq('user_id', user.id);
+
+    if (error) { console.log('[db.ts] getVaultLedgerTotal error:', error.message); return empty; }
+
+    const rows = data ?? [];
+    const now = new Date();
+    const y = now.getFullYear(), mo = now.getMonth();
+    let total = 0, thisMonth = 0;
+    for (const r of rows) {
+      const amt = Number(r.amount_saved) || 0;
+      total += amt;
+      const d = r.followed_at ? new Date(r.followed_at) : null;
+      if (d && d.getFullYear() === y && d.getMonth() === mo) thisMonth += amt;
+    }
+    return {
+      total:     Math.round(total * 100) / 100,
+      thisMonth: Math.round(thisMonth * 100) / 100,
+      entries:   rows.length,
+    };
+  } catch (e) {
+    console.log('[db.ts] getVaultLedgerTotal failed:', e);
+    return empty;
+  }
+}
+
+// ─── MEMBRANE EVENTS ──────────────────────────────────────────────────────────
+// Every membrane write that isn't a scan or a dollar — clarifier corrections,
+// armed restricted layers, function runs. Nothing changes the body silently.
+export async function logMembraneEvent(input: {
+  eventType:     string;
+  sourceScreen?: string;
+  subject?:      string;
+  value?:        any;
+  note?:         string;
+  memberId?:     string | null;
+}): Promise<boolean> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) { console.log('[db.ts] logMembraneEvent: no auth user'); return false; }
+
+    const { error } = await supabase.from('membrane_events').insert({
+      user_id:       user.id,
+      member_id:     input.memberId ?? user.id,
+      event_type:    input.eventType,
+      source_screen: input.sourceScreen ?? null,
+      subject:       input.subject ?? null,
+      value:         input.value ?? null,
+      note:          input.note ?? null,
+      occurred_at:   new Date().toISOString(),
+    });
+
+    if (error) { console.log('[db.ts] logMembraneEvent error:', error.message); return false; }
+    return true;
+  } catch (e) {
+    console.log('[db.ts] logMembraneEvent failed:', e);
+    return false;
+  }
+}
+
+export async function getMembraneEvents(limit = 100): Promise<any[]> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) return [];
+
+    const { data, error } = await supabase
+      .from('membrane_events')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('occurred_at', { ascending: false })
+      .limit(limit);
+
+    if (error) { console.log('[db.ts] getMembraneEvents error:', error.message); return []; }
+    return data ?? [];
+  } catch { return []; }
+}
+
 // ─── FIELD MAP (Canon v59 §19E) ──────────────────────────────────────────────
 // onboarding field key → { table, column, kind }. Verified against live schema.
 // jsonbAllergen keys route through the allergy_profiles.allergens jsonb bucket.

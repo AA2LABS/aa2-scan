@@ -1,7 +1,8 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
-import { getScanHistory } from '../../lib/db';
+import { getScanHistory, loadMemberProfile, buildPersonalTruth, logMembraneEvent, getMembraneEvents } from '../../lib/db';
+import { streamClaude } from '../../lib/claude-stream';
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80', LINE = 'rgba(255,255,255,0.10)';
 const CYAN = '#1BB8FF', GREEN = '#34D399', AMBER = '#E0A04A', RED = '#E24B4A';
@@ -17,18 +18,23 @@ function clearanceOf(row: any) {
   return { tag: 'CLEARED', color: GREEN, dot: GREEN };
 }
 
-type GateRow = { icon: string; title: string; desc: string; chip?: string; chipColor?: string; route?: string };
+type GateRow = { icon: string; title: string; desc: string; chip?: string; chipColor?: string; route?: string; seed?: string };
 
-// HUMAN FUNCTIONS
+// HUMAN FUNCTIONS — exact order. A row either routes to a screen or seeds the ask bar.
 const HUMAN: GateRow[] = [
-  { icon: '👑', title: 'Guard the Vault',         desc: 'AWARE DOLLARS · all saved items · subscription recovery', chip: 'SEALED', chipColor: GREEN },
-  { icon: '💊', title: 'Pill Clarifier',          desc: '15 databases · 5 cross-refs · interaction check', chip: 'CLEAR', chipColor: GREEN },
-  { icon: '🌿', title: 'Apothecary Intelligence', desc: 'Still Alive & Safe · synergy pairs · off-grid dispensary', chip: 'LIVE', chipColor: GREEN, route: '/apothecary' },
-  { icon: '📑', title: 'Co-sign Dossiers',        desc: 'security audit · single-exit route flag · seal approval', chip: 'READY', chipColor: GREEN },
-  { icon: '📡', title: 'Environmental Awareness', desc: 'BE AWARE · location-based threat · early warning', chip: 'WATCHING', chipColor: AMBER },
+  { icon: '✍️', title: 'Co-sign every scan',        desc: 'every scan verified before it clears', seed: 'Show me the co-sign status of my recent scans.' },
+  { icon: '🛡️', title: 'Threshold Guard',           desc: 'watching your limits · speaks only when crossed', seed: 'What thresholds am I approaching right now?' },
+  { icon: '🧪', title: 'Chemical doctrine analysis', desc: 'compounds · exposures · cumulative load', seed: 'Run a chemical doctrine analysis on my recent exposures.' },
+  { icon: '👑', title: 'Guard the Vault',           desc: 'AWARE DOLLARS · all saved items · subscription recovery', chip: 'SEALED', chipColor: GREEN, route: '/vision-board' },
+  { icon: '💊', title: 'Pill Clarifier',            desc: '15 databases · 5 cross-refs · interaction check', chip: 'CLEAR', chipColor: GREEN, seed: 'Check my medications and supplements for interactions.' },
+  { icon: '🌿', title: 'Apothecary Intelligence',   desc: 'Still Alive & Safe · synergy pairs · off-grid dispensary', chip: 'LIVE', chipColor: GREEN, route: '/apothecary' },
+  { icon: '🧾', title: 'Co-sign flooders',          desc: 'pending co-signs across your saved items', seed: 'Which of my saved items are pending co-sign?' },
+  { icon: '📑', title: 'Co-sign Dossiers',          desc: 'security audit · single-exit route flag · seal approval', chip: 'READY', chipColor: GREEN, route: '/travel' },
+  { icon: '📡', title: 'Environmental Awareness',   desc: 'BE AWARE · location-based threat · early warning', chip: 'WATCHING', chipColor: AMBER, seed: 'What environmental risks are near me right now?' },
+  { icon: '🚨', title: 'Emergency escalation',      desc: 'get help fast · the right responder first', seed: 'Show my emergency escalation plan and contacts.' },
 ];
 
-// SPECIES SAFETY — below the human functions
+// SPECIES SAFETY — below the human functions, unchanged
 const SPECIES: GateRow[] = [
   { icon: '🐾', title: 'K9 / Feline',   desc: 'ASPCA toxicology', route: '/k9' },
   { icon: '🐎', title: 'Equine',        desc: 'FEI · equine nutritionist', route: '/equine' },
@@ -44,10 +50,25 @@ const RESTRICTED: GateRow[] = [
 export default function EqualizerScreen() {
   const [scans, setScans] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  // Restricted layers that have been armed — loaded from membrane_events so the
+  // chip reads ARMED across restarts, never silently reset to OFF.
+  const [armedLayers, setArmedLayers] = useState<Record<string, boolean>>({});
+
+  // Live ask bar — a seeded or typed question runs against The Equalizer.
+  const [query, setQuery] = useState('');
+  const [answer, setAnswer] = useState('');
+  const [asking, setAsking] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   const load = useCallback(async () => {
     const rows = await getScanHistory(8);
     setScans(rows);
+    const events = await getMembraneEvents(200);
+    const armed: Record<string, boolean> = {};
+    for (const e of events) {
+      if (e.event_type === 'restricted_layer_armed' && e.subject) armed[e.subject] = true;
+    }
+    setArmedLayers(armed);
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -56,18 +77,51 @@ export default function EqualizerScreen() {
     setRefreshing(true); await load(); setRefreshing(false);
   }, [load]);
 
+  const runQuery = useCallback(async (seed?: string) => {
+    const q = (seed ?? query).trim();
+    if (!q || asking) return;
+    setQuery(q);
+    setAnswer('');
+    setAsking(true);
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+    try {
+      const profile = await loadMemberProfile();
+      const truth = buildPersonalTruth(profile);
+      await streamClaude({
+        system: `You are The Equalizer — AA2's immune system and gate intelligence. Calm, protective, exact. Answer the member's question directly and briefly. Never name internal databases.${truth ? `\n\n${truth}` : ''}`,
+        content: q,
+        max_tokens: 700,
+        onPartial: (acc) => setAnswer(acc),
+      });
+    } catch (e: any) {
+      setAnswer(`The Equalizer couldn't reach the intelligence right now. ${e?.message ?? ''}`.trim());
+    } finally {
+      setAsking(false);
+    }
+  }, [query, asking]);
+
+  // No dead ends: a row routes to its screen, or seeds the ask bar and answers live.
   const openRow = (g: GateRow) => {
     if (g.route) { router.push(g.route as any); return; }
-    Alert.alert(g.title, g.desc);
+    if (g.seed) {
+      runQuery(g.seed);
+      logMembraneEvent({ eventType: 'equalizer_function_run', sourceScreen: 'equalizer', subject: g.title });
+      return;
+    }
   };
 
+  // Arming a restricted layer is a real membrane write, and it persists.
   const armLayer = (g: GateRow) => {
     Alert.alert(
       g.title,
       'Arm this restricted layer?',
       [
         { text: 'CANCEL', style: 'cancel' },
-        { text: 'YES', onPress: () => { if (g.route) router.push(g.route as any); else Alert.alert(g.title, 'ARMED.'); } },
+        { text: 'YES', onPress: async () => {
+            setArmedLayers(prev => ({ ...prev, [g.title]: true }));
+            await logMembraneEvent({ eventType: 'restricted_layer_armed', sourceScreen: 'equalizer', subject: g.title, value: { armed: true } });
+            if (g.route) router.push(g.route as any);
+          } },
       ],
     );
   };
@@ -93,6 +147,7 @@ export default function EqualizerScreen() {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={st.root}
       contentContainerStyle={{ paddingBottom: 40 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={CYAN} />}
@@ -112,8 +167,24 @@ export default function EqualizerScreen() {
       </View>
 
       <View style={st.ask}>
-        <Text style={st.askQ}>How can I help you?</Text>
+        <TextInput
+          style={st.askInput}
+          value={query}
+          onChangeText={setQuery}
+          placeholder="How can I help you?"
+          placeholderTextColor="#8fd6ff"
+          returnKeyType="send"
+          onSubmitEditing={() => runQuery()}
+          editable={!asking}
+        />
         <Text style={st.askH}>ask · type · speak  🎤</Text>
+        {(asking || answer) ? (
+          <View style={st.answerBox}>
+            <Text style={st.answerLabel}>THE EQUALIZER</Text>
+            {answer ? <Text style={st.answerTxt}>{answer}</Text> : null}
+            {asking ? <ActivityIndicator color={CYAN} style={{ marginTop: 8, alignSelf: 'flex-start' }} /> : null}
+          </View>
+        ) : null}
       </View>
 
       <View style={st.section}>
@@ -128,7 +199,11 @@ export default function EqualizerScreen() {
 
       <View style={st.section}>
         <Text style={st.sectionH}>RESTRICTED LAYERS · ARM TO ENABLE</Text>
-        {RESTRICTED.map((g, i) => renderGate(g, i, () => armLayer(g)))}
+        {RESTRICTED.map((g, i) => {
+          const armed = !!armedLayers[g.title];
+          const row = armed ? { ...g, chip: 'ARMED', chipColor: GREEN } : g;
+          return renderGate(row, i, () => armLayer(g));
+        })}
       </View>
 
       <Text style={st.foot}>Nothing passes without clearance.</Text>
@@ -145,8 +220,12 @@ const st = StyleSheet.create({
   eyebrow: { fontSize: 10, letterSpacing: 2, fontWeight: '700', marginBottom: 6 },
   title: { fontSize: 30, fontWeight: '800', color: '#fff' },
   ask: { margin: 14, borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, padding: 15 },
+  askInput: { fontSize: 19, fontWeight: '800', color: '#8fd6ff', padding: 0 },
   askQ: { fontSize: 19, fontWeight: '800', color: '#8fd6ff' },
   askH: { fontSize: 11.5, color: MUT, marginTop: 4 },
+  answerBox: { marginTop: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.10)', paddingTop: 12 },
+  answerLabel: { fontSize: 9, letterSpacing: 2, fontWeight: '700', color: CYAN, marginBottom: 6 },
+  answerTxt: { fontSize: 13.5, color: INK, lineHeight: 20 },
   band: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE, alignItems: 'center' },
   bandLine: { fontSize: 20, fontWeight: '800', letterSpacing: 0.5 },
   bandSub: { fontSize: 12, color: MUT, marginTop: 7, textAlign: 'center', lineHeight: 17 },

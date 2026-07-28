@@ -18,8 +18,8 @@ const INTELLIGENCES: Item[] = [
 
 // SURFACES HELD BY CONCIERGE \u2014 top to bottom.
 const SURFACES: Item[] = [
-  { icon: '\uD83D\uDCE2', title: 'Live Feed',       desc: 'NO NEGATIVE \u2014 all customers post \u00B7 app-to-app \u00B7 post to your board' },
-  { icon: '\uD83D\uDCB0', title: 'Aware Dollars',   desc: 'also in Bio Buddy \u2014 what you saved \u00B7 subscription recovery' },
+  { icon: '\uD83D\uDCE2', title: 'Live Feed',       desc: 'INTERNATIONAL COOKING \u00B7 LIVE VIEW \u00B7 COOK TOGETHER', route: '/chef' as Href },
+  { icon: '\uD83D\uDCB0', title: 'Aware Dollars',   desc: 'also in Bio Buddy \u2014 what you saved \u00B7 subscription recovery', route: '/vision-board' as Href },
   { icon: '\u25CE', title: 'Vision Board',    desc: 'goals \u00B7 trips & travel \u00B7 language learning \u00B7 share', route: '/vision-board' as Href },
   { icon: '\uD83D\uDCDA', title: 'Learning Center', desc: 'depth-on-demand \u00B7 languages \u00B7 financial \u00B7 devices',   route: '/depth-on-demand' as Href },
 ];
@@ -75,6 +75,13 @@ export default function ConciergeScreen() {
       <View style={st.section}>
         <Text style={st.sectionH}>SURFACES HELD BY CONCIERGE</Text>
         {SURFACES.map(renderRow)}
+      </View>
+
+      <View style={st.section}>
+        <Pressable style={st.adjust} onPress={() => router.push('/(tabs)/onboarding' as Href)}>
+          <Text style={st.adjustQ}>CHANGE ANYTHING.</Text>
+          <Text style={st.adjustSub}>add a life, a device, a goal — the membrane adapts</Text>
+        </Pressable>
       </View>
 
       <Text style={st.foot}>One intelligence lets you in and routes you anywhere.</Text>

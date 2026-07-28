@@ -20,6 +20,7 @@ const DOORS: Door[] = [
   { title: 'Equine',          art: require('../../assets/doors/door-equine.jpg'),          route: '/equine' as Href },
   { title: 'Agricultural',    art: require('../../assets/doors/door-agricultural.jpg'),    route: '/agricultural' as Href },
   { title: 'Aficionado',      art: require('../../assets/doors/door-aficionado.png'),      route: '/aficionado' as Href },
+  { title: 'Vault / Aware Dollars', art: require('../../assets/doors/door-vision-board.png'), route: '/vision-board' as Href },
 ];
 
 export default function AA2DoorHall() {
