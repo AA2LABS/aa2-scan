@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, useColorScheme,
   TextInput, ActivityIndicator, Alert, SafeAreaView, Platform,
 } from 'react-native';
+import PagerView from 'react-native-pager-view';
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
 import Anthropic from '@anthropic-ai/sdk';
-import { buildPersonalTruth, loadMemberProfile } from '../../lib/db';
+import { buildPersonalTruth, loadMemberProfile, logAwareDollarsFollowed, logMembraneEvent } from '../../lib/db';
 import { getCannabisProfile, getDispensariesByCity } from '../../lib/cannabis-layer';
 
 const C = {
@@ -40,6 +42,28 @@ const getTheme = (isDark: boolean) => ({
 
 type Waypoint    = { id: string; name: string; };
 type StoreResult = { name: string; vicinity: string; placeId: string; };
+type OffRow      = { title: string; chip?: string; route?: string };
+
+// OFF GRID — pre-synced, downloaded before signal was lost. Not a route planner.
+const LOCAL_VENDORS: OffRow[] = [
+  { title: 'Farmers markets',    chip: 'SYNCED' },
+  { title: 'Mom-and-pop',        chip: 'SYNCED' },
+  { title: 'Off-Grid Dispensary', chip: 'SYNCED' },
+  { title: 'Forager',            chip: 'SYNCED' },
+  { title: 'Apothecary',         chip: 'SYNCED', route: '/apothecary' },
+  { title: 'off-grid',           chip: 'SYNCED' },
+];
+const CARRIED: OffRow[] = [
+  { title: 'Last compiled Dossier', chip: 'OFFLINE' },
+  { title: 'Paper Layer' },
+  { title: 'In Case of Emergency',  chip: 'READY' },
+];
+
+function parseDollars(text?: string | null): number | null {
+  if (!text) return null;
+  const m = String(text).match(/\$\s*([0-9]+(?:\.[0-9]{1,2})?)/);
+  return m ? parseFloat(m[1]) : null;
+}
 
 async function fetchNearbyStores(lat: number, lng: number): Promise<StoreResult[]> {
   if (!MAPS_KEY) return [];
@@ -71,19 +95,23 @@ export default function MapScreen() {
   const scheme = useColorScheme();
   const T = useMemo(() => getTheme(scheme === 'dark'), [scheme]);
   const [mode, setMode]                   = useState<'on' | 'off'>('on');
+  const [page, setPage]                   = useState(0); // ON GRID pager: 0 = nav/dossier, 1 = retail
+  const pagerRef = useRef<PagerView>(null);
   const [userLocation, setUserLocation]   = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationReady, setLocationReady] = useState(false);
-  const [loading, setLoading]             = useState(false);
 
-  // ON GRID
+  // ON GRID · PAGE 2 — RETAIL LOCATOR
+  const [retailLoading, setRetailLoading] = useState(false);
   const [stores, setStores]               = useState<StoreResult[]>([]);
   const [selectedStore, setSelectedStore] = useState<StoreResult | null>(null);
   const [scannedItem, setScannedItem]     = useState('');
   const [retailResult, setRetailResult]   = useState<any>(null);
   const [storesLoaded, setStoresLoaded]   = useState(false);
   const [manualStore, setManualStore]     = useState('');
+  const [retailLog, setRetailLog]         = useState<'idle' | 'logged' | 'failed'>('idle');
 
-  // OFF GRID
+  // ON GRID · PAGE 1 — NAVIGATION & DOSSIER
+  const [dossierLoading, setDossierLoading] = useState(false);
   const [origin, setOrigin]               = useState('');
   const [destination, setDestination]     = useState('');
   const [waypoints, setWaypoints]         = useState<Waypoint[]>([]);
@@ -103,11 +131,11 @@ export default function MapScreen() {
 
   const findNearbyStores = async () => {
     if (!userLocation) { Alert.alert('Location Not Ready', 'Wait for location to load.'); return; }
-    setLoading(true);
+    setRetailLoading(true);
     const results = await fetchNearbyStores(userLocation.latitude, userLocation.longitude);
     setStores(results);
     setStoresLoaded(true);
-    setLoading(false);
+    setRetailLoading(false);
     if (results.length === 0) Alert.alert('No Stores Found', 'Enter your store name manually below.');
   };
 
@@ -120,23 +148,45 @@ export default function MapScreen() {
     setStoresLoaded(true);
   };
 
+  // RETAIL LOCATOR — the Chauffeur (cerebellum · routing). Answers WHERE, not what's in it.
   const runRetailLoop = async () => {
-    if (!scannedItem.trim()) { Alert.alert('Missing Item', 'Enter what you picked up.'); return; }
+    if (!scannedItem.trim()) { Alert.alert('Missing Item', 'Enter what you are looking for.'); return; }
     if (!selectedStore) { Alert.alert('No Store Selected', 'Select or enter a store first.'); return; }
-    setLoading(true);
+    setRetailLoading(true);
     setRetailResult(null);
+    setRetailLog('idle');
     try {
+      const profile = await loadMemberProfile();
+      const personalTruth = buildPersonalTruth(profile);
       const response = await anthropic.messages.create({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        system: `You are The Chauffeur — AA2's retail intelligence engine. You fire INSIDE the store. Find what is better in this exact building right now. Cheaper. Better ingredients. Better nutrition. Calm, specific, never preachy. Return ONLY valid JSON — no markdown, no backticks: {"verdict":"string","betterOptions":[{"name":"string","why":"string","savings":"string or null"}],"chefNote":"string","storeSection":"string","actRightDollars":"string","equalizerNote":"string"}`,
-        messages: [{ role: 'user', content: `I am inside ${selectedStore.name} at ${selectedStore.vicinity}. I picked up: ${scannedItem}. What else in this store is cheaper, better ingredients, or better nutrition?` }],
+        max_tokens: 1200,
+        system: `You are The Chauffeur — AA2's retail LOCATOR. You are the cerebellum: routing, not chemistry. You answer WHERE a product is inside a specific named store, and what is better on the same shelf. You NEVER judge ingredients and NEVER give a safety or chemical verdict — that is the Scanner's job.
+
+MEMBER MEMBRANE (filter every better option against this, never restate it):
+${personalTruth}
+
+Infer the aisle and section from the standard retail layout of the named chain. Return ONLY valid JSON — no markdown, no backticks: {"aisleLocation":{"aisle":"e.g. Aisle 7","section":"e.g. Refrigerated juices, left-hand side"},"chauffeurLine":"one or two sentences naming exactly where it is and whether something better sits in the same aisle","betterOptions":[{"name":"string","aisle":"aisle/section position in THIS store","price":"approx shelf price","why":"why it fits the member — value, cleaner, better nutrition; never a moral judgment"}],"awareDollars":"the dollar difference vs. the pick, ending with: That goes directly into your AA2 Vault as AWARE DOLLARS."}`,
+        messages: [{ role: 'user', content: `I am inside ${selectedStore.name} at ${selectedStore.vicinity}. I'm looking for: ${scannedItem}. Tell me the exact aisle and section for it in this store, and what's better in the same building right now.` }],
       });
       const raw = (response.content[0] as any).text || '';
       setRetailResult(JSON.parse(raw.replace(/```json|```/g, '').trim()));
     } catch {
       Alert.alert('Retail Loop Error', 'The Chauffeur could not complete analysis. Try again.');
-    } finally { setLoading(false); }
+    } finally { setRetailLoading(false); }
+  };
+
+  const followRetail = async () => {
+    const amt = parseDollars(retailResult?.awareDollars);
+    if (amt == null) return;
+    const ok = await logAwareDollarsFollowed({
+      productName:     scannedItem,
+      recommendation:  retailResult?.awareDollars,
+      alternativeName: Array.isArray(retailResult?.betterOptions) ? retailResult.betterOptions[0]?.name : undefined,
+      amountSaved:     amt,
+      scanResult:      retailResult,
+    });
+    setRetailLog(ok ? 'logged' : 'failed');
   };
 
   const addWaypoint = () => {
@@ -147,7 +197,7 @@ export default function MapScreen() {
 
   const buildSafeRoute = async () => {
     if (!origin.trim() || !destination.trim()) { Alert.alert('Missing Info', 'Enter both origin and destination.'); return; }
-    setLoading(true);
+    setDossierLoading(true);
     setTravelResult('');
     setRouteStats(null);
     try {
@@ -199,12 +249,248 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
       setTravelResult((response.content[0] as any).text || '');
     } catch {
       Alert.alert('Route Error', 'The Chauffeur could not build the route. Try again.');
-    } finally { setLoading(false); }
+    } finally { setDossierLoading(false); }
   };
 
-  const hasOnResult  = !!retailResult;
-  const hasOffResult = travelResult !== '';
-  const accentColor  = mode === 'on' ? GRID.on : GRID.off;
+  const openOffRow = (row: OffRow) => {
+    if (row.route) { router.push(row.route as any); return; }
+    logMembraneEvent({ eventType: 'offgrid_open', sourceScreen: 'map', subject: row.title });
+  };
+
+  const hasRetailResult = !!retailResult;
+  const hasDossier      = travelResult !== '';
+
+  // ── ON GRID · PAGE 1 — NAVIGATION & DOSSIER ──────────────────────────────────
+  const renderDossierPage = () => (
+    <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 60 }}>
+      {hasDossier && !dossierLoading ? (
+        <TouchableOpacity
+          style={[s.scanAgainBar, { borderColor: GRID.on }]}
+          onPress={() => { setTravelResult(''); setRouteStats(null); setOrigin(''); setDestination(''); setWaypoints([]); }}
+        >
+          <Text style={[s.scanAgainBarText, { color: GRID.on }]}>⚡ COMPILE ANOTHER DOSSIER</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={s.card}>
+          <View style={s.cardTitleRow}>
+            <Text style={[s.gridBadge, { backgroundColor: GRID.on + '22', color: GRID.on, borderColor: GRID.on }]}>ON GRID</Text>
+            <Text style={s.cardTitle}>NAVIGATION & DOSSIER</Text>
+          </View>
+          <Text style={s.cardDesc}>Google Maps with the Dossier attached. One way in. One way out.</Text>
+
+          <Text style={s.sectionLabel}>ORIGIN</Text>
+          <TextInput style={s.input} placeholder="e.g. Bozeman, Montana" placeholderTextColor={C.dimWhite} value={origin} onChangeText={setOrigin} />
+
+          <Text style={s.sectionLabel}>DESTINATION</Text>
+          <TextInput style={s.input} placeholder="e.g. Panama City, Panama" placeholderTextColor={C.dimWhite} value={destination} onChangeText={setDestination} />
+
+          {waypoints.length > 0 && (
+            <>
+              <Text style={s.sectionLabel}>STOPS ALONG THE WAY</Text>
+              {waypoints.map((wp, i) => (
+                <View key={wp.id} style={s.waypointRow}>
+                  <Text style={s.waypointLetter}>{String.fromCharCode(66 + i)}</Text>
+                  <Text style={s.waypointName}>{wp.name}</Text>
+                  <TouchableOpacity onPress={() => setWaypoints(prev => prev.filter(w => w.id !== wp.id))}>
+                    <Text style={s.removeWp}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </>
+          )}
+
+          <Text style={s.sectionLabel}>ADD A STOP</Text>
+          <View style={s.rowInput}>
+            <TextInput
+              style={[s.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="City, address, or landmark"
+              placeholderTextColor={C.dimWhite}
+              value={waypointInput}
+              onChangeText={setWaypointInput}
+              onSubmitEditing={addWaypoint}
+            />
+            <TouchableOpacity style={[s.addBtn, { backgroundColor: GRID.on }]} onPress={addWaypoint}>
+              <Text style={[s.addBtnText, { color: C.nearBlack }]}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={[s.primaryBtn, { backgroundColor: GRID.on, marginTop: 14 }]} onPress={buildSafeRoute}>
+            <Text style={[s.primaryBtnText, { color: C.nearBlack }]}>⚡ COMPILE THE DOSSIER</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {dossierLoading && (
+        <View style={s.loadingCard}>
+          <ActivityIndicator size="large" color={GRID.on} />
+          <Text style={[s.loadingLabel, { color: GRID.on }]}>THE CHAUFFEUR IS COMPILING YOUR DOSSIER</Text>
+          <Text style={s.loadingSubLabel}>Domestic + International Safety Intelligence Active</Text>
+        </View>
+      )}
+
+      {routeStats && !dossierLoading && (
+        <View style={s.card}>
+          <View style={s.cardTitleRow}>
+            <Text style={[s.gridBadge, { backgroundColor: GRID.on + '22', color: GRID.on, borderColor: GRID.on }]}>ON GRID</Text>
+            <Text style={s.cardTitle}>DOSSIER LOCKED</Text>
+          </View>
+          <View style={s.statsRow}>
+            <View style={s.statItem}>
+              <Text style={s.statValue}>{routeStats.distance}</Text>
+              <Text style={s.statLabel}>DISTANCE</Text>
+            </View>
+            <View style={s.statItem}>
+              <Text style={s.statValue}>{routeStats.stops}</Text>
+              <Text style={s.statLabel}>TOTAL STOPS</Text>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {travelResult !== '' && !dossierLoading && (
+        <View style={s.card}>
+          <View style={[s.intelCard, { borderLeftColor: GRID.on }]}>
+            <Text style={[s.intelHeader, { color: GRID.on }]}>🗺️ THE CHAUFFEUR — SAFETY BRIEF</Text>
+            <Text style={s.intelBody}>{travelResult}</Text>
+          </View>
+        </View>
+      )}
+    </ScrollView>
+  );
+
+  // ── ON GRID · PAGE 2 — RETAIL LOCATOR ────────────────────────────────────────
+  const renderRetailPage = () => (
+    <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 60 }}>
+      {hasRetailResult && !retailLoading ? (
+        <TouchableOpacity
+          style={[s.scanAgainBar, { borderColor: GRID.on }]}
+          onPress={() => { setRetailResult(null); setRetailLog('idle'); }}
+        >
+          <Text style={[s.scanAgainBarText, { color: GRID.on }]}>⚡ FIND ANOTHER ITEM</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={s.card}>
+          <View style={s.cardTitleRow}>
+            <Text style={[s.gridBadge, { backgroundColor: GRID.on + '22', color: GRID.on, borderColor: GRID.on }]}>ON GRID</Text>
+            <Text style={s.cardTitle}>RETAIL INTELLIGENCE LOOP</Text>
+          </View>
+          <Text style={s.cardDesc}>Inside the store. Where it is — and what's better on this shelf.</Text>
+
+          <TouchableOpacity style={[s.primaryBtn, { backgroundColor: C.electricBlue }]} onPress={findNearbyStores}>
+            <Text style={s.primaryBtnText}>📍 FIND STORES NEAR ME</Text>
+          </TouchableOpacity>
+
+          <Text style={s.sectionLabel}>OR ENTER STORE NAME MANUALLY</Text>
+          <View style={s.rowInput}>
+            <TextInput
+              style={[s.input, { flex: 1, marginBottom: 0 }]}
+              placeholder="e.g. Walmart, Kroger, Whole Foods..."
+              placeholderTextColor={C.dimWhite}
+              value={manualStore}
+              onChangeText={setManualStore}
+              onSubmitEditing={addManualStore}
+            />
+            <TouchableOpacity style={s.addBtn} onPress={addManualStore}>
+              <Text style={s.addBtnText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
+          {storesLoaded && stores.length > 0 && (
+            <>
+              <Text style={s.sectionLabel}>SELECT YOUR STORE</Text>
+              {stores.map((store, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={[s.storeRow, selectedStore?.name === store.name && { borderColor: GRID.on, backgroundColor: 'rgba(245,146,42,0.08)' }]}
+                  onPress={() => setSelectedStore(store)}
+                >
+                  <Text style={s.storeName}>{store.name}</Text>
+                  <Text style={s.storeVicinity}>{store.vicinity}</Text>
+                </TouchableOpacity>
+              ))}
+            </>
+          )}
+
+          <Text style={s.sectionLabel}>WHAT ARE YOU LOOKING FOR?</Text>
+          <TextInput
+            style={s.input}
+            placeholder="e.g. Tropicana OJ, Kraft Mac & Cheese..."
+            placeholderTextColor={C.dimWhite}
+            value={scannedItem}
+            onChangeText={setScannedItem}
+          />
+          <TouchableOpacity style={[s.primaryBtn, { backgroundColor: GRID.on }]} onPress={runRetailLoop}>
+            <Text style={[s.primaryBtnText, { color: C.nearBlack }]}>⚡ RUN RETAIL LOOP</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {retailLoading && (
+        <View style={s.loadingCard}>
+          <ActivityIndicator size="large" color={GRID.on} />
+          <Text style={[s.loadingLabel, { color: GRID.on }]}>THE CHAUFFEUR IS LOCATING IT IN THE STORE</Text>
+        </View>
+      )}
+
+      {retailResult && !retailLoading && (
+        <View style={s.card}>
+          {retailResult.aisleLocation && (
+            <View style={[s.aisleBlock, { borderColor: GRID.on }]}>
+              <Text style={s.aisleLabel}>AISLE LOCATION</Text>
+              <Text style={[s.aisleHeadline, { color: GRID.on }]}>{retailResult.aisleLocation.aisle}</Text>
+              <Text style={s.aisleSection}>{retailResult.aisleLocation.section}</Text>
+            </View>
+          )}
+
+          {retailResult.chauffeurLine && (
+            <View style={[s.intelCard, { borderLeftColor: GRID.on }]}>
+              <Text style={[s.intelHeader, { color: GRID.on }]}>🗺️ THE CHAUFFEUR</Text>
+              <Text style={s.intelBody}>{retailResult.chauffeurLine}</Text>
+            </View>
+          )}
+
+          {retailResult.betterOptions?.length > 0 && (
+            <>
+              <Text style={s.sectionLabel}>BETTER OPTIONS IN THIS STORE NOW</Text>
+              {retailResult.betterOptions.map((opt: any, i: number) => (
+                <View key={i} style={s.optionCard}>
+                  <Text style={s.optionName}>{opt.name}</Text>
+                  {opt.aisle ? <Text style={s.optionAisle}>📍 {opt.aisle}</Text> : null}
+                  {opt.why ? <Text style={s.optionWhy}>{opt.why}</Text> : null}
+                  {opt.price ? <Text style={s.optionSavings}>💰 {opt.price}</Text> : null}
+                </View>
+              ))}
+            </>
+          )}
+
+          {retailResult.awareDollars && (
+            <View style={s.vaultCard}>
+              <Text style={s.vaultLabel}>💰 AWARE DOLLARS</Text>
+              <Text style={s.vaultBody}>{retailResult.awareDollars}</Text>
+              {retailLog === 'logged' ? (
+                <View style={[s.followBtn, { borderColor: '#8fd6ff' }]}>
+                  <Text style={[s.followTxt, { color: '#8fd6ff' }]}>✓ LOGGED TO VAULT</Text>
+                </View>
+              ) : retailLog === 'failed' ? (
+                <TouchableOpacity style={[s.followBtn, { borderColor: C.orange }]} onPress={followRetail} activeOpacity={0.7}>
+                  <Text style={[s.followTxt, { color: C.orange }]}>⚠ NOT SAVED — RETRY</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[s.followBtn, { borderColor: C.gold, opacity: parseDollars(retailResult.awareDollars) == null ? 0.4 : 1 }]}
+                  onPress={followRetail}
+                  disabled={parseDollars(retailResult.awareDollars) == null}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[s.followTxt, { color: C.gold }]}>◆ I FOLLOWED THIS →</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+        </View>
+      )}
+    </ScrollView>
+  );
 
   return (
     <SafeAreaView style={s.root}>
@@ -220,28 +506,28 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
       <View style={s.toggleRow}>
         <TouchableOpacity
           style={[s.toggleBtn, mode === 'on' && { borderColor: GRID.on, backgroundColor: 'rgba(245,146,42,0.12)' }]}
-          onPress={() => { setMode('on'); setRetailResult(null); }}
+          onPress={() => setMode('on')}
         >
           <Text style={s.toggleIcon}>🏪</Text>
           <View>
             <Text style={[s.toggleLabel, mode === 'on' && { color: GRID.on }]}>ON GRID</Text>
-            <Text style={s.toggleSub}>Retail Intelligence</Text>
+            <Text style={s.toggleSub}>CONNECTED</Text>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[s.toggleBtn, mode === 'off' && { borderColor: GRID.off, backgroundColor: 'rgba(46,207,179,0.12)' }]}
-          onPress={() => { setMode('off'); setTravelResult(''); }}
+          onPress={() => setMode('off')}
         >
           <Text style={s.toggleIcon}>🛡️</Text>
           <View>
             <Text style={[s.toggleLabel, mode === 'off' && { color: GRID.off }]}>OFF GRID</Text>
-            <Text style={s.toggleSub}>Safety Travel</Text>
+            <Text style={s.toggleSub}>PRE-SYNCED</Text>
           </View>
         </TouchableOpacity>
       </View>
 
-      {/* LOCATION BADGE */}
+      {/* SAFETY / LOCATION BAR */}
       <View style={[s.locationBadge, { borderColor: locationReady ? C.teal : C.gold }]}>
         <Text style={[s.locationText, { color: locationReady ? C.teal : C.gold }]}>
           {locationReady
@@ -250,229 +536,70 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
         </Text>
       </View>
 
-      <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 60 }}>
-
-        {/* ── ON GRID ── */}
-        {mode === 'on' && (
-          <>
-            {/* Input card — collapses when result is showing */}
-            {hasOnResult && !loading ? (
-              <TouchableOpacity
-                style={[s.scanAgainBar, { borderColor: GRID.on }]}
-                onPress={() => setRetailResult(null)}
-              >
-                <Text style={[s.scanAgainBarText, { color: GRID.on }]}>⚡ SCAN ANOTHER ITEM</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={s.card}>
-                <View style={s.cardTitleRow}>
-                  <Text style={[s.gridBadge, { backgroundColor: GRID.on + '22', color: GRID.on, borderColor: GRID.on }]}>ON GRID</Text>
-                  <Text style={s.cardTitle}>RETAIL INTELLIGENCE LOOP</Text>
-                </View>
-                <Text style={s.cardDesc}>Fires inside the store. Finds what else in this building is cheaper, cleaner, or better nutrition.</Text>
-
-                <TouchableOpacity style={[s.primaryBtn, { backgroundColor: C.electricBlue }]} onPress={findNearbyStores}>
-                  <Text style={s.primaryBtnText}>📍 FIND STORES NEAR ME</Text>
+      {mode === 'on' ? (
+        <>
+          {/* PAGE DOTS + CAPTION */}
+          <View style={s.pagerNav}>
+            <View style={s.dotsRow}>
+              {[0, 1].map(i => (
+                <TouchableOpacity key={i} onPress={() => pagerRef.current?.setPage(i)}>
+                  <View style={[s.dot, page === i && [s.dotActive, { backgroundColor: GRID.on }]]} />
                 </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={s.pagerCaption}>
+              {page === 0
+                ? 'PAGE 1 · NAVIGATION & DOSSIER   ·   SWIPE LEFT → RETAIL'
+                : '← SWIPE RIGHT · NAVIGATION   ·   PAGE 2 · RETAIL LOCATOR'}
+            </Text>
+          </View>
 
-                <Text style={s.sectionLabel}>OR ENTER STORE NAME MANUALLY</Text>
-                <View style={s.rowInput}>
-                  <TextInput
-                    style={[s.input, { flex: 1, marginBottom: 0 }]}
-                    placeholder="e.g. Walmart, Kroger, Whole Foods..."
-                    placeholderTextColor={C.dimWhite}
-                    value={manualStore}
-                    onChangeText={setManualStore}
-                    onSubmitEditing={addManualStore}
-                  />
-                  <TouchableOpacity style={s.addBtn} onPress={addManualStore}>
-                    <Text style={s.addBtnText}>+</Text>
-                  </TouchableOpacity>
+          <PagerView
+            ref={pagerRef}
+            style={{ flex: 1 }}
+            initialPage={0}
+            onPageSelected={e => setPage(e.nativeEvent.position)}
+          >
+            <View key="nav" style={{ flex: 1 }}>{renderDossierPage()}</View>
+            <View key="retail" style={{ flex: 1 }}>{renderRetailPage()}</View>
+          </PagerView>
+        </>
+      ) : (
+        /* ── OFF GRID — pre-synced, no signal required ── */
+        <ScrollView style={s.body} contentContainerStyle={{ paddingBottom: 60 }}>
+          <View style={s.card}>
+            <View style={s.cardTitleRow}>
+              <Text style={[s.gridBadge, { backgroundColor: GRID.off + '22', color: GRID.off, borderColor: GRID.off }]}>OFF GRID</Text>
+              <Text style={s.cardTitle}>NO SIGNAL REQUIRED</Text>
+            </View>
+            <Text style={s.cardDesc}>Everything below was downloaded before you lost service. Nothing here needs a connection.</Text>
+          </View>
+
+          <Text style={[s.sectionLabel, { marginHorizontal: 12 }]}>LOCAL & SMALL VENDOR · NEVER BIG BOX</Text>
+          {LOCAL_VENDORS.map((row, i) => (
+            <TouchableOpacity key={i} style={s.offRow} onPress={() => openOffRow(row)} activeOpacity={0.7}>
+              <Text style={s.offRowTitle}>{row.title}</Text>
+              {row.chip ? (
+                <View style={[s.offChip, { borderColor: GRID.off, backgroundColor: GRID.off + '1A' }]}>
+                  <Text style={[s.offChipTxt, { color: GRID.off }]}>{row.chip}</Text>
                 </View>
+              ) : <Text style={s.offChev}>›</Text>}
+            </TouchableOpacity>
+          ))}
 
-                {storesLoaded && stores.length > 0 && (
-                  <>
-                    <Text style={s.sectionLabel}>SELECT YOUR STORE</Text>
-                    {stores.map((store, i) => (
-                      <TouchableOpacity
-                        key={i}
-                        style={[s.storeRow, selectedStore?.name === store.name && { borderColor: GRID.on, backgroundColor: 'rgba(245,146,42,0.08)' }]}
-                        onPress={() => setSelectedStore(store)}
-                      >
-                        <Text style={s.storeName}>{store.name}</Text>
-                        <Text style={s.storeVicinity}>{store.vicinity}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </>
-                )}
-
-                <Text style={s.sectionLabel}>WHAT DID YOU PICK UP?</Text>
-                <TextInput
-                  style={s.input}
-                  placeholder="e.g. Tropicana OJ, Kraft Mac & Cheese..."
-                  placeholderTextColor={C.dimWhite}
-                  value={scannedItem}
-                  onChangeText={setScannedItem}
-                />
-                <TouchableOpacity style={[s.primaryBtn, { backgroundColor: GRID.on }]} onPress={runRetailLoop}>
-                  <Text style={[s.primaryBtnText, { color: C.nearBlack }]}>⚡ RUN RETAIL LOOP</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {loading && (
-              <View style={s.loadingCard}>
-                <ActivityIndicator size="large" color={GRID.on} />
-                <Text style={[s.loadingLabel, { color: GRID.on }]}>THE CHAUFFEUR IS SCANNING THE STORE</Text>
-              </View>
-            )}
-
-            {retailResult && !loading && (
-              <View style={s.card}>
-                <View style={[s.intelCard, { borderLeftColor: GRID.on }]}>
-                  <Text style={[s.intelHeader, { color: GRID.on }]}>🗺️ THE CHAUFFEUR</Text>
-                  <Text style={s.intelBody}>{retailResult.verdict}</Text>
+          <Text style={[s.sectionLabel, { marginHorizontal: 12, marginTop: 16 }]}>CARRIED WITH YOU</Text>
+          {CARRIED.map((row, i) => (
+            <TouchableOpacity key={i} style={s.offRow} onPress={() => openOffRow(row)} activeOpacity={0.7}>
+              <Text style={s.offRowTitle}>{row.title}</Text>
+              {row.chip ? (
+                <View style={[s.offChip, { borderColor: GRID.off, backgroundColor: GRID.off + '1A' }]}>
+                  <Text style={[s.offChipTxt, { color: GRID.off }]}>{row.chip}</Text>
                 </View>
-
-                {retailResult.betterOptions?.length > 0 && (
-                  <>
-                    <Text style={s.sectionLabel}>BETTER OPTIONS IN THIS STORE NOW</Text>
-                    {retailResult.betterOptions.map((opt: any, i: number) => (
-                      <View key={i} style={s.optionCard}>
-                        <Text style={s.optionName}>{opt.name}</Text>
-                        <Text style={s.optionWhy}>{opt.why}</Text>
-                        {opt.savings && <Text style={s.optionSavings}>💰 {opt.savings}</Text>}
-                      </View>
-                    ))}
-                  </>
-                )}
-
-                {retailResult.storeSection && <Text style={s.storeSection}>📍 Find it: {retailResult.storeSection}</Text>}
-
-                {retailResult.equalizerNote && (
-                  <View style={s.intelCard}>
-                    <Text style={s.intelHeader}>🛡️ THE EQUALIZER</Text>
-                    <Text style={s.intelBody}>{retailResult.equalizerNote}</Text>
-                  </View>
-                )}
-
-                {retailResult.chefNote && (
-                  <View style={[s.intelCard, { borderLeftColor: C.gold }]}>
-                    <Text style={[s.intelHeader, { color: C.gold }]}>🍽️ THE CHEF</Text>
-                    <Text style={s.intelBody}>{retailResult.chefNote}</Text>
-                  </View>
-                )}
-
-                {retailResult.actRightDollars && (
-                  <View style={s.vaultCard}>
-                    <Text style={s.vaultLabel}>💰 AWARE DOLLARS</Text>
-                    <Text style={s.vaultBody}>{retailResult.actRightDollars}</Text>
-                  </View>
-                )}
-              </View>
-            )}
-          </>
-        )}
-
-        {/* ── OFF GRID ── */}
-        {mode === 'off' && (
-          <>
-            {hasOffResult && !loading ? (
-              <TouchableOpacity
-                style={[s.scanAgainBar, { borderColor: GRID.off }]}
-                onPress={() => { setTravelResult(''); setRouteStats(null); setOrigin(''); setDestination(''); setWaypoints([]); }}
-              >
-                <Text style={[s.scanAgainBarText, { color: GRID.off }]}>🛡️ PLAN ANOTHER ROUTE</Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={s.card}>
-                <View style={s.cardTitleRow}>
-                  <Text style={[s.gridBadge, { backgroundColor: GRID.off + '22', color: GRID.off, borderColor: GRID.off }]}>OFF GRID</Text>
-                  <Text style={s.cardTitle}>SAFETY TRAVEL ENGINE</Text>
-                </View>
-                <Text style={s.cardDesc}>Pre-program your route before you leave. The Chauffeur briefs you — safe routes, exits, weather, news, emergency services, border notes.</Text>
-
-                <Text style={s.sectionLabel}>ORIGIN</Text>
-                <TextInput style={s.input} placeholder="e.g. Bozeman, Montana" placeholderTextColor={C.dimWhite} value={origin} onChangeText={setOrigin} />
-
-                <Text style={s.sectionLabel}>DESTINATION</Text>
-                <TextInput style={s.input} placeholder="e.g. Panama City, Panama" placeholderTextColor={C.dimWhite} value={destination} onChangeText={setDestination} />
-
-                {waypoints.length > 0 && (
-                  <>
-                    <Text style={s.sectionLabel}>STOPS ALONG THE WAY</Text>
-                    {waypoints.map((wp, i) => (
-                      <View key={wp.id} style={s.waypointRow}>
-                        <Text style={s.waypointLetter}>{String.fromCharCode(66 + i)}</Text>
-                        <Text style={s.waypointName}>{wp.name}</Text>
-                        <TouchableOpacity onPress={() => setWaypoints(prev => prev.filter(w => w.id !== wp.id))}>
-                          <Text style={s.removeWp}>✕</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </>
-                )}
-
-                <Text style={s.sectionLabel}>ADD A STOP</Text>
-                <View style={s.rowInput}>
-                  <TextInput
-                    style={[s.input, { flex: 1, marginBottom: 0 }]}
-                    placeholder="City, address, or landmark"
-                    placeholderTextColor={C.dimWhite}
-                    value={waypointInput}
-                    onChangeText={setWaypointInput}
-                    onSubmitEditing={addWaypoint}
-                  />
-                  <TouchableOpacity style={[s.addBtn, { backgroundColor: GRID.off }]} onPress={addWaypoint}>
-                    <Text style={[s.addBtnText, { color: C.nearBlack }]}>+</Text>
-                  </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity style={[s.primaryBtn, { backgroundColor: GRID.off, marginTop: 14 }]} onPress={buildSafeRoute}>
-                  <Text style={[s.primaryBtnText, { color: C.nearBlack }]}>🛡️ BUILD SAFE ROUTE</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {loading && (
-              <View style={s.loadingCard}>
-                <ActivityIndicator size="large" color={GRID.off} />
-                <Text style={[s.loadingLabel, { color: GRID.off }]}>THE CHAUFFEUR IS PLANNING YOUR ROUTE</Text>
-                <Text style={s.loadingSubLabel}>Domestic + International Safety Intelligence Active</Text>
-              </View>
-            )}
-
-            {routeStats && !loading && (
-              <View style={s.card}>
-                <View style={s.cardTitleRow}>
-                  <Text style={[s.gridBadge, { backgroundColor: GRID.off + '22', color: GRID.off, borderColor: GRID.off }]}>OFF GRID</Text>
-                  <Text style={s.cardTitle}>ROUTE LOCKED</Text>
-                </View>
-                <View style={s.statsRow}>
-                  <View style={s.statItem}>
-                    <Text style={s.statValue}>{routeStats.distance}</Text>
-                    <Text style={s.statLabel}>DISTANCE</Text>
-                  </View>
-                  <View style={s.statItem}>
-                    <Text style={s.statValue}>{routeStats.stops}</Text>
-                    <Text style={s.statLabel}>TOTAL STOPS</Text>
-                  </View>
-                </View>
-              </View>
-            )}
-
-            {travelResult !== '' && !loading && (
-              <View style={s.card}>
-                <View style={[s.intelCard, { borderLeftColor: GRID.off }]}>
-                  <Text style={[s.intelHeader, { color: GRID.off }]}>🗺️ THE CHAUFFEUR — SAFETY BRIEF</Text>
-                  <Text style={s.intelBody}>{travelResult}</Text>
-                </View>
-              </View>
-            )}
-          </>
-        )}
-
-      </ScrollView>
+              ) : <Text style={s.offChev}>›</Text>}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -495,6 +622,13 @@ const s = StyleSheet.create({
   locationText:    { fontSize: 10, fontWeight: '600' },
   body:            { flex: 1 },
 
+  // Pager nav (dots + caption)
+  pagerNav:        { paddingHorizontal: 12, paddingBottom: 8, alignItems: 'center' },
+  dotsRow:         { flexDirection: 'row', gap: 6, marginBottom: 6 },
+  dot:             { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
+  dotActive:       { width: 18 },
+  pagerCaption:    { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textAlign: 'center' },
+
   // Collapsed bar when result is showing
   scanAgainBar:    { marginHorizontal: 12, marginTop: 8, marginBottom: 4, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
   scanAgainBarText:{ fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
@@ -514,19 +648,28 @@ const s = StyleSheet.create({
   storeRow:        { padding: 11, borderRadius: 8, borderWidth: 1, borderColor: '#2E2208', marginBottom: 6 },
   storeName:       { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
   storeVicinity:   { color: 'rgba(255,255,255,0.60)', fontSize: 11, marginTop: 2 },
+
+  // Retail locator — aisle guidance
+  aisleBlock:      { borderWidth: 1.5, borderRadius: 12, padding: 16, marginBottom: 12, alignItems: 'center', backgroundColor: 'rgba(245,146,42,0.06)' },
+  aisleLabel:      { color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
+  aisleHeadline:   { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginBottom: 4, textAlign: 'center' },
+  aisleSection:    { color: '#FFFFFF', fontSize: 13, textAlign: 'center', lineHeight: 19 },
+
   optionCard:      { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 11, marginBottom: 8 },
   optionName:      { color: '#FFFFFF', fontWeight: '700', fontSize: 13, marginBottom: 4 },
+  optionAisle:     { color: C.orange, fontSize: 12, fontWeight: '700', marginBottom: 4 },
   optionWhy:       { color: 'rgba(255,255,255,0.60)', fontSize: 12, lineHeight: 18 },
   optionSavings:   { color: C.gold, fontWeight: '700', fontSize: 12, marginTop: 4 },
-  storeSection:    { color: C.teal, fontSize: 12, fontWeight: '600', marginVertical: 8 },
   intelCard:       { backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: '#2E2208', padding: 13, marginBottom: 10 },
   intelHeader:     { color: C.electricBlue, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
   intelBody:       { color: '#FFFFFF', fontSize: 13, lineHeight: 21 },
   vaultCard:       { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 10, borderWidth: 1, borderColor: C.gold, padding: 13, marginBottom: 10 },
   vaultLabel:      { color: C.gold, fontSize: 9, fontWeight: '900', letterSpacing: 1.5, marginBottom: 6 },
   vaultBody:       { color: '#FFFFFF', fontSize: 13, lineHeight: 20 },
+  followBtn:       { marginTop: 12, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
+  followTxt:       { fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
   waypointRow:     { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 10, marginBottom: 6 },
-  waypointLetter:  { color: C.teal, fontWeight: '900', fontSize: 14, width: 24 },
+  waypointLetter:  { color: C.orange, fontWeight: '900', fontSize: 14, width: 24 },
   waypointName:    { color: '#FFFFFF', flex: 1, fontSize: 13 },
   removeWp:        { color: C.red, fontWeight: '800', fontSize: 16, paddingLeft: 8 },
   statsRow:        { flexDirection: 'row', justifyContent: 'space-around', marginTop: 8 },
@@ -536,4 +679,11 @@ const s = StyleSheet.create({
   loadingCard:     { marginHorizontal: 12, marginVertical: 8, padding: 28, backgroundColor: '#1A1408', borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#2E2208' },
   loadingLabel:    { fontWeight: '900', fontSize: 11, letterSpacing: 2, marginTop: 14, textAlign: 'center' },
   loadingSubLabel: { color: 'rgba(255,255,255,0.60)', fontSize: 9, letterSpacing: 1, marginTop: 6, textAlign: 'center' },
+
+  // OFF GRID rows
+  offRow:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 12, marginBottom: 6, padding: 14, backgroundColor: '#1A1408', borderRadius: 10, borderWidth: 1, borderColor: '#2E2208' },
+  offRowTitle:     { color: '#FFFFFF', fontSize: 13, fontWeight: '700', flex: 1 },
+  offChip:         { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1 },
+  offChipTxt:      { fontSize: 8.5, fontWeight: '900', letterSpacing: 1 },
+  offChev:         { color: 'rgba(255,255,255,0.35)', fontSize: 18 },
 });
