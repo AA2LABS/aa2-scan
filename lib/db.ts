@@ -439,6 +439,8 @@ const FIELD_MAP: Record<string, FieldTarget> = {
   delivery_mode: { table: 'member_profiles', column: 'delivery_mode', kind: 'text' },
   color_mode:    { table: 'member_profiles', column: 'color_mode',    kind: 'text' },
   stack_tier:    { table: 'member_profiles', column: 'stack_tier',    kind: 'text' },
+  // member_profiles — who the member protects (family channels on the membrane)
+  species_protected: { table: 'member_profiles', column: 'species_protected', kind: 'array' },
 };
 
 function toArray(v: any): string[] {
@@ -573,6 +575,51 @@ export async function saveAnimals(
     console.log('[db.ts] saveAnimals failed silently:', e);
     return false;
   }
+}
+
+// ─── GET ANIMALS (multi-row) ─────────────────────────────────────────────────
+// animal_profiles is one row per animal. The Bio Buddy control panel reads the
+// full herd here — PETS · K9 / FELINE and AGRICULTURE · LIVESTOCK sections.
+export type AnimalRow = {
+  species: string; name: string | null; breed: string | null;
+  ageNotes: string | null; sensitivities: string | null;
+};
+
+export async function getAnimals(): Promise<AnimalRow[]> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) return [];
+    const { data, error } = await supabase
+      .from('animal_profiles')
+      .select('species, name, breed, age_notes, sensitivities')
+      .eq('member_id', user.id);
+    if (error) { console.log('[db.ts] getAnimals error:', error.message); return []; }
+    return (data ?? []).map((r: any) => ({
+      species:       r.species ?? '',
+      name:          r.name ?? null,
+      breed:         r.breed ?? null,
+      ageNotes:      r.age_notes ?? null,
+      sensitivities: r.sensitivities ?? null,
+    }));
+  } catch { return []; }
+}
+
+// ─── GET COOKBOOK RECIPES ────────────────────────────────────────────────────
+// Chef doctrine: "Save to your cookbook." saveCookbookRecipe writes them —
+// this is the read path so the cookbook is never a dead end.
+export async function getCookbookRecipes(limit = 50): Promise<any[]> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) return [];
+    const { data, error } = await supabase
+      .from('cookbook_recipes')
+      .select('*')
+      .eq('member_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (error) { console.log('[db.ts] getCookbookRecipes error:', error.message); return []; }
+    return data ?? [];
+  } catch { return []; }
 }
 
 // ─── MARK ONBOARDING COMPLETE (Canon v59 §19C) — THE SEAL ────────────────────

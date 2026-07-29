@@ -377,3 +377,137 @@ export function buildCannabisLayerSummary(
     commanderMessage: hasWadaFilter ? COMMANDER_LAYER_CANNABIS_FLAG : null,
   };
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JURISDICTION LADDER — town · parish · county · city · state · country
+// The chain locked 2026-07-29: after Aficionado finds the dispensary, the
+// Chauffeur routes it safe, the dossier carries it, and the Equalizer refuses
+// the seal if ANY leg of the route crosses into a jurisdiction where the
+// cargo goes illegal. Resolution runs at EVERY waypoint — not just the
+// destination. A legal purchase in Bozeman becomes a felony at the wrong
+// county line or the moment the route touches federal land.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type JurisdictionLevel =
+  | 'town'
+  | 'parish'     // Louisiana; corregimiento/district internationally
+  | 'county'
+  | 'city'
+  | 'state'
+  | 'country';
+
+export interface RouteWaypoint {
+  name: string;                    // "Bozeman", "Carbon County", "Wyoming"…
+  level?: JurisdictionLevel;       // optional hint; resolver matches without it
+  countryCode?: string;            // defaults to US-MT test bed when absent
+}
+
+export interface WaypointLegality {
+  waypoint: string;
+  level: JurisdictionLevel | 'unresolved';
+  status: CannabisLegalStatus | 'UNKNOWN';
+  legalForRecreational: boolean;
+  note: string;
+}
+
+export interface EqualizerCannabisSeal {
+  sealed: boolean;                 // false = the Equalizer refuses the seal
+  legs: WaypointLegality[];
+  flags: string[];                 // every reason the seal was withheld
+  commanderFlagActive: boolean;
+  commanderMessage: string | null;
+}
+
+// Resolve one waypoint against the jurisdiction ladder, most local first:
+// town/parish/county match in subJurisdictions → city (dispensary data) →
+// state/country top-level. Border warnings handled at the route level.
+export function resolveWaypointLegality(
+  wp: RouteWaypoint,
+): WaypointLegality {
+  const profile = getCannabisProfile(wp.countryCode ?? 'US-MT');
+  const name = wp.name.trim();
+  if (!profile) {
+    return {
+      waypoint: name, level: 'unresolved', status: 'UNKNOWN',
+      legalForRecreational: false,
+      note: 'No cannabis profile for this jurisdiction yet. The Equalizer treats unknown as NOT cleared.',
+    };
+  }
+
+  // Most local rule wins — sub-jurisdiction (county / parish / tribal / town).
+  const sub = profile.subJurisdictions.find(
+    s => s.name.toLowerCase().includes(name.toLowerCase())
+      || name.toLowerCase().includes(s.name.toLowerCase().replace(/ county| parish/i, '')),
+  );
+  if (sub) {
+    return {
+      waypoint: name,
+      level: wp.level ?? (/parish/i.test(sub.name) ? 'parish' : 'county'),
+      status: sub.status,
+      legalForRecreational: sub.status === 'RECREATIONAL_LEGAL',
+      note: sub.note,
+    };
+  }
+
+  // City level — a city with active dispensary records inherits state legality
+  // with local confirmation.
+  const cityHit = MONTANA_DISPENSARIES.some(
+    d => d.city.toLowerCase() === name.toLowerCase(),
+  );
+  if (cityHit) {
+    return {
+      waypoint: name, level: wp.level ?? 'city', status: profile.topLevelStatus,
+      legalForRecreational: profile.topLevelStatus === 'RECREATIONAL_LEGAL',
+      note: 'Active dispensary jurisdiction. State rules of the road apply.',
+    };
+  }
+
+  // Border crossing named as a waypoint — check border warnings.
+  const border = profile.borderWarnings.find(
+    b => b.borderName.toLowerCase().includes(name.toLowerCase())
+      || name.toLowerCase().includes(b.borderName.toLowerCase()),
+  );
+  if (border) {
+    return {
+      waypoint: name, level: wp.level ?? 'state', status: 'ILLEGAL',
+      legalForRecreational: false,
+      note: border.note,
+    };
+  }
+
+  // Fall through to state/country top level.
+  return {
+    waypoint: name,
+    level: wp.level ?? 'state',
+    status: profile.topLevelStatus,
+    legalForRecreational: profile.topLevelStatus === 'RECREATIONAL_LEGAL',
+    note: 'Top-level jurisdiction rule. Confirm locally — counties and tribal land can override.',
+  };
+}
+
+// The Equalizer's co-sign on a cannabis-carrying route. Every leg resolved.
+// One illegal leg = no seal. Unknown = no seal. Commander layer = flagged.
+export function equalizerCannabisSeal(
+  waypoints: RouteWaypoint[],
+  hasWadaFilter: boolean,
+): EqualizerCannabisSeal {
+  const legs = waypoints.map(resolveWaypointLegality);
+  const flags: string[] = [];
+
+  for (const leg of legs) {
+    if (leg.status === 'UNKNOWN') {
+      flags.push(`${leg.waypoint}: jurisdiction unresolved — the Equalizer treats unknown as NOT cleared.`);
+    } else if (!leg.legalForRecreational) {
+      flags.push(`${leg.waypoint} (${leg.level}): ${leg.status} — ${leg.note}`);
+    }
+  }
+  if (hasWadaFilter) flags.push(COMMANDER_LAYER_CANNABIS_FLAG);
+
+  return {
+    sealed: flags.length === 0,
+    legs,
+    flags,
+    commanderFlagActive: hasWadaFilter,
+    commanderMessage: hasWadaFilter ? COMMANDER_LAYER_CANNABIS_FLAG : null,
+  };
+}

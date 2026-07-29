@@ -40,8 +40,16 @@ export default function AA2DoorHall() {
           : 'Build your membrane and every door behind this wall speaks to your body, not a generic one.'}
       </Text>
 
-      {!sealed && loaded ? (
-        <Pressable style={st.cta} onPress={() => router.push('/(tabs)/onboarding' as Href)}>
+      {loaded ? (
+        // CHANGE ANYTHING law: sealed members go straight to THE MEMBRANE · EDIT
+        // (Bio Buddy page 3) — never back into the flipbook. Unsealed members
+        // enter the onboarding click-through, where the flipbook lives.
+        <Pressable
+          style={st.cta}
+          onPress={() =>
+            router.push((sealed ? '/(tabs)/biobuddy?page=2' : '/(tabs)/onboarding') as Href)
+          }
+        >
           <Text style={st.ctaTxt}>CHANGE ANYTHING →</Text>
         </Pressable>
       ) : null}

@@ -1,5 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
+import { useFonts } from 'expo-font';
 import { router, Stack, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -14,6 +15,19 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  // The wire typography — Bebas display, Cormorant serif, DM Mono, DM Sans.
+  // Screens already reference these family names; this makes them real.
+  // Never blocks first paint: system fallback until loaded, then wire type.
+  useFonts({
+    'BebasNeue-Regular':          require('../assets/fonts/BebasNeue-Regular.ttf'),
+    'CormorantGaramond-Regular':  require('../assets/fonts/CormorantGaramond-Variable.ttf'),
+    'CormorantGaramond-Medium':   require('../assets/fonts/CormorantGaramond-Variable.ttf'),
+    'CormorantGaramond-Italic':   require('../assets/fonts/CormorantGaramond-Italic-Variable.ttf'),
+    'DMMono-Regular':             require('../assets/fonts/DMMono-Regular.ttf'),
+    'DMMono-Medium':              require('../assets/fonts/DMMono-Medium.ttf'),
+    'DMSans-Regular':             require('../assets/fonts/DMSans-Variable.ttf'),
+  });
 
   useEffect(() => {
     (async () => {

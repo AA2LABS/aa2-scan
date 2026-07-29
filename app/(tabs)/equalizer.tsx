@@ -1,95 +1,77 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, RefreshControl, TouchableOpacity, Alert, TextInput, ActivityIndicator } from 'react-native';
-import { useFocusEffect, router } from 'expo-router';
-import { getScanHistory, loadMemberProfile, buildPersonalTruth, logMembraneEvent, getMembraneEvents } from '../../lib/db';
+import {
+  View, Text, ScrollView, StyleSheet, RefreshControl, Pressable, TextInput, ActivityIndicator,
+} from 'react-native';
+import { useFocusEffect, router, type Href } from 'expo-router';
+import DoorCover from '@/components/DoorCover';
+import { loadMemberProfile, buildPersonalTruth, logMembraneEvent } from '../../lib/db';
 import { streamClaude } from '../../lib/claude-stream';
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80', LINE = 'rgba(255,255,255,0.10)';
-const CYAN = '#1BB8FF', GREEN = '#34D399', AMBER = '#E0A04A', RED = '#E24B4A';
+// ─────────────────────────────────────────────────────────────────────────────
+// THE EQUALIZER — Intelligence 0X05 · The Immune System
+// Door first, then the longest function list in the app — every string from
+// the approved door HTML. Nine functions. Aficionado does NOT live here.
+// ─────────────────────────────────────────────────────────────────────────────
 
-function clearanceOf(row: any) {
-  const v = row?.verdict_label;
-  if (row?.allergen_triggered || v === 'PAY ATTENTION') {
-    return { tag: 'BLOCKED', color: RED, dot: RED };
-  }
-  if (v === 'TAKE NOTICE' || v === 'HEADS UP' || row?.verdict_level === 'caution') {
-    return { tag: 'CAUTION', color: AMBER, dot: AMBER };
-  }
-  return { tag: 'CLEARED', color: GREEN, dot: GREEN };
-}
+const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
+const LINE = 'rgba(255,255,255,0.10)', CYAN = '#1BB8FF';
 
-type GateRow = { icon: string; title: string; desc: string; chip?: string; chipColor?: string; route?: string; seed?: string };
+type FnRow = { icon: string; title: string; sub: string; seed?: string; route?: Href };
 
-// WHAT THE EQUALIZER DOES — the five anatomically-correct human functions. A row
-// either routes to a screen or seeds the ask bar. (Threshold Guard = Bio Buddy,
-// Chemical Doctrine = spinal cord, Emergency = Spoke 23, co-signing = background
-// immune function — none are buttons here.)
-const HUMAN: GateRow[] = [
-  { icon: '👑', title: 'Guard the Vault',         desc: 'AWARE DOLLARS · all saved items · subscription recovery', chip: 'OPEN ›', route: '/vision-board' },
-  { icon: '💊', title: 'Pill Clarifier',          desc: '15 databases · 5 cross-refs · interaction check', chip: 'OPEN ›', seed: 'Check my medications and supplements for interactions.' },
-  { icon: '🌿', title: 'Apothecary Intelligence', desc: 'Still Alive & Safe · synergy pairs · off-grid dispensary', chip: 'OPEN ›', route: '/apothecary' },
-  { icon: '📑', title: 'Co-sign Dossiers',        desc: 'security audit · single-exit route flag · seal approval', chip: 'OPEN ›', route: '/travel' },
-  { icon: '📡', title: 'Environmental Awareness', desc: 'BE AWARE · location-based threat · early warning', chip: 'OPEN ›', seed: 'What environmental risks are near me right now?' },
-];
-
-// SPECIES SAFETY — below the human functions
-const SPECIES: GateRow[] = [
-  { icon: '🐾', title: 'Species Safety · K9 / Feline',  desc: 'ASPCA toxicology · canine + feline', chip: 'OPEN ›', route: '/k9' },
-  { icon: '🐎', title: 'Species Safety · Equine',       desc: 'FEI · equine nutritionist', chip: 'OPEN ›', route: '/equine' },
-  { icon: '🐄', title: 'Species Safety · Agricultural', desc: 'livestock · feed safety · mycotoxin', chip: 'OPEN ›', route: '/agricultural' },
-];
-
-// RESTRICTED LAYERS · ARM TO ENABLE — default OFF, require a YES/CANCEL confirm
-const RESTRICTED: GateRow[] = [
-  { icon: '🌿', title: 'Aficionado',                desc: 'opt-in', chip: 'OPT-IN · OFF', chipColor: AMBER, route: '/aficionado' },
-  { icon: '🔒', title: 'Tactical · Commander Layer', desc: 'arm to enable', chip: 'OFF', chipColor: AMBER },
+// WHAT THE EQUALIZER DOES · LONGEST LIST — verbatim from the wire. Nine functions.
+const FUNCTIONS: FnRow[] = [
+  { icon: '🔍', title: 'Co-sign every scan',
+    sub: 'ALL CLEAR · TAKE NOTICE · PAY ATTENTION — 9 databases, every time',
+    route: '/' as Href },
+  { icon: '🧬', title: 'Chemical doctrine analysis',
+    sub: 'Exposure > label · cumulative load · biosignal cross-check',
+    seed: 'Run a chemical doctrine read on my recent exposures — exposure over label, cumulative load, biosignal cross-check.' },
+  { icon: '🏦', title: 'Guard the Vault',
+    sub: 'Money + all saved items · AWARE DOLLARS · subscription recovery',
+    route: '/vision-board' as Href },
+  { icon: '✍️', title: 'Co-sign Dossiers',
+    sub: 'Security audit · single-exit route flag · seal approval',
+    route: '/travel' as Href },
+  { icon: '💊', title: 'Pill Clarifier',
+    sub: '15 databases · 5 cross-refs · WADA/FEI/DoD flags · interaction check',
+    seed: 'Check my medications and supplements for interactions.' },
+  { icon: '🐾', title: 'Species safety guard',
+    sub: 'K9 · Feline · Equine · Agricultural — ASPCA + FEI layers',
+    route: '/k9' as Href },
+  { icon: '🌿', title: 'Apothecary intelligence',
+    sub: 'Still Alive & Safe · Alive Codes · synergy pairs · off-grid dispensary',
+    route: '/apothecary' as Href },
+  { icon: '🏠', title: 'Environmental awareness',
+    sub: 'BE AWARE · location-based threat intelligence · early warning',
+    route: '/map' as Href },
+  { icon: '🚨', title: 'Emergency escalation',
+    sub: 'Last Known Good · Level 1–3 · law enforcement packet (opt-in)',
+    seed: 'Walk me through emergency escalation — Last Known Good, Levels 1 to 3, and the law-enforcement packet opt-in.' },
 ];
 
 export default function EqualizerScreen() {
-  const [scans, setScans] = useState<any[]>([]);
+  const [doorOpen, setDoorOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  // Restricted layers that have been armed — loaded from membrane_events so the
-  // chip reads ARMED across restarts, never silently reset to OFF.
-  const [armedLayers, setArmedLayers] = useState<Record<string, boolean>>({});
-
-  // Live ask bar — a seeded or typed question runs against The Equalizer.
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
   const [asking, setAsking] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
 
-  const load = useCallback(async () => {
-    const rows = await getScanHistory(8);
-    setScans(rows);
-    const events = await getMembraneEvents(200);
-    const armed: Record<string, boolean> = {};
-    for (const e of events) {
-      if (e.event_type === 'restricted_layer_armed' && e.subject) armed[e.subject] = true;
-    }
-    setArmedLayers(armed);
-  }, []);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true); await load(); setRefreshing(false);
-  }, [load]);
+  const onRefresh = useCallback(async () => { setRefreshing(true); setRefreshing(false); }, []);
 
   const runQuery = useCallback(async (seed?: string) => {
     const q = (seed ?? query).trim();
     if (!q || asking) return;
-    setQuery(q);
-    setAnswer('');
-    setAsking(true);
+    setQuery(q); setAnswer(''); setAsking(true);
     scrollRef.current?.scrollTo({ y: 0, animated: true });
     try {
       const profile = await loadMemberProfile();
       const truth = buildPersonalTruth(profile);
       await streamClaude({
-        system: `You are The Equalizer — AA2's immune system and gate intelligence. Calm, protective, exact. Answer the member's question directly and briefly. Never name internal databases.${truth ? `\n\n${truth}` : ''}`,
+        system: `You are The Equalizer — AA2's immune system and gate intelligence. Calm, protective, exact. Never alarmist. Never silent about real danger. Answer directly and briefly. Never name internal databases.${truth ? `\n\n${truth}` : ''}`,
         content: q,
         max_tokens: 700,
-        onPartial: (acc) => setAnswer(acc),
+        onPartial: acc => setAnswer(acc),
       });
     } catch (e: any) {
       setAnswer(`The Equalizer couldn't reach the intelligence right now. ${e?.message ?? ''}`.trim());
@@ -98,50 +80,35 @@ export default function EqualizerScreen() {
     }
   }, [query, asking]);
 
-  // No dead ends: a row routes to its screen, or seeds the ask bar and answers live.
-  const openRow = (g: GateRow) => {
-    if (g.route) { router.push(g.route as any); return; }
-    if (g.seed) {
-      runQuery(g.seed);
-      logMembraneEvent({ eventType: 'equalizer_function_run', sourceScreen: 'equalizer', subject: g.title });
-      return;
+  const openRow = (r: FnRow) => {
+    if (r.route) { router.push(r.route); return; }
+    if (r.seed) {
+      runQuery(r.seed);
+      logMembraneEvent({ eventType: 'equalizer_function_run', sourceScreen: 'equalizer', subject: r.title });
     }
   };
 
-  // Arming a restricted layer is a real membrane write, and it persists.
-  const armLayer = (g: GateRow) => {
-    Alert.alert(
-      g.title,
-      'Arm this restricted layer?',
-      [
-        { text: 'CANCEL', style: 'cancel' },
-        { text: 'YES', onPress: async () => {
-            setArmedLayers(prev => ({ ...prev, [g.title]: true }));
-            await logMembraneEvent({ eventType: 'restricted_layer_armed', sourceScreen: 'equalizer', subject: g.title, value: { armed: true } });
-            if (g.route) router.push(g.route as any);
-          } },
-      ],
+  if (!doorOpen) {
+    return (
+      <ScrollView style={st.root} contentContainerStyle={{ flexGrow: 1 }}>
+        <DoorCover
+          art={require('../../assets/doors/door-equalizer.jpg')}
+          intelChip="INTELLIGENCE 0X05"
+          skip
+          roleLine="IMMUNE SYSTEM · GATE INTELLIGENCE · TRUTH ENGINE"
+          titleLines={['THE', 'EQUALIZER']}
+          desc="The immune system of the membrane. Monitors continuously. Detects before symptoms. Never alarmist. Never silent about real danger."
+          withLabel="WITH THE EQUALIZER"
+          withText="Nothing passes without clearance. Speaks only in emergencies."
+          withoutLabel="WITHOUT"
+          withoutText="Harm enters quietly. Labels lie. No one watching the gate."
+          openLabel="Continue →"
+          accent={CYAN}
+          onOpen={() => setDoorOpen(true)}
+        />
+      </ScrollView>
     );
-  };
-
-  const renderGate = (g: GateRow, i: number, onPress: () => void) => (
-    <TouchableOpacity key={i} activeOpacity={0.7} onPress={onPress} style={st.gate}>
-      <View style={st.gateIcon}><Text style={st.gateIconTxt}>{g.icon}</Text></View>
-      <View style={{ flex: 1 }}>
-        <Text style={st.gateName}>{g.title}</Text>
-        <Text style={st.gateDesc}>{g.desc}</Text>
-      </View>
-      {g.chip ? (
-        <View style={[st.gateChip, { backgroundColor: (g.chipColor ?? CYAN) + '1F' }]}>
-          <Text style={[st.gateChipTxt, { color: g.chipColor ?? CYAN }]}>{g.chip}</Text>
-        </View>
-      ) : null}
-    </TouchableOpacity>
-  );
-
-  const anyBlocked = scans.some(r => clearanceOf(r).tag === 'BLOCKED');
-  const heroState = anyBlocked ? 'CLEARANCES LOGGED' : 'ALL CLEAR · STANDBY';
-  const heroColor = anyBlocked ? AMBER : GREEN;
+  }
 
   return (
     <ScrollView
@@ -150,100 +117,107 @@ export default function EqualizerScreen() {
       contentContainerStyle={{ paddingBottom: 40 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={CYAN} />}
     >
-      <View style={st.hero}>
-        <Image source={require('../../assets/doors/door-equalizer.jpg')} resizeMode="cover" style={st.heroImg} />
-        <View style={st.heroScrim} />
-        <View style={st.heroContent}>
-          <Text style={[st.eyebrow, { color: CYAN }]}>INTELLIGENCE 0X05 · DOOR OPENED</Text>
-          <Text style={st.title}>The Equalizer</Text>
-        </View>
-      </View>
-
-      <View style={st.band}>
-        <Text style={[st.bandLine, { color: heroColor }]}>{heroState}</Text>
-        <Text style={st.bandSub}>Speaks only in emergencies. Nothing passes without clearance.</Text>
+      <View style={st.subhead}>
+        <Text style={st.subheadL}>◆ THE EQUALIZER</Text>
+        <Pressable onPress={() => setDoorOpen(false)} hitSlop={8}>
+          <Text style={st.subheadR}>← BACK</Text>
+        </Pressable>
       </View>
 
       <View style={st.ask}>
-        <Text style={st.askQ}>How can I help you?</Text>
-        <TextInput
-          style={st.askInput}
-          value={query}
-          onChangeText={setQuery}
-          placeholder="ask the Equalizer anything…"
-          placeholderTextColor="#8fd6ff"
-          returnKeyType="send"
-          onSubmitEditing={() => runQuery()}
-          editable={!asking}
-        />
-        <Text style={st.askH}>🎤</Text>
-        {(asking || answer) ? (
-          <View style={st.answerBox}>
-            <Text style={st.answerLabel}>THE EQUALIZER</Text>
-            {answer ? <Text style={st.answerTxt}>{answer}</Text> : null}
-            {asking ? <ActivityIndicator color={CYAN} style={{ marginTop: 8, alignSelf: 'flex-start' }} /> : null}
-          </View>
-        ) : null}
+        <Text style={st.askQ}>HOW CAN I HELP YOU?</Text>
+        <View style={st.askRow}>
+          <TextInput
+            style={st.askInput}
+            value={query}
+            onChangeText={setQuery}
+            placeholder="ask the Equalizer anything…"
+            placeholderTextColor={FAINT}
+            onSubmitEditing={() => runQuery()}
+            returnKeyType="send"
+          />
+          <Pressable onPress={() => runQuery()} hitSlop={8}>
+            <Text style={{ fontSize: 16 }}>🎤</Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {(asking || answer) ? (
+        <View style={st.answer}>
+          {asking && !answer ? <ActivityIndicator color={CYAN} /> : null}
+          {answer ? <Text style={st.answerTxt}>{answer}</Text> : null}
+        </View>
+      ) : null}
+
+      <View style={st.section}>
+        <Text style={st.fntitle}>WHAT THE EQUALIZER DOES · LONGEST LIST</Text>
+        {FUNCTIONS.map((r, i) => (
+          <Pressable key={i} style={st.fnrow} onPress={() => openRow(r)}>
+            <Text style={st.ico}>{r.icon}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={st.txt}>{r.title}</Text>
+              <Text style={st.sub}>{r.sub}</Text>
+            </View>
+            <Text style={st.arr}>›</Text>
+          </Pressable>
+        ))}
       </View>
 
       <View style={st.section}>
-        <Text style={st.sectionH}>WHAT THE EQUALIZER DOES · TAP ANY ROW</Text>
-        {HUMAN.map((g, i) => renderGate(g, i, () => openRow(g)))}
+        <Pressable style={st.action} onPress={() => router.push('/vision-board' as Href)}>
+          <Text style={st.actionTxt}>◆ OPEN THE VAULT</Text>
+          <Text style={[st.actionTxt, { marginLeft: 8 }]}>→</Text>
+        </Pressable>
       </View>
 
-      <View style={st.section}>
-        <Text style={st.sectionH}>SPECIES SAFETY · BELOW HUMAN FUNCTIONS</Text>
-        {SPECIES.map((g, i) => renderGate(g, i, () => openRow(g)))}
-      </View>
-
-      <View style={st.section}>
-        <Text style={st.sectionH}>RESTRICTED LAYERS · ARM TO ENABLE</Text>
-        {RESTRICTED.map((g, i) => {
-          const armed = !!armedLayers[g.title];
-          const row = armed ? { ...g, chip: 'ARMED', chipColor: GREEN } : g;
-          return renderGate(row, i, () => armLayer(g));
-        })}
-      </View>
-
-      <Text style={st.foot}>Nothing passes without clearance.</Text>
+      <Text style={st.note}>
+        THE IMMUNE SYSTEM. EARLY AWARENESS, NOT FEAR. SAFETY IS CERTAINTY.
+      </Text>
     </ScrollView>
   );
 }
 
 const st = StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
-  hero: { height: 230, position: 'relative', justifyContent: 'flex-end' },
-  heroImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
-  heroScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.5)' },
-  heroContent: { padding: 18, paddingBottom: 16 },
-  eyebrow: { fontSize: 10, letterSpacing: 2, fontWeight: '700', marginBottom: 6 },
-  title: { fontSize: 30, fontWeight: '800', color: '#fff' },
-  ask: { margin: 14, borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, padding: 15 },
-  askInput: { fontSize: 19, fontWeight: '800', color: '#8fd6ff', padding: 0 },
-  askQ: { fontSize: 19, fontWeight: '800', color: '#8fd6ff' },
-  askH: { fontSize: 11.5, color: MUT, marginTop: 4 },
-  answerBox: { marginTop: 12, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.10)', paddingTop: 12 },
-  answerLabel: { fontSize: 9, letterSpacing: 2, fontWeight: '700', color: CYAN, marginBottom: 6 },
-  answerTxt: { fontSize: 13.5, color: INK, lineHeight: 20 },
-  band: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE, alignItems: 'center' },
-  bandLine: { fontSize: 20, fontWeight: '800', letterSpacing: 0.5 },
-  bandSub: { fontSize: 12, color: MUT, marginTop: 7, textAlign: 'center', lineHeight: 17 },
-  section: { paddingHorizontal: 14, paddingTop: 16 },
-  sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: FAINT, marginBottom: 11, marginLeft: 2 },
-  empty: { fontSize: 12, color: FAINT, fontStyle: 'italic', paddingVertical: 8 },
-  logRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 11 },
-  logBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.05)' },
-  dot: { width: 9, height: 9, borderRadius: 5, marginRight: 12 },
-  logName: { fontSize: 13.5, fontWeight: '700', color: INK },
-  logMeta: { fontSize: 10.5, color: FAINT, marginTop: 2 },
-  logChip: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 6 },
-  logChipTxt: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
-  gate: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13, marginBottom: 10 },
-  gateIcon: { width: 38, height: 38, borderRadius: 9, backgroundColor: 'rgba(27,184,255,0.10)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(27,184,255,0.25)', alignItems: 'center', justifyContent: 'center', marginRight: 13 },
-  gateIconTxt: { fontSize: 17, color: CYAN },
-  gateName: { fontSize: 14, fontWeight: '700', color: INK },
-  gateDesc: { fontSize: 11, color: MUT, marginTop: 2, lineHeight: 15 },
-  gateChip: { paddingHorizontal: 7, paddingVertical: 5, borderRadius: 6 },
-  gateChipTxt: { fontSize: 8.5, fontWeight: '700', letterSpacing: 0.5 },
-  foot: { textAlign: 'center', fontSize: 11, color: CYAN, marginTop: 18 },
+  subhead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 54, paddingBottom: 4 },
+  subheadL: { fontFamily: 'DMMono-Medium', fontSize: 10, letterSpacing: 1.5, color: CYAN },
+  subheadR: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: MUT },
+
+  ask: {
+    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)',
+    backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, padding: 15,
+  },
+  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: '#8fd6ff' },
+  askRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
+  askInput: { flex: 1, color: INK, fontFamily: 'DMSans-Regular', fontSize: 13, paddingVertical: 4 },
+
+  answer: {
+    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 14,
+  },
+  answerTxt: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, lineHeight: 19 },
+
+  section: { paddingHorizontal: 14, paddingTop: 14 },
+  fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: CYAN, marginBottom: 10 },
+  fnrow: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    borderRadius: 12, padding: 13, marginBottom: 9,
+  },
+  ico: { fontSize: 16 },
+  txt: { fontFamily: 'DMSans-Regular', fontSize: 14, fontWeight: '700', color: INK },
+  sub: { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 0.3, color: MUT, marginTop: 3, lineHeight: 14 },
+  arr: { color: FAINT, fontSize: 17 },
+
+  action: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.08)',
+    borderRadius: 12, paddingVertical: 15,
+  },
+  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: '#8fd6ff' },
+
+  note: {
+    fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
+    textAlign: 'center', marginTop: 20, marginHorizontal: 24, lineHeight: 14,
+  },
 });
