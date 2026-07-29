@@ -6,7 +6,7 @@ import { loadMemberProfile, type FullMemberProfile } from '../../lib/db';
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80';
 const LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 
-type Item = { icon: string; title: string; desc: string; route?: Href };
+type Item = { icon: string; title: string; desc: string; route?: Href; chip?: string };
 
 // YOUR INTELLIGENCES \u2014 the receiving line the Concierge routes you to.
 const INTELLIGENCES: Item[] = [
@@ -16,12 +16,12 @@ const INTELLIGENCES: Item[] = [
   { icon: '\u2B21', title: 'The Equalizer', desc: 'VAULT \u00B7 PILL \u00B7 APOTHECARY \u00B7 SPECIES',    route: '/equalizer' as Href },
 ];
 
-// SURFACES HELD BY CONCIERGE \u2014 top to bottom.
+// SURFACES \u00B7 HELD BY CONCIERGE \u00B7 TOP \u2192 BOTTOM
 const SURFACES: Item[] = [
-  { icon: '\uD83D\uDCE2', title: 'Live Feed',       desc: 'INTERNATIONAL COOKING \u00B7 LIVE VIEW \u00B7 COOK TOGETHER', route: '/chef' as Href },
-  { icon: '\uD83D\uDCB0', title: 'Aware Dollars',   desc: 'also in Bio Buddy \u2014 what you saved \u00B7 subscription recovery', route: '/vision-board' as Href },
-  { icon: '\u25CE', title: 'Vision Board',    desc: 'goals \u00B7 trips & travel \u00B7 language learning \u00B7 share', route: '/vision-board' as Href },
-  { icon: '\uD83D\uDCDA', title: 'Learning Center', desc: 'depth-on-demand \u00B7 languages \u00B7 financial \u00B7 devices',   route: '/depth-on-demand' as Href },
+  { icon: '\uD83D\uDCE2', title: 'Live Feed',       desc: 'ALL CUSTOMERS POST \u00B7 APP-TO-APP \u00B7 POST TO YOUR BOARD', chip: 'NO NEGATIVE', route: '/chef' as Href },
+  { icon: '\uD83D\uDCB0', title: 'Aware Dollars',   desc: 'WHAT YOU SAVED \u00B7 SUBSCRIPTION RECOVERY', chip: 'ALSO IN BIO BUDDY', route: '/vision-board' as Href },
+  { icon: '\u25CE', title: 'Vision Board',    desc: 'GOALS \u00B7 TRIPS & TRAVEL \u00B7 LANGUAGE LEARNING \u00B7 SHARE', route: '/vision-board' as Href },
+  { icon: '\uD83D\uDCDA', title: 'Learning Center', desc: 'DEPTH-ON-DEMAND \u00B7 LANGUAGES \u00B7 FINANCIAL \u00B7 DEVICES',   route: '/depth-on-demand' as Href },
 ];
 
 export default function ConciergeScreen() {
@@ -45,7 +45,11 @@ export default function ConciergeScreen() {
         <Text style={st.rowName}>{item.title}</Text>
         <Text style={st.rowDesc}>{item.desc}</Text>
       </View>
-      <Text style={st.chev}>›</Text>
+      {item.chip ? (
+        <View style={st.chip}><Text style={st.chipTxt}>{item.chip}</Text></View>
+      ) : (
+        <Text style={st.chev}>›</Text>
+      )}
     </Pressable>
   );
 
@@ -64,7 +68,7 @@ export default function ConciergeScreen() {
         <Text style={st.askQ}>
           {sealed && name ? `How may I assist you, ${name.split(' ')[0]}?` : 'How may I assist you?'}
         </Text>
-        <Text style={st.askH}>ask · type · speak  🎤</Text>
+        <Text style={st.askH}>ask · type · speak…  🎤</Text>
       </View>
 
       <View style={st.section}>
@@ -73,7 +77,7 @@ export default function ConciergeScreen() {
       </View>
 
       <View style={st.section}>
-        <Text style={st.sectionH}>SURFACES HELD BY CONCIERGE</Text>
+        <Text style={st.sectionH}>SURFACES · HELD BY CONCIERGE · TOP → BOTTOM</Text>
         {SURFACES.map(renderRow)}
       </View>
 
@@ -111,6 +115,8 @@ const st = StyleSheet.create({
   rowName: { fontSize: 14, fontWeight: '700', color: INK },
   rowDesc: { fontSize: 11, color: MUT, marginTop: 3, lineHeight: 16 },
   chev: { color: FAINT, fontSize: 18, marginLeft: 6 },
+  chip: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 6, marginLeft: 6, backgroundColor: 'rgba(212,168,71,0.14)' },
+  chipTxt: { fontSize: 8.5, fontWeight: '700', letterSpacing: 0.5, color: GOLD },
   adjust: { borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, padding: 15, marginTop: 4 },
   adjustQ: { fontSize: 18, fontWeight: '800', color: '#8fd6ff' },
   adjustSub: { fontSize: 11.5, color: MUT, marginTop: 4 },

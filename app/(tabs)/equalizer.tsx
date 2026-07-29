@@ -20,31 +20,29 @@ function clearanceOf(row: any) {
 
 type GateRow = { icon: string; title: string; desc: string; chip?: string; chipColor?: string; route?: string; seed?: string };
 
-// HUMAN FUNCTIONS — exact order. A row either routes to a screen or seeds the ask bar.
+// WHAT THE EQUALIZER DOES — the five anatomically-correct human functions. A row
+// either routes to a screen or seeds the ask bar. (Threshold Guard = Bio Buddy,
+// Chemical Doctrine = spinal cord, Emergency = Spoke 23, co-signing = background
+// immune function — none are buttons here.)
 const HUMAN: GateRow[] = [
-  { icon: '✍️', title: 'Co-sign every scan',        desc: 'every scan verified before it clears', seed: 'Show me the co-sign status of my recent scans.' },
-  { icon: '🛡️', title: 'Threshold Guard',           desc: 'watching your limits · speaks only when crossed', seed: 'What thresholds am I approaching right now?' },
-  { icon: '🧪', title: 'Chemical doctrine analysis', desc: 'compounds · exposures · cumulative load', seed: 'Run a chemical doctrine analysis on my recent exposures.' },
-  { icon: '👑', title: 'Guard the Vault',           desc: 'AWARE DOLLARS · all saved items · subscription recovery', chip: 'SEALED', chipColor: GREEN, route: '/vision-board' },
-  { icon: '💊', title: 'Pill Clarifier',            desc: '15 databases · 5 cross-refs · interaction check', chip: 'CLEAR', chipColor: GREEN, seed: 'Check my medications and supplements for interactions.' },
-  { icon: '🌿', title: 'Apothecary Intelligence',   desc: 'Still Alive & Safe · synergy pairs · off-grid dispensary', chip: 'LIVE', chipColor: GREEN, route: '/apothecary' },
-  { icon: '🧾', title: 'Co-sign flooders',          desc: 'pending co-signs across your saved items', seed: 'Which of my saved items are pending co-sign?' },
-  { icon: '📑', title: 'Co-sign Dossiers',          desc: 'security audit · single-exit route flag · seal approval', chip: 'READY', chipColor: GREEN, route: '/travel' },
-  { icon: '📡', title: 'Environmental Awareness',   desc: 'BE AWARE · location-based threat · early warning', chip: 'WATCHING', chipColor: AMBER, seed: 'What environmental risks are near me right now?' },
-  { icon: '🚨', title: 'Emergency escalation',      desc: 'get help fast · the right responder first', seed: 'Show my emergency escalation plan and contacts.' },
+  { icon: '👑', title: 'Guard the Vault',         desc: 'AWARE DOLLARS · all saved items · subscription recovery', chip: 'OPEN ›', route: '/vision-board' },
+  { icon: '💊', title: 'Pill Clarifier',          desc: '15 databases · 5 cross-refs · interaction check', chip: 'OPEN ›', seed: 'Check my medications and supplements for interactions.' },
+  { icon: '🌿', title: 'Apothecary Intelligence', desc: 'Still Alive & Safe · synergy pairs · off-grid dispensary', chip: 'OPEN ›', route: '/apothecary' },
+  { icon: '📑', title: 'Co-sign Dossiers',        desc: 'security audit · single-exit route flag · seal approval', chip: 'OPEN ›', route: '/travel' },
+  { icon: '📡', title: 'Environmental Awareness', desc: 'BE AWARE · location-based threat · early warning', chip: 'OPEN ›', seed: 'What environmental risks are near me right now?' },
 ];
 
-// SPECIES SAFETY — below the human functions, unchanged
+// SPECIES SAFETY — below the human functions
 const SPECIES: GateRow[] = [
-  { icon: '🐾', title: 'K9 / Feline',   desc: 'ASPCA toxicology', route: '/k9' },
-  { icon: '🐎', title: 'Equine',        desc: 'FEI · equine nutritionist', route: '/equine' },
-  { icon: '🐄', title: 'Agricultural',  desc: 'livestock · feed safety · mycotoxin', route: '/agricultural' },
+  { icon: '🐾', title: 'Species Safety · K9 / Feline',  desc: 'ASPCA toxicology · canine + feline', chip: 'OPEN ›', route: '/k9' },
+  { icon: '🐎', title: 'Species Safety · Equine',       desc: 'FEI · equine nutritionist', chip: 'OPEN ›', route: '/equine' },
+  { icon: '🐄', title: 'Species Safety · Agricultural', desc: 'livestock · feed safety · mycotoxin', chip: 'OPEN ›', route: '/agricultural' },
 ];
 
 // RESTRICTED LAYERS · ARM TO ENABLE — default OFF, require a YES/CANCEL confirm
 const RESTRICTED: GateRow[] = [
-  { icon: '🌿', title: 'Aficionado',                desc: 'opt-in', chip: 'OFF', chipColor: AMBER, route: '/aficionado' },
-  { icon: '⚔', title: 'Tactical · Commander Layer', desc: 'arm to enable', chip: 'OFF', chipColor: AMBER },
+  { icon: '🌿', title: 'Aficionado',                desc: 'opt-in', chip: 'OPT-IN · OFF', chipColor: AMBER, route: '/aficionado' },
+  { icon: '🔒', title: 'Tactical · Commander Layer', desc: 'arm to enable', chip: 'OFF', chipColor: AMBER },
 ];
 
 export default function EqualizerScreen() {
@@ -167,17 +165,18 @@ export default function EqualizerScreen() {
       </View>
 
       <View style={st.ask}>
+        <Text style={st.askQ}>How can I help you?</Text>
         <TextInput
           style={st.askInput}
           value={query}
           onChangeText={setQuery}
-          placeholder="How can I help you?"
+          placeholder="ask the Equalizer anything…"
           placeholderTextColor="#8fd6ff"
           returnKeyType="send"
           onSubmitEditing={() => runQuery()}
           editable={!asking}
         />
-        <Text style={st.askH}>ask · type · speak  🎤</Text>
+        <Text style={st.askH}>🎤</Text>
         {(asking || answer) ? (
           <View style={st.answerBox}>
             <Text style={st.answerLabel}>THE EQUALIZER</Text>
@@ -188,12 +187,12 @@ export default function EqualizerScreen() {
       </View>
 
       <View style={st.section}>
-        <Text style={st.sectionH}>HUMAN FUNCTIONS</Text>
+        <Text style={st.sectionH}>WHAT THE EQUALIZER DOES · TAP ANY ROW</Text>
         {HUMAN.map((g, i) => renderGate(g, i, () => openRow(g)))}
       </View>
 
       <View style={st.section}>
-        <Text style={st.sectionH}>SPECIES SAFETY</Text>
+        <Text style={st.sectionH}>SPECIES SAFETY · BELOW HUMAN FUNCTIONS</Text>
         {SPECIES.map((g, i) => renderGate(g, i, () => openRow(g)))}
       </View>
 

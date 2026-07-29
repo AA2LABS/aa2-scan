@@ -12,6 +12,8 @@ export type FloodScreenProps = {
   eyebrow: string; title: string; accent: string;
   heroLine: string; heroSub?: string; heroColor?: string;
   rows: FloodRow[]; foot: string;
+  sectionHeader?: string;
+  ask?: { q: string; hint: string };
 };
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.10)';
@@ -27,7 +29,7 @@ function chipColors(kind: FloodRow['chipKind'], accent: string) {
 }
 
 export default function FloodScreen(props: FloodScreenProps) {
-  const { doorImage, eyebrow, title, accent, heroLine, heroSub, heroColor, rows, foot } = props;
+  const { doorImage, eyebrow, title, accent, heroLine, heroSub, heroColor, rows, foot, sectionHeader, ask } = props;
   return (
     <ScrollView style={st.root} contentContainerStyle={st.content}>
       <View style={st.hero}>
@@ -42,7 +44,14 @@ export default function FloodScreen(props: FloodScreenProps) {
         <Text style={[st.bandLine, { color: heroColor ?? INK }]}>{heroLine}</Text>
         {heroSub ? <Text style={st.bandSub}>{heroSub}</Text> : null}
       </View>
+      {ask ? (
+        <View style={[st.ask, { borderColor: accent + '80', backgroundColor: accent + '10' }]}>
+          <Text style={[st.askQ, { color: accent }]}>{ask.q}</Text>
+          <Text style={st.askH}>{ask.hint}</Text>
+        </View>
+      ) : null}
       <View style={st.rows}>
+        {sectionHeader ? <Text style={st.sectionH}>{sectionHeader}</Text> : null}
         {rows.map((r, i) => {
           const c = chipColors(r.chipKind, accent);
           const inner = (
@@ -92,6 +101,10 @@ const st = StyleSheet.create({
   band: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE },
   bandLine: { fontSize: 17, fontWeight: '800', lineHeight: 23 },
   bandSub: { fontSize: 12, color: MUT, marginTop: 7, lineHeight: 17 },
+  ask: { margin: 14, borderWidth: 1, borderRadius: 12, padding: 15 },
+  askQ: { fontSize: 19, fontWeight: '800' },
+  askH: { fontSize: 11.5, color: MUT, marginTop: 4 },
+  sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: '#5C6B80', marginBottom: 6, marginLeft: 2, marginTop: 8 },
   rows: { paddingHorizontal: 14, paddingTop: 4 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 13 },
   rowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.05)' },

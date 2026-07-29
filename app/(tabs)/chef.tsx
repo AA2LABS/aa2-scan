@@ -8,9 +8,9 @@ const GOLD = '#E0A04A', GREEN = '#34D399';
 
 type Cap = { icon: string; title: string; desc: string };
 const CAPABILITIES: Cap[] = [
-  { icon: '🍲', title: 'International Cooking', desc: 'Cuisine by region · reads dietary + allergies' },
-  { icon: '🥩', title: 'Pairings',             desc: 'Food · drink · context' },
-  { icon: '📋', title: 'Recipes',              desc: 'Scaled to family channels' },
+  { icon: '🍲', title: 'International Cooking', desc: 'cuisine by region · reads your dietary + allergies' },
+  { icon: '🥩', title: 'Pairings',             desc: 'food · drink · context' },
+  { icon: '📋', title: 'Recipes',              desc: 'scaled to family channels' },
 ];
 
 type Meal = { recipeName: string; cookTime: string; ingredientCount: number; from: string };
@@ -78,6 +78,11 @@ export default function ChefScreen() {
         </Text>
       </View>
 
+      <View style={st.ask}>
+        <Text style={st.askQ}>What are we cooking?</Text>
+        <Text style={st.askH}>cuisine · ingredient · craving…  🎤</Text>
+      </View>
+
       <View style={st.section}>
         <Text style={st.sectionH}>WHAT THE CHEF DOES</Text>
         {CAPABILITIES.map((c, i) => (
@@ -87,9 +92,11 @@ export default function ChefScreen() {
               <Text style={st.mealName}>{c.title}</Text>
               <Text style={st.mealMeta}>{c.desc}</Text>
             </View>
+            <Text style={st.chev}>›</Text>
           </View>
         ))}
 
+        <Text style={[st.sectionH, { marginTop: 14 }]}>NESTED · TAP TO OPEN AFICIONADO DOOR</Text>
         <Pressable style={[st.meal, st.nested]} onPress={() => router.push('/aficionado' as Href)}>
           <View style={st.mealIcon}><Text style={st.mealIconTxt}>{'🌿'}</Text></View>
           <View style={{ flex: 1 }}>
@@ -97,7 +104,7 @@ export default function ChefScreen() {
             <Text style={st.mealMeta}>CANNABIS · CIGARS · CONTAMINANTS</Text>
           </View>
           <View style={[st.chip, { backgroundColor: GOLD + '1F' }]}>
-            <Text style={[st.chipTxt, { color: GOLD }]}>OPT-IN · OFF</Text>
+            <Text style={[st.chipTxt, { color: GOLD }]}>DOOR ›</Text>
           </View>
         </Pressable>
       </View>
@@ -141,6 +148,10 @@ const st = StyleSheet.create({
   band: { padding: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE },
   bandLine: { fontSize: 17, fontWeight: '800', color: INK, lineHeight: 23 },
   bandSub: { fontSize: 12, color: MUT, marginTop: 7, lineHeight: 17 },
+  ask: { margin: 14, borderWidth: 1, borderColor: 'rgba(224,160,74,0.5)', backgroundColor: 'rgba(224,160,74,0.06)', borderRadius: 12, padding: 15 },
+  askQ: { fontSize: 19, fontWeight: '800', color: '#e8c887' },
+  askH: { fontSize: 11.5, color: MUT, marginTop: 4 },
+  chev: { color: FAINT, fontSize: 18, marginLeft: 6 },
   section: { paddingHorizontal: 14, paddingTop: 16 },
   sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: FAINT, marginBottom: 11, marginLeft: 2 },
   empty: { fontSize: 12, color: FAINT, fontStyle: 'italic', paddingVertical: 8, lineHeight: 17 },
