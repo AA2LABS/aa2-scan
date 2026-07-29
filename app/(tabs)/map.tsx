@@ -159,7 +159,7 @@ export default function MapScreen() {
       const profile = await loadMemberProfile();
       const personalTruth = buildPersonalTruth(profile);
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 1200,
         system: `You are The Chauffeur — AA2's retail LOCATOR. You are the cerebellum: routing, not chemistry. You answer WHERE a product is inside a specific named store, and what is better on the same shelf. You NEVER judge ingredients and NEVER give a safety or chemical verdict — that is the Scanner's job.
 
@@ -221,7 +221,7 @@ Infer the aisle and section from the standard retail layout of the named chain. 
         ? dispensaries.map(d => `${d.name} — ${d.address}, ${d.city} (${d.hoursLine})${d.recreational ? ' · rec' : ''}${d.medical ? ' · med' : ''}${d.delivery ? ' · delivery' : ''}`).join('; ')
         : 'No verified dispensary records on file for this destination.';
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 3000,
         system: `You are The Chauffeur — AA2's safety travel intelligence. Pre-program the safest route before the member ever leaves. Domestic and international. Calm, specific, never alarmist. Best private driver energy.
 

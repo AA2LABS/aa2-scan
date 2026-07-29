@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -287,7 +288,7 @@ async function runHarvestAnalysis(query: string, location: string = 'Belgrade, M
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-haiku-4-5',
       max_tokens: 1200,
       system: HUNTER_PROMPT + `\n\nMember location: ${location}`,
       messages: [{ role: 'user', content: `Harvest analysis request: ${query}` }],
@@ -426,11 +427,19 @@ export default function ApothecaryScreen() {
     }
 
     if (mode === 'forager') {
-      // Capture photo as base64 BEFORE closing camera
+      // Capture photo BEFORE closing camera — then shrink to 1024px before
+      // upload. Full-resolution frames are the slow part of every scan.
       let capturedBase64: string | undefined;
       try {
-        const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.7 });
-        capturedBase64 = photo?.base64;
+        const photo = await cameraRef.current?.takePictureAsync({ quality: 1, skipProcessing: true });
+        if (photo?.uri) {
+          const shrunk = await manipulateAsync(
+            photo.uri,
+            [{ resize: { width: 1024 } }],
+            { compress: 0.6, format: SaveFormat.JPEG, base64: true },
+          );
+          capturedBase64 = shrunk.base64 ?? undefined;
+        }
       } catch {
         // fall through — will send text-only if photo capture fails
       }
@@ -449,7 +458,7 @@ export default function ApothecaryScreen() {
           : [{ role: 'user', content: textContent }];
 
         const res = await anthropic.messages.create({
-          model: 'claude-sonnet-4-6',
+          model: 'claude-haiku-4-5',
           max_tokens: 1600,
           system: FORAGER_SYS,
           messages,
@@ -478,7 +487,7 @@ export default function ApothecaryScreen() {
         content = 'Plant, herb, or supplement photographed — no barcode detected. Identify the most likely botanical or supplement in frame and provide full compound analysis. Return compound verdict JSON.';
       }
       const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 1400,
         system: COMPOUND_SYS,
         messages: [{ role: 'user', content }],
@@ -503,7 +512,7 @@ export default function ApothecaryScreen() {
     clearResult();
     try {
       const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 1400,
         system: COMPOUND_SYS,
         messages: [{ role: 'user', content: `Analyze for Spoke 34: ${query.trim()}` }],
@@ -526,7 +535,7 @@ export default function ApothecaryScreen() {
     try {
       const list = stack.map(s => s.name).join(', ');
       const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 1400,
         system: FORMULATE_SYS,
         messages: [{ role: 'user', content: `Assess this compound stack for Spoke 34: ${list}` }],
@@ -548,7 +557,7 @@ export default function ApothecaryScreen() {
     clearResult();
     try {
       const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 3000,
         system: CONDITION_SYS,
         messages: [{ role: 'user', content: `Build a plant protocol for Spoke 34 member. Goal or condition: ${condition.trim()}` }],
@@ -570,7 +579,7 @@ export default function ApothecaryScreen() {
     clearResult();
     try {
       const res = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-haiku-4-5',
         max_tokens: 1600,
         system: FORAGER_SYS,
         messages: [{ role: 'user', content: `Identify and assess this wild find: ${foragerQuery.trim()}` }],

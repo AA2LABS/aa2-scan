@@ -10,7 +10,7 @@ async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-haiku-4-5', // speed doctrine 2026-07-29 — one-line revert to 'claude-sonnet-4-6'
       max_tokens: opts.max_tokens,
       system: opts.system,
       messages: [{ role: 'user', content: opts.content }],
@@ -21,6 +21,7 @@ async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }
   return (j.content ?? []).filter((b:any)=>b?.type==='text').map((b:any)=>String(b.text??'')).join('\n').trim();
 }
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, FlatList, Image, Linking, Modal, Platform,
@@ -467,8 +468,32 @@ export default function ScannerScreen() {
     setCameraMode(false); setScanning(false);
     setLoading(true); setResult(null);
     try {
-      const photo = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.6, skipProcessing: true });
-      if (!photo?.base64) {
+      // Speed doctrine: never upload a full-resolution frame. A modern phone
+      // shoots 12–48MP; unresized that is a multi-megabyte upload before the
+      // intelligence even starts reading. 1024px longest-edge is label-legible
+      // and cuts upload + vision read time to a fraction.
+      const photo = await cameraRef.current?.takePictureAsync({ quality: 1, skipProcessing: true });
+      if (!photo?.uri) {
+        setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Camera capture failed — try again or speak the product name.' });
+        setLoading(false);
+        return;
+      }
+      let shrunkBase64: string | undefined;
+      try {
+        const shrunk = await manipulateAsync(
+          photo.uri,
+          [{ resize: { width: 1024 } }],
+          { compress: 0.6, format: SaveFormat.JPEG, base64: true },
+        );
+        shrunkBase64 = shrunk.base64 ?? undefined;
+      } catch (e) {
+        console.log('[handleCapture] resize failed, falling back to raw capture:', e);
+      }
+      if (!shrunkBase64) {
+        const raw = await cameraRef.current?.takePictureAsync({ base64: true, quality: 0.5, skipProcessing: true });
+        shrunkBase64 = raw?.base64 ?? undefined;
+      }
+      if (!shrunkBase64) {
         setResult({ verdict: 'TAKE NOTICE', verdictReason: 'Camera capture failed — try again or speak the product name.' });
         setLoading(false);
         return;
@@ -477,7 +502,7 @@ export default function ScannerScreen() {
       const personalTruth = buildPersonalTruth(profile);
       const tabContext: TabContext = (activeTab==='scan'||activeTab==='care'||activeTab==='grownfolks'||activeTab==='fish'||activeTab==='species'||activeTab==='apothecary'||activeTab==='forager') ? activeTab as TabContext : 'scan';
       const visionResult = await scanWithVision({
-        imageBase64: photo.base64,
+        imageBase64: shrunkBase64,
         tabContext,
         personalTruth,
         systemPrompt: SEVERITY_PREFIX + (personalTruth || ''),
@@ -896,6 +921,7 @@ export default function ScannerScreen() {
               <ActivityIndicator size="large" color={accentColor}/>
               <Text style={[s.loadingLabel,{color:accentColor}]}>THE EQUALIZER IS RUNNING</Text>
               <Text style={[s.loadingDb,{color:F.dimWhite}]}>9 DATABASES · ALL INTELLIGENCES ACTIVE</Text>
+              <Text style={[s.loadingDb,{color:F.dimWhite,marginTop:6}]}>AI IS FAST · AA2 IS ACCURATE · JUST ONE MOMENT PLEASE</Text>
             </View>
           )}
 

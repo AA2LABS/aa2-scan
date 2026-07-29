@@ -4,7 +4,7 @@
 // and watch xhr.responseText grow, parsing SSE frames as they arrive.
 
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-6';
+const MODEL = 'claude-haiku-4-5'; // speed doctrine 2026-07-29: scan verdicts on the fast tier — one-line revert to 'claude-sonnet-4-6'
 
 export interface StreamClaudeInput {
   system: string;
@@ -23,6 +23,12 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
 
     let accumulated = '';
     let seen = 0;
+
+    // Speed telemetry — shows exactly where slow queries spend their time:
+    // request → first token (network + prompt read) vs first token → done
+    // (generation). Read it in the Metro/device console as [stream].
+    const t0 = Date.now();
+    let tFirst = 0;
 
     // Process every complete SSE line available in `text` beyond the `seen` offset.
     // Returns the new `seen` offset (up to the last newline consumed).
@@ -46,6 +52,10 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
             evt.delta.type === 'text_delta' &&
             typeof evt.delta.text === 'string'
           ) {
+            if (!tFirst) {
+              tFirst = Date.now();
+              console.log(`[stream] first token in ${tFirst - t0}ms`);
+            }
             accumulated += evt.delta.text;
             input.onPartial?.(accumulated);
           }
@@ -69,6 +79,10 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
       // Drain once more in case the final frames arrived with onload.
       drain(xhr.responseText);
       if (xhr.status >= 200 && xhr.status < 300) {
+        const tDone = Date.now();
+        console.log(
+          `[stream] done · first token ${tFirst ? tFirst - t0 : -1}ms · generation ${tFirst ? tDone - tFirst : -1}ms · total ${tDone - t0}ms · chars ${accumulated.length}`,
+        );
         resolve(accumulated);
       } else {
         reject(new Error('API ' + xhr.status + ': ' + String(xhr.responseText || '').slice(0, 200)));
