@@ -6,6 +6,7 @@ import { useFocusEffect, router, type Href } from 'expo-router';
 import DoorCover from '@/components/DoorCover';
 import { loadMemberProfile, buildPersonalTruth, getCookbookRecipes, getScanHistory, logMembraneEvent } from '../../lib/db';
 import { streamClaude } from '../../lib/claude-stream';
+import { CHEF_VOICE, VOICE_MODEL } from '../../lib/voices';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CHEF — Intelligence 0X02 · Temporal Lobe · Food Culture Intelligence
@@ -87,9 +88,10 @@ export default function ChefScreen() {
       const profile = await loadMemberProfile();
       const truth = buildPersonalTruth(profile);
       await streamClaude({
-        system: `You are The Chef — AA2's food culture intelligence. The mirror of the member's food culture, translating every other culture through it. Recipes, pairings, ingredient truth. Always respect the member's allergies, diet, and goals. Give exactly 3 numbered options when asked for recipes or meals — formatted 1. 2. 3. Never name internal databases.${truth ? `\n\n${truth}` : ''}`,
+        system: `${CHEF_VOICE}${truth ? `\n\n${truth}` : ''}`,
         content: q,
         max_tokens: 900,
+        model: VOICE_MODEL,
         onPartial: acc => setAnswer(acc),
       });
     } catch (e: any) {

@@ -10,6 +10,7 @@ export interface StreamClaudeInput {
   system: string;
   content: any;
   max_tokens: number;
+  model?: string;               // per-call override — voices ride Sonnet, scans ride Haiku
   onPartial?: (accumulated: string) => void;
 }
 
@@ -94,7 +95,7 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
 
     xhr.send(
       JSON.stringify({
-        model: MODEL,
+        model: input.model ?? MODEL,
         max_tokens: input.max_tokens,
         system: input.system,
         stream: true,

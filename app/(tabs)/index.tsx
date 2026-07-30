@@ -1,5 +1,5 @@
 // AA2 mobile-safe Claude call — plain fetch, identical mechanism to scanner-vision.ts
-async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }): Promise<string> {
+async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; model?:string; }): Promise<string> {
   const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('API key not found in build environment');
   const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -10,7 +10,7 @@ async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5', // speed doctrine 2026-07-29 — one-line revert to 'claude-sonnet-4-6'
+      model: opts.model ?? 'claude-haiku-4-5', // speed doctrine 2026-07-29 — voices override per-call
       max_tokens: opts.max_tokens,
       system: opts.system,
       messages: [{ role: 'user', content: opts.content }],
@@ -22,6 +22,7 @@ async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; }
 }
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { CHEF_VOICE, COSMO_CHEMIST_VOICE, VOICE_MODEL } from '../../lib/voices';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, FlatList, Image, Linking, Modal, Platform,
@@ -193,7 +194,7 @@ function buildFishSystemPrompt(fishMode: FishMode, personalTruth: string): strin
   return `${base}\n\nMODE: WATER BODY — User has provided a water body name or location. List the native and commonly catchable species for that location.\n\nReturn ONLY this JSON:\n{\n  "verdict": "ALL CLEAR"|"TAKE NOTICE"|"PAY ATTENTION",\n  "verdictReason": "one sentence on overall water body safety / advisories",\n  "waterBody": "string — confirmed or inferred water body name and location",\n  "equalizerVoice": "2–3 sentences — water quality, known advisories, overall assessment",\n  "species": [\n    {\n      "speciesName": "common name",\n      "scientificName": "genus species",\n      "safetyTag": "SAFE TO EAT"|"CAUTION"|"DO NOT EAT",\n      "season": "string — peak season or year-round",\n      "regulation": "string — size/bag limits if known"\n    }\n  ],\n  "waterAdvisory": "string or null — any EPA/state fish consumption advisories for this water body",\n  "actRightDollars": "REQUIRED. Value of self-caught fish vs. retail. End with: That goes directly into your AA2 Vault as AWARE DOLLARS."\n}`;
 }
 
-const CHEF_SYS = `You are The Chef inside AA2. Return ONLY valid JSON, no markdown: { "recipeName": string, "cuisine": string, "cookTimeMinutes": number, "servings": number, "prepNote": string, "ingredients": [{ "name": string, "amount": string, "status": "have"|"need"|"flagged", "allergyWarning": string|null, "safeAlternatives": string[] }] }. Mark an ingredient as flagged if it conflicts with the member's known allergens or sensitivities. Always include at least 2 safe alternatives for any flagged ingredient.`;
+const CHEF_SYS = `${CHEF_VOICE}\n\nReturn ONLY valid JSON, no markdown: { "recipeName": string, "cuisine": string, "cookTimeMinutes": number, "servings": number, "prepNote": string, "ingredients": [{ "name": string, "amount": string, "status": "have"|"need"|"flagged", "allergyWarning": string|null, "safeAlternatives": string[] }] }. Mark an ingredient as flagged if it conflicts with the member's known allergens or sensitivities. Always include at least 2 safe alternatives for any flagged ingredient.`;
 
 type ScanRecord = {
   id:string; timestamp:string; tab:string;
@@ -624,7 +625,7 @@ export default function ScannerScreen() {
     setRecipeModalVisible(true);
     setRecipeLoading(true);
     try {
-      const resText = await aa2Claude({ system: CHEF_SYS, content: `Recipe: ${chip.recipeName}. Scanned product: ${storedProductName}.${storedPersonalTruth}`, max_tokens: 1800 });
+      const resText = await aa2Claude({ system: CHEF_SYS, content: `Recipe: ${chip.recipeName}. Scanned product: ${storedProductName}.${storedPersonalTruth}`, max_tokens: 1800, model: VOICE_MODEL });
       const parsed = JSON.parse(resText.replace(/```json|```/g,'').trim());
       setRecipeData(parsed);
     } catch {
@@ -665,9 +666,9 @@ export default function ScannerScreen() {
     setInfoSheetVisible(true);
     try {
       const sys = isFlagged
-        ? 'You are Cosmo Chemist inside AA2. Return exactly two sentences: what this chemical does in the product formulation, and what it does to the body with repeated skin exposure. No markdown.'
-        : 'You are Cosmo Chemist inside AA2. Return exactly two sentences: what this ingredient does in the product formulation, and what specific benefit it provides to the skin or body. No markdown.';
-      const resText = await aa2Claude({ system: sys, content: name, max_tokens: 120 });
+        ? `${COSMO_CHEMIST_VOICE}\nReturn exactly two sentences: what this chemical does in the product formulation, and what it does to the body with repeated skin exposure. No markdown.`
+        : `${COSMO_CHEMIST_VOICE}\nReturn exactly two sentences: what this ingredient does in the product formulation, and what specific benefit it provides to the skin or body. No markdown.`;
+      const resText = await aa2Claude({ system: sys, content: name, max_tokens: 120, model: VOICE_MODEL });
       setInfoSheetText(resText);
     } catch {
       setInfoSheetText('Could not load. Try again.');

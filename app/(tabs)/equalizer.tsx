@@ -6,6 +6,7 @@ import { useFocusEffect, router, type Href } from 'expo-router';
 import DoorCover from '@/components/DoorCover';
 import { loadMemberProfile, buildPersonalTruth, logMembraneEvent } from '../../lib/db';
 import { streamClaude } from '../../lib/claude-stream';
+import { EQUALIZER_VOICE, VOICE_MODEL } from '../../lib/voices';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE EQUALIZER — Intelligence 0X05 · The Immune System
@@ -68,9 +69,10 @@ export default function EqualizerScreen() {
       const profile = await loadMemberProfile();
       const truth = buildPersonalTruth(profile);
       await streamClaude({
-        system: `You are The Equalizer — AA2's immune system and gate intelligence. Calm, protective, exact. Never alarmist. Never silent about real danger. Answer directly and briefly. Never name internal databases.${truth ? `\n\n${truth}` : ''}`,
+        system: `${EQUALIZER_VOICE}${truth ? `\n\n${truth}` : ''}`,
         content: q,
         max_tokens: 700,
+        model: VOICE_MODEL,
         onPartial: acc => setAnswer(acc),
       });
     } catch (e: any) {

@@ -6,6 +6,7 @@ import { useFocusEffect, router, type Href } from 'expo-router';
 import DoorCover from '@/components/DoorCover';
 import { loadMemberProfile, buildPersonalTruth, logMembraneEvent, type FullMemberProfile } from '../../lib/db';
 import { streamClaude } from '../../lib/claude-stream';
+import { conciergeVoice, VOICE_MODEL } from '../../lib/voices';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CONCIERGE — Intelligence 0X01 · The Voice · Broca's Area
@@ -67,9 +68,10 @@ export default function ConciergeScreen() {
     try {
       const truth = buildPersonalTruth(profile);
       await streamClaude({
-        system: `You are Javier — The Concierge, AA2's voice. Warm, unhurried, intelligent. You walk the member in, introduce the team, remember them, and explain any part of the system plainly. Never name internal databases. Never mention internal doctrine names.${truth ? `\n\n${truth}` : ''}`,
+        system: `${conciergeVoice(profile?.conciergePersonality)}${truth ? `\n\n${truth}` : ''}`,
         content: q,
         max_tokens: 700,
+        model: VOICE_MODEL,
         onPartial: acc => setAnswer(acc),
       });
     } catch (e: any) {
