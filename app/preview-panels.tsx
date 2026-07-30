@@ -821,6 +821,16 @@ function Panel15({ onComplete }: { onComplete: () => void }) {
 }
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
+// ─── FIRST-OPEN SEQUENCE (Canon v51 "THE MEMBRANE FIRST" · locked 2026-07-30) ──
+// The initiation runs panels 1→8 and stops at K9 TACTICAL. Onboarding — the
+// membrane build — begins DIRECTLY after the tactical-K9 screen. Panels 9–14
+// (equine, agricultural, travel, sommelier, cosmo chemist, cookbook) stay
+// authored here and live in the master storybook — they do not gate the skin.
+const FIRST_OPEN_PANELS = [
+  ...PANELS.filter(p => p.id <= 8),
+  PANELS.find(p => p.id === 15)!,
+];
+
 export default function PreviewPanels({ onComplete }: { onComplete: () => void }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -830,7 +840,7 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
     setActiveIndex(idx);
   };
 
-  const isLastPanel = activeIndex === PANELS.length - 1;
+  const isLastPanel = activeIndex === FIRST_OPEN_PANELS.length - 1;
 
   const renderPanel = ({ item }: { item: typeof PANELS[0] }) => {
     const isLast = item.id === 15;
@@ -872,7 +882,7 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
     <View style={{ flex: 1, backgroundColor: DARK_BG }}>
       <FlatList
         ref={flatListRef}
-        data={PANELS}
+        data={FIRST_OPEN_PANELS}
         keyExtractor={item => String(item.id)}
         renderItem={renderPanel}
         horizontal
@@ -888,7 +898,7 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
       {/* Progress dots — hidden on North Star */}
       {!isLastPanel && (
         <View style={styles.dotsWrap} pointerEvents="none">
-          {PANELS.slice(0, -1).map((_, i) => (
+          {FIRST_OPEN_PANELS.slice(0, -1).map((_, i) => (
             <View
               key={i}
               style={[styles.dot, {
