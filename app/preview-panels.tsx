@@ -842,9 +842,79 @@ function Panel15({ onComplete }: { onComplete: () => void }) {
 // membrane build — begins DIRECTLY after the tactical-K9 screen. Panels 9–14
 // (equine, agricultural, travel, sommelier, cosmo chemist, cookbook) stay
 // authored here and live in the master storybook — they do not gate the skin.
-const FIRST_OPEN_PANELS = [
-  ...PANELS.filter(p => p.id <= 8),
-  PANELS.find(p => p.id === 15)!,
+// ─── THE NINE ONBOARDING STORIES — CANON LOCKED SERIES ───────────────────────
+// Founder ruling 2026-08-01 (Option A): the initiation flip book IS the Nine
+// Stories, canon-verbatim, never abbreviated. "Each story teaches the system
+// without explaining the system." SKIP is always available — no funnel, no
+// paywall behind it, so no one is forced to re-read what they already know.
+const NINE_STORIES: {
+  n: number; title: string; audience: string; accent: string;
+  lines: string[]; quote?: string; lesson: string;
+}[] = [
+  { n: 1, title: 'The Grocery Aisle', audience: 'PARENTS', accent: BLUE,
+    lines: ['A parent scans cereal.', 'Nothing alarming on the label.'],
+    quote: 'This conflicts with your child’s sleep recovery trend.',
+    lesson: 'Chemicals affect behavior before symptoms.' },
+  { n: 2, title: 'The School Lunch', audience: 'CHILDREN', accent: GREEN,
+    lines: ['A child scans food at school.', 'The scanner translates ingredients into simple language.', 'The child learns: words, meaning, self-awareness.', 'They choose differently — by themselves.'],
+    lesson: 'Agency beats restriction.' },
+  { n: 3, title: 'The Foreign Menu', audience: 'TRAVEL & LANGUAGE', accent: TEAL,
+    lines: ['A family abroad scans a menu.', 'AA2 translates, explains preparation, warns about regional substitutes.', 'They eat confidently.'],
+    lesson: 'Cultural curiosity without risk.' },
+  { n: 4, title: 'The Uber Ride', audience: 'YOUNG ADULT SAFETY', accent: PURPLE,
+    lines: ['Heart rate rises unexpectedly.', 'AA2 notes chemical + stress + environment overlap.', 'Awareness increases. Nothing escalates.'],
+    quote: 'Environment inconsistent with baseline.',
+    lesson: 'Safety begins before danger.' },
+  { n: 5, title: 'The First Date Drink', audience: 'TRUST & EXPOSURE', accent: GOLD,
+    lines: ['A drink is scanned.', 'AA2 recalls: past reactions, delayed effects, tolerance drift.', 'User switches drinks.', 'The night stays clear.'],
+    lesson: 'Chemistry affects judgment.' },
+  { n: 6, title: 'The Dog That Wouldn’t Eat', audience: 'PETS', accent: ORANGE,
+    lines: ['A dog refuses food.', 'Scanner reveals: recent formula change, chemical irritant, stress overlap with handler.', 'Food is changed. Behavior normalizes.'],
+    lesson: 'Animals speak through biosignals.' },
+  { n: 7, title: 'The Working K9', audience: 'TACTICAL', accent: '#8B7355',
+    lines: ['Handler stress rises. Dog stress follows.', 'Scanner flags: supplement interaction, environment exposure, hydration imbalance.', 'Mission readiness preserved.'],
+    lesson: 'Handler biology transfers.' },
+  { n: 8, title: 'The Doctor Visit', audience: 'MEDICAL SHARING', accent: RED,
+    lines: ['User opts to share AA2 data.', 'Physician sees: exposure timeline, reaction curves, recovery patterns.', 'Diagnosis accelerates.'],
+    lesson: 'Data removes guesswork.' },
+  { n: 9, title: 'The Long View', audience: 'LEGACY', accent: BLUE,
+    lines: ['Years of scans show: fewer inflammatory spikes, improved learning, calmer baseline, healthier animals, aligned spending.', 'AA2 says nothing.', 'The results speak.'],
+    lesson: 'Small decisions compound into legacy.' },
+];
+
+function StoryPanel({ story }: { story: typeof NINE_STORIES[0] }) {
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', paddingBottom: 40 }}>
+      <Text style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: 3, color: story.accent, marginBottom: 10 }}>
+        STORY {story.n} OF 9 · {story.audience}
+      </Text>
+      <Text style={{ fontFamily: F.display, fontSize: 44, color: WHITE, letterSpacing: 1, marginBottom: 22, lineHeight: 46 }}>
+        {story.title}
+      </Text>
+      {story.lines.map((l, i) => (
+        <Text key={i} style={{ fontFamily: F.serif, fontSize: 19, color: 'rgba(255,255,255,0.82)', lineHeight: 28, marginBottom: 10 }}>
+          {l}
+        </Text>
+      ))}
+      {story.quote ? (
+        <View style={{ borderLeftWidth: 2, borderLeftColor: story.accent, paddingLeft: 14, marginTop: 8, marginBottom: 8 }}>
+          <Text style={{ fontFamily: F.serifIt, fontSize: 20, color: story.accent, lineHeight: 28 }}>
+            “{story.quote}”
+          </Text>
+        </View>
+      ) : null}
+      <View style={{ marginTop: 26, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.18)', paddingTop: 14 }}>
+        <Text style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: 2.5, color: MUTED, marginBottom: 5 }}>LESSON</Text>
+        <Text style={{ fontFamily: F.sansMd, fontSize: 15, color: GOLD, lineHeight: 21 }}>{story.lesson}</Text>
+      </View>
+    </View>
+  );
+}
+
+// The initiation flip book: the Nine Stories, then the North Star (panel 15).
+const FIRST_OPEN_PANELS: { id: number; caption: string; story?: typeof NINE_STORIES[0] }[] = [
+  ...NINE_STORIES.map(s => ({ id: 100 + s.n, caption: '', story: s })),
+  { id: 15, caption: '' },
 ];
 
 export default function PreviewPanels({ onComplete }: { onComplete: () => void }) {
@@ -858,7 +928,7 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
 
   const isLastPanel = activeIndex === FIRST_OPEN_PANELS.length - 1;
 
-  const renderPanel = ({ item }: { item: typeof PANELS[0] }) => {
+  const renderPanel = ({ item }: { item: any }) => {
     const isLast = item.id === 15;
     return (
       <View style={{
@@ -869,23 +939,10 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
         paddingTop: Platform.OS === 'android' ? 48 : 60,
         paddingBottom: 100,
       }}>
-        {item.id === 1  && <Panel1 />}
-        {item.id === 2  && <Panel2 />}
-        {item.id === 3  && <Panel3 />}
-        {item.id === 4  && <Panel4 />}
-        {item.id === 5  && <Panel5 />}
-        {item.id === 6  && <Panel6 />}
-        {item.id === 7  && <Panel7 />}
-        {item.id === 8  && <Panel8 />}
-        {item.id === 9  && <Panel9 />}
-        {item.id === 10 && <Panel10 />}
-        {item.id === 11 && <Panel11 />}
-        {item.id === 12 && <Panel12 />}
-        {item.id === 13 && <Panel13 />}
-        {item.id === 14 && <Panel14 />}
+        {item.story && <StoryPanel story={item.story} />}
         {item.id === 15 && <Panel15 onComplete={onComplete} />}
 
-        {!isLast && item.caption.length > 0 && (
+        {!isLast && item.caption?.length > 0 && (
           <View style={styles.captionWrap} pointerEvents="none">
             <Text style={styles.caption}>{item.caption}</Text>
           </View>
@@ -910,6 +967,17 @@ export default function PreviewPanels({ onComplete }: { onComplete: () => void }
         getItemLayout={(_, i) => ({ length: SCREEN_W, offset: SCREEN_W * i, index: i })}
         onMomentumScrollEnd={handleMomentumScrollEnd}
       />
+
+      {/* SKIP — founder law: no funnel, no paywall behind the stories, so no
+          one is forced to re-read what they already know. Straight to the blocks. */}
+      {!isLastPanel && (
+        <TouchableOpacity
+          onPress={onComplete}
+          style={{ position: 'absolute', top: Platform.OS === 'android' ? 46 : 58, right: 20, paddingVertical: 8, paddingHorizontal: 14, borderRadius: 100, borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' }}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Text style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: 2, color: MUTED }}>SKIP →</Text>
+        </TouchableOpacity>
+      )}
 
       {/* Progress dots — hidden on North Star */}
       {!isLastPanel && (
