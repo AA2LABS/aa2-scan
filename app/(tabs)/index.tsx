@@ -1287,9 +1287,12 @@ export default function ScannerScreen() {
               {activeTab!=='fish'&&result.alternatives?.length>0&&(
                 <View style={[s.altCard,{backgroundColor:P.card,borderColor:P.border}]}>
                   <Text style={[s.altHeader,{color:F.dimWhite}]}>BETTER ALTERNATIVES</Text>
+                  {/* FOUNDER LAW (2026-08-01): name gets the FULL width, buttons
+                      live on their own row beneath — never squeeze text into a
+                      one-word-per-line column on narrow screens (Z Fold closed). */}
                   {result.alternatives.map((a:string,i:number)=>(
                     <View key={i} style={s.altItemRow}>
-                      <Text style={[s.altItem,{color:F.teal,flex:1}]}>→ {a}</Text>
+                      <Text style={[s.altItem,{color:F.teal}]}>→ {a}</Text>
                       <View style={{flexDirection:'row',gap:8,marginTop:8,flexWrap:'wrap'}}>
                         <TouchableOpacity
                           onPress={()=>openWhyAlternative(a)}
@@ -1631,7 +1634,7 @@ const s = StyleSheet.create({
   // Alternatives with WHY button
   altCard:         {borderRadius:12,borderWidth:1,padding:16,marginBottom:10},
   altHeader:       {fontSize:9,fontWeight:'900',letterSpacing:2,marginBottom:8},
-  altItemRow:      {flexDirection:'row',alignItems:'center',marginBottom:6},
+  altItemRow:      {marginBottom:14},
   altItem:         {fontSize:13,lineHeight:22},
   whyBtn:          {paddingHorizontal:8,paddingVertical:3,borderRadius:4,borderWidth:1,borderColor:'rgba(255,255,255,0.15)',marginLeft:10},
   whyBtnText:      {fontFamily:'DMMono-Regular',fontSize:8,color:F.dimWhite,letterSpacing:1},
@@ -1675,7 +1678,7 @@ const s = StyleSheet.create({
   recipeSection:       {marginHorizontal:20,marginBottom:14},
   recipeSectionHeader: {fontFamily:'DMMono-Regular',fontSize:9,letterSpacing:2.5,marginBottom:10,fontWeight:'700'},
   recipeIngRow:        {flexDirection:'row',gap:10,marginBottom:8,alignItems:'baseline'},
-  recipeIngAmount:     {fontFamily:'DMMono-Regular',fontSize:11,color:F.dimWhite,minWidth:52},
+  recipeIngAmount:     {fontFamily:'DMMono-Regular',fontSize:11,color:F.dimWhite,minWidth:52,maxWidth:'40%',flexShrink:1},
   recipeIngName:       {fontFamily:'CormorantGaramond-Regular',fontSize:16,color:F.white,flex:1,lineHeight:22},
   recipeFlaggedBlock:  {marginBottom:12},
   recipeFlaggedWarning:{fontFamily:'DMMono-Regular',fontSize:10,color:F.dimWhite,marginTop:3,marginBottom:6,lineHeight:15},

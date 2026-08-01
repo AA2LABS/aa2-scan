@@ -962,7 +962,7 @@ const st = StyleSheet.create({
 
   readoutRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE },
   readoutDot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
-  readoutName: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, width: 118 },
+  readoutName: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, flexBasis: 112, flexShrink: 1, minWidth: 74, marginRight: 4 },
   readoutWave: { flex: 1, height: 2, borderRadius: 1, marginHorizontal: 10 },
   readoutVal: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 0.5 },
 
