@@ -3,7 +3,7 @@ import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable,
   TouchableOpacity, TextInput, Alert,
 } from 'react-native';
-import PagerView from 'react-native-pager-view';
+import PagerView, { type PagerRef } from '@/components/Pager';
 import Svg, { Polyline } from 'react-native-svg';
 import { useFocusEffect, useLocalSearchParams, router, type Href } from 'expo-router';
 import DoorCover from '@/components/DoorCover';
@@ -146,7 +146,7 @@ export default function BioBuddyScreen() {
   const [page, setPage]         = useState(0);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [addInput, setAddInput] = useState<{ section: string; value: string } | null>(null);
-  const pagerRef = useRef<PagerView>(null);
+  const pagerRef = useRef<PagerRef>(null);
   const jumped = useRef(false);
 
   const load = useCallback(async () => {

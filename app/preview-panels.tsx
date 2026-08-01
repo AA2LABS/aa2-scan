@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { logMembraneEvent } from '@/lib/db';
+import { classifyClarification } from '@/lib/clarifier';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -171,7 +172,22 @@ function Panel2() {
   const submitClarify = async () => {
     const note = clarifyText.trim();
     if (!note) return;
-    const ok = await logMembraneEvent({ eventType: 'clarifier_corrected', sourceScreen: 'clarifier', subject: 'stress', note });
+    // The Clarifier's brain: the member's words pick the category. Sexual
+    // activity is NEVER logged as stress — it is its own private,
+    // recovery-relevant context (founder law 2026-08-01).
+    const c = classifyClarification(note);
+    const ok = await logMembraneEvent({
+      eventType: 'clarifier_corrected',
+      sourceScreen: 'clarifier',
+      subject: c.category,
+      note: c.privateEntry ? undefined : note,
+      value: {
+        category: c.category,
+        excludeFromStressBaseline: c.excludeFromStressBaseline,
+        private: c.privateEntry,
+        reclass: c.reclassLine,
+      },
+    });
     if (ok) { setClarifySaved(true); setClarifyText(''); setClarifyOpen(false); setClarifyError(false); }
     else { setClarifyError(true); }
   };
