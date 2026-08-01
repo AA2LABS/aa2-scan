@@ -4,6 +4,7 @@ import {
   TouchableOpacity, TextInput, Switch,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
+import Svg, { Polyline } from 'react-native-svg';
 import { useFocusEffect, useLocalSearchParams, router, type Href } from 'expo-router';
 import DoorCover from '@/components/DoorCover';
 import {
@@ -11,6 +12,11 @@ import {
   getVaultLedgerTotal, logMembraneEvent, getMembraneEvents,
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
+import {
+  getLiveReadout, getOuraToken, saveOuraToken, syncOura,
+  importGarminExport, importStravaExport,
+  type LiveReadout, type BiosignalSource,
+} from '../../lib/biosignals';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BIO BUDDY — Spoke 5 · The Nervous System · Intelligence 0X03
@@ -56,6 +62,45 @@ function deviceDot(key: string): string {
   return hit ? hit.dot : CYAN;
 }
 
+// Device → biosignal source. The wire's metric per row comes from real rows
+// in biosignal_readings — never staged numbers.
+const DEVICE_SOURCE: Record<string, BiosignalSource> = {
+  garmin_tactix_8: 'garmin', oura_ring_4: 'oura', strava: 'strava',
+  whoop_5_0: 'whoop', beats_pro_2: 'beats',
+};
+
+function deviceMetric(key: string, readout: LiveReadout | null): string | null {
+  const src = DEVICE_SOURCE[norm(key)];
+  if (!src || !readout) return null;
+  const r = readout.latest[src];
+  if (!r) return null;
+  if (src === 'garmin')  return r.hrv != null ? `${Math.round(Number(r.hrv))} HRV` : r.sleep != null ? `SLEEP ${Math.round(Number(r.sleep))}` : null;
+  if (src === 'oura')    return r.readiness != null ? `${Math.round(Number(r.readiness))} RDY` : r.hrv != null ? `${Math.round(Number(r.hrv))} HRV` : null;
+  if (src === 'strava')  return r.activity != null ? `${r.activity} mi` : null;
+  if (src === 'whoop')   return r.readiness != null ? `RECOV ${Math.round(Number(r.readiness))}%` : null;
+  if (src === 'beats')   return r.hrv != null ? `${Math.round(Number(r.hrv))}ms` : null;
+  return null;
+}
+
+function Sparkline({ values, color }: { values: number[] | undefined; color: string }) {
+  const W = 120, H = 14;
+  if (!values || values.length < 2) {
+    return <View style={{ flex: 1, height: 2, borderRadius: 1, marginHorizontal: 10, backgroundColor: color + '55' }} />;
+  }
+  const min = Math.min(...values), max = Math.max(...values);
+  const span = max - min || 1;
+  const pts = values.map((v, i) =>
+    `${(i / (values.length - 1)) * W},${H - 2 - ((v - min) / span) * (H - 4)}`
+  ).join(' ');
+  return (
+    <View style={{ flex: 1, marginHorizontal: 10 }}>
+      <Svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+        <Polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} />
+      </Svg>
+    </View>
+  );
+}
+
 // Membrane accuracy — how much of the membrane the member has filled in.
 // Same fields the control panel renders. No mystery number.
 function membraneAccuracy(p: FullMemberProfile | null, animals: AnimalRow[]): number {
@@ -85,6 +130,10 @@ export default function BioBuddyScreen() {
   const [profile, setProfile]   = useState<FullMemberProfile | null>(null);
   const [animals, setAnimals]   = useState<AnimalRow[]>([]);
   const [vault, setVault]       = useState<{ total: number } | null>(null);
+  const [readout, setReadout]   = useState<LiveReadout | null>(null);
+  const [hasOuraToken, setHasOuraToken] = useState(false);
+  const [syncing, setSyncing]   = useState<string | null>(null);
+  const [syncMsg, setSyncMsg]   = useState<string | null>(null);
   const [cannabisOn, setCannabisOn] = useState(false);
   const [loaded, setLoaded]     = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -95,10 +144,12 @@ export default function BioBuddyScreen() {
   const jumped = useRef(false);
 
   const load = useCallback(async () => {
-    const [p, an, v, events] = await Promise.all([
+    const [p, an, v, events, live, tok] = await Promise.all([
       loadMemberProfile(), getAnimals(), getVaultLedgerTotal(), getMembraneEvents(50),
+      getLiveReadout(), getOuraToken(),
     ]);
     setProfile(p); setAnimals(an); setVault(v);
+    setReadout(live); setHasOuraToken(!!tok);
     const cannabisEvent = events.find(e => e.event_type === 'cannabis_layer_toggle');
     setCannabisOn(cannabisEvent ? !!cannabisEvent.value?.on : false);
     setLoaded(true);
@@ -265,14 +316,18 @@ export default function BioBuddyScreen() {
                 <Pressable onPress={() => goPage(2)}>
                   <Text style={st.empty}>No devices connected. Open the Membrane — add your stack and it reads here live.</Text>
                 </Pressable>
-              ) : hardware.map((key, i) => (
-                <View key={i} style={st.readoutRow}>
-                  <View style={[st.readoutDot, { backgroundColor: deviceDot(key) }]} />
-                  <Text style={st.readoutName}>{deviceName(key)}</Text>
-                  <View style={[st.readoutWave, { backgroundColor: deviceDot(key) + '55' }]} />
-                  <Text style={[st.readoutVal, { color: deviceDot(key) }]}>AWAITING SIGNAL</Text>
-                </View>
-              ))}
+              ) : hardware.map((key, i) => {
+                const metric = deviceMetric(key, readout);
+                const src = DEVICE_SOURCE[norm(key)];
+                return (
+                  <View key={i} style={st.readoutRow}>
+                    <View style={[st.readoutDot, { backgroundColor: deviceDot(key) }]} />
+                    <Text style={st.readoutName}>{deviceName(key)}</Text>
+                    <Sparkline values={src ? readout?.series[src] : undefined} color={deviceDot(key)} />
+                    <Text style={[st.readoutVal, { color: deviceDot(key) }]}>{metric ?? 'AWAITING SIGNAL'}</Text>
+                  </View>
+                );
+              })}
             </View>
 
             {/* FAMILY CHANNELS */}
@@ -532,6 +587,108 @@ export default function BioBuddyScreen() {
                 <Chip label="+ Add device" add onPress={() => setAddInput({ section: 'device', value: '' })} />
               </View>
               <AddInline section="device" field="wearables" current={hardware} subject="device:add" />
+            </View>
+
+            {/* CONNECT & SYNC — the device wire. Real feeds, honest states. */}
+            <View style={st.section}>
+              <Text style={st.seclabel}>CONNECT & SYNC · DEVICE WIRE</Text>
+
+              {/* OURA — cloud API */}
+              <View style={st.kvRow}>
+                <Pressable
+                  style={st.kv}
+                  onPress={() => setAddInput({ section: 'oura_token', value: '' })}
+                >
+                  <Text style={st.k}>OURA RING 4 · CLOUD API</Text>
+                  <Text style={[st.v, { color: hasOuraToken ? GREEN : CYAN }]}>
+                    {hasOuraToken ? 'TOKEN ON THE MEMBRANE ✓ · tap to replace' : 'Paste personal token → nightly feed'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('oura'); setSyncMsg(null);
+                    const r = await syncOura();
+                    setSyncMsg(`OURA — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>SYNC NOW</Text>
+                  <Text style={[st.v, { color: CYAN }]}>{syncing === 'oura' ? 'Syncing…' : 'Pull last 30 days →'}</Text>
+                </Pressable>
+              </View>
+              {addInput?.section === 'oura_token' && (
+                <View style={st.addRow}>
+                  <TextInput
+                    style={st.addInput}
+                    value={addInput.value}
+                    onChangeText={v => setAddInput({ section: 'oura_token', value: v })}
+                    placeholder="paste your Oura personal access token…"
+                    placeholderTextColor={FAINT}
+                    autoFocus
+                    autoCapitalize="none"
+                  />
+                  <Pressable
+                    style={st.addSave}
+                    onPress={async () => {
+                      const tok = addInput.value.trim();
+                      setAddInput(null);
+                      if (!tok) return;
+                      setSyncing('oura'); setSyncMsg(null); setSaveState('saving');
+                      const ok = await saveOuraToken(tok);
+                      if (!ok) {
+                        setSaveState('failed');
+                        setSyncMsg('OURA — token rejected by Oura. Check it at cloud.ouraring.com → personal access tokens.');
+                        setSyncing(null);
+                        return;
+                      }
+                      setHasOuraToken(true); setSaveState('saved');
+                      const r = await syncOura();
+                      setSyncMsg(`OURA — ${r.message}`);
+                      setSyncing(null);
+                      if (r.ok) await load();
+                    }}
+                  >
+                    <Text style={{ color: CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
+                  </Pressable>
+                </View>
+              )}
+
+              {/* GARMIN + STRAVA — official account exports */}
+              <View style={st.kvRow}>
+                <Pressable
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('garmin'); setSyncMsg(null);
+                    const r = await importGarminExport();
+                    setSyncMsg(`GARMIN — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>GARMIN TACTIX 8</Text>
+                  <Text style={[st.v, { color: CYAN }]}>{syncing === 'garmin' ? 'Reading…' : 'Import export JSON →'}</Text>
+                </Pressable>
+                <Pressable
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('strava'); setSyncMsg(null);
+                    const r = await importStravaExport();
+                    setSyncMsg(`STRAVA — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>STRAVA</Text>
+                  <Text style={[st.v, { color: CYAN }]}>{syncing === 'strava' ? 'Reading…' : 'Import activities.csv →'}</Text>
+                </Pressable>
+              </View>
+
+              {syncMsg ? <Text style={st.empty}>{syncMsg}</Text> : null}
             </View>
 
             {/* ACTIVITIES */}
