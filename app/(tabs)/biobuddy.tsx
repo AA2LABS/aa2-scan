@@ -10,10 +10,11 @@ import DoorCover from '@/components/DoorCover';
 import {
   loadMemberProfile, saveOnboardingField, saveAnimals, getAnimals,
   getVaultLedgerTotal, logMembraneEvent, getMembraneEvents,
-  saveSleepAids, getSleepAids,
+  saveSleepAids, getSleepAids, logAwareDollarsFollowed,
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
+import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
   importGarminExport, importStravaExport, getStackConsensus, getCoverage,
@@ -144,6 +145,9 @@ export default function BioBuddyScreen() {
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
   const [aficionadoArmed, setAficionadoArmed] = useState(false);
   const [sleepAids, setSleepAids] = useState<string[]>([]);
+  const [wasteSel, setWasteSel] = useState<string[]>([]);
+  const [wasteRerouted, setWasteRerouted] = useState(false);
+  const [rerouting, setRerouting] = useState(false);
   const [loaded, setLoaded]     = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage]         = useState(0);
@@ -164,6 +168,11 @@ export default function BioBuddyScreen() {
     setCoverage({ oura: covO, garmin: covG, strava: covS });
     const afEvent = events.find(e => e.event_type === 'restricted_layer_armed' && e.subject === 'Aficionado');
     setAficionadoArmed(afEvent ? !!(afEvent.value?.armed ?? true) : false);
+    const wasteEvent = events.find(e => e.event_type === 'waste_audit');
+    if (wasteEvent?.value) {
+      setWasteSel(Array.isArray(wasteEvent.value.selected) ? wasteEvent.value.selected : []);
+      setWasteRerouted(!!wasteEvent.value.rerouted);
+    }
     setLoaded(true);
   }, []);
 
@@ -752,6 +761,64 @@ export default function BioBuddyScreen() {
               <Text style={st.scopenote}>
                 Adds no signal — adds a condition. Your devices measure every night; the mask splits your history into mask nights and bare nights, and the membrane shows the difference with receipts.
               </Text>
+            </View>
+
+            {/* SPENDING LOAD · WASTE AUDIT — Waste-to-Dreams doctrine (locked
+                2026-08-01). Canon v17: the Equalizer owns subscription waste
+                identification; the Chauffeur owns savings rerouting. Version
+                One: no bank permissions — the member declares, the Equalizer
+                names the overlap, the reroute writes REAL vault_ledger rows.
+                The redirect earns the discount. */}
+            <View style={st.section}>
+              <Text style={st.seclabel}>SPENDING LOAD · WASTE AUDIT</Text>
+              <View style={st.chipRow}>
+                {WASTE_CATALOG.map((w, i) => {
+                  const sel = wasteSel.includes(w.key);
+                  return (
+                    <Chip
+                      key={i} label={`${w.name} · $${w.monthly.toFixed(2)}`} sel={sel}
+                      onPress={() => {
+                        const next = sel ? wasteSel.filter(k => k !== w.key) : [...wasteSel, w.key];
+                        setWasteSel(next); setWasteRerouted(false);
+                        logMembraneEvent({ eventType: 'waste_audit', sourceScreen: 'biobuddy', subject: 'waste_audit:select', value: { selected: next, rerouted: false } });
+                      }}
+                    />
+                  );
+                })}
+              </View>
+              {wasteSel.length > 0 && (
+                <>
+                  <Text style={[st.scopenote, { color: GOLD }]}>
+                    RECLAIMABLE · ${reclaimTotal(wasteSel).toFixed(2)}/MO — the membrane already does these jobs, personally. Cancel them, and this exact spend flows to your Vision Board instead.
+                  </Text>
+                  <Pressable
+                    disabled={rerouting || wasteRerouted}
+                    onPress={async () => {
+                      setRerouting(true);
+                      let ok = true;
+                      for (const k of wasteSel) {
+                        const w = WASTE_CATALOG.find(x => x.key === k);
+                        if (!w) continue;
+                        const r = await logAwareDollarsFollowed({
+                          productName: w.name,
+                          recommendation: w.replacedBy,
+                          amountSaved: w.monthly,
+                          source: 'waste_audit',
+                        });
+                        ok = ok && r;
+                      }
+                      await logMembraneEvent({ eventType: 'waste_audit', sourceScreen: 'biobuddy', subject: 'waste_audit:reroute', value: { selected: wasteSel, rerouted: ok, monthly: reclaimTotal(wasteSel) } });
+                      setWasteRerouted(ok);
+                      setRerouting(false);
+                      if (ok) await load();
+                    }}
+                    style={{ marginTop: 10, borderWidth: 1, borderColor: GOLD, borderRadius: 12, paddingVertical: 12, alignItems: 'center', opacity: wasteRerouted ? 0.55 : 1 }}>
+                    <Text style={{ fontFamily: 'DMMono-Medium', fontSize: 11, letterSpacing: 1.5, color: GOLD }}>
+                      {rerouting ? 'REROUTING…' : wasteRerouted ? `✓ REROUTED · $${reclaimTotal(wasteSel).toFixed(2)}/MO IN THE VAULT` : `REROUTE $${reclaimTotal(wasteSel).toFixed(2)}/MO → VAULT`}
+                    </Text>
+                  </Pressable>
+                </>
+              )}
             </View>
 
             {/* DIETARY APPROACH */}

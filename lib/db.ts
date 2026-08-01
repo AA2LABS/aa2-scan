@@ -275,6 +275,8 @@ export async function logAwareDollarsFollowed(input: {
   amountSaved:      number;
   scanResult?:      any;
   memberId?:        string | null;
+  /** 'scanner' (default) or 'waste_audit' — the Waste-to-Dreams reroute. */
+  source?:          string;
 }): Promise<boolean> {
   try {
     const { data: { user }, error: ue } = await supabase.auth.getUser();
@@ -283,7 +285,7 @@ export async function logAwareDollarsFollowed(input: {
     const { error } = await supabase.from('vault_ledger').insert({
       user_id:          user.id,
       member_id:        input.memberId ?? user.id,
-      source:           'scanner',
+      source:           input.source ?? 'scanner',
       product_name:     input.productName    ?? null,
       recommendation:   input.recommendation ?? null,
       alternative_name: input.alternativeName ?? null,
