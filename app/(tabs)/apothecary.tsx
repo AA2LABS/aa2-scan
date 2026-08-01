@@ -703,7 +703,7 @@ export default function ApothecaryScreen() {
               <Text style={[s.modeGlyph, mode === m.id && { color: activeColor }]}>
                 {m.glyph}
               </Text>
-              <Text style={[s.modeLabel, mode === m.id && { color: activeColor }]}>
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={[s.modeLabel, mode === m.id && { color: activeColor }]}>
                 {m.label}
               </Text>
             </TouchableOpacity>
@@ -1434,7 +1434,7 @@ const s = StyleSheet.create({
     gap: 4,
   },
   modeGlyph: { fontFamily: F.mono, fontSize: 16, color: C.dim },
-  modeLabel: { fontFamily: F.mono, fontSize: 8, color: C.dim, letterSpacing: 1.5 },
+  modeLabel: { fontFamily: F.mono, fontSize: 8, color: C.dim, letterSpacing: 0.8 },
 
   body: { flex: 1 },
 

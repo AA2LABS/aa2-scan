@@ -791,7 +791,7 @@ export default function ScannerScreen() {
                   activeTab===tab.id&&{borderBottomColor:tab.color,borderBottomWidth:2.5,backgroundColor:tab.color+'14'}]}
                 onPress={()=>{ if(tab.id==='apothecary'){ router.push('/apothecary' as any); return; } setActiveTab(tab.id); setResult(null); }}>
                 <Text style={s.tabIcon}>{tab.icon}</Text>
-                <Text style={[s.tabLabel,{color:activeTab===tab.id?tab.color:F.dimWhite}]}>{tab.label}</Text>
+                <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[s.tabLabel,{color:activeTab===tab.id?tab.color:F.dimWhite}]}>{tab.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -806,7 +806,7 @@ export default function ScannerScreen() {
               style={[s.subTab,{borderColor:speciesSub===sub.id?sub.color:P.border,backgroundColor:speciesSub===sub.id?sub.color+'1A':P.card}]}
               onPress={()=>{setSpeciesSub(sub.id);setResult(null);}}>
               <Text style={s.subTabIcon}>{sub.icon}</Text>
-              <Text style={[s.subTabLabel,{color:speciesSub===sub.id?sub.color:F.dimWhite}]}>{sub.label}</Text>
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[s.subTabLabel,{color:speciesSub===sub.id?sub.color:F.dimWhite,flexShrink:1}]}>{sub.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -819,7 +819,7 @@ export default function ScannerScreen() {
             <TouchableOpacity key={fm.id}
               style={[s.subTab,{borderColor:fishMode===fm.id?F.fishBlue:P.border,backgroundColor:fishMode===fm.id?F.fishBlue+'1A':P.card}]}
               onPress={()=>{setFishMode(fm.id);setResult(null);}}>
-              <Text style={[s.subTabLabel,{color:fishMode===fm.id?F.fishBlue:F.dimWhite,fontSize:8}]}>{fm.label}</Text>
+              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[s.subTabLabel,{color:fishMode===fm.id?F.fishBlue:F.dimWhite,fontSize:8,flexShrink:1}]}>{fm.label}</Text>
             </TouchableOpacity>
           ))}
         </View>
