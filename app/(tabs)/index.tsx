@@ -35,6 +35,7 @@ import { buildPersonalTruth, loadMemberProfile, saveScan, logAwareDollarsFollowe
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
 import { streamClaude, extractVerdict } from '../../lib/claude-stream';
 import { supabase } from '../../lib/supabase';
+import { deviceBuyLink } from '../../lib/affiliate-links';
 
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
 const PALETTES = {
@@ -209,6 +210,11 @@ function parseAwareAmount(text?: string | null): number | null {
 }
 
 async function handleWhereToBuy(productName: string): Promise<void> {
+  // AFFILIATE RAIL (Device Stack Unity Benefits doctrine): known catalog
+  // devices route to the brand store through the affiliate resolver — one
+  // file holds every tag. Everything else keeps the near-me maps search.
+  const deviceLink = deviceBuyLink(productName);
+  if (deviceLink) { try { await Linking.openURL(deviceLink); } catch {} return; }
   try {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
