@@ -344,22 +344,31 @@ export default function BioBuddyScreen() {
               <Text style={st.seclabel}>LIVE READOUT · FULL STACK</Text>
               {!loaded ? (
                 <Text style={st.empty}>Reading your stack…</Text>
-              ) : hardware.length === 0 ? (
-                <Pressable onPress={() => goPage(2)}>
-                  <Text style={st.empty}>No devices connected. Open the Membrane — add your stack and it reads here live.</Text>
-                </Pressable>
-              ) : hardware.map((key, i) => {
-                const metric = deviceMetric(key, readout);
-                const src = DEVICE_SOURCE[norm(key)];
-                return (
-                  <View key={i} style={st.readoutRow}>
-                    <View style={[st.readoutDot, { backgroundColor: deviceDot(key) }]} />
-                    <Text style={st.readoutName}>{deviceName(key)}</Text>
-                    <Sparkline values={src ? readout?.series[src] : undefined} color={deviceDot(key)} />
-                    <Text style={[st.readoutVal, { color: deviceDot(key) }]}>{metric ?? 'AWAITING SIGNAL'}</Text>
-                  </View>
-                );
-              })}
+              ) : (() => {
+                // FOUNDER LAW (2026-08-01): the full stack ALWAYS shows.
+                // Straight colored line when not connected · live waveform when
+                // connected · NO BLANK STATE — that is not how you sell a product.
+                const connected = new Set(hardware.map(h => norm(h)));
+                const extras = hardware.filter(h => !DEVICES.some(d => d.key === norm(h)));
+                const rows = [
+                  ...DEVICES.map(d => ({ key: d.key, on: connected.has(d.key) })),
+                  ...extras.map(h => ({ key: h, on: true })),
+                ];
+                return rows.map(({ key, on }, i) => {
+                  const metric = on ? deviceMetric(key, readout) : null;
+                  const src = on ? DEVICE_SOURCE[norm(key)] : undefined;
+                  return (
+                    <Pressable key={i} onPress={on ? undefined : () => goPage(2)} style={st.readoutRow}>
+                      <View style={[st.readoutDot, { backgroundColor: deviceDot(key), opacity: on ? 1 : 0.5 }]} />
+                      <Text style={[st.readoutName, !on && { color: MUT }]}>{deviceName(key)}</Text>
+                      <Sparkline values={on && src ? readout?.series[src] : undefined} color={deviceDot(key)} />
+                      <Text style={[st.readoutVal, { color: on ? deviceDot(key) : FAINT }]}>
+                        {on ? (metric ?? 'AWAITING SIGNAL') : 'CONNECT →'}
+                      </Text>
+                    </Pressable>
+                  );
+                });
+              })()}
             </View>
 
             {/* STACK CONSENSUS — same day · every device · one assessment */}

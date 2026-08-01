@@ -8,6 +8,8 @@
 // No Negative Zone: no judgment, no lecture, discreet by default.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { matchActivityInText } from './activity-catalog';
+
 export type ClarifierCategory =
   | 'intimacy'        // sexual activity — private, excluded from stress, recovery-relevant
   | 'excitement'      // positive life events — promotion, good news, celebration
@@ -45,7 +47,24 @@ const RULES: { cat: ClarifierCategory; test: RegExp }[] = [
 
 export function classifyClarification(note: string): Clarification {
   const text = String(note ?? '').trim();
-  const hit = RULES.find(r => r.test.test(text))?.cat ?? 'excitement';
+  let hit: ClarifierCategory | undefined = RULES.find(r => r.test.test(text))?.cat;
+
+  // WHOOP-scale recognition: if the member names ANY of the 500+ catalog
+  // activities, the spike files as exertion under that exact activity —
+  // unless the intimacy rule already claimed it (intimacy always wins and
+  // stays private).
+  const matched = hit === 'intimacy' ? null : matchActivityInText(text);
+  if (matched && matched.toLowerCase() === 'intimacy') { hit = 'intimacy'; }
+  else if (matched && (!hit || hit === 'excitement' || hit === 'exercise')) {
+    return {
+      category: 'exercise',
+      excludeFromStressBaseline: true,
+      privateEntry: false,
+      reclassLine: `Reclassified STRESS → EXERTION · ${matched} · counted as activity, not distress`,
+      recoveryNote: `${matched} logged to today's activity picture — the membrane knows this one.`,
+    };
+  }
+  if (!hit) hit = 'excitement';
 
   switch (hit) {
     case 'intimacy':
