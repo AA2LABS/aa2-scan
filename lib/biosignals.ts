@@ -245,3 +245,81 @@ export async function importStravaExport(): Promise<SyncResult> {
     return { ok: false, days: 0, message: `Could not read that file as a Strava export. ${e?.message ?? ''}`.trim() };
   }
 }
+
+// ── STACK CONSENSUS — same day · every device · one assessment ───────────────
+// The founder's law (2026-08-01): AA2 takes the same daily data and gives an
+// assessment of all devices compared. Deterministic — computed from the
+// member's own readings, never improvised.
+export type ConsensusRow = { metric: string; values: { source: BiosignalSource; label: string }[] };
+export type StackConsensus = {
+  day: string | null;
+  rows: ConsensusRow[];
+  notes: string[];              // the assessment lines
+};
+
+export async function getStackConsensus(): Promise<StackConsensus> {
+  const empty: StackConsensus = { day: null, rows: [], notes: [] };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return empty;
+
+    const { data, error } = await supabase
+      .from('biosignal_readings')
+      .select('source, reading_date, hrv_rmssd, sleep_score, readiness_score, activity_score, stress_level')
+      .eq('member_id', user.id)
+      .order('reading_date', { ascending: false })
+      .limit(400);
+    if (error || !data?.length) return empty;
+
+    // Group by day; find the newest day carrying 2+ sources.
+    const byDay = new Map<string, any[]>();
+    for (const r of data) {
+      const arr = byDay.get(r.reading_date) ?? [];
+      arr.push(r); byDay.set(r.reading_date, arr);
+    }
+    const day = [...byDay.keys()].find(d => (byDay.get(d)?.length ?? 0) >= 2) ?? null;
+    if (!day) return { day: null, rows: [], notes: ['One source on the wire so far — connect a second device and the consensus reads begin.'] };
+
+    const rows: ConsensusRow[] = [];
+    const dayRows = byDay.get(day)!;
+    const push = (metric: string, field: string, fmt: (v: number) => string) => {
+      const values = dayRows
+        .filter(r => r[field] != null)
+        .map(r => ({ source: r.source as BiosignalSource, label: fmt(Number(r[field])) }));
+      if (values.length) rows.push({ metric, values });
+    };
+    push('SLEEP',     'sleep_score',     v => `${Math.round(v)}`);
+    push('READINESS', 'readiness_score', v => `${Math.round(v)}`);
+    push('HRV',       'hrv_rmssd',       v => `${Math.round(v)}ms`);
+    push('STRESS',    'stress_level',    v => `${Math.round(v)}`);
+    push('ACTIVITY',  'activity_score',  v => `${v}`);
+
+    // Assessment: 90-day sleep-score offset between sources that share nights.
+    const notes: string[] = [];
+    const sleepPairs: Record<string, number[]> = {};
+    for (const [, rs] of byDay) {
+      const withSleep = rs.filter(r => r.sleep_score != null);
+      for (let i = 0; i < withSleep.length; i++) {
+        for (let j = i + 1; j < withSleep.length; j++) {
+          const key = [withSleep[i].source, withSleep[j].source].sort().join('·');
+          (sleepPairs[key] ??= []).push(Number(withSleep[i].sleep_score) - Number(withSleep[j].sleep_score));
+        }
+      }
+    }
+    for (const [pair, diffs] of Object.entries(sleepPairs)) {
+      if (diffs.length < 5) continue;
+      const [a, b] = pair.split('·');
+      const mean = diffs.reduce((x, y) => x + y, 0) / diffs.length;
+      const hi = mean >= 0 ? a : b;
+      const lo = mean >= 0 ? b : a;
+      notes.push(
+        `${diffs.length} shared nights: ${hi.toUpperCase()} scores sleep ${Math.abs(mean).toFixed(0)} points above ${lo.toUpperCase()}. Neither is lying — different instruments, different judges. Trust each device's TREND against its own baseline, not one night's number.`,
+      );
+    }
+    const sleepRow = rows.find(r => r.metric === 'SLEEP');
+    if (sleepRow && sleepRow.values.length >= 2) {
+      notes.push('Same body, same night, every judge on the record above — divergence itself is data: when ALL sources dip together, that is a real signal.');
+    }
+    return { day, rows, notes };
+  } catch { return empty; }
+}

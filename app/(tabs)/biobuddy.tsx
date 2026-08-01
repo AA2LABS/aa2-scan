@@ -14,8 +14,8 @@ import {
 } from '../../lib/db';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
-  importGarminExport, importStravaExport,
-  type LiveReadout, type BiosignalSource,
+  importGarminExport, importStravaExport, getStackConsensus,
+  type LiveReadout, type BiosignalSource, type StackConsensus,
 } from '../../lib/biosignals';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -57,9 +57,13 @@ function deviceName(key: string): string {
   const hit = DEVICES.find(d => d.key === norm(key));
   return hit ? hit.name : String(key);
 }
+const SOURCE_DOT: Record<string, string> = {
+  garmin: CYAN, oura: GREEN, strava: '#5CD65C', whoop: '#7CE7C4', beats: GOLD, manual: '#8fd6ff',
+};
+
 function deviceDot(key: string): string {
   const hit = DEVICES.find(d => d.key === norm(key));
-  return hit ? hit.dot : CYAN;
+  return hit ? hit.dot : SOURCE_DOT[norm(key)] ?? CYAN;
 }
 
 // Device → biosignal source. The wire's metric per row comes from real rows
@@ -131,6 +135,7 @@ export default function BioBuddyScreen() {
   const [animals, setAnimals]   = useState<AnimalRow[]>([]);
   const [vault, setVault]       = useState<{ total: number } | null>(null);
   const [readout, setReadout]   = useState<LiveReadout | null>(null);
+  const [consensus, setConsensus] = useState<StackConsensus | null>(null);
   const [hasOuraToken, setHasOuraToken] = useState(false);
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
@@ -144,12 +149,12 @@ export default function BioBuddyScreen() {
   const jumped = useRef(false);
 
   const load = useCallback(async () => {
-    const [p, an, v, events, live, tok] = await Promise.all([
+    const [p, an, v, events, live, tok, cons] = await Promise.all([
       loadMemberProfile(), getAnimals(), getVaultLedgerTotal(), getMembraneEvents(50),
-      getLiveReadout(), getOuraToken(),
+      getLiveReadout(), getOuraToken(), getStackConsensus(),
     ]);
     setProfile(p); setAnimals(an); setVault(v);
-    setReadout(live); setHasOuraToken(!!tok);
+    setReadout(live); setHasOuraToken(!!tok); setConsensus(cons);
     const cannabisEvent = events.find(e => e.event_type === 'cannabis_layer_toggle');
     setCannabisOn(cannabisEvent ? !!cannabisEvent.value?.on : false);
     setLoaded(true);
@@ -329,6 +334,30 @@ export default function BioBuddyScreen() {
                 );
               })}
             </View>
+
+            {/* STACK CONSENSUS — same day · every device · one assessment */}
+            {consensus?.day ? (
+              <View style={st.section}>
+                <Text style={st.seclabel}>STACK CONSENSUS · {consensus.day} · EVERY DEVICE</Text>
+                {consensus.rows.map((row, i) => (
+                  <View key={i} style={st.consensusRow}>
+                    <Text style={st.consensusMetric}>{row.metric}</Text>
+                    <View style={st.consensusVals}>
+                      {row.values.map((v, j) => (
+                        <View key={j} style={st.consensusVal}>
+                          <View style={[st.readoutDot, { backgroundColor: deviceDot(v.source) }]} />
+                          <Text style={st.consensusSrc}>{v.source.toUpperCase()}</Text>
+                          <Text style={[st.consensusNum, { color: deviceDot(v.source) }]}>{v.label}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ))}
+                {consensus.notes.map((n, i) => (
+                  <Text key={i} style={st.consensusNote}>{n}</Text>
+                ))}
+              </View>
+            ) : null}
 
             {/* FAMILY CHANNELS */}
             <View style={st.section}>
@@ -1068,5 +1097,20 @@ const st = StyleSheet.create({
   note: {
     fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
     textAlign: 'center', marginTop: 20, marginHorizontal: 24, lineHeight: 14,
+  },
+
+  consensusRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    borderRadius: 12, padding: 12, marginBottom: 8,
+  },
+  consensusMetric: { fontFamily: 'DMMono-Medium', fontSize: 9.5, letterSpacing: 1.5, color: MUT, width: 78 },
+  consensusVals: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'flex-end' },
+  consensusVal: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  consensusSrc: { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 1, color: FAINT },
+  consensusNum: { fontFamily: 'BebasNeue-Regular', fontSize: 19 },
+  consensusNote: {
+    fontFamily: 'CormorantGaramond-Italic', fontStyle: 'italic', fontSize: 13.5,
+    color: MUT, lineHeight: 19, marginTop: 6, paddingHorizontal: 2,
   },
 });
