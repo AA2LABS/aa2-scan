@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable,
-  TouchableOpacity, TextInput, Switch,
+  TouchableOpacity, TextInput, Alert,
 } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import Svg, { Polyline } from 'react-native-svg';
@@ -45,10 +45,10 @@ const DEVICES: { key: string; name: string; dot: string }[] = [
   { key: 'strava',          name: 'Strava',          dot: '#5CD65C' },
 ];
 
-const ACTIVITY_CHIPS = ['Hiking', 'Strength', 'Backcountry Ski', 'Trail Run', 'Cycling', 'Yoga', 'Fly Fishing', 'Ranch Work'];
+const ACTIVITY_CHIPS = ['Hiking', 'Strength', 'Backcountry Ski', 'Trail Run', 'Cycling', 'Fly Fishing', 'Ranch Work'];
 const HOBBY_CHIPS    = ['Woodworking', 'Sound Engineering', 'Cooking', 'Photography'];
-const DIET_CHIPS     = ['Omnivore', 'Vegetarian', 'Vegan', 'Keto', 'Paleo', 'Mediterranean', 'Halal', 'Kosher', 'Gluten-Free'];
-const ALLERGY_CHIPS  = ['Tree Nuts', 'Sesame', 'Sulfites', 'Shellfish', 'Gluten', 'Dairy'];
+const DIET_CHIPS     = ['Omnivore', 'Mediterranean', 'Keto', 'Paleo', 'Vegan'];
+const ALLERGY_CHIPS  = ['Tree Nuts', 'Sesame', 'Sulfites', 'Shellfish'];
 const TACTICAL_ORGS  = ['WADA', 'FEI', 'DoD', 'USADA'];
 
 const norm = (s: string) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -140,7 +140,7 @@ export default function BioBuddyScreen() {
   const [hasOuraToken, setHasOuraToken] = useState(false);
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
-  const [cannabisOn, setCannabisOn] = useState(false);
+  const [aficionadoArmed, setAficionadoArmed] = useState(false);
   const [loaded, setLoaded]     = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage]         = useState(0);
@@ -158,8 +158,8 @@ export default function BioBuddyScreen() {
     setProfile(p); setAnimals(an); setVault(v);
     setReadout(live); setHasOuraToken(!!tok); setConsensus(cons);
     setCoverage({ oura: covO, garmin: covG, strava: covS });
-    const cannabisEvent = events.find(e => e.event_type === 'cannabis_layer_toggle');
-    setCannabisOn(cannabisEvent ? !!cannabisEvent.value?.on : false);
+    const afEvent = events.find(e => e.event_type === 'restricted_layer_armed' && e.subject === 'Aficionado');
+    setAficionadoArmed(afEvent ? !!(afEvent.value?.armed ?? true) : false);
     setLoaded(true);
   }, []);
 
@@ -206,14 +206,37 @@ export default function BioBuddyScreen() {
   const pets = animals.filter(a => !/(horse|equine|cattle|cow|livestock|goat|sheep|pig)/i.test(a.species));
   const herd = animals.filter(a =>  /(horse|equine|cattle|cow|livestock|goat|sheep|pig)/i.test(a.species));
 
-  const toggleCannabis = async (on: boolean) => {
-    setCannabisOn(on);
-    setSaveState('saving');
-    const ok = await logMembraneEvent({
-      eventType: 'cannabis_layer_toggle', sourceScreen: 'biobuddy',
-      subject: 'Cannabis Layer (member-level)', value: { on },
-    });
-    setSaveState(ok ? 'saved' : 'failed');
+  // ARM TO ENABLE — restricted layers require deliberate action (law copy).
+  const armLayer = (layer: string) => {
+    Alert.alert(
+      layer === 'Aficionado' ? 'ARM AFICIONADO?' : 'ARM TACTICAL · COMMANDER LAYER?',
+      'This unlocks a restricted command system. Deliberate action required — it will not activate by accident.',
+      [
+        { text: 'CANCEL', style: 'cancel' },
+        {
+          text: 'YES · ARM',
+          onPress: async () => {
+            setSaveState('saving');
+            if (layer === 'Aficionado') {
+              setAficionadoArmed(true);
+              const ok = await logMembraneEvent({
+                eventType: 'restricted_layer_armed', sourceScreen: 'biobuddy',
+                subject: 'Aficionado', value: { armed: true },
+              });
+              setSaveState(ok ? 'saved' : 'failed');
+            } else {
+              const ok = await saveOnboardingField('commander_layer_active', true);
+              logMembraneEvent({
+                eventType: 'restricted_layer_armed', sourceScreen: 'biobuddy',
+                subject: 'Tactical · Commander Layer', value: { armed: true },
+              });
+              setSaveState(ok ? 'saved' : 'failed');
+              if (ok) await load();
+            }
+          },
+        },
+      ],
+    );
   };
 
   const refresh = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={CYAN} />;
@@ -278,7 +301,7 @@ export default function BioBuddyScreen() {
               withText="Every scan reads YOUR baseline, family, pets, herd."
               withoutLabel="WITHOUT"
               withoutText="Generic truth. A blank chart."
-              openLabel="◆ OPEN THE DOOR"
+              openLabel="Continue →"
               accent={CYAN}
               onOpen={() => goPage(1)}
             />
@@ -290,12 +313,14 @@ export default function BioBuddyScreen() {
           <ScrollView style={st.body} contentContainerStyle={{ paddingBottom: 40 }} refreshControl={refresh}>
 
             <View style={st.subhead}>
-              <Text style={st.subheadL}>◆ BIO BUDDY · CONTROL PANEL</Text>
-              <Text style={st.subheadR}>MEMBRANE LIVE</Text>
+              <Pressable onPress={() => goPage(0)} hitSlop={8}>
+                <Text style={st.subheadR}>← BACK</Text>
+              </Pressable>
+              <Text style={st.subheadL}>MEMBRANE LIVE</Text>
             </View>
 
             <Pressable style={st.ask} onPress={() => router.push('/(tabs)/concierge' as Href)}>
-              <Text style={st.askQ}>HOW CAN I HELP YOU?</Text>
+              <Text style={st.askQ}>How can I help you?</Text>
               <Text style={st.askMic}>🎤</Text>
             </Pressable>
 
@@ -310,8 +335,7 @@ export default function BioBuddyScreen() {
                 </Text>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Text style={st.memberPct}>{acc}%</Text>
-                <Text style={st.memberPctL}>MEMBRANE ACCURACY</Text>
+                <Text style={st.memberPctL}>{acc}% ACCURACY</Text>
               </View>
             </View>
 
@@ -470,30 +494,6 @@ export default function BioBuddyScreen() {
               ))}
             </View>
 
-            {/* ACTIVITIES */}
-            <View style={st.section}>
-              <Text style={st.seclabel}>ACTIVITIES</Text>
-              <View style={st.chipRow}>
-                {activities.filter(a => !HOBBY_CHIPS.some(h => norm(h) === norm(a))).length === 0
-                  ? <Text style={st.empty}>None yet — set them on the Membrane.</Text>
-                  : activities.filter(a => !HOBBY_CHIPS.some(h => norm(h) === norm(a))).map((a, i) => (
-                    <Chip key={i} label={a} sel />
-                  ))}
-              </View>
-            </View>
-
-            {/* HOBBIES */}
-            <View style={st.section}>
-              <Text style={st.seclabel}>HOBBIES</Text>
-              <View style={st.chipRow}>
-                {activities.filter(a => HOBBY_CHIPS.some(h => norm(h) === norm(a))).length === 0
-                  ? <Text style={st.empty}>None yet — set them on the Membrane.</Text>
-                  : activities.filter(a => HOBBY_CHIPS.some(h => norm(h) === norm(a))).map((a, i) => (
-                    <Chip key={i} label={a} sel />
-                  ))}
-              </View>
-            </View>
-
             {/* DIETARY · ALLERGIES */}
             <View style={st.section}>
               <Text style={st.seclabel}>DIETARY · ALLERGIES</Text>
@@ -511,32 +511,14 @@ export default function BioBuddyScreen() {
               </View>
             </View>
 
-            {/* MEDICATIONS · HEALTH & GOALS */}
+            {/* AFICIONADO — opt-in, default OFF (law: restricted layer) */}
             <View style={st.section}>
-              <Text style={st.seclabel}>MEDICATIONS · HEALTH & GOALS</Text>
-              <View style={st.kvRow}>
-                <View style={st.kv}>
-                  <Text style={st.k}>MEDICATIONS</Text>
-                  <Text style={[st.v, { color: meds ? INK : GREEN }]}>{meds || 'No Current Medications'}</Text>
+              <Pressable style={st.toggleRow} onPress={() => router.push('/aficionado' as Href)}>
+                <Text style={st.toggleLbl}>Aficionado</Text>
+                <View style={[st.tag, aficionadoArmed ? st.tagGold : st.tagGoldDim]}>
+                  <Text style={[st.tagTxt, { color: GOLD }]}>{aficionadoArmed ? 'OPT-IN · ARMED' : 'OPT-IN · OFF'}</Text>
                 </View>
-                <View style={st.kv}>
-                  <Text style={st.k}>30 / 60 / 90 TRAJECTORY</Text>
-                  <Text style={st.v}>{goals.length ? goals.join(' · ') : 'Not set'}</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* CANNABIS LAYER */}
-            <View style={st.section}>
-              <View style={st.toggleRow}>
-                <Text style={st.toggleLbl}>Cannabis Layer</Text>
-                <Switch
-                  value={cannabisOn}
-                  onValueChange={toggleCannabis}
-                  trackColor={{ false: 'rgba(255,255,255,0.15)', true: 'rgba(52,211,153,0.5)' }}
-                  thumbColor={cannabisOn ? GREEN : '#888'}
-                />
-              </View>
+              </Pressable>
             </View>
 
             {/* AWARE DOLLARS */}
@@ -557,26 +539,8 @@ export default function BioBuddyScreen() {
               </Pressable>
             </View>
 
-            {/* CONTROL PANEL DOORS — reached via control panel scroll */}
-            <View style={st.section}>
-              <Text style={st.seclabel}>DOORS · REACHED FROM THIS PANEL</Text>
-              <View style={st.doorGrid}>
-                {([
-                  ['THE CHEF', '/(tabs)/chef'], ['K9 / FELINE', '/k9'], ['EQUINE', '/equine'],
-                  ['AGRICULTURAL', '/agricultural'], ['VISION BOARD', '/vision-board'],
-                  ['AFICIONADO', '/aficionado'], ['TRAVEL', '/travel'],
-                  ['THE VAULT', '/vision-board'], ['LEARNING CENTER', '/depth-on-demand'],
-                ] as [string, string][]).map(([label, route], i) => (
-                  <Pressable key={i} style={st.doorChip} onPress={() => router.push(route as Href)}>
-                    <Text style={st.doorChipTxt}>{label}</Text>
-                    <Text style={st.doorChipArr}>›</Text>
-                  </Pressable>
-                ))}
-              </View>
-            </View>
-
             <Text style={st.note}>
-              THE EVERYTHING-HUB. SENSING FACE — LIVE. EVERY LIFE, EVERY SIGNAL, ON ONE SCREEN. TAP MEMBRANE TO CHANGE IT.
+              THE EVERYTHING-HUB. SENSING FACE — LIVE. TAP MEMBRANE TO CHANGE IT.
             </Text>
           </ScrollView>
         </View>
@@ -586,16 +550,16 @@ export default function BioBuddyScreen() {
           <ScrollView style={st.body} contentContainerStyle={{ paddingBottom: 40 }} refreshControl={refresh}>
 
             <View style={st.subhead}>
-              <Text style={st.subheadL}>◆ MEMBRANE · ADD / SUBTRACT</Text>
               <Pressable onPress={() => goPage(1)} hitSlop={8}>
                 <Text style={st.subheadR}>← BACK TO PANEL</Text>
               </Pressable>
+              <Text style={st.subheadL}>ADD / SUBTRACT</Text>
             </View>
 
             <Pressable style={st.change} onPress={() => router.push('/(tabs)/onboarding?mode=edit' as Href)}>
               <View style={{ flex: 1 }}>
                 <Text style={st.changeQ}>Change anything.</Text>
-                <Text style={st.changeSub}>add a life, a device, a goal…</Text>
+                <Text style={st.changeSub}>add a life, device, goal…</Text>
               </View>
               <Text style={st.askMic}>🎤</Text>
             </Pressable>
@@ -747,21 +711,6 @@ export default function BioBuddyScreen() {
               <AddInline section="activity" field="activities" current={activities} subject="activity:add" />
             </View>
 
-            {/* HOBBIES */}
-            <View style={st.section}>
-              <Text style={st.seclabel}>HOBBIES</Text>
-              <View style={st.chipRow}>
-                {HOBBY_CHIPS.map((a, i) => (
-                  <Chip
-                    key={i} label={a} sel={activitySel.has(norm(a))}
-                    onPress={() => write('activities', toggleArr(activities, a), `hobby:${a}`)}
-                  />
-                ))}
-                <Chip label="+ Add" add onPress={() => setAddInput({ section: 'hobby', value: '' })} />
-              </View>
-              <AddInline section="hobby" field="activities" current={activities} subject="hobby:add" />
-            </View>
-
             {/* DIETARY APPROACH */}
             <View style={st.section}>
               <Text style={st.seclabel}>DIETARY APPROACH · single select</Text>
@@ -861,30 +810,13 @@ export default function BioBuddyScreen() {
               )}
             </View>
 
-            {/* TACTICAL · COMMANDER LAYER */}
-            <View style={st.section}>
-              <Text style={st.seclabel}>TACTICAL · COMMANDER LAYER</Text>
-              <View style={st.chipRow}>
-                <Chip
-                  label="+ Tactical Unit" add
-                  onPress={() => write('commander_layer_active', !commander, 'commander_layer')}
-                />
-                {TACTICAL_ORGS.map((o, i) => (
-                  <Chip
-                    key={i} label={o} sel={commander}
-                    onPress={() => write('commander_layer_active', !commander, `commander:${o}`)}
-                  />
-                ))}
-              </View>
-            </View>
-
             {/* MEDICATIONS · HEALTH RECORDS */}
             <View style={st.section}>
               <Text style={st.seclabel}>MEDICATIONS · HEALTH RECORDS</Text>
               <View style={st.kvRow}>
                 <Pressable style={st.kv} onPress={() => setAddInput({ section: 'meds', value: meds ?? '' })}>
                   <Text style={st.k}>MEDICATIONS</Text>
-                  <Text style={[st.v, { color: meds ? INK : GREEN }]}>{meds || 'No Current Medications'}</Text>
+                  <Text style={[st.v, { color: meds ? INK : GREEN }]}>{meds || 'No Current Meds'}</Text>
                 </Pressable>
                 <Pressable style={st.kv} onPress={() => router.push('/biomarkers' as Href)}>
                   <Text style={st.k}>BYAR PRINTABLES</Text>
@@ -903,47 +835,55 @@ export default function BioBuddyScreen() {
                   </Pressable>
                 </View>
               )}
-              <View style={st.kvRow}>
-                <Pressable style={st.kv} onPress={() => setAddInput({ section: 'ns30', value: profile?.northStar30d ?? '' })}>
-                  <Text style={st.k}>NORTH STAR · 30D</Text>
-                  <Text style={st.v}>{profile?.northStar30d ?? 'Not set'}</Text>
-                </Pressable>
-                <Pressable style={st.kv} onPress={() => setAddInput({ section: 'ns90', value: profile?.northStar90d ?? '' })}>
-                  <Text style={st.k}>NORTH STAR · 90D</Text>
-                  <Text style={st.v}>{profile?.northStar90d ?? 'Not set'}</Text>
-                </Pressable>
-              </View>
-              {(addInput?.section === 'ns30' || addInput?.section === 'ns90') && (
-                <View style={st.addRow}>
-                  <TextInput
-                    style={st.addInput} value={addInput.value}
-                    onChangeText={v => setAddInput({ section: addInput.section, value: v })}
-                    placeholder={addInput.section === 'ns30' ? '30-day north star…' : '90-day north star…'}
-                    placeholderTextColor={FAINT} autoFocus
-                  />
-                  <Pressable
-                    style={st.addSave}
-                    onPress={() => {
-                      write(addInput.section === 'ns30' ? 'north_star_30d' : 'north_star_90d', addInput.value.trim(), addInput.section);
-                      setAddInput(null);
-                    }}
-                  >
-                    <Text style={{ color: CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
-                  </Pressable>
-                </View>
-              )}
             </View>
 
-            {/* CANNABIS LAYER (member-level) */}
+            {/* RESTRICTED LAYERS · ARM TO ENABLE — law: deliberate action required */}
             <View style={st.section}>
-              <View style={st.toggleRow}>
-                <Text style={st.toggleLbl}>Cannabis Layer (member-level)</Text>
-                <Switch
-                  value={cannabisOn}
-                  onValueChange={toggleCannabis}
-                  trackColor={{ false: 'rgba(255,255,255,0.15)', true: 'rgba(52,211,153,0.5)' }}
-                  thumbColor={cannabisOn ? GREEN : '#888'}
-                />
+              <Text style={[st.seclabel, { color: GOLD }]}>RESTRICTED LAYERS · ARM TO ENABLE</Text>
+
+              {/* AFICIONADO */}
+              <Pressable
+                style={st.toggleRow}
+                onPress={() => aficionadoArmed ? router.push('/aficionado' as Href) : armLayer('Aficionado')}
+              >
+                <Text style={st.toggleLbl}>Aficionado</Text>
+                <View style={[st.tag, aficionadoArmed ? st.tagGold : st.tagGoldDim]}>
+                  <Text style={[st.tagTxt, { color: GOLD }]}>{aficionadoArmed ? 'OPT-IN · ARMED' : 'OPT-IN · OFF'}</Text>
+                </View>
+              </Pressable>
+              <View style={st.lockedBox}>
+                <Text style={st.lockedLbl}>🔒 AFICIONADO · {aficionadoArmed ? 'ARMED' : 'LOCKED UNTIL ARMED'}</Text>
+                <View style={st.chipRow}>
+                  {['Strain & Leaf', 'Contaminant Screen', 'Dose', 'Interaction Check', 'Cigar Page'].map((c, i) => (
+                    <View key={i} style={[st.chip, aficionadoArmed ? st.chipSel : st.chipLocked]}>
+                      <Text style={[st.chipTxt, !aficionadoArmed && { color: FAINT }]}>{c}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* TACTICAL · COMMANDER LAYER */}
+              <Pressable
+                style={[st.toggleRow, { marginTop: 10 }]}
+                onPress={() => commander ? write('commander_layer_active', false, 'commander_layer:disarm') : armLayer('Tactical · Commander Layer')}
+              >
+                <Text style={st.toggleLbl}>Tactical · Commander Layer</Text>
+                <View style={[st.tag, commander ? st.tagGold : st.tagGoldDim]}>
+                  <Text style={[st.tagTxt, { color: GOLD }]}>{commander ? 'ARMED' : 'OFF'}</Text>
+                </View>
+              </Pressable>
+              <View style={st.lockedBox}>
+                <Text style={st.lockedLbl}>🔒 TACTICAL · COMMANDER LAYER · {commander ? 'ARMED' : 'LOCKED'}</Text>
+                <View style={st.chipRow}>
+                  {['+ Tactical Unit', 'WADA', 'FEI', 'DoD', 'USADA', 'K9 ONLY'].map((c, i) => (
+                    <View key={i} style={[st.chip, commander ? st.chipSel : st.chipLocked]}>
+                      <Text style={[st.chipTxt, !commander && { color: FAINT }]}>{c}</Text>
+                    </View>
+                  ))}
+                </View>
+                <Text style={st.scopenote}>
+                  SEPARATE PANEL SET · DISTINCT LOOK. HAS THE FULL SYSTEM EXCEPT species / ag / Chef / Chauffeur / Equine. Within species: K9 ONLY. Built after everything else is wired.
+                </Text>
               </View>
             </View>
 
@@ -965,7 +905,7 @@ export default function BioBuddyScreen() {
             </View>
 
             <Text style={st.note}>
-              ACTING FACE. EVERY CHANGE WRITES THE SAME TABLES THE CONTROL PANEL READS — CHANGE HERE, THE PANEL UPDATES INSTANTLY. THE NERVOUS SYSTEM.
+              ACTING FACE. EVERY CHANGE WRITES THE SAME TABLES THE PANEL READS. THE NERVOUS SYSTEM.
             </Text>
           </ScrollView>
         </View>
@@ -1033,6 +973,7 @@ const st = StyleSheet.create({
   tagGreen: { backgroundColor: 'rgba(52,211,153,0.12)', borderColor: 'rgba(52,211,153,0.35)' },
   tagCyan:  { backgroundColor: 'rgba(27,184,255,0.10)', borderColor: 'rgba(27,184,255,0.35)' },
   tagGold:  { backgroundColor: 'rgba(212,168,71,0.10)', borderColor: 'rgba(212,168,71,0.40)' },
+  tagGoldDim: { backgroundColor: 'rgba(212,168,71,0.05)', borderColor: 'rgba(212,168,71,0.25)' },
   tagTxt: { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 1 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
@@ -1042,6 +983,7 @@ const st = StyleSheet.create({
   },
   chipSel: { borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.10)' },
   chipAdd: { borderStyle: 'dashed', borderColor: 'rgba(27,184,255,0.35)' },
+  chipLocked: { opacity: 0.45 },
   chipTxt: { fontFamily: 'DMSans-Regular', fontSize: 12.5, color: INK },
 
   addRow: { flexDirection: 'row', gap: 8, marginTop: 10, alignItems: 'center' },
@@ -1109,6 +1051,16 @@ const st = StyleSheet.create({
   note: {
     fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
     textAlign: 'center', marginTop: 20, marginHorizontal: 24, lineHeight: 14,
+  },
+
+  lockedBox: {
+    marginTop: 8, borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(212,168,71,0.25)',
+    borderRadius: 12, padding: 12, backgroundColor: 'rgba(212,168,71,0.04)',
+  },
+  lockedLbl: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.5, color: GOLD, marginBottom: 9 },
+  scopenote: {
+    fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 0.5, color: FAINT,
+    lineHeight: 13, marginTop: 9,
   },
 
   consensusRow: {
