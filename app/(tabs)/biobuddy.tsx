@@ -14,8 +14,8 @@ import {
 } from '../../lib/db';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
-  importGarminExport, importStravaExport, getStackConsensus,
-  type LiveReadout, type BiosignalSource, type StackConsensus,
+  importGarminExport, importStravaExport, getStackConsensus, getCoverage,
+  type LiveReadout, type BiosignalSource, type StackConsensus, type SourceCoverage,
 } from '../../lib/biosignals';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -136,6 +136,7 @@ export default function BioBuddyScreen() {
   const [vault, setVault]       = useState<{ total: number } | null>(null);
   const [readout, setReadout]   = useState<LiveReadout | null>(null);
   const [consensus, setConsensus] = useState<StackConsensus | null>(null);
+  const [coverage, setCoverage] = useState<Partial<Record<BiosignalSource, SourceCoverage>>>({});
   const [hasOuraToken, setHasOuraToken] = useState(false);
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
@@ -149,12 +150,14 @@ export default function BioBuddyScreen() {
   const jumped = useRef(false);
 
   const load = useCallback(async () => {
-    const [p, an, v, events, live, tok, cons] = await Promise.all([
+    const [p, an, v, events, live, tok, cons, covO, covG, covS] = await Promise.all([
       loadMemberProfile(), getAnimals(), getVaultLedgerTotal(), getMembraneEvents(50),
       getLiveReadout(), getOuraToken(), getStackConsensus(),
+      getCoverage('oura'), getCoverage('garmin'), getCoverage('strava'),
     ]);
     setProfile(p); setAnimals(an); setVault(v);
     setReadout(live); setHasOuraToken(!!tok); setConsensus(cons);
+    setCoverage({ oura: covO, garmin: covG, strava: covS });
     const cannabisEvent = events.find(e => e.event_type === 'cannabis_layer_toggle');
     setCannabisOn(cannabisEvent ? !!cannabisEvent.value?.on : false);
     setLoaded(true);
@@ -621,6 +624,15 @@ export default function BioBuddyScreen() {
             {/* CONNECT & SYNC — the device wire. Real feeds, honest states. */}
             <View style={st.section}>
               <Text style={st.seclabel}>CONNECT & SYNC · DEVICE WIRE</Text>
+              {(['oura', 'garmin', 'strava'] as BiosignalSource[]).some(k => (coverage[k]?.days ?? 0) > 0) && (
+                <Text style={st.empty}>
+                  {(['oura', 'garmin', 'strava'] as BiosignalSource[])
+                    .filter(k => (coverage[k]?.days ?? 0) > 0)
+                    .map(k => `${k.toUpperCase()} · ${coverage[k]!.days} days on the membrane (${coverage[k]!.firstDate} → ${coverage[k]!.lastDate})`)
+                    .join('\n')}
+                  {'\n'}Re-imports never overlap — days already held are refreshed in place, never double-counted.
+                </Text>
+              )}
 
               {/* OURA — cloud API */}
               <View style={st.kvRow}>

@@ -50,6 +50,24 @@ async function upsertReadings(rows: BiosignalRow[]): Promise<SyncResult> {
       stress_level:    r.stress ?? null,
     }));
 
+    // NO-OVERLAP INTELLIGENCE: the membrane never double-counts a day.
+    // (member_id, reading_date, source) is unique — a re-import refreshes in
+    // place. Here we also COUNT what was already held, so the member is told
+    // "new" vs "already had it" instead of silently writing.
+    const dates = rows.map(r => r.readingDate);
+    const lo = dates.reduce((a, b) => (a < b ? a : b));
+    const hi = dates.reduce((a, b) => (a > b ? a : b));
+    const { data: existing } = await supabase
+      .from('biosignal_readings')
+      .select('reading_date')
+      .eq('member_id', user.id)
+      .eq('source', rows[0].source)
+      .gte('reading_date', lo)
+      .lte('reading_date', hi);
+    const had = new Set((existing ?? []).map((r: any) => r.reading_date));
+    const newDays = dates.filter(d => !had.has(d)).length;
+    const refreshed = dates.length - newDays;
+
     const { error } = await supabase
       .from('biosignal_readings')
       .upsert(payload, { onConflict: 'member_id,reading_date,source' });
@@ -64,7 +82,12 @@ async function upsertReadings(rows: BiosignalRow[]): Promise<SyncResult> {
       }
       return { ok: false, days: 0, message: error.message };
     }
-    return { ok: true, days: rows.length, message: `${rows.length} day(s) written to the membrane.` };
+    return {
+      ok: true, days: newDays,
+      message: refreshed > 0
+        ? `${newDays} new day(s) written · ${refreshed} day(s) the membrane already held were refreshed in place — no overlaps, nothing double-counted.`
+        : `${newDays} new day(s) written to the membrane.`,
+    };
   } catch (e: any) {
     return { ok: false, days: 0, message: String(e?.message ?? e) };
   }
@@ -103,6 +126,29 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
   } catch { return empty; }
 }
 
+// ── COVERAGE — what the membrane already holds, per source ──────────────────
+export type SourceCoverage = { firstDate: string | null; lastDate: string | null; days: number };
+
+export async function getCoverage(source: BiosignalSource): Promise<SourceCoverage> {
+  const empty: SourceCoverage = { firstDate: null, lastDate: null, days: 0 };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return empty;
+    const { data, count } = await supabase
+      .from('biosignal_readings')
+      .select('reading_date', { count: 'exact' })
+      .eq('member_id', user.id)
+      .eq('source', source)
+      .order('reading_date', { ascending: true });
+    const rows = data ?? [];
+    return {
+      firstDate: rows[0]?.reading_date ?? null,
+      lastDate: rows[rows.length - 1]?.reading_date ?? null,
+      days: count ?? rows.length,
+    };
+  } catch { return empty; }
+}
+
 // ── OURA — cloud API sync ────────────────────────────────────────────────────
 export async function getOuraToken(): Promise<string | null> {
   try {
@@ -131,7 +177,18 @@ export async function syncOura(): Promise<SyncResult> {
   const token = await getOuraToken();
   if (!token) return { ok: false, days: 0, message: 'No Oura token on the membrane — paste it once and the ring feeds nightly.' };
 
-  const rows = await fetchOuraLast30Days(token);
+  // INCREMENTAL: a member who imported in January and returns August 1st gets
+  // ONLY the missing span — start from the last day the membrane holds
+  // (minus a 2-day window, since Oura revises recent scores), never re-pulling
+  // months already on record. Empty membrane = 30-day first fill.
+  const cov = await getCoverage('oura');
+  let startYmd: string | undefined;
+  if (cov.lastDate) {
+    const d = new Date(cov.lastDate + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() - 2);
+    startYmd = d.toISOString().slice(0, 10);
+  }
+  const rows = await fetchOuraLast30Days(token, startYmd);
   if (!rows.length) return { ok: false, days: 0, message: 'Oura returned no days — check the token or the ring sync in the Oura app.' };
 
   const result = await upsertReadings(rows.map(r => ({

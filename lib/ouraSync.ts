@@ -66,12 +66,16 @@ function mergeDay(
   map.set(day, { ...cur, ...patch });
 }
 
-export async function fetchOuraLast30Days(token: string): Promise<OuraDailyRow[]> {
+export async function fetchOuraLast30Days(
+  token: string,
+  startYmd?: string,
+  endYmd?: string,
+): Promise<OuraDailyRow[]> {
   const end = new Date();
   const start = new Date();
   start.setDate(end.getDate() - 30);
-  const sd = ymd(start);
-  const ed = ymd(end);
+  const sd = startYmd ?? ymd(start);
+  const ed = endYmd ?? ymd(end);
   const q = { start_date: sd, end_date: ed };
   const t = token.trim();
 
