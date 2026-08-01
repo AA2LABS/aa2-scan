@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, useColorScheme,
   TextInput, ActivityIndicator, Alert, SafeAreaView, Platform,
 } from 'react-native';
-import PagerView from 'react-native-pager-view';
+import PagerView, { type PagerRef } from '@/components/Pager';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import Anthropic from '@anthropic-ai/sdk';
@@ -96,7 +96,7 @@ export default function MapScreen() {
   const T = useMemo(() => getTheme(scheme === 'dark'), [scheme]);
   const [mode, setMode]                   = useState<'on' | 'off'>('on');
   const [page, setPage]                   = useState(0); // ON GRID pager: 0 = nav/dossier, 1 = retail
-  const pagerRef = useRef<PagerView>(null);
+  const pagerRef = useRef<PagerRef>(null);
   const [userLocation, setUserLocation]   = useState<{ latitude: number; longitude: number } | null>(null);
   const [locationReady, setLocationReady] = useState(false);
 
