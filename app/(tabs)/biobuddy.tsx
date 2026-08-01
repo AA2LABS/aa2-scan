@@ -10,8 +10,10 @@ import DoorCover from '@/components/DoorCover';
 import {
   loadMemberProfile, saveOnboardingField, saveAnimals, getAnimals,
   getVaultLedgerTotal, logMembraneEvent, getMembraneEvents,
+  saveSleepAids, getSleepAids,
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
+import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
   importGarminExport, importStravaExport, getStackConsensus, getCoverage,
@@ -141,6 +143,7 @@ export default function BioBuddyScreen() {
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
   const [aficionadoArmed, setAficionadoArmed] = useState(false);
+  const [sleepAids, setSleepAids] = useState<string[]>([]);
   const [loaded, setLoaded]     = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage]         = useState(0);
@@ -150,11 +153,12 @@ export default function BioBuddyScreen() {
   const jumped = useRef(false);
 
   const load = useCallback(async () => {
-    const [p, an, v, events, live, tok, cons, covO, covG, covS] = await Promise.all([
+    const [p, an, v, events, live, tok, cons, covO, covG, covS, aids] = await Promise.all([
       loadMemberProfile(), getAnimals(), getVaultLedgerTotal(), getMembraneEvents(50),
       getLiveReadout(), getOuraToken(), getStackConsensus(),
-      getCoverage('oura'), getCoverage('garmin'), getCoverage('strava'),
+      getCoverage('oura'), getCoverage('garmin'), getCoverage('strava'), getSleepAids(),
     ]);
+    setSleepAids(aids);
     setProfile(p); setAnimals(an); setVault(v);
     setReadout(live); setHasOuraToken(!!tok); setConsensus(cons);
     setCoverage({ oura: covO, garmin: covG, strava: covS });
@@ -718,6 +722,36 @@ export default function BioBuddyScreen() {
                 <Chip label="+ Add" add onPress={() => setAddInput({ section: 'activity', value: '' })} />
               </View>
               <AddInline section="activity" field="activities" current={activities} subject="activity:add" />
+            </View>
+
+            {/* SLEEP AIDS · PASSIVE GEAR (founder law 2026-08-01) — a passive
+                aid adds no signal, it adds a CONDITION: the ring and strap
+                measure every night; the mask splits the member's own history
+                into mask nights and bare nights. No medical claims — the only
+                claim carried is the verified one: blocking light during sleep
+                supports deeper, more restorative sleep. */}
+            <View style={st.section}>
+              <Text style={st.seclabel}>SLEEP AIDS · tap to add / remove</Text>
+              <View style={st.chipRow}>
+                {SLEEP_AID_OPTIONS.filter(s => s !== 'None').map((s, i) => {
+                  const sel = sleepAids.some(x => norm(x) === norm(s));
+                  return (
+                    <Chip
+                      key={i} label={s} sel={sel}
+                      onPress={async () => {
+                        setSaveState('saving');
+                        const next = sel ? sleepAids.filter(x => norm(x) !== norm(s)) : [...sleepAids, s];
+                        setSleepAids(next);
+                        const ok = await saveSleepAids(next);
+                        setSaveState(ok ? 'saved' : 'failed');
+                      }}
+                    />
+                  );
+                })}
+              </View>
+              <Text style={st.scopenote}>
+                Adds no signal — adds a condition. Your devices measure every night; the mask splits your history into mask nights and bare nights, and the membrane shows the difference with receipts.
+              </Text>
             </View>
 
             {/* DIETARY APPROACH */}

@@ -371,6 +371,38 @@ export async function logMembraneEvent(input: {
   }
 }
 
+// ─── SLEEP AIDS · PASSIVE GEAR (founder law 2026-08-01) ──────────────────────
+// Stored as membrane_events (event_type 'sleep_aids', latest wins) — a passive
+// aid adds no signal, it adds a CONDITION the membrane can measure against the
+// member's own device history. No schema change required.
+export async function saveSleepAids(aids: string[]): Promise<boolean> {
+  return logMembraneEvent({
+    eventType: 'sleep_aids',
+    sourceScreen: 'membrane',
+    subject: 'sleep_aids:set',
+    value: aids,
+  });
+}
+
+export async function getSleepAids(): Promise<string[]> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) return [];
+    const { data, error } = await supabase
+      .from('membrane_events')
+      .select('value')
+      .eq('user_id', user.id)
+      .eq('event_type', 'sleep_aids')
+      .order('occurred_at', { ascending: false })
+      .limit(1);
+    if (error || !data?.length) return [];
+    const v = data[0].value;
+    return Array.isArray(v) ? v.filter((x: any) => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getMembraneEvents(limit = 100): Promise<any[]> {
   try {
     const { data: { user }, error: ue } = await supabase.auth.getUser();

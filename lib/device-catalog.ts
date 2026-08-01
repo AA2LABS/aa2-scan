@@ -132,6 +132,28 @@ export function deviceAdds(nameOrKey: string): string | null {
   return hit ? hit.adds : null;
 }
 
+// ─── SLEEP AIDS · PASSIVE GEAR (founder law 2026-08-01) ──────────────────────
+// A passive aid adds no signal — it adds a CONDITION the membrane can measure.
+// The member's devices record the outcome; the aid is the experiment. Founder
+// stack: Manta Sound 2 — "it has changed my life." No medical claims, ever:
+// only the verified wellness claim that blocking light during sleep supports
+// deeper, more restorative sleep.
+export const SLEEP_AID_OPTIONS: string[] = [
+  'Manta Sound 2',
+  'Manta PRO',
+  'Manta Weighted',
+  'Nodpod Weighted',
+  'Ostrichpillow Eye Mask',
+  'Drowsy Silk',
+  'Mavogel Cotton',
+  'Slip Silk',
+  'Other mask',
+  'None',
+];
+
+export const SLEEP_AID_ADDS =
+  'Adds no signal — adds a CONDITION. Your ring and strap already measure every night; the mask splits your own history into mask nights and bare nights, and the membrane shows you the difference with receipts. Blocking light during sleep is a verified support for deeper, more restorative sleep.';
+
 export const ONBOARDING_DEVICE_OPTIONS: string[] = [
   'WHOOP 5.0', 'WHOOP MG', 'Oura Ring 4', 'Garmin Tactix 8', 'Garmin (other)',
   'Apple Watch', 'AirPods Pro 3', 'Beats Pro 2', 'Fitbit', 'Polar', 'Polar H10 Strap',

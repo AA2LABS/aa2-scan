@@ -19,6 +19,8 @@ import { supabase } from '../../lib/supabase';
 import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberProfile } from '../../lib/db';
 import * as FileSystem from 'expo-file-system/legacy';
 import { SEAL_FLAG_PATH } from '../arrival';
+import { saveSleepAids } from '../../lib/db';
+import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -368,6 +370,7 @@ export default function OnboardingScreen() {
 
   // ── Block 5
   const [wearables,          setWearables]          = useState<string[]>([]);
+  const [sleepAids, setSleepAids] = useState<string[]>([]);
   const [ouraToken,          setOuraToken]           = useState('');
   const [garminExportReady,  setGarminExportReady]  = useState('');
 
@@ -1053,6 +1056,27 @@ export default function OnboardingScreen() {
                 selected={wearables}
                 multi
                 onSelect={toggleWearable}
+              />
+            </View>
+
+            <View style={st.fieldGroup}>
+              <FieldLabel text="SLEEP AIDS · MASKS & PASSIVE GEAR" />
+              <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginBottom: 8 }}>
+                Adds no signal — adds a condition your devices can measure.
+              </Text>
+              <ChipSelector
+                options={SLEEP_AID_OPTIONS}
+                selected={sleepAids}
+                multi
+                onSelect={(s: string) => {
+                  const next = s === 'None'
+                    ? (sleepAids.includes('None') ? [] : ['None'])
+                    : (sleepAids.includes(s)
+                        ? sleepAids.filter(x => x !== s)
+                        : [...sleepAids.filter(x => x !== 'None'), s]);
+                  setSleepAids(next);
+                  saveSleepAids(next.filter(x => x !== 'None'));
+                }}
               />
             </View>
 
