@@ -18,6 +18,12 @@ import {
 // ─── FLAG ─────────────────────────────────────────────────────────────────────
 export const ARRIVAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_arrival_v4';
 
+// THE SKIN LAW (Canon v17 §2 · Initiate Doctrine): "Onboarding IS the
+// initiation. No one enters the membrane without passing through the skin."
+// This flag exists ONLY after the member seals the membrane. Until then,
+// every cold start routes to the initiation — never to the tabs.
+export const SEAL_FLAG_PATH = FileSystem.documentDirectory + 'aa2_membrane_sealed_v1';
+
 async function markArrivalDone(): Promise<void> {
   try {
     await FileSystem.writeAsStringAsync(ARRIVAL_FLAG_PATH, '1');
@@ -169,7 +175,9 @@ const SCREENS: Screen[] = [
 // ─── SKIP ─────────────────────────────────────────────────────────────────────
 async function handleSkip() {
   await markArrivalDone();
-  router.replace('/concierge' as Href);
+  // SKIN LAW: arrival is the cover, not a bypass. First contact always
+  // lands in the initiation — the flip-book stories, then the blocks.
+  router.replace('/onboarding' as Href);
 }
 
 // ─── SLIDE COMPONENT ──────────────────────────────────────────────────────────
@@ -183,7 +191,8 @@ function Slide({
   const handleButton = async () => {
     if (item.isLast) {
       await markArrivalDone();
-      router.replace('/concierge' as Href);
+      // SKIN LAW: the tactical last door opens INTO the initiation.
+      router.replace('/onboarding' as Href);
     } else {
       onNext();
     }

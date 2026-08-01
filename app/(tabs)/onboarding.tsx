@@ -17,6 +17,8 @@ import {
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberProfile } from '../../lib/db';
+import * as FileSystem from 'expo-file-system/legacy';
+import { SEAL_FLAG_PATH } from '../arrival';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -510,6 +512,10 @@ export default function OnboardingScreen() {
     }
 
     await markOnboardingComplete();
+
+    // SKIN LAW: sealing the membrane is the ONE act that opens the gates.
+    // The local seal flag lets every future cold start walk straight in.
+    try { await FileSystem.writeAsStringAsync(SEAL_FLAG_PATH, '1'); } catch {}
 
     setSaving(false);
 

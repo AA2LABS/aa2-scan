@@ -7,7 +7,8 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { ARRIVAL_FLAG_PATH } from './arrival';
+import { loadMemberProfile } from '@/lib/db';
+import { ARRIVAL_FLAG_PATH, SEAL_FLAG_PATH } from './arrival';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -31,12 +32,35 @@ export default function RootLayout() {
 
   useEffect(() => {
     (async () => {
+      // THE SKIN LAW (Canon v17 §2 · Initiate Doctrine): "Onboarding IS the
+      // initiation. The 20 questions ARE the ritual. No one enters the
+      // membrane without passing through the skin." The gate order:
+      //   1. Never arrived        → arrival cover (CES flip-book door)
+      //   2. Arrived, not sealed  → the initiation (stories → blocks → seal)
+      //   3. Sealed               → the membrane opens (Concierge hosts)
       try {
-        const info = await FileSystem.getInfoAsync(ARRIVAL_FLAG_PATH);
-        if (!info.exists) {
+        const arrived = await FileSystem.getInfoAsync(ARRIVAL_FLAG_PATH);
+        if (!arrived.exists) {
           setTimeout(() => router.replace('/arrival'), 100);
-        } else {
+          return;
+        }
+        const sealedLocal = await FileSystem.getInfoAsync(SEAL_FLAG_PATH);
+        if (sealedLocal.exists) {
           setTimeout(() => router.replace('/concierge' as Href), 100);
+          return;
+        }
+        // No local seal — ask the membrane itself (returning member,
+        // fresh install). If the profile says sealed, restore the flag.
+        let sealed = false;
+        try {
+          const prof = await loadMemberProfile();
+          sealed = !!prof?.onboardingComplete;
+        } catch {}
+        if (sealed) {
+          try { await FileSystem.writeAsStringAsync(SEAL_FLAG_PATH, '1'); } catch {}
+          setTimeout(() => router.replace('/concierge' as Href), 100);
+        } else {
+          setTimeout(() => router.replace('/onboarding' as Href), 100);
         }
       } catch {
         setTimeout(() => router.replace('/arrival'), 100);
