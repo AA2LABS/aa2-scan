@@ -849,11 +849,12 @@ function Panel15({ onComplete }: { onComplete: () => void }) {
 // paywall behind it, so no one is forced to re-read what they already know.
 const NINE_STORIES: {
   n: number; title: string; audience: string; accent: string;
-  lines: string[]; quote?: string; lesson: string;
+  lines: string[]; quote?: string; linesAfter?: string[]; lesson: string;
 }[] = [
   { n: 1, title: 'The Grocery Aisle', audience: 'PARENTS', accent: BLUE,
-    lines: ['A parent scans cereal.', 'Nothing alarming on the label.'],
+    lines: ['A parent scans cereal.', 'Nothing alarming on the label.', 'AA2 quietly says:'],
     quote: 'This conflicts with your child’s sleep recovery trend.',
+    linesAfter: ['Parent switches brands.', 'No drama. No lecture. Just prevention.'],
     lesson: 'Chemicals affect behavior before symptoms.' },
   { n: 2, title: 'The School Lunch', audience: 'CHILDREN', accent: GREEN,
     lines: ['A child scans food at school.', 'The scanner translates ingredients into simple language.', 'The child learns: words, meaning, self-awareness.', 'They choose differently — by themselves.'],
@@ -862,8 +863,9 @@ const NINE_STORIES: {
     lines: ['A family abroad scans a menu.', 'AA2 translates, explains preparation, warns about regional substitutes.', 'They eat confidently.'],
     lesson: 'Cultural curiosity without risk.' },
   { n: 4, title: 'The Uber Ride', audience: 'YOUNG ADULT SAFETY', accent: PURPLE,
-    lines: ['Heart rate rises unexpectedly.', 'AA2 notes chemical + stress + environment overlap.', 'Awareness increases. Nothing escalates.'],
+    lines: ['Heart rate rises unexpectedly.', 'AA2 notes chemical + stress + environment overlap.', 'Subtle alert:'],
     quote: 'Environment inconsistent with baseline.',
+    linesAfter: ['Awareness increases. Nothing escalates.'],
     lesson: 'Safety begins before danger.' },
   { n: 5, title: 'The First Date Drink', audience: 'TRUST & EXPOSURE', accent: GOLD,
     lines: ['A drink is scanned.', 'AA2 recalls: past reactions, delayed effects, tolerance drift.', 'User switches drinks.', 'The night stays clear.'],
@@ -903,6 +905,11 @@ function StoryPanel({ story }: { story: typeof NINE_STORIES[0] }) {
           </Text>
         </View>
       ) : null}
+      {(story.linesAfter ?? []).map((l, i) => (
+        <Text key={`a${i}`} style={{ fontFamily: F.serif, fontSize: 19, color: 'rgba(255,255,255,0.82)', lineHeight: 28, marginBottom: 10 }}>
+          {l}
+        </Text>
+      ))}
       <View style={{ marginTop: 26, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.18)', paddingTop: 14 }}>
         <Text style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: 2.5, color: MUTED, marginBottom: 5 }}>LESSON</Text>
         <Text style={{ fontFamily: F.sansMd, fontSize: 15, color: GOLD, lineHeight: 21 }}>{story.lesson}</Text>

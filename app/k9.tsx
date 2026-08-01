@@ -26,6 +26,7 @@ export default function K9Screen() {
   return (
     <DoorFlood
       art={require('@/assets/doors/door-k9-feline.jpg')}
+      artPosition="top"
       eyebrow="K9 · FELINE INTELLIGENCE"
       title="K9 / Feline"
       accent={CYAN}

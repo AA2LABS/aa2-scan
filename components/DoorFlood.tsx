@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { loadMemberProfile, type FullMemberProfile } from '@/lib/db';
 
@@ -11,6 +12,10 @@ export type Row = { icon: string; title: string; desc: string; chip?: string; ch
 
 export function DoorFlood(props: {
   art: ImageSourcePropType; eyebrow: string; title: string; accent: string;
+  /** Focal point for the art crop — founder bug 2026-08-01: the K9/Feline
+      photo was beheading the dog and erasing the cat. 'top' keeps heads in
+      frame; default 'center' preserves every other door unchanged. */
+  artPosition?: 'center' | 'top' | 'top center' | 'left' | 'right';
   heroLine: string; heroSub: string; rows: Row[]; foot: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -19,7 +24,7 @@ export function DoorFlood(props: {
   if (!open) {
     return (
       <View style={st.doorRoot}>
-        <Image source={art} resizeMode="cover" style={st.doorImg} />
+        <Image source={art} contentFit="cover" contentPosition={props.artPosition ?? 'center'} style={st.doorImg} />
         <View style={st.doorScrim} />
         <View style={st.doorContent}>
           <Text style={[st.eyebrow, { color: accent }]}>{eyebrow}</Text>
@@ -38,7 +43,7 @@ export function DoorFlood(props: {
   return (
     <ScrollView style={st.root} contentContainerStyle={{ paddingBottom: 40 }}>
       <View style={st.hero}>
-        <Image source={art} resizeMode="cover" style={st.heroImg} />
+        <Image source={art} contentFit="cover" contentPosition={props.artPosition ?? 'center'} style={st.heroImg} />
         <View style={st.heroScrim} />
         <View style={st.heroContent}>
           <Text style={[st.eyebrow, { color: accent }]}>{eyebrow}</Text>
