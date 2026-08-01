@@ -8,7 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { loadMemberProfile } from '@/lib/db';
-import { ARRIVAL_FLAG_PATH, SEAL_FLAG_PATH } from './arrival';
+import { SEAL_FLAG_PATH } from './arrival';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -39,11 +39,9 @@ export default function RootLayout() {
       //   2. Arrived, not sealed  → the initiation (stories → blocks → seal)
       //   3. Sealed               → the membrane opens (Concierge hosts)
       try {
-        const arrived = await FileSystem.getInfoAsync(ARRIVAL_FLAG_PATH);
-        if (!arrived.exists) {
-          setTimeout(() => router.replace('/arrival'), 100);
-          return;
-        }
+        // ARRIVAL COVER CUT (founder order 2026-08-01): its "synced / off-grid"
+        // copy claimed state that does not exist — a Representative Doctrine
+        // violation on the front porch. The Nine Stories ARE the welcome.
         const sealedLocal = await FileSystem.getInfoAsync(SEAL_FLAG_PATH);
         if (sealedLocal.exists) {
           setTimeout(() => router.replace('/concierge' as Href), 100);
@@ -63,7 +61,7 @@ export default function RootLayout() {
           setTimeout(() => router.replace('/onboarding' as Href), 100);
         }
       } catch {
-        setTimeout(() => router.replace('/arrival'), 100);
+        setTimeout(() => router.replace('/onboarding' as Href), 100);
       }
     })();
   }, []);

@@ -4,6 +4,7 @@ import PreviewPanels from '../preview-panels';
 import BiomarkerManager from '../biomarker-manager';
 import {
   ActivityIndicator,
+  BackHandler,
   Dimensions,
   KeyboardAvoidingView,
   Platform,
@@ -328,6 +329,7 @@ type FlowStep =
 export default function OnboardingScreen() {
   // ── Auth
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const sealedRef = React.useRef(false);
 
   // ── Flow
   const [step, setStep] = useState<FlowStep>('preview_panels');
@@ -402,11 +404,23 @@ export default function OnboardingScreen() {
       try {
         const prof = await loadMemberProfile();
         if (prof?.onboardingComplete) {
+          sealedRef.current = true;
           setStep('north_star_intro');
         }
       } catch {}
       setCheckingAuth(false);
     })();
+  }, []);
+
+  // ── SKIN LAW BACK TRAP (founder bug report 2026-08-01): the Android system
+  // back button was escaping the initiation into the tab anchor (the Door
+  // Hall — "every door in one place"). Until the membrane is sealed, back
+  // stays INSIDE the initiation. Sealed members (CHANGE flow) keep normal back.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      return !sealedRef.current; // consume while unsealed — no gate escape
+    });
+    return () => sub.remove();
   }, []);
 
   // ── Progress calculation — 27 total fields
@@ -518,6 +532,7 @@ export default function OnboardingScreen() {
 
     // SKIN LAW: sealing the membrane is the ONE act that opens the gates.
     // The local seal flag lets every future cold start walk straight in.
+    sealedRef.current = true;
     try { await FileSystem.writeAsStringAsync(SEAL_FLAG_PATH, '1'); } catch {}
 
     setSaving(false);
