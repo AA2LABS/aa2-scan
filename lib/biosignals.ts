@@ -101,7 +101,7 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
     if (ue || !user) return empty;
 
     const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('biosignal_readings')
       .select('source, reading_date, hrv_rmssd, sleep_score, readiness_score, activity_score, stress_level')
       .eq('member_id', user.id)
@@ -109,6 +109,21 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
       .order('reading_date', { ascending: true });
 
     if (error) { console.log('[biosignals] read error:', error.message); return empty; }
+
+    // LAST KNOWN GOOD PROTOCOL (Canon v13, locked): if the recent window is
+    // quiet — member imported historical exports, device on the charger, off
+    // the grid — the membrane shows each source's most recent REAL signal
+    // instead of a blank. Real data or no data. Never fake dates.
+    if (!data || data.length === 0) {
+      const { data: lkg, error: le } = await supabase
+        .from('biosignal_readings')
+        .select('source, reading_date, hrv_rmssd, sleep_score, readiness_score, activity_score, stress_level')
+        .eq('member_id', user.id)
+        .order('reading_date', { ascending: false })
+        .limit(240);
+      if (le) { console.log('[biosignals] lkg read error:', le.message); return empty; }
+      data = (lkg ?? []).reverse();  // back to oldest → newest for the sparklines
+    }
 
     const out: LiveReadout = { latest: {}, series: {} };
     for (const r of data ?? []) {
