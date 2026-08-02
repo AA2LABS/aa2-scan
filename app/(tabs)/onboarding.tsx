@@ -19,7 +19,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberProfile } from '../../lib/db';
 import * as FileSystem from 'expo-file-system/legacy';
-import { SEAL_FLAG_PATH } from '../arrival';
+import ArrivalScreen, { SEAL_FLAG_PATH } from '../arrival';
 import { saveSleepAids } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
 
@@ -558,9 +558,17 @@ export default function OnboardingScreen() {
         onPress={() => setStep('north_star_intro')}
       />
 
-      {/* ── PREVIEW PANELS ───────────────────────────────────────────────── */}
+      {/* ── PREVIEW PANELS — THE NINE STORIES ────────────────────────────── */}
+      {/* Founder flow law (2026-08-01): learn the app through the stories
+          FIRST, then meet the intelligences — Concierge through K9 Tactical —
+          then the blocks. Story → team → initiation. */}
       {step === 'preview_panels' && (
-        <PreviewPanels onComplete={() => setStep('north_star_intro')} />
+        <PreviewPanels onComplete={() => setStep('meet_the_team' as any)} />
+      )}
+
+      {/* ── MEET THE TEAM — the intelligence flip book (Concierge → K9) ──── */}
+      {(step as any) === 'meet_the_team' && (
+        <ArrivalScreen onComplete={() => setStep('north_star_intro')} />
       )}
 
       {/* ── NORTH STAR INTRO ─────────────────────────────────────────────── */}

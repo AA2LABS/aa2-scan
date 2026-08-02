@@ -15,7 +15,7 @@ export function DoorFlood(props: {
   /** Focal point for the art crop — founder bug 2026-08-01: the K9/Feline
       photo was beheading the dog and erasing the cat. 'top' keeps heads in
       frame; default 'center' preserves every other door unchanged. */
-  artPosition?: 'center' | 'top' | 'top center' | 'left' | 'right';
+  artPosition?: 'center' | 'top' | 'top center' | 'left' | 'right' | 'top right' | 'top left';
   heroLine: string; heroSub: string; rows: Row[]; foot: string;
 }) {
   const [open, setOpen] = useState(false);

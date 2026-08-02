@@ -173,26 +173,28 @@ const SCREENS: Screen[] = [
 ];
 
 // ─── SKIP ─────────────────────────────────────────────────────────────────────
-async function handleSkip() {
-  await markArrivalDone();
-  // SKIN LAW: arrival is the cover, not a bypass. First contact always
-  // lands in the initiation — the flip-book stories, then the blocks.
-  router.replace('/onboarding' as Href);
-}
-
 // ─── SLIDE COMPONENT ──────────────────────────────────────────────────────────
 function Slide({
   item,
   onNext,
+  onComplete,
 }: {
   item: Screen;
   onNext: () => void;
+  /** Founder flow law (2026-08-01): the intelligence flip book (Concierge →
+      K9 Tactical) plays AFTER the Nine Stories — learn the app through
+      stories, THEN meet the intelligences. When embedded in onboarding this
+      hands control back instead of routing. */
+  onComplete?: () => void;
 }) {
+  const finish = async () => {
+    await markArrivalDone();
+    if (onComplete) { onComplete(); return; }
+    router.replace('/onboarding' as Href);
+  };
   const handleButton = async () => {
     if (item.isLast) {
-      await markArrivalDone();
-      // SKIN LAW: the tactical last door opens INTO the initiation.
-      router.replace('/onboarding' as Href);
+      await finish();
     } else {
       onNext();
     }
@@ -250,7 +252,7 @@ function Slide({
       {/* Skip — absolute top right */}
       <TouchableOpacity
         style={sl.skipBtn}
-        onPress={handleSkip}
+        onPress={finish}
         hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
       >
         <Text style={sl.skipText}>SKIP</Text>
@@ -376,7 +378,7 @@ const sl = StyleSheet.create({
 });
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-export default function ArrivalScreen() {
+export default function ArrivalScreen({ onComplete }: { onComplete?: () => void } = {}) {
   const { width: SCREEN_W } = useWindowDimensions();
   const flatRef = useRef<FlatList>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -411,7 +413,7 @@ export default function ArrivalScreen() {
         maxToRenderPerBatch={1}
         windowSize={3}
         renderItem={({ item }) => (
-          <Slide item={item} onNext={handleNext} />
+          <Slide item={item} onNext={handleNext} onComplete={onComplete} />
         )}
         getItemLayout={(_, index) => ({
           length: SCREEN_W,
