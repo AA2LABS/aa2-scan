@@ -852,48 +852,107 @@ function Panel15({ onComplete }: { onComplete: () => void }) {
 // actual Control Panel on the doctor's tablet, the real scan on the Fold at
 // the bar, the Equalizer in the Uber. The mockups-mirror-the-screens law,
 // applied to photography.
+// Founder ruling 2026-08-02 ("GOOOOO BABY"): the stories carry the COMPLETE
+// original paragraphs — the doctrine sections the locked beats were compressed
+// from, recovered from the original Allergy & Life Scanner doctrine (the
+// conversation the Nine Stories were born in), Canon v12 Internal (The Travel
+// Story — Canonical Proof), and "A Message from the Founder" (desktop, AA2
+// DOCS). Every sentence below is founder canon verbatim. Never abbreviate.
 const NINE_STORIES: {
   n: number; title: string; audience: string; accent: string;
-  lines: string[]; quote?: string; linesAfter?: string[]; lesson: string; img: any;
+  setup: string[]; lines: string[]; quote?: string; linesAfter?: string[];
+  lesson: string; img: any;
 }[] = [
   { n: 1, title: 'The Grocery Aisle', audience: 'PARENTS', accent: BLUE,
     img: require('../assets/stories/story-1-grocery-aisle.jpg'),
-    lines: ['A parent scans cereal.', 'Nothing alarming on the label.', 'AA2 quietly says:'],
+    setup: [
+      'Parents scan food, snacks, baby products, school lunches, medications, hygiene items.',
+      'The scanner flags allergens — known and emerging. It detects ingredient patterns, not just labels. It recognizes cumulative exposure, not one-off items. It warns against hidden cross-contaminants. It translates chemical names into plain language.',
+      'Instead of “contains trace amounts of X,” parents see: “This may elevate inflammation and disrupt sleep based on your child’s last 30 days.”',
+      'Chemicals are silent actors. They do not announce intent. They reveal themselves only through the body.',
+    ],
+    lines: ['So a parent scans cereal.', 'Nothing alarming on the label.', 'AA2 quietly says:'],
     quote: 'This conflicts with your child’s sleep recovery trend.',
     linesAfter: ['Parent switches brands.', 'No drama. No lecture. Just prevention.'],
     lesson: 'Chemicals affect behavior before symptoms.' },
   { n: 2, title: 'The School Lunch', audience: 'CHILDREN', accent: GREEN,
     img: require('../assets/stories/story-2-school-lunch.jpg'),
+    setup: [
+      'When a child scans food labels, menus, packaging — they are learning language through survival relevance. That is key.',
+      'The scanner translates ingredients, explains why something matters, and associates words with bodily response.',
+      'This creates faster retention, emotional anchoring, embodied learning.',
+      'A child doesn’t just learn Spanish or French. They learn meaning tied to self-protection. That sticks.',
+    ],
     lines: ['A child scans food at school.', 'The scanner translates ingredients into simple language.', 'The child learns: words, meaning, self-awareness.', 'They choose differently — by themselves.'],
     lesson: 'Agency beats restriction.' },
   { n: 3, title: 'The Foreign Menu', audience: 'TRAVEL & LANGUAGE', accent: TEAL,
     img: require('../assets/stories/story-3-foreign-menu.jpg'),
+    setup: [
+      'Families traveling or cooking globally get ingredient translation, cultural food context, local naming conventions, preparation warnings. Instead of fear, families get confidence, cultural openness, informed choice. Children grow up curious, not restricted.',
+      'The canonical proof: a parent traveling internationally with their child. The scanner catches peanut oil in a Costa Rican ingredient list. The Vault funded the trip through 90 days of Act Right Dollars. The Chauffeur rerouted the ride around a downtown march. The Chef built a friendship with a local family through live cooking. The membrane taught the language that made them feel at home. Bio Buddy and The Equalizer watched silently the entire time.',
+      'Every spoke fired. Nobody noticed AA2. They only noticed the life.',
+    ],
     lines: ['A family abroad scans a menu.', 'AA2 translates, explains preparation, warns about regional substitutes.', 'They eat confidently.'],
     lesson: 'Cultural curiosity without risk.' },
   { n: 4, title: 'The Uber Ride', audience: 'YOUNG ADULT SAFETY', accent: PURPLE,
     img: require('../assets/stories/story-4-uber-ride.jpg'),
+    setup: [
+      'For teens and young adults — dorm food, dating, parties, supplements, gym nutrition — the scanner reduces guesswork, protects without parental oversight, reinforces personal accountability. It becomes: my body, my data, my choices. Not rebellion. Agency.',
+      'The scanner integrates with location, environment, past reactions, stress biosignals. If something spikes — heart rate variability, breathing irregularity, skin response — AA2 doesn’t panic. It notifies:',
+      '“This environment is inconsistent with your baseline safety profile.”',
+      'It’s early awareness, not fear.',
+    ],
     lines: ['Heart rate rises unexpectedly.', 'AA2 notes chemical + stress + environment overlap.', 'Subtle alert:'],
     quote: 'Environment inconsistent with baseline.',
     linesAfter: ['Awareness increases. Nothing escalates.'],
     lesson: 'Safety begins before danger.' },
   { n: 5, title: 'The First Date Drink', audience: 'TRUST & EXPOSURE', accent: GOLD,
     img: require('../assets/stories/story-5-first-date-drink.jpg'),
+    setup: [
+      'Scan drinks, shared food, supplements, unknown substances.',
+      'The system remembers how your body reacts, how fast symptoms escalate, which exposures were delayed.',
+      'A “safe” ingredient becomes unsafe through repetition, timing, or combination. AA2 tracks stacking across days, weeks, environments, and stress states.',
+      'This is protection without paranoia.',
+    ],
     lines: ['A drink is scanned.', 'AA2 recalls: past reactions, delayed effects, tolerance drift.', 'User switches drinks.', 'The night stays clear.'],
     lesson: 'Chemistry affects judgment.' },
   { n: 6, title: 'The Dog That Wouldn’t Eat', audience: 'PETS', accent: ORANGE,
     img: require('../assets/stories/story-6-dog-wouldnt-eat.jpg'),
+    setup: [
+      'Scan pet food, treats, medications, household cleaners, parks, travel locations.',
+      'The system learns canine and feline sensitivities, correlates handler and animal biosignals, detects stress versus illness, and prevents slow harm over time.',
+      'This is preventative veterinary intelligence.',
+    ],
     lines: ['A dog refuses food.', 'Scanner reveals: recent formula change, chemical irritant, stress overlap with handler.', 'Food is changed. Behavior normalizes.'],
     lesson: 'Animals speak through biosignals.' },
   { n: 7, title: 'The Working K9', audience: 'TACTICAL', accent: '#8B7355',
     img: require('../assets/stories/story-7-working-k9.jpg'),
+    setup: [
+      'Working dogs and handlers operate as a single unit. For K9 units the scanner reads food consistency, supplement interactions, environmental exposure, handler stress transfer.',
+      'It supports training integrity, mission readiness, longevity, injury prevention.',
+      'No aversive tools. No guesswork.',
+    ],
     lines: ['Handler stress rises. Dog stress follows.', 'Scanner flags: supplement interaction, environment exposure, hydration imbalance.', 'Mission readiness preserved.'],
     lesson: 'Handler biology transfers.' },
   { n: 8, title: 'The Doctor Visit', audience: 'MEDICAL SHARING', accent: RED,
     img: require('../assets/stories/story-8-doctor-visit.jpg'),
+    setup: [
+      'Sharing is opt-in. Always.',
+      'With consent, veterinarians see food history, exposure trends, behavior changes, stress indicators. This shortens diagnosis time, improves outcomes, reduces invasive testing.',
+      'Humans can share biosignal trends, exposure logs, nutrition consistency, environmental triggers. Not raw chaos. Structured insight.',
+      'In the vet’s own words: “I didn’t have to guess. I scanned the code and immediately saw allergies, medications, dietary restrictions, and recent stress indicators. I knew what I needed to know before I touched the dog. That changes outcomes.”',
+      'Doctors stop guessing. They start confirming.',
+    ],
     lines: ['User opts to share AA2 data.', 'Physician sees: exposure timeline, reaction curves, recovery patterns.', 'Diagnosis accelerates.'],
     lesson: 'Data removes guesswork.' },
   { n: 9, title: 'The Long View', audience: 'LEGACY', accent: BLUE,
     img: require('../assets/stories/story-9-long-view.jpg'),
+    setup: [
+      'The scanner doesn’t just say “avoid this.” It says: “This conflicts with where you said you’re going.”',
+      'Health becomes cumulative, intentional, aligned with future goals. Weight loss. Longevity. Focus. Recovery. Legacy.',
+      'The Allergy Scanner is not about allergies. It’s about trusting your environment again. For parents, children, animals, travelers, operators, families, physicians.',
+      'It’s how AA2 quietly keeps life aligned — so small decisions don’t become big regrets.',
+    ],
     lines: ['Years of scans show: fewer inflammatory spikes, improved learning, calmer baseline, healthier animals, aligned spending.', 'AA2 says nothing.', 'The results speak.'],
     lesson: 'Small decisions compound into legacy.' },
 ];
@@ -901,39 +960,54 @@ const NINE_STORIES: {
 function StoryPanel({ story }: { story: typeof NINE_STORIES[0] }) {
   return (
     <View style={{ flex: 1, marginHorizontal: -20, marginTop: Platform.OS === 'android' ? -48 : -60, marginBottom: -100 }}>
-      {/* The founder's photo — AA2 alive on a screen inside every scene. */}
+      {/* The founder's photo — AA2 alive on a screen inside every scene.
+          Photo size and crop untouched (founder law 2026-08-01). */}
       <ImageBackground source={story.img} resizeMode="cover" style={StyleSheet.absoluteFillObject as any} />
       {/* Scrim — the photo breathes up top, the story reads down low. */}
       <View style={[StyleSheet.absoluteFillObject as any, { backgroundColor: 'rgba(5,6,10,0.28)' }]} />
-      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '64%', backgroundColor: 'rgba(5,6,10,0.60)' }} pointerEvents="none" />
-      <View style={{ flex: 1, justifyContent: 'flex-end', paddingHorizontal: 20, paddingBottom: 104 }}>
-        <Text style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: 3, color: story.accent, marginBottom: 8 }}>
-          STORY {story.n} OF 9 · {story.audience}
-        </Text>
-        <Text style={{ fontFamily: F.display, fontSize: 40, color: WHITE, letterSpacing: 1, marginBottom: 14, lineHeight: 42 }}>
-          {story.title}
-        </Text>
-        {story.lines.map((l, i) => (
-          <Text key={i} style={{ fontFamily: F.serif, fontSize: 18, color: 'rgba(255,255,255,0.94)', lineHeight: 26, marginBottom: 7 }}>
-            {l}
+      <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '72%', backgroundColor: 'rgba(5,6,10,0.66)' }} pointerEvents="none" />
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        {/* Complete-story sheet: the full canon paragraphs scroll; the photo stays. */}
+        <ScrollView
+          style={{ maxHeight: '70%' }}
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 104, paddingTop: 12 }}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+        >
+          <Text style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: 3, color: story.accent, marginBottom: 8 }}>
+            STORY {story.n} OF 9 · {story.audience}
           </Text>
-        ))}
-        {story.quote ? (
-          <View style={{ borderLeftWidth: 2, borderLeftColor: story.accent, paddingLeft: 14, marginTop: 4, marginBottom: 7 }}>
-            <Text style={{ fontFamily: F.serifIt, fontSize: 19, color: story.accent, lineHeight: 26 }}>
-              “{story.quote}”
+          <Text style={{ fontFamily: F.display, fontSize: 38, color: WHITE, letterSpacing: 1, marginBottom: 12, lineHeight: 40 }}>
+            {story.title}
+          </Text>
+          {story.setup.map((p, i) => (
+            <Text key={`s${i}`} style={{ fontFamily: F.sans, fontSize: 14.5, color: 'rgba(255,255,255,0.90)', lineHeight: 21.5, marginBottom: 10 }}>
+              {p}
             </Text>
+          ))}
+          <View style={{ height: 4 }} />
+          {story.lines.map((l, i) => (
+            <Text key={i} style={{ fontFamily: F.serif, fontSize: 18, color: 'rgba(255,255,255,0.96)', lineHeight: 26, marginBottom: 7 }}>
+              {l}
+            </Text>
+          ))}
+          {story.quote ? (
+            <View style={{ borderLeftWidth: 2, borderLeftColor: story.accent, paddingLeft: 14, marginTop: 4, marginBottom: 7 }}>
+              <Text style={{ fontFamily: F.serifIt, fontSize: 19, color: story.accent, lineHeight: 26 }}>
+                “{story.quote}”
+              </Text>
+            </View>
+          ) : null}
+          {(story.linesAfter ?? []).map((l, i) => (
+            <Text key={`a${i}`} style={{ fontFamily: F.serif, fontSize: 18, color: 'rgba(255,255,255,0.96)', lineHeight: 26, marginBottom: 7 }}>
+              {l}
+            </Text>
+          ))}
+          <View style={{ marginTop: 14, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.30)', paddingTop: 11 }}>
+            <Text style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: 2.5, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>LESSON</Text>
+            <Text style={{ fontFamily: F.sansMd, fontSize: 15, color: GOLD, lineHeight: 21 }}>{story.lesson}</Text>
           </View>
-        ) : null}
-        {(story.linesAfter ?? []).map((l, i) => (
-          <Text key={`a${i}`} style={{ fontFamily: F.serif, fontSize: 18, color: 'rgba(255,255,255,0.94)', lineHeight: 26, marginBottom: 7 }}>
-            {l}
-          </Text>
-        ))}
-        <View style={{ marginTop: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.30)', paddingTop: 11 }}>
-          <Text style={{ fontFamily: F.mono, fontSize: 9, letterSpacing: 2.5, color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>LESSON</Text>
-          <Text style={{ fontFamily: F.sansMd, fontSize: 15, color: GOLD, lineHeight: 21 }}>{story.lesson}</Text>
-        </View>
+        </ScrollView>
       </View>
     </View>
   );
