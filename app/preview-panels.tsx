@@ -773,7 +773,7 @@ function Panel14() {
               flexDirection: 'row', alignItems: 'center', gap: 8,
               paddingVertical: 5,
               borderBottomWidth: i < arr.length - 1 ? 1 : 0,
-              borderBottomColor: 'rgba(255,255,255,0.04)',
+              borderBottomColor: 'rgba(255,255,255,0.07)',
             }}>
               <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: row.dot }} />
               <Text style={{ fontFamily: F.sans, fontSize: 12, color: WHITE, flex: 1 }}>{row.name}</Text>
@@ -782,7 +782,7 @@ function Panel14() {
           ))}
 
           {/* Membrane notes */}
-          <View style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: 10, marginTop: 10 }}>
+          <View style={{ backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: 10, marginTop: 10 }}>
             <Text style={{ fontFamily: F.mono, fontSize: 8, color: MUTED, letterSpacing: 2, marginBottom: 4 }}>MEMBRANE NOTES · PRIVATE</Text>
             <Text style={{ fontFamily: F.sans, fontSize: 11, color: MUTED, lineHeight: 16 }}>
               2 ingredients flagged. Substitutes confirmed. Shared version shows clean list only — membrane flags stay private.

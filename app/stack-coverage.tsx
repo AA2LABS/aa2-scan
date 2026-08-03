@@ -18,7 +18,7 @@ import { router } from 'expo-router';
 import { loadMemberProfile } from '@/lib/db';
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD';
-const LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847', CYAN = '#1BB8FF';
+const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 const GREEN = '#34D399', PURPLE = '#B48CF2';
 
 const norm = (s: string) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
@@ -196,11 +196,11 @@ const st = StyleSheet.create({
   title: { color: '#fff', fontSize: 34, fontWeight: '800', marginBottom: 8 },
   sub: { color: MUT, fontSize: 13, lineHeight: 19, marginBottom: 18 },
   statRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
-  stat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  stat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   statNum: { fontSize: 26, fontWeight: '800' },
   statLbl: { color: MUT, fontSize: 8, letterSpacing: 1, marginTop: 3, fontWeight: '700' },
   section: { color: MUT, fontSize: 10, letterSpacing: 2, fontWeight: '700', marginTop: 10, marginBottom: 10 },
-  card: { backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderLeftWidth: 3, borderRadius: 12, padding: 14, marginBottom: 10 },
+  card: { backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderLeftWidth: 3, borderRadius: 12, padding: 14, marginBottom: 10 },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   metric: { color: INK, fontSize: 15, fontWeight: '700', flexShrink: 1 },
   chip: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, marginLeft: 8 },

@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { loadMemberProfile, type FullMemberProfile } from '@/lib/db';
 
 export const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80';
-export const LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847', CYAN = '#1BB8FF';
+export const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 export const GREEN = '#34D399', AMBER = '#E0A04A', RED = '#E24B4A';
 
 export type Row = { icon: string; title: string; desc: string; chip?: string; chipColor?: string };
@@ -108,7 +108,7 @@ const st = StyleSheet.create({
   bandLine: { fontSize: 19, fontWeight: '800', textAlign: 'center' },
   bandSub: { fontSize: 12, color: MUT, marginTop: 7, textAlign: 'center', lineHeight: 17 },
   section: { paddingHorizontal: 14, paddingTop: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13, marginBottom: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13, marginBottom: 10 },
   rowIcon: { width: 38, height: 38, borderRadius: 9, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center', marginRight: 13 },
   rowIconTxt: { fontSize: 17 },
   rowName: { fontSize: 14, fontWeight: '700', color: INK },

@@ -3,7 +3,7 @@ import { View, Text, Image, ScrollView, StyleSheet, Pressable, ImageSourcePropTy
 import { router, type Href } from 'expo-router';
 import { useProfile } from '@/components/DoorFlood';
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847';
+const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847';
 
 type Door = { title: string; art: ImageSourcePropType; route: Href };
 

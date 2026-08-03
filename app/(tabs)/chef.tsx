@@ -16,7 +16,7 @@ import { CHEF_VOICE, VOICE_MODEL } from '../../lib/voices';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847', GREEN = '#34D399';
+const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', GREEN = '#34D399';
 
 type FnRow = { icon: string; title: string; sub: string; seed?: string; route?: Href; cookbook?: boolean };
 
@@ -255,7 +255,7 @@ const st = StyleSheet.create({
   askInput: { flex: 1, color: INK, fontFamily: 'DMSans-Regular', fontSize: 13, paddingVertical: 4 },
 
   answer: {
-    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.04)',
+    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.07)',
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 14,
   },
   answerTxt: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, lineHeight: 19 },
@@ -264,7 +264,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: GOLD, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },

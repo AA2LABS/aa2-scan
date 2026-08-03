@@ -31,7 +31,7 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.10)', CYAN = '#1BB8FF', GREEN = '#34D399', GOLD = '#D4A847';
+const LINE = 'rgba(255,255,255,0.15)', CYAN = '#1BB8FF', GREEN = '#34D399', GOLD = '#D4A847';
 const RED = '#E24B4A', PINK = '#F472B6', YELLOW = '#F5C84B', PURPLE = '#AA44FF';
 
 const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3 · THE MEMBRANE · EDIT'];
@@ -1058,7 +1058,7 @@ const st = StyleSheet.create({
 
   memberCard: {
     flexDirection: 'row', alignItems: 'center', marginHorizontal: 14, marginTop: 6,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 14,
   },
   memberName: { fontFamily: 'DMSans-Regular', fontSize: 19, fontWeight: '800', color: INK },
@@ -1079,7 +1079,7 @@ const st = StyleSheet.create({
   readoutVal: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 0.5 },
 
   lifeCard: {
-    borderLeftWidth: 3, backgroundColor: 'rgba(255,255,255,0.04)',
+    borderLeftWidth: 3, backgroundColor: 'rgba(255,255,255,0.07)',
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 10,
   },
@@ -1100,7 +1100,7 @@ const st = StyleSheet.create({
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 9,
-    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.07)',
   },
   chipSel: { borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.10)' },
   chipAdd: { borderStyle: 'dashed', borderColor: 'rgba(27,184,255,0.35)' },
@@ -1111,13 +1111,13 @@ const st = StyleSheet.create({
   addInput: {
     flex: 1, borderWidth: 0.5, borderColor: 'rgba(27,184,255,0.4)', borderRadius: 9,
     color: INK, paddingHorizontal: 12, paddingVertical: 9, fontFamily: 'DMSans-Regular', fontSize: 13,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(255,255,255,0.07)',
   },
   addSave: { borderWidth: 0.5, borderColor: 'rgba(27,184,255,0.5)', borderRadius: 9, paddingHorizontal: 14, paddingVertical: 10 },
 
   kvRow: { flexDirection: 'row', gap: 9, marginBottom: 9 },
   kv: {
-    flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth,
+    flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth,
     borderColor: LINE, borderRadius: 12, padding: 13,
   },
   k: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.3, color: FAINT },
@@ -1125,7 +1125,7 @@ const st = StyleSheet.create({
 
   toggleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13,
   },
   toggleLbl: { fontFamily: 'DMSans-Regular', fontSize: 14, fontWeight: '700', color: INK },
@@ -1149,7 +1149,7 @@ const st = StyleSheet.create({
   doorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   doorChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 9, paddingHorizontal: 12, paddingVertical: 9,
   },
   doorChipTxt: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 1.5, color: INK },
@@ -1186,7 +1186,7 @@ const st = StyleSheet.create({
 
   consensusRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 12, marginBottom: 8,
   },
   consensusMetric: { fontFamily: 'DMMono-Medium', fontSize: 9.5, letterSpacing: 1.5, color: MUT, width: 78 },

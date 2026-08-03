@@ -17,7 +17,7 @@ import { conciergeVoice, VOICE_MODEL } from '../../lib/voices';
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.10)', GOLD = '#D4A847';
+const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847';
 
 type FnRow = { icon: string; title: string; sub: string; seed?: string; route?: Href };
 
@@ -443,7 +443,7 @@ const st = StyleSheet.create({
   askInput: { flex: 1, color: INK, fontFamily: 'DMSans-Regular', fontSize: 13, paddingVertical: 4 },
 
   answer: {
-    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.04)',
+    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.07)',
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 14,
   },
   answerTxt: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, lineHeight: 19 },
@@ -452,7 +452,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: GOLD, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },
@@ -486,7 +486,7 @@ const st = StyleSheet.create({
   tileGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tile: {
     width: '47.5%', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 10, overflow: 'hidden',
+    backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: 10, overflow: 'hidden',
   },
   tileDashed: {
     borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(27,184,255,0.45)',
@@ -495,7 +495,7 @@ const st = StyleSheet.create({
   tileCover: { width: '100%', height: 76, borderRadius: 8, marginBottom: 8 },
   tileFlagBox: {
     width: '100%', height: 76, borderRadius: 8, marginBottom: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center', justifyContent: 'center',
   },
   tileFlag: { fontSize: 40 },
   tileName: { fontFamily: 'DMSans-Regular', fontSize: 13.5, fontWeight: '700', color: INK },

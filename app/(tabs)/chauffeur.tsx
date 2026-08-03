@@ -15,7 +15,7 @@ import { getRecentDossiers, type TravelDossierRow } from '../../lib/travel-engin
 // ─────────────────────────────────────────────────────────────────────────────
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.10)', GREEN = '#34D399', CYAN = '#1BB8FF', GOLD = '#D4A847';
+const LINE = 'rgba(255,255,255,0.15)', GREEN = '#34D399', CYAN = '#1BB8FF', GOLD = '#D4A847';
 
 type FnRow = { icon: string; title: string; sub: string; route: Href };
 
@@ -190,7 +190,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: GREEN, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },
@@ -201,7 +201,7 @@ const st = StyleSheet.create({
 
   dossier: {
     borderLeftWidth: 3, borderLeftColor: GREEN,
-    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 14,
   },
   rtitle: { fontFamily: 'DMSans-Regular', fontSize: 16, fontWeight: '800', color: INK },

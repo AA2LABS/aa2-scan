@@ -16,7 +16,7 @@ export type FloodScreenProps = {
   ask?: { q: string; hint: string };
 };
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.10)';
+const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.15)';
 const GREEN = '#34D399', AMBER = '#E0A04A';
 
 function chipColors(kind: FloodRow['chipKind'], accent: string) {
@@ -107,8 +107,8 @@ const st = StyleSheet.create({
   sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: '#5C6B80', marginBottom: 6, marginLeft: 2, marginTop: 8 },
   rows: { paddingHorizontal: 14, paddingTop: 4 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 13 },
-  rowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.05)' },
-  rowIcon: { width: 36, height: 36, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.07)' },
+  rowIcon: { width: 36, height: 36, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   rowIconTxt: { fontSize: 16, color: INK },
   rowTx: { flex: 1 },
   rowTitle: { fontSize: 14, fontWeight: '700', color: INK },

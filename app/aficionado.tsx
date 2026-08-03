@@ -25,7 +25,7 @@ const C = {
   white:       '#FFFFFF',
   dim:         'rgba(255,255,255,0.60)',
   muted:       'rgba(255,255,255,0.32)',
-  glass:       'rgba(255,255,255,0.04)',
+  glass:       'rgba(255,255,255,0.07)',
   glassBorder: 'rgba(255,255,255,0.07)',
 };
 const F = {

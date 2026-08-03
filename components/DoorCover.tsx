@@ -99,11 +99,11 @@ const st = StyleSheet.create({
     color: 'rgba(255,255,255,0.82)', lineHeight: 21, marginTop: 8, marginBottom: 12,
   },
   wpillWith: {
-    borderLeftWidth: 2, borderLeftColor: '#1BB8FF', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderLeftWidth: 2, borderLeftColor: '#1BB8FF', backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 8, padding: 10, marginBottom: 8,
   },
   wpillWithout: {
-    borderLeftWidth: 2, borderLeftColor: '#E24B4A', backgroundColor: 'rgba(255,255,255,0.05)',
+    borderLeftWidth: 2, borderLeftColor: '#E24B4A', backgroundColor: 'rgba(255,255,255,0.07)',
     borderRadius: 8, padding: 10, marginBottom: 14,
   },
   wk: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.5, color: '#1BB8FF', marginBottom: 3 },
