@@ -9,6 +9,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { matchActivityInText } from './activity-catalog';
+import { SEED_WEIGHTS } from './clarifier-weights';
 
 export type ClarifierCategory =
   | 'intimacy'        // sexual activity — private, excluded from stress, recovery-relevant
@@ -31,6 +32,19 @@ export interface Clarification {
   reclassLine: string;
   /** Recovery context, when the science carries one. */
   recoveryNote: string | null;
+  /**
+   * THE WEIGHT LAW (founder ruling 2026-08-03): a category with no number is
+   * nothing to compute against. Magnitude = how hard the body moved (1–10).
+   * Valence = which direction it moved the member (+1/0/−1). Two axes, never
+   * one — a single scale collapses intimacy and conflict back into the same
+   * number, which is the exact bug this file exists to fix. Seeds live in
+   * lib/clarifier-weights.ts and are overwritten by the member's own
+   * measured biosignal delta as instances accumulate.
+   */
+  magnitude: number;
+  valence: 1 | 0 | -1;
+  /** Why this weight exists, in plain language — WHY-FIRST law. */
+  weightWhy: string;
 }
 
 const RULES: { cat: ClarifierCategory; test: RegExp }[] = [
@@ -45,7 +59,7 @@ const RULES: { cat: ClarifierCategory; test: RegExp }[] = [
   { cat: 'conflict',   test: /\b(argu|fight|confront|yell|screaming match)\w*/i },
 ];
 
-export function classifyClarification(note: string): Clarification {
+function classifyBase(note: string): Omit<Clarification, 'magnitude' | 'valence' | 'weightWhy'> {
   const text = String(note ?? '').trim();
   let hit: ClarifierCategory | undefined = RULES.find(r => r.test.test(text))?.cat;
 
@@ -134,4 +148,16 @@ export function classifyClarification(note: string): Clarification {
         recoveryNote: 'Closure before comfort — the loop closes when you log its end.',
       };
   }
+}
+
+
+/**
+ * THE PUBLIC ENTRY — classification plus its weight.
+ * Every clarification leaves this function carrying a number the membrane can
+ * compute against, and the reason that number exists (WHY-FIRST law).
+ */
+export function classifyClarification(note: string): Clarification {
+  const base = classifyBase(note);
+  const seed = SEED_WEIGHTS[base.category];
+  return { ...base, magnitude: seed.magnitude, valence: seed.valence, weightWhy: seed.why };
 }
