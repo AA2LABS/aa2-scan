@@ -382,6 +382,17 @@ export default function BioBuddyScreen() {
                   );
                 });
               })()}
+              {/* STACK COVERAGE — the anti-FOMO cross-reference (founder law
+                  2026-08-03): an UPPER, not a downer. Whatever you own already
+                  covers you; overlap is consensus, never waste. */}
+              <Pressable
+                onPress={() => router.push('/stack-coverage' as Href)}
+                style={{ marginTop: 10, borderWidth: 1, borderColor: 'rgba(27,184,255,0.35)', backgroundColor: 'rgba(27,184,255,0.08)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
+              >
+                <Text style={{ color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
+                  YOUR STACK HAS YOU COVERED →
+                </Text>
+              </Pressable>
             </View>
 
             {/* STACK CONSENSUS — same day · every device · one assessment */}
