@@ -17,7 +17,7 @@ import {
   View,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
-import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberProfile } from '../../lib/db';
+import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberProfile, logMembraneEvent } from '../../lib/db';
 import * as FileSystem from 'expo-file-system/legacy';
 import ArrivalScreen, { SEAL_FLAG_PATH } from '../arrival';
 import { saveSleepAids } from '../../lib/db';
@@ -332,7 +332,25 @@ export default function OnboardingScreen() {
   const sealedRef = React.useRef(false);
 
   // ── Flow
-  const [step, setStep] = useState<FlowStep>('preview_panels');
+  // THE BASELINE BEFORE THE CROWN (founder law 2026-08-12): every step
+  // transition through the skin is time-stamped into membrane_events.
+  // Entering a block is that block's start stamp; the next transition is its
+  // end stamp — eight blocks, sixteen stamps, no SDK required. First-contact
+  // pacing IS baseline data: never scored, never shown back, just held.
+  const [step, setStepRaw] = useState<FlowStep>('preview_panels');
+  const setStep = React.useCallback((next: FlowStep) => {
+    setStepRaw((prev) => {
+      if (prev !== next) {
+        void logMembraneEvent({
+          eventType: 'onboarding_step_stamp',
+          sourceScreen: 'onboarding',
+          subject: String(next),
+          value: { from: String(prev), to: String(next), at: new Date().toISOString() },
+        });
+      }
+      return next;
+    });
+  }, []);
 
   // ── Focus tracking
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -529,6 +547,14 @@ export default function OnboardingScreen() {
     }
 
     await markOnboardingComplete();
+
+    // Final stamp: the skin is crossed. Closes the last open block interval.
+    void logMembraneEvent({
+      eventType: 'onboarding_sealed',
+      sourceScreen: 'onboarding',
+      subject: 'membrane_sealed',
+      value: { at: new Date().toISOString() },
+    });
 
     // SKIN LAW: sealing the membrane is the ONE act that opens the gates.
     // The local seal flag lets every future cold start walk straight in.

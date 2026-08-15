@@ -36,16 +36,33 @@ const RED = '#E24B4A', PINK = '#F472B6', YELLOW = '#F5C84B', PURPLE = '#AA44FF';
 
 const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3 · THE MEMBRANE · EDIT'];
 
-// The known hardware stack — wire order. Key = normalized device id in
-// device_connections.hardware. Dot colors follow the wire's live readout.
-const DEVICES: { key: string; name: string; dot: string }[] = [
-  { key: 'garmin_tactix_8', name: 'Garmin Tactix 8', dot: CYAN },
-  { key: 'oura_ring_4',     name: 'Oura Ring 4',     dot: GREEN },
-  { key: 'whoop_5_0',       name: 'WHOOP 5.0',       dot: '#7CE7C4' },
-  { key: 'beats_pro_2',     name: 'Beats Pro 2',     dot: GOLD },
-  { key: 'oakley_meta',     name: 'Oakley Meta',     dot: PURPLE },
-  { key: 'muse_s_athena',   name: 'Muse S Athena',   dot: '#8fd6ff' },
-  { key: 'strava',          name: 'Strava',          dot: '#5CD65C' },
+// FULL STACK LAW (founder order 2026-08-14): the stack displays as a
+// hierarchy of signal. THE PORT sits on top — the phone is a member of the
+// chain, always shown, always active; on the web version it still shows,
+// because off-grid the phone is the last node standing and the member must
+// have always seen it as part of the stack. Below it the SIGNAL TIER in rank
+// order: Crown → Tactix → WHOOP MG → Oura. Below them the PERIPHERAL TIER,
+// ordered by body placement, never by price: Manta and Beats side by side
+// (both speak to the ears), the Metas apart (the Equalizer's eyes — ICE,
+// silent rideshare escalation, live camera out), the Index BPM on the arm.
+// Strava rides last — the software link. Medical-grade devices are the only
+// tier above this stack — enterprise, parked. This is the skeleton.
+// Key = normalized device id in device_connections.hardware.
+const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: boolean; condition?: boolean }[] = [
+  // THE PORT
+  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', port: true },
+  // SIGNAL TIER — rank order
+  { key: 'muse_s_athena',    name: 'Muse S Athena · THE CROWN',    dot: '#8fd6ff' },
+  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: CYAN },
+  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', alt: 'whoop_5_0' },
+  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: GREEN },
+  // PERIPHERAL TIER — by body placement
+  { key: 'manta_sound',      name: 'Manta Sound Sleep Mask',       dot: '#C9A0FF', condition: true },
+  { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: GOLD },
+  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: PURPLE },
+  { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF' },
+  // SOFTWARE LINK
+  { key: 'strava',           name: 'Strava',                       dot: '#5CD65C' },
 ];
 
 const ACTIVITY_CHIPS = ['Hiking', 'Strength', 'Backcountry Ski', 'Trail Run', 'Cycling', 'Fly Fishing', 'Ranch Work'];
@@ -73,10 +90,14 @@ function deviceDot(key: string): string {
 // in biosignal_readings — never staged numbers.
 const DEVICE_SOURCE: Record<string, BiosignalSource> = {
   garmin_tactix_8: 'garmin', oura_ring_4: 'oura', strava: 'strava',
-  whoop_5_0: 'whoop', beats_pro_2: 'beats',
+  whoop_5_0: 'whoop', whoop_mg: 'whoop', beats_pro_2: 'beats',
 };
 
 function deviceMetric(key: string, readout: LiveReadout | null): string | null {
+  // THE PORT: the phone is running this screen — active by definition, honest by definition.
+  if (norm(key) === 'z_fold') return 'ACTIVE · PORT';
+  // Manta adds no signal — it adds a CONDITION the membrane measures against (founder law 2026-08-01).
+  if (norm(key) === 'manta_sound') return 'CONDITION ARMED';
   const src = DEVICE_SOURCE[norm(key)];
   if (!src || !readout) return null;
   const r = readout.latest[src];
@@ -362,9 +383,20 @@ export default function BioBuddyScreen() {
                 // Straight colored line when not connected · live waveform when
                 // connected · NO BLANK STATE — that is not how you sell a product.
                 const connected = new Set(hardware.map(h => norm(h)));
-                const extras = hardware.filter(h => !DEVICES.some(d => d.key === norm(h)));
+                const mantaOn = sleepAids.some(a => norm(a).includes('manta'));
+                const extras = hardware.filter(h => !DEVICES.some(d => d.key === norm(h) || d.alt === norm(h)));
                 const rows = [
-                  ...DEVICES.map(d => ({ key: d.key, on: connected.has(d.key) })),
+                  ...DEVICES.map(d => ({
+                    key: d.key,
+                    // FULL STACK LAW: THE PORT is always on (you are holding it);
+                    // Manta arms as a condition via sleep aids; alt keys honor
+                    // prior onboarding spellings (WHOOP 5.0 → WHOOP MG 5.0 row).
+                    on: d.port
+                      ? true
+                      : d.condition
+                        ? mantaOn
+                        : connected.has(d.key) || (d.alt ? connected.has(d.alt) : false),
+                  })),
                   ...extras.map(h => ({ key: h, on: true })),
                 ];
                 return rows.map(({ key, on }, i) => {
