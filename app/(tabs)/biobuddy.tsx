@@ -14,6 +14,7 @@ import {
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
+import { DIET_OPTIONS } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
@@ -67,7 +68,7 @@ const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: bo
 
 const ACTIVITY_CHIPS = ['Hiking', 'Strength', 'Backcountry Ski', 'Trail Run', 'Cycling', 'Fly Fishing', 'Ranch Work'];
 const HOBBY_CHIPS    = ['Woodworking', 'Sound Engineering', 'Cooking', 'Photography'];
-const DIET_CHIPS     = ['Omnivore', 'Mediterranean', 'Keto', 'Paleo', 'Vegan'];
+const DIET_CHIPS     = DIET_OPTIONS;   // one source of truth — lib/diet.ts
 const ALLERGY_CHIPS  = ['Tree Nuts', 'Sesame', 'Sulfites', 'Shellfish'];
 const TACTICAL_ORGS  = ['WADA', 'FEI', 'DoD', 'USADA'];
 

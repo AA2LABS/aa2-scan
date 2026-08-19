@@ -22,6 +22,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import ArrivalScreen, { SEAL_FLAG_PATH } from '../arrival';
 import { saveSleepAids } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
+import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const BLUE        = '#1BB8FF';
@@ -384,7 +385,7 @@ export default function OnboardingScreen() {
   const [medicationsNa,     setMedicationsNa]     = useState(false);
   const [medicalConditions, setMedicalConditions] = useState('');
   const [conditionsNa,      setConditionsNa]      = useState(false);
-  const [dietaryApproach,   setDietaryApproach]   = useState('');
+  const [dietaryApproach,   setDietaryApproach]   = useState<string[]>([]);
   const [supplementStack,   setSupplementStack]   = useState('');
   const [supplementsNa,     setSupplementsNa]     = useState(false);
 
@@ -463,7 +464,7 @@ export default function OnboardingScreen() {
     ((foodAllergies.trim() || allergiesNa)        ? 1 : 0) +
     ((medications.trim()   || medicationsNa)      ? 1 : 0) +
     ((medicalConditions.trim() || conditionsNa)   ? 1 : 0) +
-    (dietaryApproach                    ? 1 : 0) +
+    (dietaryApproach.length > 0         ? 1 : 0) +
     ((supplementStack.trim() || supplementsNa)    ? 1 : 0) +
     // Block 5 (3)
     (wearables.length > 0               ? 1 : 0) +
@@ -496,6 +497,14 @@ export default function OnboardingScreen() {
       : [...aliveMostYourself, val];
     setAliveMostYourself(next);
     saveField('alive_most_yourself', next);
+  };
+
+  // ── Diet chips — multi-select. Founder ruling 2026-08-19: onboarding is the
+  //    screen that matters. Halal and Mediterranean are not mutually exclusive.
+  const toggleDiet = (val: string) => {
+    const next = toggleDietValue(dietaryApproach, val);
+    setDietaryApproach(next);
+    saveField('dietary_approach', next);
   };
 
   // ── Allergen chip append
@@ -1008,9 +1017,10 @@ export default function OnboardingScreen() {
             <View style={st.fieldGroup}>
               <FieldLabel text="DIETARY APPROACH" />
               <ChipSelector
-                options={['Omnivore','Vegetarian','Vegan','Keto','Paleo','Halal','Kosher','Gluten-Free','No Restriction','Other']}
+                options={DIET_OPTIONS}
                 selected={dietaryApproach}
-                onSelect={v => { setDietaryApproach(v); saveField('dietary_approach', v); }}
+                multi
+                onSelect={toggleDiet}
               />
             </View>
 

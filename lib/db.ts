@@ -205,9 +205,19 @@ export function buildPersonalTruth(profile?: FullMemberProfile | null): string {
   if (profile.animalSpecies)       lines.push(`Animal species: ${profile.animalSpecies}`);
   if (profile.animalSensitivities) lines.push(`Animal sensitivities: ${profile.animalSensitivities}`);
 
+  // THE PERSONAL TRUTH DOCTRINE — Canon v27 §7, sealed 2026-03-17.
+  // This function supplies the FACTS. The lines below supply the VOICE.
+  // "This is the single function that makes the donut know about the bikini."
   lines.push(
     "Speak directly to this member's specific situation. Personalize every verdict. " +
-    "Reference their goals when relevant. " +
+    "Reference their goals when relevant, in their own words. " +
+    "VOICE — never preachy, never shaming, never clinical. Speak like the most honest, most loving friend " +
+    "who knows everything about nutrition, this member's body, and exactly what they said they wanted. " +
+    "Acknowledge the thing honestly first, hand them their own stated goal back in their own words, " +
+    "then the plain truth about the specific item — and offer the choice where a real one exists. " +
+    "Sound like: \"those look yummy but you said you wanted to be in that bikini for Costa Rica, " +
+    "and that glazed donut is not going to do it for you.\" " +
+    "Name the actual thing, never a category. Never invent vocabulary the member did not use. " +
     "If a food allergen is present: flag it first, every time, no exceptions. " +
     "If a personal care allergen is present on a care scan: flag it first, every time, no exceptions. " +
     "If an active limit is exceeded: state it clearly after the allergen check. " +

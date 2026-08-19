@@ -7,13 +7,32 @@
 // what THIS device contributes to the member's AA2 experience.
 // Anti-duplicate rule (Helio precedent): never sell a member an organ their
 // body already has.
+//
+// APPROVED-ONLY LAW (founder, 2026-08-18): onboarding device selection lists
+// ONLY what is in this catalog. If it is not up here, it does not work.
+// ONBOARDING_DEVICE_OPTIONS is generated FROM this catalog — one source of
+// truth, so the screen can never drift from the doctrine.
+//
+// THE DOUBLE TIMESTAMP (founder law, 2026-08-18): every device in a member's
+// stack carries TWO dates — `acquired`, the day the canon recorded it entering
+// the stack, and `firstData`, the first day its downloadable record begins.
+// One is the receipt of the instrument. The other is the receipt of the
+// measurement. No competitor holds either, because no competitor was written
+// down when the device showed up. Provenance is a baseline's chain of custody.
+//
+// LIVE DEVICES (`live: true`): the device streams a real-time signal the
+// membrane can hear second-by-second, with no cloud between. This is the
+// nerve, not the ledger.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type DeviceTier =
+  | 'PORT'            // the always-on carrier — every other signal lands through it
   | 'FULL API'        // cloud API — deepest membrane feed, automatic
   | 'FILE EXPORT'     // BYOB — bring the archive, the membrane eats it
   | 'AGGREGATOR'      // Apple Health / Health Connect — the phone is the port
   | 'LIVE BLE'        // real-time nerve, no cloud between
+  | 'CONDITION'       // passive gear — adds no signal, adds a measurable condition
+  | 'LEGACY'          // the junk drawer — discontinued, still exportable
   | 'SPECIES';        // extended sensory reach — Spokes 27-29
 
 export interface ApprovedDevice {
@@ -23,19 +42,32 @@ export interface ApprovedDevice {
   dataPath: string;     // how the data reaches the membrane
   adds: string;         // the intelligence's line in device selection
   flagship?: boolean;
+  live?: boolean;       // streams a real-time signal the membrane can hear
+  founderStack?: boolean;
+  acquired?: string;    // canon receipt — the day it entered the stack
+  firstData?: string;   // first day of downloadable record
+  note?: string;        // honest limitation, spoken plainly, never hidden
 }
 
 export const DEVICE_CATALOG: ApprovedDevice[] = [
-  // ── FLAGSHIP ──
+  // ── THE PORT ──────────────────────────────────────────────────────────────
+  { key: 'z_fold', name: 'Samsung Z Fold · THE PORT', tier: 'PORT',
+    founderStack: true, live: true,
+    dataPath: 'Health Connect — the single port. Every device and app in the stack writes here; the membrane reads one pipe.',
+    adds: 'The carrier. Always on, always present — the one organ that never comes off. Health Connect structurally refuses vendor verdicts: it holds raw signal only, so no company\'s score can ride in through the pipe.' },
+
+  // ── FLAGSHIP ──────────────────────────────────────────────────────────────
   { key: 'whoop_5_0', name: 'WHOOP 5.0', tier: 'FULL API', flagship: true,
     dataPath: 'WHOOP developer API + webhooks — recovery, sleep, strain pushed to the membrane automatically',
     adds: 'The recovery engine. Your daily readiness verdict, pushed to the membrane the moment it lands — no phone ritual. Screenless: AA2 gets you out of your phone, and so does this.' },
   { key: 'whoop_mg', name: 'WHOOP MG', tier: 'FULL API', flagship: true,
-    dataPath: 'WHOOP developer API + webhooks',
-    adds: 'Everything WHOOP 5.0 adds, plus FDA-cleared ECG and blood-pressure insights — medical-grade signals in a screenless strap.' },
+    founderStack: true, live: true, acquired: '2026-08-07',
+    dataPath: 'WHOOP developer API + webhooks; open Bluetooth heart-rate broadcast verified',
+    adds: 'Everything WHOOP 5.0 adds, plus FDA-cleared ECG and blood-pressure insights — medical-grade signals in a screenless strap. Broadcasts a live heartbeat the membrane hears directly.' },
 
-  // ── FULL API ──
+  // ── FULL API ──────────────────────────────────────────────────────────────
   { key: 'oura_ring_4', name: 'Oura Ring 4', tier: 'FULL API',
+    founderStack: true, firstData: '2026-01',
     dataPath: 'Oura cloud API v2 — personal token, nightly automatic pull (wired in-app)',
     adds: 'The night ledger. The deepest sleep and 5-minute HRV baselines in consumer hardware — your 30/60/90 baseline gets its backbone here.' },
   { key: 'dexcom_stelo', name: 'Dexcom Stelo (CGM)', tier: 'FULL API',
@@ -50,9 +82,6 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'polar', name: 'Polar Vantage V4 / Loop', tier: 'FULL API',
     dataPath: 'Polar AccessLink API + GDPR export',
     adds: 'Lab-grade training load and recovery — and pair the H10 chest strap for the gold-standard HRV signal on earth.' },
-  { key: 'polar_h10', name: 'Polar H10 Strap', tier: 'LIVE BLE',
-    dataPath: 'Open Bluetooth heart-rate broadcast + Polar API',
-    adds: 'The reference heartbeat. Chest-strap HRV accuracy every other device is judged against — and a live wire straight into the membrane.' },
   { key: 'withings', name: 'Withings ScanWatch 3 / Body / BPM', tier: 'FULL API',
     dataPath: 'Withings public API — watch, scale, cuff, sleep mat',
     adds: 'Vitals no wrist carries: blood pressure, body composition, bed-sensed sleep. The membrane\'s clinical corner.' },
@@ -60,16 +89,24 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'Ultrahuman partner API + export',
     adds: 'A metabolic-focused ring — sleep, HRV, and stimulant-timing windows for members chasing metabolic precision.' },
   { key: 'strava', name: 'Strava', tier: 'FULL API',
+    founderStack: true, acquired: '2015',
     dataPath: 'Strava API + activities.csv export (wired in-app)',
-    adds: 'The activity river. Whatever device records the workout, Strava funnels it into one stream the membrane can read.' },
+    adds: 'The activity river. Whatever device records the workout, Strava funnels it into one stream the membrane can read — and it carries your whole archive, however many years deep it runs.' },
 
-  // ── FILE EXPORT ──
+  // ── FILE EXPORT ───────────────────────────────────────────────────────────
   { key: 'garmin_tactix_8', name: 'Garmin Tactix 8', tier: 'FILE EXPORT',
-    dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + live BLE broadcast',
-    adds: 'Field-grade everything — sleep, stress, HRV, Body Battery — plus an open live pulse the membrane hears directly. The tactical wrist.' },
+    founderStack: true, live: true, firstData: '2026-01', acquired: '2025-12-29',
+    dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
+    adds: 'Field-grade everything — sleep, stress, HRV, Body Battery, on-demand ECG with AFib detection, pulse ox in three modes — plus an open live pulse the membrane hears directly. The tactical wrist.',
+    note: 'Elevate Gen 5 platform. ECG confirmed on-device — never pitch a member ECG hardware when this is already on the wrist.' },
   { key: 'garmin', name: 'Garmin (Fenix 8 · Venu 4 · Forerunner · Instinct 3)', tier: 'FILE EXPORT',
-    dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + live BLE broadcast',
+    live: true,
+    dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
     adds: 'The Garmin engine at every price point — deep daily wellness data by export, live heart rate by broadcast.' },
+  { key: 'garmin_index_bpm', name: 'Garmin Index BPM', tier: 'FILE EXPORT',
+    founderStack: true, acquired: '2026-08-04',
+    dataPath: 'Garmin Connect — FDA-cleared oscillometric cuff, Wi-Fi standalone, exportable PDF for a physician',
+    adds: 'True blood pressure — the one vital no wrist on earth measures. Every optical estimate in your stack gets judged against this at a matched timestamp, which is the only honest way to answer the sensor-accuracy question on your own skin.' },
   { key: 'suunto', name: 'Suunto Race 2', tier: 'FILE EXPORT',
     dataPath: 'Suunto export + partner API',
     adds: 'Endurance depth for the long-route members — training load the membrane folds into recovery.' },
@@ -77,13 +114,15 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'FIT export + Training Hub CSV',
     adds: 'The runner\'s engine — efficient, long-battery training data by export.' },
   { key: 'amazfit', name: 'Amazfit (Helio Ring · Helio Strap · T-Rex 3)', tier: 'FILE EXPORT',
+    live: true,
     dataPath: 'Zepp GDPR export only — no public API; open live BLE broadcast on strap',
-    adds: 'A budget onramp with an open live pulse. Depth is limited — its computed scores stay locked in Zepp. Accepted per doctrine: bring what you have.' },
+    adds: 'A budget onramp with an open live pulse. Bring what you have.',
+    note: 'Depth is limited — its computed scores stay locked inside Zepp. Accepted per doctrine, stated plainly up front.' },
   { key: 'eight_sleep', name: 'Eight Sleep Pod 5', tier: 'FILE EXPORT',
     dataPath: 'In-app metrics, limited export',
     adds: 'Sleep temperature and bed-sensed HRV with nothing worn at all — the bedroom becomes a sensor.' },
 
-  // ── AGGREGATOR ──
+  // ── AGGREGATOR ────────────────────────────────────────────────────────────
   { key: 'apple_watch', name: 'Apple Watch Series 12 / Ultra 3', tier: 'AGGREGATOR',
     dataPath: 'Apple Health export.xml (BYOB, supported) + HealthKit',
     adds: 'Full vitals, ECG, sleep-apnea detection — the largest health dataset most members already own.' },
@@ -91,8 +130,14 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'In-ear heart rate during workouts → Apple Health',
     adds: 'Heart rate from the earbuds you already wear — zero new hardware, one more signal.' },
   { key: 'beats_pro_2', name: 'Beats Pro 2', tier: 'AGGREGATOR',
-    dataPath: 'In-ear heart rate → Apple Health',
+    founderStack: true,
+    dataPath: 'In-ear heart rate → Apple Health / Health Connect',
     adds: 'Workout heart rate from the ears — and the ASRT audio channel: training the body and the subconscious on the same device.' },
+  { key: 'oakley_meta', name: 'Meta Oakley HSTN · THE EYES', tier: 'AGGREGATOR',
+    founderStack: true,
+    dataPath: 'Meta AI app → Health Connect; on-board camera, microphone, open-ear audio',
+    adds: 'The eyes. Hands-free scanning, live camera for the safety path, and the Equalizer looking at what you are looking at — the one device that sees the world instead of the wrist.' },
+
   { key: 'samsung', name: 'Samsung Galaxy Watch 8 / Galaxy Ring 2', tier: 'AGGREGATOR',
     dataPath: 'Samsung Health export + Health Connect',
     adds: 'Android-side full vitals with watch-and-ring fusion — day on the wrist, night on the finger.' },
@@ -100,15 +145,59 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'Fitbit API path',
     adds: 'Android-native with a real API behind it — Fitbit\'s engine on Google\'s wrist.' },
 
-  // ── LIVE BLE ──
-  { key: 'muse_s_athena', name: 'Muse S Athena', tier: 'LIVE BLE',
-    dataPath: 'Muse SDK — EEG, meditation, sleep onset',
-    adds: 'The only brain signal in the stack — EEG for focus, meditation depth, and sleep onset. The crown.' },
-  { key: 'wahoo_tickr', name: 'Wahoo TICKR', tier: 'LIVE BLE',
+  // ── LIVE BLE — the nerve ──────────────────────────────────────────────────
+  { key: 'muse_s_athena', name: 'Muse S Athena · THE CROWN', tier: 'LIVE BLE',
+    founderStack: true, live: true, flagship: true, acquired: '2026-08-10',
+    dataPath: 'Muse SDK — LIVE stream: up to eight EEG channels, fNIRS optodes, PPG, six-axis motion. Mindfulness + sleep to Health Connect.',
+    adds: 'The crown. The only instrument in the stack that MEASURES instead of infers — delta, theta, alpha, beta, gamma read directly off the skull, plus prefrontal blood flow read directly. Every other device estimates your state from your pulse. This one reads the organ that produces it.',
+    note: 'LIVE DEVICE. Streams second-by-second while worn — the Live Clarifier reads the brain at the moment a thing happens instead of asking about it later. Its own app consumes a fraction of what the band broadcasts; the membrane catches the rest.' },
+  { key: 'polar_h10', name: 'Polar H10 Strap', tier: 'LIVE BLE', live: true,
+    dataPath: 'Open Bluetooth heart-rate broadcast + Polar API',
+    adds: 'The reference heartbeat. Chest-strap HRV accuracy every other device is judged against — and a live wire straight into the membrane.' },
+  { key: 'polar_verity', name: 'Polar Verity Sense', tier: 'LIVE BLE', live: true,
+    dataPath: 'Open Bluetooth heart-rate broadcast',
+    adds: 'An armband live pulse — optical accuracy at the upper arm, where the signal is cleanest.' },
+  { key: 'wahoo_tickr', name: 'Wahoo TICKR', tier: 'LIVE BLE', live: true,
     dataPath: 'Open Bluetooth heart-rate broadcast',
     adds: 'A simple live heartbeat for the membrane — budget chest-strap truth.' },
 
-  // ── SPECIES — extended sensory reach ──
+  // ── CONDITION — passive gear, no signal, a measurable variable ─────────────
+  { key: 'manta_sound', name: 'Manta Sound Sleep Mask', tier: 'CONDITION',
+    founderStack: true,
+    dataPath: 'No data of its own — the member\'s existing devices record the outcome',
+    adds: 'Adds no signal. Adds a CONDITION. Your ring and strap already measure every night; the mask splits your own history into mask nights and bare nights and the membrane shows you the difference with receipts. Its head strap also seats a crown that was never given a replacement band.' },
+
+  // ── LEGACY — the junk drawer is the onramp ────────────────────────────────
+  // Discontinued or older-generation hardware. The device does not have to be
+  // worn again. The RECORD is the asset: an account nobody has opened in four
+  // years still holds a baseline the member already paid for and never read.
+  { key: 'fitbit_legacy', name: 'Fitbit (older: Charge 2–5 · Versa · Ionic · Alta · Blaze)', tier: 'LEGACY',
+    dataPath: 'Fitbit account export (full archive, works regardless of whether the device still powers on)',
+    adds: 'Years of resting heart rate, steps, and sleep sitting in an account you stopped opening. The band can be dead in a drawer — the record still starts your baseline years before today.' },
+  { key: 'garmin_legacy', name: 'Garmin (older: Vívosmart · Vívoactive 3/4 · Forerunner 235/245 · Fenix 5/6)', tier: 'LEGACY',
+    dataPath: 'Garmin Connect full account export (JSON/FIT)',
+    adds: 'Garmin never deletes your history. Whatever you wore in 2019 is still exportable — bring it and the membrane wakes up already knowing your old normal.' },
+  { key: 'apple_watch_legacy', name: 'Apple Watch (older: Series 3–9 · SE)', tier: 'LEGACY',
+    dataPath: 'Apple Health export.xml — the whole archive, all devices you ever paired',
+    adds: 'One export file carries every watch you have ever owned. The membrane reads them as one continuous life, not four separate gadgets.' },
+  { key: 'samsung_legacy', name: 'Samsung (older: Gear · Galaxy Watch 3–6 · Galaxy Fit)', tier: 'LEGACY',
+    dataPath: 'Samsung Health export + Health Connect',
+    adds: 'The Android drawer. Old Gear and Galaxy history exports the same as the new ones — the years count even if the watch does not turn on.' },
+  { key: 'oura_legacy', name: 'Oura Ring Gen 2 / Gen 3', tier: 'LEGACY',
+    dataPath: 'Oura API v2 + account export — same account, same history',
+    adds: 'Gen 2 and Gen 3 nights live in the same account as Gen 4. Upgrading never cost you your baseline — most members do not know that.' },
+  { key: 'polar_legacy', name: 'Polar (older: M400 · V800 · Vantage V/M · H7 strap)', tier: 'LEGACY',
+    dataPath: 'Polar Flow GDPR export',
+    adds: 'Polar Flow holds a decade for some members. Old training files still carry real HRV — some of the cleanest data in any drawer.' },
+  { key: 'withings_legacy', name: 'Withings / Nokia (older: Steel HR · Go · Body scales)', tier: 'LEGACY',
+    dataPath: 'Withings account export — survives the Nokia era rename',
+    adds: 'Weight and body-composition history going back further than most people remember signing up for. Trend is the whole point, and you already have it.' },
+  { key: 'misc_legacy', name: 'Other older tracker (Jawbone · Misfit · Amazfit · Huawei · Xiaomi)', tier: 'LEGACY',
+    dataPath: 'Whatever export the vendor still offers — CSV, JSON, GDPR archive',
+    adds: 'If it still exports, it still counts. Bring the file and the membrane will tell you honestly what it can and cannot read out of it.',
+    note: 'Some dead-vendor accounts no longer export. If the file will not come out, the answer is a straight no — never a maybe.' },
+
+  // ── SPECIES — extended sensory reach ──────────────────────────────────────
   { key: 'garmin_alpha', name: 'Garmin Alpha 300 / T 20 Collar', tier: 'SPECIES',
     dataPath: 'Garmin export — GPS + activity',
     adds: 'Working-K9 location and load inside the same membrane as the handler — Spoke 27 in the field.' },
@@ -126,10 +215,87 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     adds: 'Competition-grade horse telemetry — Spoke 28 at FEI level.' },
 ];
 
+// ─── LOOKUPS ─────────────────────────────────────────────────────────────────
+
+function normKey(s: string): string {
+  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+}
+
+export function findDevice(nameOrKey: string): ApprovedDevice | null {
+  const n = normKey(nameOrKey);
+  const lower = nameOrKey.trim().toLowerCase();
+  return (
+    DEVICE_CATALOG.find(d => d.key === n || d.name.toLowerCase() === lower) ?? null
+  );
+}
+
 export function deviceAdds(nameOrKey: string): string | null {
-  const n = nameOrKey.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
-  const hit = DEVICE_CATALOG.find(d => d.key === n || d.name.toLowerCase() === nameOrKey.trim().toLowerCase());
-  return hit ? hit.adds : null;
+  return findDevice(nameOrKey)?.adds ?? null;
+}
+
+/** APPROVED-ONLY LAW: anything not in this catalog is not selectable. */
+export function isApproved(nameOrKey: string): boolean {
+  return findDevice(nameOrKey) !== null;
+}
+
+/** LIVE devices stream a real-time signal the membrane can hear second-by-second. */
+export function isLive(nameOrKey: string): boolean {
+  return findDevice(nameOrKey)?.live === true;
+}
+
+export const LIVE_DEVICES: ApprovedDevice[] = DEVICE_CATALOG.filter(d => d.live);
+
+export const DEVICES_BY_TIER: Record<DeviceTier, ApprovedDevice[]> = {
+  'PORT':        DEVICE_CATALOG.filter(d => d.tier === 'PORT'),
+  'FULL API':    DEVICE_CATALOG.filter(d => d.tier === 'FULL API'),
+  'FILE EXPORT': DEVICE_CATALOG.filter(d => d.tier === 'FILE EXPORT'),
+  'AGGREGATOR':  DEVICE_CATALOG.filter(d => d.tier === 'AGGREGATOR'),
+  'LIVE BLE':    DEVICE_CATALOG.filter(d => d.tier === 'LIVE BLE'),
+  'CONDITION':   DEVICE_CATALOG.filter(d => d.tier === 'CONDITION'),
+  'LEGACY':      DEVICE_CATALOG.filter(d => d.tier === 'LEGACY'),
+  'SPECIES':     DEVICE_CATALOG.filter(d => d.tier === 'SPECIES'),
+};
+
+/** What each tier means, spoken in the member's language on the selection screen. */
+export const TIER_BLURB: Record<DeviceTier, string> = {
+  'PORT':        'Always on. Everything else lands through it.',
+  'FULL API':    'Connects once and feeds itself. Nothing to remember.',
+  'FILE EXPORT': 'You bring the file. The membrane eats the whole archive.',
+  'AGGREGATOR':  'Already on your phone. One export carries all of it.',
+  'LIVE BLE':    'A live wire. The membrane hears this one second by second.',
+  'CONDITION':   'Adds no signal — adds a condition your devices can measure.',
+  'LEGACY':      'The junk drawer. It does not have to still work. The record counts.',
+  'SPECIES':     'Past the skin — the dog, the horse, the herd.',
+};
+
+// ─── THE DOUBLE TIMESTAMP ────────────────────────────────────────────────────
+// Founder law 2026-08-18. Every device carries two receipts: the day the canon
+// recorded it entering the stack, and the day its downloadable record begins.
+// When the two disagree, the EARLIER one is the true start of the baseline —
+// data can predate the doctrine, and usually does.
+
+export interface DeviceProvenance {
+  key: string;
+  acquired: string | null;   // canon receipt
+  firstData: string | null;  // first exportable record
+  baselineStart: string | null;
+  spread: boolean;           // true when the two dates disagree
+}
+
+export function provenance(nameOrKey: string): DeviceProvenance | null {
+  const d = findDevice(nameOrKey);
+  if (!d) return null;
+  const acquired = d.acquired ?? null;
+  const firstData = d.firstData ?? null;
+  const both = [acquired, firstData].filter(Boolean) as string[];
+  const baselineStart = both.length ? both.slice().sort()[0] : null;
+  return {
+    key: d.key,
+    acquired,
+    firstData,
+    baselineStart,
+    spread: Boolean(acquired && firstData && acquired !== firstData),
+  };
 }
 
 // ─── SLEEP AIDS · PASSIVE GEAR (founder law 2026-08-01) ──────────────────────
@@ -154,11 +320,20 @@ export const SLEEP_AID_OPTIONS: string[] = [
 export const SLEEP_AID_ADDS =
   'Adds no signal — adds a CONDITION. Your ring and strap already measure every night; the mask splits your own history into mask nights and bare nights, and the membrane shows you the difference with receipts. Blocking light during sleep is a verified support for deeper, more restorative sleep.';
 
+// ─── ONBOARDING SELECTION ────────────────────────────────────────────────────
+// APPROVED-ONLY LAW: generated FROM the catalog so the screen can never drift
+// from the doctrine. If it is not in DEVICE_CATALOG, it is not on the screen.
 export const ONBOARDING_DEVICE_OPTIONS: string[] = [
-  'WHOOP 5.0', 'WHOOP MG', 'Oura Ring 4', 'Garmin Tactix 8', 'Garmin (other)',
-  'Apple Watch', 'AirPods Pro 3', 'Beats Pro 2', 'Fitbit', 'Polar', 'Polar H10 Strap',
-  'Samsung Watch / Ring', 'Pixel Watch 4', 'Withings', 'Ultrahuman Ring',
-  'Dexcom Stelo (CGM)', 'Abbott Lingo (CGM)', 'Suunto', 'COROS', 'Amazfit / Helio',
-  'Eight Sleep Pod', 'Muse S Athena', 'Strava', 'Dog Collar (Garmin/FitBark/PetPace)',
-  'Equine (Equimetre)', 'None yet',
+  ...DEVICE_CATALOG.filter(d => d.tier !== 'CONDITION').map(d => d.name),
+  'None yet',
 ];
+
+/** Grouped for the selection screen — tier header, then its devices. */
+export const ONBOARDING_DEVICE_GROUPS: { tier: DeviceTier; blurb: string; devices: ApprovedDevice[] }[] =
+  (['PORT', 'FULL API', 'LIVE BLE', 'FILE EXPORT', 'AGGREGATOR', 'LEGACY', 'SPECIES'] as DeviceTier[])
+    .map(t => ({ tier: t, blurb: TIER_BLURB[t], devices: DEVICES_BY_TIER[t] }))
+    .filter(g => g.devices.length > 0);
+
+/** The line shown under the whole list. */
+export const APPROVED_ONLY_LINE =
+  'These are the devices the membrane can actually read. If it is not on this list, it does not work here — and we would rather tell you now than sell you a maybe. Old and discontinued gear counts: it does not have to still turn on, the record is what matters.';
