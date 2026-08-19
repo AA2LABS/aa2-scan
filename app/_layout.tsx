@@ -72,6 +72,7 @@ export default function RootLayout() {
         <Stack.Screen name="arrival" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="biomarkers" options={{ headerShown: false }} />
+        <Stack.Screen name="membrane" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="light" />
