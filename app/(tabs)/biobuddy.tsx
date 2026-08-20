@@ -327,6 +327,7 @@ export default function BioBuddyScreen() {
           <ScrollView style={st.body} contentContainerStyle={{ flexGrow: 1 }}>
             <DoorCover
               art={require('../../assets/doors/door-biobuddy.jpg')}
+              artFit="contain"
               intelChip="INTELLIGENCE 0X03"
               freeChip="FREE"
               roleLine="BIOMETRIC INTELLIGENCE · SIGNAL READER · THRESHOLD GUARD"
