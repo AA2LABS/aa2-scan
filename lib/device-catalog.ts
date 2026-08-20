@@ -32,8 +32,24 @@ export type DeviceTier =
   | 'AGGREGATOR'      // Apple Health / Health Connect — the phone is the port
   | 'LIVE BLE'        // real-time nerve, no cloud between
   | 'CONDITION'       // passive gear — adds no signal, adds a measurable condition
+  | 'ENVIRONMENT +'   // reads THE ROOM, not the body — and delivers to an organ
   | 'LEGACY'          // the junk drawer — discontinued, still exportable
   | 'SPECIES';        // extended sensory reach — Spokes 27-29
+
+/**
+ * THE ORGAN AXIS — founder ruling 2026-08-19:
+ *   "they are not sensors, they are ears — manta eyes/ears."
+ *
+ * The Body Doctrine classifies by ORGAN, not by data path. Scanner = Eyes.
+ * Anything that puts sound into your head is an EAR whether or not it emits a
+ * single byte. A mask that takes light away is an EYE. This axis is orthogonal
+ * to `tier`: TIER says how data reaches the membrane, ORGAN says which part of
+ * the body the device extends. Some devices are organs carrying no data at all
+ * — they still belong on the map, because the body is the map.
+ */
+export type DeviceOrgan =
+  | 'BRAIN' | 'EYES' | 'EARS' | 'EYES · EARS' | 'HEART'
+  | 'SKIN' | 'BLOOD' | 'BODY' | 'THE PORT' | 'THE ROOM' | 'SPECIES';
 
 export interface ApprovedDevice {
   key: string;          // normalized id stored in device_connections.hardware
@@ -42,6 +58,7 @@ export interface ApprovedDevice {
   dataPath: string;     // how the data reaches the membrane
   adds: string;         // the intelligence's line in device selection
   flagship?: boolean;
+  organ?: DeviceOrgan;   // which organ this device extends — Body Doctrine
   live?: boolean;       // streams a real-time signal the membrane can hear
   founderStack?: boolean;
   acquired?: string;    // canon receipt — the day it entered the stack
@@ -54,6 +71,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'z_fold', name: 'Samsung Z Fold · THE PORT', tier: 'PORT',
     founderStack: true, live: true,
     dataPath: 'Health Connect — the single port. Every device and app in the stack writes here; the membrane reads one pipe.',
+    organ: 'THE PORT',
     adds: 'The carrier. Always on, always present — the one organ that never comes off. Health Connect structurally refuses vendor verdicts: it holds raw signal only, so no company\'s score can ride in through the pipe.' },
 
   // ── FLAGSHIP ──────────────────────────────────────────────────────────────
@@ -63,12 +81,14 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'whoop_mg', name: 'WHOOP MG', tier: 'FULL API', flagship: true,
     founderStack: true, live: true, acquired: '2026-08-07',
     dataPath: 'WHOOP developer API + webhooks; open Bluetooth heart-rate broadcast verified',
+    organ: 'HEART',
     adds: 'Everything WHOOP 5.0 adds, plus FDA-cleared ECG and blood-pressure insights — medical-grade signals in a screenless strap. Broadcasts a live heartbeat the membrane hears directly.' },
 
   // ── FULL API ──────────────────────────────────────────────────────────────
   { key: 'oura_ring_4', name: 'Oura Ring 4', tier: 'FULL API',
     founderStack: true, firstData: '2026-01',
     dataPath: 'Oura cloud API v2 — personal token, nightly automatic pull (wired in-app)',
+    organ: 'HEART',
     adds: 'The night ledger. The deepest sleep and 5-minute HRV baselines in consumer hardware — your 30/60/90 baseline gets its backbone here.' },
   { key: 'dexcom_stelo', name: 'Dexcom Stelo (CGM)', tier: 'FULL API',
     dataPath: 'Dexcom developer API — over-the-counter continuous glucose',
@@ -97,6 +117,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'garmin_tactix_8', name: 'Garmin Tactix 8', tier: 'FILE EXPORT',
     founderStack: true, live: true, firstData: '2026-01', acquired: '2025-12-29',
     dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
+    organ: 'HEART',
     adds: 'Field-grade everything — sleep, stress, HRV, Body Battery, on-demand ECG with AFib detection, pulse ox in three modes — plus an open live pulse the membrane hears directly. The tactical wrist.',
     note: 'Elevate Gen 5 platform. ECG confirmed on-device — never pitch a member ECG hardware when this is already on the wrist.' },
   { key: 'garmin', name: 'Garmin (Fenix 8 · Venu 4 · Forerunner · Instinct 3)', tier: 'FILE EXPORT',
@@ -106,6 +127,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'garmin_index_bpm', name: 'Garmin Index BPM', tier: 'FILE EXPORT',
     founderStack: true, acquired: '2026-08-04',
     dataPath: 'Garmin Connect — FDA-cleared oscillometric cuff, Wi-Fi standalone, exportable PDF for a physician',
+    organ: 'BLOOD',
     adds: 'True blood pressure — the one vital no wrist on earth measures. Every optical estimate in your stack gets judged against this at a matched timestamp, which is the only honest way to answer the sensor-accuracy question on your own skin.' },
   { key: 'suunto', name: 'Suunto Race 2', tier: 'FILE EXPORT',
     dataPath: 'Suunto export + partner API',
@@ -128,14 +150,17 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     adds: 'Full vitals, ECG, sleep-apnea detection — the largest health dataset most members already own.' },
   { key: 'airpods_pro_3', name: 'AirPods Pro 3', tier: 'AGGREGATOR',
     dataPath: 'In-ear heart rate during workouts → Apple Health',
+    organ: 'EARS',
     adds: 'Heart rate from the earbuds you already wear — zero new hardware, one more signal.' },
   { key: 'beats_pro_2', name: 'Beats Pro 2', tier: 'AGGREGATOR',
     founderStack: true,
     dataPath: 'In-ear heart rate → Apple Health / Health Connect',
+    organ: 'EARS',
     adds: 'Workout heart rate from the ears — and the ASRT audio channel: training the body and the subconscious on the same device.' },
   { key: 'oakley_meta', name: 'Meta Oakley HSTN · THE EYES', tier: 'AGGREGATOR',
     founderStack: true,
     dataPath: 'Meta AI app → Health Connect; on-board camera, microphone, open-ear audio',
+    organ: 'EYES',
     adds: 'The eyes. Hands-free scanning, live camera for the safety path, and the Equalizer looking at what you are looking at — the one device that sees the world instead of the wrist.' },
 
   { key: 'samsung', name: 'Samsung Galaxy Watch 8 / Galaxy Ring 2', tier: 'AGGREGATOR',
@@ -149,6 +174,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'muse_s_athena', name: 'Muse S Athena · THE CROWN', tier: 'LIVE BLE',
     founderStack: true, live: true, flagship: true, acquired: '2026-08-10',
     dataPath: 'Muse SDK — LIVE stream: up to eight EEG channels, fNIRS optodes, PPG, six-axis motion. Mindfulness + sleep to Health Connect.',
+    organ: 'BRAIN',
     adds: 'The crown. The only instrument in the stack that MEASURES instead of infers — delta, theta, alpha, beta, gamma read directly off the skull, plus prefrontal blood flow read directly. Every other device estimates your state from your pulse. This one reads the organ that produces it.',
     note: 'LIVE DEVICE. Streams second-by-second while worn — the Live Clarifier reads the brain at the moment a thing happens instead of asking about it later. Its own app consumes a fraction of what the band broadcasts; the membrane catches the rest.' },
   { key: 'polar_h10', name: 'Polar H10 Strap', tier: 'LIVE BLE', live: true,
@@ -165,7 +191,21 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'manta_sound', name: 'Manta Sound Sleep Mask', tier: 'CONDITION',
     founderStack: true,
     dataPath: 'No data of its own — the member\'s existing devices record the outcome',
+    organ: 'EYES · EARS',
     adds: 'Adds no signal. Adds a CONDITION. Your ring and strap already measure every night; the mask splits your own history into mask nights and bare nights and the membrane shows you the difference with receipts. Its head strap also seats a crown that was never given a replacement band.' },
+
+  // ── ENVIRONMENT + — the first thing in the catalog that measures the ROOM ──
+  // Founder class, named 2026-08-19. Everything else in this catalog reads the
+  // body. Nothing read the space the body is lying in. The "+" is the founder's:
+  // the buds are also a SECOND DELIVERY SURFACE — sound sealed in the canal
+  // instead of played off a mask — which makes the same track testable two ways
+  // against one brain. That comparison needs the Crown, the buds and the mask
+  // on one head, and nobody else has that table.
+  { key: 'ozlo_sleepbuds', name: 'Ozlo Sleepbuds · ENVIRONMENT +', tier: 'ENVIRONMENT +',
+    organ: 'EARS',
+    dataPath: 'Sounds stored on the buds and in the case — choose one and the phone can be off. Case senses noise, light, temperature and BAROMETRIC PRESSURE. No export or public API found as of this entry.',
+    adds: 'Ears you can lie down on. The Crown reads your brain but has no speakers, and the mask only works if you are wearing the mask — these are the only audio in the stack you can sleep or meditate on with a headband already on. The case adds the room itself: noise, light, temperature and local pressure, the one exposure layer nothing else in your stack can see.',
+    note: 'ENVIRONMENT + is measured, not ingested — no export path found, so it is a CONDITION device under the sleep-aid law until one exists. The case listens to the ROOM: on mask nights it will hear the Manta and log your own sleep aid as ambient noise. Bud nights are the clean arm.' },
 
   // ── LEGACY — the junk drawer is the onramp ────────────────────────────────
   // Discontinued or older-generation hardware. The device does not have to be
@@ -252,6 +292,7 @@ export const DEVICES_BY_TIER: Record<DeviceTier, ApprovedDevice[]> = {
   'AGGREGATOR':  DEVICE_CATALOG.filter(d => d.tier === 'AGGREGATOR'),
   'LIVE BLE':    DEVICE_CATALOG.filter(d => d.tier === 'LIVE BLE'),
   'CONDITION':   DEVICE_CATALOG.filter(d => d.tier === 'CONDITION'),
+  'ENVIRONMENT +': DEVICE_CATALOG.filter(d => d.tier === 'ENVIRONMENT +'),
   'LEGACY':      DEVICE_CATALOG.filter(d => d.tier === 'LEGACY'),
   'SPECIES':     DEVICE_CATALOG.filter(d => d.tier === 'SPECIES'),
 };
@@ -264,6 +305,7 @@ export const TIER_BLURB: Record<DeviceTier, string> = {
   'AGGREGATOR':  'Already on your phone. One export carries all of it.',
   'LIVE BLE':    'A live wire. The membrane hears this one second by second.',
   'CONDITION':   'Adds no signal — adds a condition your devices can measure.',
+  'ENVIRONMENT +': 'Reads the room you are lying in — and gives you ears you can lie down on.',
   'LEGACY':      'The junk drawer. It does not have to still work. The record counts.',
   'SPECIES':     'Past the skin — the dog, the horse, the herd.',
 };
@@ -330,7 +372,7 @@ export const ONBOARDING_DEVICE_OPTIONS: string[] = [
 
 /** Grouped for the selection screen — tier header, then its devices. */
 export const ONBOARDING_DEVICE_GROUPS: { tier: DeviceTier; blurb: string; devices: ApprovedDevice[] }[] =
-  (['PORT', 'FULL API', 'LIVE BLE', 'FILE EXPORT', 'AGGREGATOR', 'LEGACY', 'SPECIES'] as DeviceTier[])
+  (['PORT', 'FULL API', 'LIVE BLE', 'FILE EXPORT', 'AGGREGATOR', 'ENVIRONMENT +', 'LEGACY', 'SPECIES'] as DeviceTier[])
     .map(t => ({ tier: t, blurb: TIER_BLURB[t], devices: DEVICES_BY_TIER[t] }))
     .filter(g => g.devices.length > 0);
 
