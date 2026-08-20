@@ -347,7 +347,10 @@ export default function ScannerScreen() {
   const captureSize = Math.min(Math.max(screenW * 0.19, 68), 90);
 
   const [permission, requestPermission] = useCameraPermissions();
-  const [palette,            setPalette]           = useState<PaletteKey>('earth');
+  // FOUNDER RULING 2026-08-19: the palette picker is out. Blue (ocean) is the
+  // app's framing, fixed — it was the one he had selected. The per-tab accent
+  // still changes on selection; that was never the thing that clashed.
+  const [palette,            setPalette]           = useState<PaletteKey>('ocean');
   const [activeTab,          setActiveTab]         = useState('scan');
   const [speciesSub,         setSpeciesSub]        = useState('k9');
   const [fishMode,           setFishMode]          = useState<FishMode>('identify');
@@ -788,9 +791,9 @@ export default function ScannerScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* PALETTE DOTS */}
-      <PaletteDots current={palette} onSelect={setPalette} cardBg={P.card}/>
+      {/* PALETTE DOTS — removed by founder ruling 2026-08-19. The row of
+          colour circles clashed with the automatic per-tab accent. Blue is
+          the frame now; the tabs still carry their own colours. */}
 
       {showConciergeMsg && (
         <ConciergeMessage onDismiss={() => setShowConciergeMsg(false)} />

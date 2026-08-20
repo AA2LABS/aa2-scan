@@ -114,7 +114,7 @@ export function useProfile(): { p: FullMemberProfile | null; loaded: boolean } {
 const st = StyleSheet.create({
   doorRoot: { flex: 1, backgroundColor: NAVY, justifyContent: 'flex-end' },
   doorImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
-  doorScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.45)' },
+  doorScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.28)' },
   doorContent: { padding: 22, paddingBottom: 40 },
   doorTitle: { fontSize: 40, fontWeight: '800', color: '#fff', marginTop: 4, marginBottom: 20 },
   knob: { borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
@@ -124,7 +124,7 @@ const st = StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   hero: { height: 210, position: 'relative', justifyContent: 'flex-end' },
   heroImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
-  heroScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.5)' },
+  heroScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.32)' },
   heroContent: { padding: 18, paddingBottom: 16 },
   eyebrow: { fontSize: 10, letterSpacing: 2, fontWeight: '700', marginBottom: 6 },
   title: { fontSize: 30, fontWeight: '800', color: '#fff' },

@@ -85,7 +85,7 @@ const st = StyleSheet.create({
   art: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
   scrim: {
     position: 'absolute', left: 0, right: 0, top: 0, bottom: 0,
-    backgroundColor: 'rgba(8,17,31,0.30)',
+    backgroundColor: 'rgba(8,17,31,0.18)',  // founder 2026-08-19: lighter, let the art through
   },
   topTag: {
     position: 'absolute', top: 14, left: 0, right: 0,
