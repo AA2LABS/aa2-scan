@@ -29,6 +29,7 @@ import {
   SafeAreaView, ScrollView, StyleSheet, Text, TextInput,
   TouchableOpacity, View, useWindowDimensions,
 } from 'react-native';
+import { Image as HeroImage } from 'expo-image';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { buildPersonalTruth, loadMemberProfile, saveScan, logAwareDollarsFollowed } from '../../lib/db';
@@ -79,6 +80,14 @@ const TAB_HEROES: Record<string, any> = {
   k9:         require('../../assets/images/k9_feline_hero.jpg'),
   horse:      require('../../assets/images/tab-horse.jpg'),
   agri:       require('../../assets/images/tab-agri.jpg'),
+};
+
+// FOCAL POINT — founder bug 2026-08-19: the scanner hero is a 220px strip and
+// React Native's Image has no focal control, so cover-cropping took the dog's
+// head, the horses' heads and the cattle. tab-horse.jpg is PORTRAIT (0.74) in
+// a landscape strip, which crops hardest of all. Subject at the top → 'top'.
+const TAB_HERO_POS: Record<string, 'center' | 'top'> = {
+  k9: 'top', horse: 'top', agri: 'top',
 };
 
 // ─── TABS ────────────────────────────────────────────────────────────────────
@@ -873,7 +882,7 @@ export default function ScannerScreen() {
           {/* IMAGE HERO */}
           {heroImage&&(
             <View>
-              <Image source={heroImage} style={s.heroImage} resizeMode="cover"/>
+              <HeroImage source={heroImage} style={s.heroImage} contentFit="cover" contentPosition={TAB_HERO_POS[heroKey] ?? 'center'}/>
               <View style={{ paddingHorizontal: 14, paddingVertical: 10, backgroundColor: P.card }}>
                 <Text style={[s.heroTabLabel,{color:accentColor}]}>{heroLabel()}</Text>
                 <Text style={[s.heroSubLabel,{color:F.dimWhite}]}>{heroSubLabel()}</Text>

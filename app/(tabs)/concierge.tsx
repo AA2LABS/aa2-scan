@@ -235,7 +235,6 @@ export default function ConciergeScreen() {
       <ScrollView style={st.root} contentContainerStyle={{ flexGrow: 1 }}>
         <DoorCover
           art={require('../../assets/doors/door-concierge.jpg')}
-          artFit="contain"
           intelChip="INTELLIGENCE 0X01"
           skip
           roleLine="PERSONAL INTELLIGENCE · MEMORY · CONTINUITY"

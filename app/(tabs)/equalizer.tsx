@@ -95,7 +95,6 @@ export default function EqualizerScreen() {
       <ScrollView style={st.root} contentContainerStyle={{ flexGrow: 1 }}>
         <DoorCover
           art={require('../../assets/doors/door-equalizer.jpg')}
-          artFit="contain"
           intelChip="INTELLIGENCE 0X05"
           skip
           roleLine="IMMUNE SYSTEM · GATE INTELLIGENCE · TRUTH ENGINE"
