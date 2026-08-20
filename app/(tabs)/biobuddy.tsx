@@ -14,7 +14,7 @@ import {
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
-import { DIET_OPTIONS } from '../../lib/diet';
+import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
@@ -424,6 +424,18 @@ export default function BioBuddyScreen() {
               >
                 <Text style={{ color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
                   YOUR STACK HAS YOU COVERED →
+                </Text>
+              </Pressable>
+
+              {/* THE MEMBRANE — Biometric Resonant Mirroring (founder law
+                  2026-08-19). The readout above is the numbers; this is the
+                  same signal moving. The Crown lands here when the SDK does. */}
+              <Pressable
+                onPress={() => router.push('/membrane' as Href)}
+                style={{ marginTop: 8, borderWidth: 1, borderColor: 'rgba(170,68,255,0.35)', backgroundColor: 'rgba(170,68,255,0.08)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
+              >
+                <Text style={{ color: PURPLE, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
+                  SEE IT MOVE · THE MEMBRANE →
                 </Text>
               </Pressable>
             </View>
@@ -867,14 +879,18 @@ export default function BioBuddyScreen() {
 
             {/* DIETARY APPROACH */}
             <View style={st.section}>
-              <Text style={st.seclabel}>DIETARY APPROACH · single select</Text>
+              <Text style={st.seclabel}>DIETARY APPROACH · tap to add / remove</Text>
               <View style={st.chipRow}>
                 {DIET_CHIPS.map((d, i) => {
                   const sel = diet.some(x => norm(x) === norm(d));
                   return (
                     <Chip
                       key={i} label={d} sel={sel}
-                      onPress={() => write('dietary_approach', sel ? [] : [d], `diet:${d}`)}
+                      // Multi-select, and never destructive: tapping one diet used
+                      // to REPLACE the whole array, silently wiping every other
+                      // answer the member gave at the door. Halal and Mediterranean
+                      // are not mutually exclusive — lib/diet.ts holds the rule.
+                      onPress={() => write('dietary_approach', toggleDietValue(diet, d), `diet:${d}`)}
                     />
                   );
                 })}
