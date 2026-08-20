@@ -60,6 +60,7 @@ export default function ChauffeurScreen() {
       <ScrollView style={st.root} contentContainerStyle={{ flexGrow: 1 }}>
         <DoorCover
           art={require('../../assets/doors/door-chauffeur.webp')}
+          artFit="contain"
           intelChip="INTELLIGENCE 0X04"
           skip
           roleLine="TRAVEL INTELLIGENCE · ROUTE SAFETY · WAYPOINT BRIEFINGS"

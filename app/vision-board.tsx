@@ -18,10 +18,10 @@ export default function VisionBoardScreen() {
     vault.entries > 0
       ? { icon: '💎', title: 'Vault · Aware Dollars',
           desc: `${money(vault.total)} saved · ${money(vault.thisMonth)} this month`,
-          chip: money(vault.total), chipColor: GOLD }
+          chip: money(vault.total), chipColor: GOLD, route: '/vault' }
       : { icon: '💎', title: 'Vault · Aware Dollars',
           desc: 'Follow a scanner recommendation to start your Vault.',
-          chip: '$0.00', chipColor: AMBER },
+          chip: '$0.00', chipColor: AMBER, route: '/vault' },
     { icon: '◎', title: 'North Star · 30 Day',
       desc: n30 ?? 'Not declared yet. Set it in the membrane checklist.',
       chip: n30 ? 'SET' : 'OPEN', chipColor: n30 ? GREEN : AMBER },
@@ -42,6 +42,12 @@ export default function VisionBoardScreen() {
   return (
     <DoorFlood
       art={require('@/assets/doors/door-vision-board.png')}
+      // Founder bug 2026-08-19. This art is a square collage whose SUBJECT is
+      // its own lettering — "AA2 Vision Board" cut from magazines. Cover-
+      // cropping it into the standard 210px strip zoomed past the words and
+      // left unreadable letter fragments. Contain, with room, shows the board.
+      artFit="contain"
+      heroHeight={300}
       eyebrow="CONCIERGE HUB · VISION BOARD"
       title="Vision Board"
       accent={GOLD}

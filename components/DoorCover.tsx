@@ -10,6 +10,12 @@ import { View, Text, Image, Pressable, StyleSheet, ImageSourcePropType, useWindo
 
 export type DoorCoverProps = {
   art: ImageSourcePropType;
+  /** Founder bug 2026-08-19: art that is already a tight close-up (concierge
+      tuxedo, chauffeur car door) has no breathing room, so cover-cropping it
+      into the full-bleed door zooms it further into a wall of fabric. 'contain'
+      shows the whole frame. Chef is an environmental shot and reads perfectly
+      on cover — default is unchanged so nothing else moves. */
+  artFit?: 'cover' | 'contain';
   intelChip: string;        // e.g. "INTELLIGENCE 0X03"
   freeChip?: string;        // e.g. "FREE" | "FREE ENTRY"
   skip?: boolean;           // SKIP chip top-right (doors that allow skipping)
@@ -29,7 +35,7 @@ export default function DoorCover(p: DoorCoverProps) {
   const { height } = useWindowDimensions();
   return (
     <View style={[st.root, { minHeight: height - 120 }]}>
-      <Image source={p.art} resizeMode="cover" style={st.art} />
+      <Image source={p.art} resizeMode={p.artFit ?? 'cover'} style={st.art} />
       <View style={st.scrim} />
 
       <View style={st.topTag}>

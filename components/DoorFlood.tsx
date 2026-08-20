@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { loadMemberProfile, type FullMemberProfile } from '@/lib/db';
 
 export const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80';
 export const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 export const GREEN = '#34D399', AMBER = '#E0A04A', RED = '#E24B4A';
 
-export type Row = { icon: string; title: string; desc: string; chip?: string; chipColor?: string };
+export type Row = {
+  icon: string; title: string; desc: string; chip?: string; chipColor?: string;
+  /** Optional destination. Rows without one stay exactly as they were. */
+  route?: string;
+};
 
 export function DoorFlood(props: {
   art: ImageSourcePropType; eyebrow: string; title: string; accent: string;
@@ -16,10 +20,21 @@ export function DoorFlood(props: {
       photo was beheading the dog and erasing the cat. 'top' keeps heads in
       frame; default 'center' preserves every other door unchanged. */
   artPosition?: 'center' | 'top' | 'top center' | 'left' | 'right' | 'top right' | 'top left';
+  /** Founder bug 2026-08-19: the Vision Board art is a 1024x1024 collage whose
+      SUBJECT IS ITS OWN LETTERING. Forced through contentFit="cover" into the
+      210px hero strip it zooms until the width fills and crops away everything
+      but a band of giant letter fragments — the words "AA2 Vision Board" are
+      unreadable. Art whose subject is the whole frame needs 'contain' and room
+      to breathe. Both props default to the existing behaviour, so every other
+      door renders byte-identical. Never change a wire screen that was right. */
+  artFit?: 'cover' | 'contain';
+  heroHeight?: number;
   heroLine: string; heroSub: string; rows: Row[]; foot: string;
 }) {
   const [open, setOpen] = useState(false);
   const { art, eyebrow, title, accent, heroLine, heroSub, rows, foot } = props;
+  const artFit = props.artFit ?? 'cover';
+  const heroH  = props.heroHeight ?? 210;
 
   if (!open) {
     return (
@@ -42,8 +57,8 @@ export function DoorFlood(props: {
 
   return (
     <ScrollView style={st.root} contentContainerStyle={{ paddingBottom: 40 }}>
-      <View style={st.hero}>
-        <Image source={art} contentFit="cover" contentPosition={props.artPosition ?? 'center'} style={st.heroImg} />
+      <View style={[st.hero, { height: heroH }]}>
+        <Image source={art} contentFit={artFit} contentPosition={props.artPosition ?? 'center'} style={st.heroImg} />
         <View style={st.heroScrim} />
         <View style={st.heroContent}>
           <Text style={[st.eyebrow, { color: accent }]}>{eyebrow}</Text>
@@ -59,7 +74,15 @@ export function DoorFlood(props: {
       </View>
       <View style={st.section}>
         {rows.map((r, i) => (
-          <View key={i} style={st.row}>
+          // A row with a route is tappable; a row without one renders exactly
+          // as it always has. Founder law 2026-08-19: a screen nobody can reach
+          // is not a screen — the Vault row had no way out of the Vision Board.
+          <Pressable
+            key={i}
+            style={st.row}
+            disabled={!r.route}
+            onPress={() => { if (r.route) router.push(r.route as Href); }}
+          >
             <View style={[st.rowIcon, { borderColor: accent + '40', backgroundColor: accent + '14' }]}>
               <Text style={[st.rowIconTxt, { color: accent }]}>{r.icon}</Text>
             </View>
@@ -72,7 +95,8 @@ export function DoorFlood(props: {
                 <Text style={[st.chipTxt, { color: r.chipColor ?? accent }]}>{r.chip}</Text>
               </View>
             ) : null}
-          </View>
+            {r.route ? <Text style={[st.rowGo, { color: accent }]}>›</Text> : null}
+          </Pressable>
         ))}
       </View>
       <Text style={[st.foot, { color: accent }]}>{foot}</Text>
@@ -113,6 +137,7 @@ const st = StyleSheet.create({
   rowIconTxt: { fontSize: 17 },
   rowName: { fontSize: 14, fontWeight: '700', color: INK },
   rowDesc: { fontSize: 11.5, color: MUT, marginTop: 2, lineHeight: 16 },
+  rowGo:   { fontSize: 20, marginLeft: 8, opacity: 0.7 },
   chip: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 6 },
   chipTxt: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   foot: { textAlign: 'center', fontSize: 11, marginTop: 18 },

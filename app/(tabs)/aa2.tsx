@@ -1,11 +1,20 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
+import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { useProfile } from '@/components/DoorFlood';
 
 const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847';
 
-type Door = { title: string; art: ImageSourcePropType; route: Href };
+// FOCAL POINT — founder bugs 2026-08-01 and 2026-08-19. React Native's own
+// Image has no focal control, so cover-cropping these tiles cut the dog's head
+// off, took the horses' heads, and clipped the lead cow's horns. expo-image
+// carries contentPosition, the same mechanism that fixed the K9 door hero.
+// Subject at the top of the frame → 'top'. Everything else stays 'center'.
+type Door = {
+  title: string; art: ImageSourcePropType; route: Href;
+  pos?: 'center' | 'top' | 'bottom' | 'left' | 'right' | 'top right' | 'top left';
+};
 
 const DOORS: Door[] = [
   { title: 'Bio Buddy',       art: require('../../assets/doors/door-biobuddy.jpg'),        route: '/(tabs)/biobuddy' as Href },
@@ -16,11 +25,14 @@ const DOORS: Door[] = [
   { title: 'Travel',          art: require('../../assets/doors/door-travel.png'),          route: '/travel' as Href },
   { title: 'Vision Board',    art: require('../../assets/doors/door-vision-board.png'),    route: '/vision-board' as Href },
   { title: 'Depth-On-Demand', art: require('../../assets/doors/door-depth-on-demand.png'), route: '/depth-on-demand' as Href },
-  { title: 'K9 / Feline',     art: require('../../assets/doors/door-k9-feline.jpg'),       route: '/k9' as Href },
-  { title: 'Equine',          art: require('../../assets/doors/door-equine.jpg'),          route: '/equine' as Href },
-  { title: 'Agricultural',    art: require('../../assets/doors/door-agricultural.jpg'),    route: '/agricultural' as Href },
+  { title: 'K9 / Feline',     art: require('../../assets/doors/door-k9-feline.jpg'),       route: '/k9' as Href,           pos: 'top' },
+  { title: 'Equine',          art: require('../../assets/doors/door-equine.jpg'),          route: '/equine' as Href,       pos: 'top' },
+  { title: 'Agricultural',    art: require('../../assets/doors/door-agricultural.jpg'),    route: '/agricultural' as Href, pos: 'top' },
   { title: 'Aficionado',      art: require('../../assets/doors/door-aficionado.png'),      route: '/aficionado' as Href },
-  { title: 'Vault / Aware Dollars', art: require('../../assets/doors/door-vision-board.png'), route: '/vision-board' as Href },
+  // The Vault had the Vision Board's art and the Vision Board's route — which
+  // is why opening the Vault landed you on the Vision Board. It has its own
+  // door art and its own screen now.
+  { title: 'Vault / Aware Dollars', art: require('../../assets/doors/door-vault.jpg'),     route: '/vault' as Href },
 ];
 
 export default function AA2DoorHall() {
@@ -57,7 +69,7 @@ export default function AA2DoorHall() {
       <View style={st.grid}>
         {DOORS.map((d, i) => (
           <Pressable key={i} style={st.card} onPress={() => router.push(d.route)}>
-            <Image source={d.art} resizeMode="cover" style={st.cardImg} />
+            <Image source={d.art} contentFit="cover" contentPosition={d.pos ?? 'center'} style={st.cardImg} />
             <View style={st.cardScrim} />
             <Text style={st.cardTitle}>{d.title}</Text>
           </Pressable>
