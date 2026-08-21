@@ -201,11 +201,11 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   // instead of played off a mask — which makes the same track testable two ways
   // against one brain. That comparison needs the Crown, the buds and the mask
   // on one head, and nobody else has that table.
-  { key: 'ozlo_sleepbuds', name: 'Ozlo Sleepbuds · ENVIRONMENT +', tier: 'ENVIRONMENT +',
-    organ: 'EARS',
+  { key: 'ozlo_sleepbuds', name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', tier: 'ENVIRONMENT +',
+    organ: 'EYES · EARS',
     dataPath: 'Sounds stored on the buds and in the case — choose one and the phone can be off. Case senses noise, light, temperature and BAROMETRIC PRESSURE. No export or public API found as of this entry.',
-    adds: 'Ears you can lie down on. The Crown reads your brain but has no speakers, and the mask only works if you are wearing the mask — these are the only audio in the stack you can sleep or meditate on with a headband already on. The case adds the room itself: noise, light, temperature and local pressure, the one exposure layer nothing else in your stack can see.',
-    note: 'ENVIRONMENT + is measured, not ingested — no export path found, so it is a CONDITION device under the sleep-aid law until one exists. The case listens to the ROOM: on mask nights it will hear the Manta and log your own sleep aid as ambient noise. Bud nights are the clean arm.' },
+    adds: 'Ears you can lie down on, and a second pair of eyes. The Crown reads your brain and has no speakers of its own — these are the only audio in the stack you can sleep or meditate in while a headband is already on your head. The bundled mask makes it a COMPLETE SECOND BLACKOUT SYSTEM, lighter than the Manta, for sessions where the Manta is too much hardware to stack. And the case adds the room itself: noise, light, temperature and local pressure — the one exposure layer nothing else in your stack can see.',
+    note: 'TWO BLACKOUT SYSTEMS, NOT ONE. Manta is the deep blackout for sleep sessions. Ozlo mask + buds is the lighter rig that coexists with the Crown — Manta plus a headband is two things wrapped around the head, which is the whole reason this exists. ENVIRONMENT + is measured, not ingested: no export path found, so it stands as a CONDITION device under the sleep-aid law until one exists. The case listens to the ROOM, so on Manta nights it will hear the Manta and log your own sleep aid as ambient noise — bud nights are the clean arm.' },
 
   // ── LEGACY — the junk drawer is the onramp ────────────────────────────────
   // Discontinued or older-generation hardware. The device does not have to be
