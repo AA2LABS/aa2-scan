@@ -18,12 +18,56 @@ export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' |
 export type BiosignalRow = {
   source: BiosignalSource;
   readingDate: string;          // YYYY-MM-DD
+
+  // ── scores — a vendor's opinion of the night ──
   hrv?: number | null;
   sleep?: number | null;
   readiness?: number | null;
   activity?: number | null;
   stress?: number | null;
+
+  // ── THE FULL NIGHT (founder order 2026-08-21) ─────────────────────────────
+  // On 2026-08-20 four instruments returned four verdicts on one body and the
+  // three biggest disagreements — deep sleep, awake time, and bedtime — had no
+  // columns to land in. A score is an opinion. The night is the measurement.
+  bedtimeStart?: string | null;
+  bedtimeEnd?: string | null;
+  totalSleepMin?: number | null;
+  timeInBedMin?: number | null;
+  deepMin?: number | null;
+  remMin?: number | null;
+  lightMin?: number | null;
+  awakeMin?: number | null;
+  efficiencyPct?: number | null;
+  latencyMin?: number | null;
+  restingHr?: number | null;
+  avgHr?: number | null;
+  minHr?: number | null;
+  spo2Avg?: number | null;
+  spo2Min?: number | null;
+  respirationAvg?: number | null;
+  breathingIndex?: number | null;
+  skinTempDelta?: number | null;
+  // RESTLESS MOMENTS ARE NOT AWAKENINGS. Garmin logged 30 and Muse 35 — those
+  // agree. WHOOP logged 7 wake events, a different question. Kept apart so the
+  // membrane never reports two answers to one question as a disagreement.
+  restlessMoments?: number | null;
+  wakeEvents?: number | null;
+  vo2max?: number | null;
+  vo2maxEstimated?: boolean | null;
+  // The pipe is not the sensor. One heartbeat, one vote.
+  originSource?: BiosignalSource | null;
 };
+
+// Every column the night has. Selected everywhere so a reader is never handed
+// a partial night and forced to guess. Added 2026-08-21 with THE FULL NIGHT.
+const NIGHT_COLUMNS =
+  'source, origin_source, reading_date, hrv_rmssd, sleep_score, readiness_score, ' +
+  'activity_score, stress_level, bedtime_start, bedtime_end, total_sleep_min, ' +
+  'time_in_bed_min, deep_min, rem_min, light_min, awake_min, efficiency_pct, ' +
+  'latency_min, resting_hr, avg_hr, min_hr, spo2_avg, spo2_min, respiration_avg, ' +
+  'breathing_index, skin_temp_delta, restless_moments, wake_events, vo2max, ' +
+  'vo2max_estimated';
 
 export type SyncResult = { ok: boolean; days: number; message: string };
 
@@ -40,14 +84,38 @@ async function upsertReadings(rows: BiosignalRow[]): Promise<SyncResult> {
     if (!rows.length) return { ok: false, days: 0, message: 'No readable days found in this source.' };
 
     const payload = rows.map(r => ({
-      member_id:       user.id,
-      source:          r.source,
-      reading_date:    r.readingDate,
-      hrv_rmssd:       r.hrv ?? null,
-      sleep_score:     r.sleep ?? null,
-      readiness_score: r.readiness ?? null,
-      activity_score:  r.activity ?? null,
-      stress_level:    r.stress ?? null,
+      member_id:        user.id,
+      source:           r.source,
+      origin_source:    r.originSource ?? null,
+      reading_date:     r.readingDate,
+      hrv_rmssd:        r.hrv ?? null,
+      sleep_score:      r.sleep ?? null,
+      readiness_score:  r.readiness ?? null,
+      activity_score:   r.activity ?? null,
+      stress_level:     r.stress ?? null,
+      // ── THE FULL NIGHT ──
+      bedtime_start:    r.bedtimeStart ?? null,
+      bedtime_end:      r.bedtimeEnd ?? null,
+      total_sleep_min:  r.totalSleepMin ?? null,
+      time_in_bed_min:  r.timeInBedMin ?? null,
+      deep_min:         r.deepMin ?? null,
+      rem_min:          r.remMin ?? null,
+      light_min:        r.lightMin ?? null,
+      awake_min:        r.awakeMin ?? null,
+      efficiency_pct:   r.efficiencyPct ?? null,
+      latency_min:      r.latencyMin ?? null,
+      resting_hr:       r.restingHr ?? null,
+      avg_hr:           r.avgHr ?? null,
+      min_hr:           r.minHr ?? null,
+      spo2_avg:         r.spo2Avg ?? null,
+      spo2_min:         r.spo2Min ?? null,
+      respiration_avg:  r.respirationAvg ?? null,
+      breathing_index:  r.breathingIndex ?? null,
+      skin_temp_delta:  r.skinTempDelta ?? null,
+      restless_moments: r.restlessMoments ?? null,
+      wake_events:      r.wakeEvents ?? null,
+      vo2max:           r.vo2max ?? null,
+      vo2max_estimated: r.vo2maxEstimated ?? null,
     }));
 
     // NO-OVERLAP INTELLIGENCE: the membrane never double-counts a day.
@@ -103,7 +171,7 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
     const since = new Date(Date.now() - days * 86400_000).toISOString().slice(0, 10);
     let { data, error } = await supabase
       .from('biosignal_readings')
-      .select('source, reading_date, hrv_rmssd, sleep_score, readiness_score, activity_score, stress_level')
+      .select(NIGHT_COLUMNS)
       .eq('member_id', user.id)
       .gte('reading_date', since)
       .order('reading_date', { ascending: true });
@@ -117,7 +185,7 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
     if (!data || data.length === 0) {
       const { data: lkg, error: le } = await supabase
         .from('biosignal_readings')
-        .select('source, reading_date, hrv_rmssd, sleep_score, readiness_score, activity_score, stress_level')
+        .select(NIGHT_COLUMNS)
         .eq('member_id', user.id)
         .order('reading_date', { ascending: false })
         .limit(240);
@@ -126,12 +194,37 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
     }
 
     const out: LiveReadout = { latest: {}, series: {} };
-    for (const r of data ?? []) {
+    // NIGHT_COLUMNS is a constant, so the typed client cannot infer the row
+    // shape the way it did from an inline literal. The schema is the contract.
+    for (const r of ((data ?? []) as any[])) {
       const src = r.source as BiosignalSource;
       const row: BiosignalRow = {
         source: src, readingDate: r.reading_date,
+        originSource: (r.origin_source ?? null) as BiosignalSource | null,
         hrv: r.hrv_rmssd, sleep: r.sleep_score, readiness: r.readiness_score,
         activity: r.activity_score, stress: r.stress_level,
+        bedtimeStart: r.bedtime_start ?? null,
+        bedtimeEnd: r.bedtime_end ?? null,
+        totalSleepMin: r.total_sleep_min ?? null,
+        timeInBedMin: r.time_in_bed_min ?? null,
+        deepMin: r.deep_min ?? null,
+        remMin: r.rem_min ?? null,
+        lightMin: r.light_min ?? null,
+        awakeMin: r.awake_min ?? null,
+        efficiencyPct: r.efficiency_pct ?? null,
+        latencyMin: r.latency_min ?? null,
+        restingHr: r.resting_hr ?? null,
+        avgHr: r.avg_hr ?? null,
+        minHr: r.min_hr ?? null,
+        spo2Avg: r.spo2_avg ?? null,
+        spo2Min: r.spo2_min ?? null,
+        respirationAvg: r.respiration_avg ?? null,
+        breathingIndex: r.breathing_index ?? null,
+        skinTempDelta: r.skin_temp_delta ?? null,
+        restlessMoments: r.restless_moments ?? null,
+        wakeEvents: r.wake_events ?? null,
+        vo2max: r.vo2max ?? null,
+        vo2maxEstimated: r.vo2max_estimated ?? null,
       };
       out.latest[src] = row; // ascending order → last write wins = newest
       const v = row.hrv ?? row.readiness ?? row.activity ?? row.sleep;
@@ -208,12 +301,32 @@ export async function syncOura(): Promise<SyncResult> {
 
   const result = await upsertReadings(rows.map(r => ({
     source: 'oura' as const,
+    originSource: 'oura' as const,
     readingDate: r.reading_date,
     hrv: r.hrv_rmssd ?? null,
     sleep: r.sleep_score ?? null,
     readiness: r.readiness_score ?? null,
     activity: r.activity_score ?? null,
     stress: r.stress_level ?? null,
+    // ── THE FULL NIGHT — Oura was already returning all of this ──
+    bedtimeStart: r.bedtime_start ?? null,
+    bedtimeEnd: r.bedtime_end ?? null,
+    totalSleepMin: r.total_sleep_min ?? null,
+    timeInBedMin: r.time_in_bed_min ?? null,
+    deepMin: r.deep_min ?? null,
+    remMin: r.rem_min ?? null,
+    lightMin: r.light_min ?? null,
+    awakeMin: r.awake_min ?? null,
+    efficiencyPct: r.efficiency_pct ?? null,
+    latencyMin: r.latency_min ?? null,
+    restingHr: r.resting_hr ?? null,
+    avgHr: r.avg_hr ?? null,
+    minHr: r.min_hr ?? null,
+    spo2Avg: r.spo2_avg ?? null,
+    respirationAvg: r.respiration_avg ?? null,
+    breathingIndex: r.breathing_index ?? null,
+    skinTempDelta: r.skin_temp_delta ?? null,
+    restlessMoments: r.restless_moments ?? null,
   })));
 
   // 30-day baselines onto the member row — non-fatal if columns absent.
@@ -337,7 +450,7 @@ export async function getStackConsensus(): Promise<StackConsensus> {
 
     const { data, error } = await supabase
       .from('biosignal_readings')
-      .select('source, reading_date, hrv_rmssd, sleep_score, readiness_score, activity_score, stress_level')
+      .select(NIGHT_COLUMNS)
       .eq('member_id', user.id)
       .order('reading_date', { ascending: false })
       .limit(400);
@@ -345,7 +458,7 @@ export async function getStackConsensus(): Promise<StackConsensus> {
 
     // Group by day; find the newest day carrying 2+ sources.
     const byDay = new Map<string, any[]>();
-    for (const r of data) {
+    for (const r of (data as any[])) {
       const arr = byDay.get(r.reading_date) ?? [];
       arr.push(r); byDay.set(r.reading_date, arr);
     }
