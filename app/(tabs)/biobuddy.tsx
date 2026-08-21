@@ -18,7 +18,7 @@ import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
-  importGarminExport, importStravaExport, getStackConsensus, getCoverage,
+  importGarminExport, importStravaExport, importOuraExport, getStackConsensus, getCoverage,
   type LiveReadout, type BiosignalSource, type StackConsensus, type SourceCoverage,
 } from '../../lib/biosignals';
 
@@ -738,6 +738,29 @@ export default function BioBuddyScreen() {
                   </Pressable>
                 </View>
               )}
+
+              {/* OURA ACCOUNT EXPORT — THE ARCHIVE LANE.
+                  The cloud API needs a token Oura no longer issues. The export
+                  carries the SAME field names, so the full night arrives either
+                  way and the junk drawer is the onramp. */}
+              <View style={st.kvRow}>
+                <Pressable
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('oura_export'); setSyncMsg(null);
+                    const r = await importOuraExport();
+                    setSyncMsg(`OURA EXPORT — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>OURA ACCOUNT EXPORT</Text>
+                  <Text style={[st.v, { color: CYAN }]}>
+                    {syncing === 'oura_export' ? 'Reading…' : 'Import App Data CSVs →'}
+                  </Text>
+                </Pressable>
+              </View>
 
               {/* GARMIN + STRAVA — official account exports */}
               <View style={st.kvRow}>

@@ -12,6 +12,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from './supabase';
 import { logMembraneEvent } from './db';
 import { validateOuraToken, fetchOuraLast30Days, computeOuraBaselines } from './ouraSync';
+import { parseOuraExport, countNightFields } from './ouraExport';
 
 export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' | 'manual';
 
@@ -344,6 +345,89 @@ export async function syncOura(): Promise<SyncResult> {
     logMembraneEvent({ eventType: 'device_sync', sourceScreen: 'biobuddy', subject: 'oura', value: { days: result.days } });
   }
   return result;
+}
+
+// ── OURA — ACCOUNT EXPORT · THE ARCHIVE LANE ────────────────────────────────
+// FOUNDER FINDING 2026-08-21: the Personal Access Token created 2026-04-02 is
+// masked and unrecoverable, and Oura has stopped issuing new ones — the LEDGER
+// lane is shut until OAuth2 exists. NOTHING IS MISSING: a full account export
+// was already on the founder's own disk, and it carries the SAME field names
+// the cloud API uses, so one parser serves both lanes. When OAuth lands, the
+// API fills forward from where the archive stops and nothing gets rewritten.
+//
+// Pick the whole "App Data" folder at once. Every file is optional — hand it
+// only sleepmodel.csv and it still produces full nights.
+export async function importOuraExport(): Promise<SyncResult> {
+  const picked = await DocumentPicker.getDocumentAsync({
+    type: ['text/csv', 'text/comma-separated-values', 'text/*', '*/*'],
+    multiple: true,
+    copyToCacheDirectory: true,
+  });
+  if (picked.canceled || !picked.assets?.length) {
+    return { ok: false, days: 0, message: 'Import cancelled.' };
+  }
+
+  try {
+    const files: { name: string; text: string }[] = [];
+    for (const a of picked.assets) {
+      if (!/\.csv$/i.test(a.name ?? '')) continue;
+      // temperature.csv and heartrate.csv are ~128k raw samples — a different
+      // resolution of question, not day rows. Skipped by name before reading so
+      // the phone never has to hold them in memory.
+      if (/^(temperature|heartrate|rawlocation|sleep_?phase)/i.test(a.name ?? '')) continue;
+      try {
+        files.push({ name: a.name ?? 'unnamed.csv', text: await FileSystem.readAsStringAsync(a.uri) });
+      } catch { /* one unreadable file must not sink the import */ }
+    }
+    if (!files.length) {
+      return { ok: false, days: 0, message: 'No readable CSV files in that selection. Pick the files inside the Oura export\'s "App Data" folder.' };
+    }
+
+    const parsed = parseOuraExport(files);
+    if (!parsed.nights.length) {
+      return {
+        ok: false, days: 0,
+        message: `Read ${parsed.filesRead.length} file(s) but found no nights. sleepmodel.csv is the one that carries them — make sure it is in the selection.`,
+      };
+    }
+
+    const result = await upsertReadings(parsed.nights.map(n => ({
+      source: 'oura' as const,
+      originSource: 'oura' as const,
+      readingDate: n.reading_date,
+      hrv: n.hrv_rmssd, sleep: n.sleep_score, readiness: n.readiness_score,
+      activity: n.activity_score, stress: n.stress_level,
+      bedtimeStart: n.bedtime_start, bedtimeEnd: n.bedtime_end,
+      totalSleepMin: n.total_sleep_min, timeInBedMin: n.time_in_bed_min,
+      deepMin: n.deep_min, remMin: n.rem_min, lightMin: n.light_min,
+      awakeMin: n.awake_min, efficiencyPct: n.efficiency_pct,
+      latencyMin: n.latency_min, restingHr: n.resting_hr,
+      avgHr: n.avg_hr, minHr: n.min_hr, spo2Avg: n.spo2_avg,
+      respirationAvg: n.respiration_avg, breathingIndex: n.breathing_index,
+      skinTempDelta: n.skin_temp_delta, restlessMoments: n.restless_moments,
+    })));
+
+    if (result.ok) {
+      logMembraneEvent({
+        eventType: 'device_import', sourceScreen: 'biobuddy', subject: 'oura_export',
+        value: { days: result.days, first: parsed.firstDate, last: parsed.lastDate },
+      });
+      // NO SILENT CAPS: say what was read, what was skipped, and how much of the
+      // night actually arrived. A blank is a truthful blank, but it is never
+      // reported as if it were a reading.
+      const fields = countNightFields(parsed.nights);
+      const skipped = parsed.filesIgnored.length
+        ? ` Skipped ${parsed.filesIgnored.length} file(s) that hold raw samples rather than nights.`
+        : '';
+      return {
+        ...result,
+        message: `${result.message} ${parsed.nights.length} night(s) read from ${parsed.filesRead.length} file(s), ${parsed.firstDate} to ${parsed.lastDate} — ${fields} night measurements, not just scores.${skipped}`,
+      };
+    }
+    return result;
+  } catch (e: any) {
+    return { ok: false, days: 0, message: `Could not read that Oura export. ${e?.message ?? ''}`.trim() };
+  }
 }
 
 // ── GARMIN — official account export (JSON) ─────────────────────────────────
