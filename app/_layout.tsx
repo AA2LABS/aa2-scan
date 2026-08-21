@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { loadMemberProfile } from '@/lib/db';
+import { ensureSession } from '@/lib/session';
 import { SEAL_FLAG_PATH } from './arrival';
 
 export const unstable_settings = {
@@ -51,6 +52,13 @@ export default function RootLayout() {
       //   2. Arrived, not sealed  → the initiation (stories → blocks → seal)
       //   3. Sealed               → the membrane opens (Concierge hosts)
       try {
+        // THE MEMBRANE OPENS FIRST — founder order 2026-08-21, "NO REASON IT
+        // ALL SHOULD NOT WORK." Twenty-five readers and writers in lib/ start
+        // with auth.getUser(). Exactly one screen ever created a session, so a
+        // returning member met an app that answered "nothing" to every
+        // question. The session is now guaranteed before any screen asks.
+        await ensureSession();
+
         // ARRIVAL COVER CUT (founder order 2026-08-01): its "synced / off-grid"
         // copy claimed state that does not exist — a Representative Doctrine
         // violation on the front porch. The Nine Stories ARE the welcome.

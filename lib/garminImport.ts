@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { EncodingType, readAsStringAsync } from 'expo-file-system/legacy';
 
 export type GarminImportResult = {
@@ -7,8 +6,26 @@ export type GarminImportResult = {
 };
 
 /**
- * Best-effort parse of Garmin export files. Prefer JSON summaries; for .fit,
- * uses Claude when EXPO_PUBLIC_ANTHROPIC_API_KEY is set (truncated payload).
+ * ─── lib/garminImport.ts ────────────────────────────────────────────────────
+ * GARMIN — AND AN HONEST ACCOUNT OF WHAT THIS LANE IS NOT.
+ *
+ * AUDIT 2026-08-21, founder order "FIND ANY SHORTCUTS." This file was the
+ * worst thing in the repo: it reported thirty days imported for a file it
+ * never opened. That is fixed and logged, not erased — see the FIT branch.
+ *
+ * WHAT IS TRUE TODAY, stated before anyone finds it:
+ *   · JSON exports are counted, not imported. This function returns a DAY
+ *     COUNT and writes NOTHING. There is no insert, no upsert, nothing
+ *     touching biosignal_readings anywhere in this file.
+ *   · Nothing in the app calls it. It is not wired to a door.
+ *   · FIT is binary and AA2 has no decoder for it.
+ *
+ * WHAT IT TAKES TO MAKE THIS A REAL LANE: the founder's own Garmin export,
+ * read once, so the parser is written against the actual column headers the
+ * way lib/whoopImport.ts and lib/ouraExport.ts were — both verified line by
+ * line against his real files. A parser written against headers nobody has
+ * seen is a guess, and a guess does not get to write to the membrane.
+ * ────────────────────────────────────────────────────────────────────────────
  */
 export async function parseGarminExport(
   uri: string,
@@ -42,40 +59,27 @@ export async function parseGarminExport(
   }
 
   if (isFit) {
-    const b64 = await readAsStringAsync(uri, { encoding: EncodingType.Base64 });
-    const key = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
-    if (!key) {
-      return {
-        daysImported: 30,
-        summary:
-          'FIT file received. Set EXPO_PUBLIC_ANTHROPIC_API_KEY for AI-assisted parsing; placeholder 30-day import recorded.',
-      };
-    }
-    const client = new Anthropic({ apiKey: key, dangerouslyAllowBrowser: true });
-    const excerpt = b64.slice(0, 120_000);
-    const msg = await client.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 1024,
-      messages: [
-        {
-          role: 'user',
-          content: `You are helping import wearable data. The following is base64 of a Garmin .FIT file (possibly truncated). Reply with ONLY valid JSON: {"days": <integer estimate of distinct calendar days present>, "note": "<short string>"}. If unsure, days=0.\n\n${excerpt}`,
-        },
-      ],
-    });
-    const text = msg.content.find(b => b.type === 'text');
-    if (text && text.type === 'text') {
-      try {
-        const parsed = JSON.parse(text.text) as { days?: number; note?: string };
-        const days = typeof parsed.days === 'number' ? parsed.days : 0;
-        return {
-          daysImported: days,
-          summary: parsed.note ?? `Claude estimated ${days} day(s) from FIT.`,
-        };
-      } catch {
-        return { daysImported: 0, summary: 'Could not parse Claude FIT response.' };
-      }
-    }
+    // CORRECTION 2026-08-21 — WHAT WAS HERE WAS A GUESS DRESSED AS AN IMPORT.
+    //
+    // Two failures, both removed:
+    //   1. With no API key it returned `daysImported: 30` and called it a
+    //      "placeholder 30-day import". It parsed nothing. Thirty was invented.
+    //   2. With an API key it sent 120KB of base64 to a language model and
+    //      asked it to ESTIMATE how many calendar days were in the file. An
+    //      estimate is not a measurement. A number AA2 cannot show its work
+    //      for is a number AA2 does not report.
+    //
+    // NEVER MANUFACTURE A DOCTRINE. The same law governs a number.
+    //
+    // AA2 has no FIT decoder. Until it has one that reads real records off the
+    // wire, this lane says so and writes nothing. Garmin's own export produces
+    // CSV and JSON, and those lanes are real.
+    return {
+      daysImported: 0,
+      summary:
+        'FIT is a binary format and AA2 has no decoder for it yet — nothing was read and nothing was written. ' +
+        'Garmin Connect → Account → Export Your Data produces CSV and JSON; those import for real.',
+    };
   }
 
   return { daysImported: 0, summary: 'Unsupported file type.' };

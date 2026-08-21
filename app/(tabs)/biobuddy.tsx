@@ -14,6 +14,7 @@ import {
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
+import { connectOura, disconnectOura, ouraConnection, type OuraConnection } from '../../lib/ouraAuth';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
@@ -170,6 +171,8 @@ export default function BioBuddyScreen() {
   const [consensus, setConsensus] = useState<StackConsensus | null>(null);
   const [coverage, setCoverage] = useState<Partial<Record<BiosignalSource, SourceCoverage>>>({});
   const [hasOuraToken, setHasOuraToken] = useState(false);
+  // THE OURA PIPE — OAuth. Founder order 2026-08-21: "MAKE A PIPE."
+  const [ouraConn, setOuraConn] = useState<OuraConnection | null>(null);
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
   const [aficionadoArmed, setAficionadoArmed] = useState(false);
@@ -191,6 +194,7 @@ export default function BioBuddyScreen() {
       getLiveReadout(), getOuraToken(), getStackConsensus(),
       getCoverage('oura'), getCoverage('garmin'), getCoverage('strava'), getSleepAids(),
     ]);
+    setOuraConn(await ouraConnection());
     setSleepAids(aids);
     setProfile(p); setAnimals(an); setVault(v);
     setReadout(live); setHasOuraToken(!!tok); setConsensus(cons);
@@ -699,15 +703,50 @@ export default function BioBuddyScreen() {
                 </Text>
               )}
 
+              {/* OURA — OAUTH. THE PIPE. Founder order 2026-08-21: "USE OURA'S
+                  PIPE." The member taps CONNECT, Oura's own sign-in opens, the
+                  member approves the scopes. No token is typed, none is stored
+                  in a database column, and access is revocable from Oura's own
+                  connected-applications page without touching AA2. */}
+              <View style={st.kvRow}>
+                <Pressable
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('oura_oauth'); setSyncMsg(null);
+                    const r = ouraConn?.connected
+                      ? await disconnectOura()
+                      : await connectOura();
+                    setSyncMsg(`OURA — ${r.message}`);
+                    setSyncing(null);
+                    await load();
+                  }}
+                >
+                  <Text style={st.k}>OURA RING 4 · CONNECT</Text>
+                  <Text style={[st.v, { color: ouraConn?.connected ? GREEN : CYAN }]}>
+                    {syncing === 'oura_oauth'
+                      ? 'Opening Oura…'
+                      : ouraConn?.connected
+                        ? (ouraConn.canRefresh
+                            ? 'Connected ✓ · renews itself · tap to disconnect'
+                            : 'Connected ✓ · no refresh issued · tap to disconnect')
+                        : 'Sign in with Oura → the ring feeds AA2'}
+                  </Text>
+                </Pressable>
+              </View>
+
               {/* OURA — cloud API */}
               <View style={st.kvRow}>
                 <Pressable
                   style={st.kv}
                   onPress={() => setAddInput({ section: 'oura_token', value: '' })}
                 >
-                  <Text style={st.k}>OURA RING 4 · CLOUD API</Text>
-                  <Text style={[st.v, { color: hasOuraToken ? GREEN : CYAN }]}>
-                    {hasOuraToken ? 'TOKEN ON THE MEMBRANE ✓ · tap to replace' : 'Paste personal token → nightly feed'}
+                  <Text style={st.k}>OURA RING 4 · PASTED TOKEN</Text>
+                  <Text style={[st.v, { color: hasOuraToken ? GREEN : FAINT }]}>
+                    {hasOuraToken
+                      ? 'Legacy token on the membrane ✓ · tap to replace'
+                      : 'Legacy lane — Oura no longer issues these. Use CONNECT.'}
                   </Text>
                 </Pressable>
                 <Pressable

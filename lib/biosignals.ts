@@ -12,6 +12,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { supabase } from './supabase';
 import { logMembraneEvent } from './db';
 import { validateOuraToken, fetchOuraLast30Days, computeOuraBaselines } from './ouraSync';
+import { getValidOuraToken } from './ouraAuth';
 import { parseOuraExport, countNightFields } from './ouraExport';
 import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
 
@@ -260,7 +261,29 @@ export async function getCoverage(source: BiosignalSource): Promise<SourceCovera
 }
 
 // ── OURA — cloud API sync ────────────────────────────────────────────────────
+/**
+ * TWO LANES, IN ORDER OF TRUST — founder order 2026-08-21, "MAKE A PIPE."
+ *
+ *   1. OAUTH (lib/ouraAuth.ts). The member tapped CONNECT, Oura's own sign-in
+ *      approved the scopes, and the credential lives in this device's vault —
+ *      not in a database column. It renews itself and the member can revoke it
+ *      from Oura's own connected-applications page without touching AA2.
+ *
+ *   2. PERSONAL ACCESS TOKEN. The old lane. Oura no longer issues these, so it
+ *      is kept ONLY so a member who already pasted one keeps working. It is
+ *      never offered as the first road and it is never the road AA2 asks for.
+ *
+ * Nothing downstream changes. syncOura and every reader call this one function
+ * and get a live token, whichever lane produced it.
+ */
 export async function getOuraToken(): Promise<string | null> {
+  // LANE 1 — OAuth, refreshed on the spot if it has gone stale.
+  try {
+    const oauth = await getValidOuraToken();
+    if (oauth) return oauth;
+  } catch {}
+
+  // LANE 2 — the legacy pasted token, for members who already have one.
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
