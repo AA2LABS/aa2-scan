@@ -18,7 +18,7 @@ import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura,
-  importGarminExport, importStravaExport, importOuraExport, getStackConsensus, getCoverage,
+  importGarminExport, importStravaExport, importOuraExport, importWhoopExport, getStackConsensus, getCoverage,
   type LiveReadout, type BiosignalSource, type StackConsensus, type SourceCoverage,
 } from '../../lib/biosignals';
 
@@ -758,6 +758,28 @@ export default function BioBuddyScreen() {
                   <Text style={st.k}>OURA ACCOUNT EXPORT</Text>
                   <Text style={[st.v, { color: CYAN }]}>
                     {syncing === 'oura_export' ? 'Reading…' : 'Import App Data CSVs →'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* WHOOP ACCOUNT EXPORT — physiological_cycles.csv is the one
+                  row in the stack carrying skin temp AND blood oxygen beside
+                  the sleep architecture. */}
+              <View style={st.kvRow}>
+                <Pressable
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('whoop_export'); setSyncMsg(null);
+                    const r = await importWhoopExport();
+                    setSyncMsg(`WHOOP EXPORT — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>WHOOP ACCOUNT EXPORT</Text>
+                  <Text style={[st.v, { color: CYAN }]}>
+                    {syncing === 'whoop_export' ? 'Reading…' : 'Import cycles CSV →'}
                   </Text>
                 </Pressable>
               </View>

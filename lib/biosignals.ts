@@ -13,6 +13,7 @@ import { supabase } from './supabase';
 import { logMembraneEvent } from './db';
 import { validateOuraToken, fetchOuraLast30Days, computeOuraBaselines } from './ouraSync';
 import { parseOuraExport, countNightFields } from './ouraExport';
+import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
 
 export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' | 'manual';
 
@@ -427,6 +428,65 @@ export async function importOuraExport(): Promise<SyncResult> {
     return result;
   } catch (e: any) {
     return { ok: false, days: 0, message: `Could not read that Oura export. ${e?.message ?? ''}`.trim() };
+  }
+}
+
+// ── WHOOP — ACCOUNT EXPORT · THE ARCHIVE LANE ───────────────────────────────
+// physiological_cycles.csv is the file that matters: it is the ONLY row in the
+// entire stack carrying SKIN TEMPERATURE and BLOOD OXYGEN on the same line as
+// deep, REM and awake. Garmin has skin temp but gates SpO2 behind Pulse Ox
+// being switched on. Oura has both, on separate endpoints.
+//
+// WHOOP's RECOVERY SCORE IS STORED BUT NEVER TRUSTED. On 2026-08-12 the
+// founder's recovery fell nine points while his deep sleep rose 27% and his REM
+// rose 24%. The vendor's verdict disagreed with the vendor's own inputs. It is
+// written to the readiness column so it is visible, and the Clarifier is
+// forbidden from treating it as ground truth.
+export async function importWhoopExport(): Promise<SyncResult> {
+  const picked = await DocumentPicker.getDocumentAsync({
+    type: ['text/csv', 'text/comma-separated-values', 'text/*', '*/*'],
+    multiple: true,
+    copyToCacheDirectory: true,
+  });
+  if (picked.canceled || !picked.assets?.length) {
+    return { ok: false, days: 0, message: 'Import cancelled.' };
+  }
+
+  try {
+    const files: { name: string; text: string }[] = [];
+    for (const a of picked.assets) {
+      const nm = a.name ?? '';
+      if (!/\.csv$/i.test(nm)) continue;
+      // workouts.csv and journal_entries.csv are not night rows.
+      if (!/(physiological_cycles|sleeps)/i.test(nm)) continue;
+      try {
+        files.push({ name: nm, text: await FileSystem.readAsStringAsync(a.uri) });
+      } catch { /* one unreadable file must not sink the import */ }
+    }
+    if (!files.length) {
+      return { ok: false, days: 0, message: 'No WHOOP night files in that selection. Pick physiological_cycles.csv — it carries the most.' };
+    }
+
+    const parsed = parseWhoopExport(files);
+    if (!parsed.nights.length) {
+      return { ok: false, days: 0, message: `Read ${parsed.filesRead.length} file(s) but found no nights.` };
+    }
+
+    const result = await upsertReadings(whoopRows(parsed.nights));
+    if (result.ok) {
+      logMembraneEvent({
+        eventType: 'device_import', sourceScreen: 'biobuddy', subject: 'whoop_export',
+        value: { days: result.days, first: parsed.firstDate, last: parsed.lastDate },
+      });
+      const naps = parsed.napsSkipped ? ` ${parsed.napsSkipped} nap(s) skipped — a nap is not a night.` : '';
+      return {
+        ...result,
+        message: `${result.message} ${parsed.nights.length} night(s) read, ${parsed.firstDate} to ${parsed.lastDate}.${naps}`,
+      };
+    }
+    return result;
+  } catch (e: any) {
+    return { ok: false, days: 0, message: `Could not read that WHOOP export. ${e?.message ?? ''}`.trim() };
   }
 }
 
