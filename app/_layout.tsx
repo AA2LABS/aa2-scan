@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 import { useFonts } from 'expo-font';
 import { router, Stack, type Href } from 'expo-router';
@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { loadMemberProfile } from '@/lib/db';
 import { SEAL_FLAG_PATH } from './arrival';
 
@@ -14,8 +13,21 @@ export const unstable_settings = {
   anchor: '(tabs)',
 };
 
+/**
+ * THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
+ * React Navigation paints the ground UNDER every route. On a light-mode phone
+ * the old `colorScheme === 'dark' ? DarkTheme : DefaultTheme` handed it
+ * DefaultTheme — a WHITE card and a WHITE background behind AA2's near-black
+ * screens. Every route flashed white on push, on pop, and behind every modal.
+ * AA2's ground is Earth #0D0A04. It is now the ground in the navigator too.
+ */
+const AA2_GROUND = '#0D0A04';
+const AA2_NAV_THEME = {
+  ...DarkTheme,
+  colors: { ...DarkTheme.colors, background: AA2_GROUND, card: AA2_GROUND },
+};
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
 
   // The wire typography — Bebas display, Cormorant serif, DM Mono, DM Sans.
   // Screens already reference these family names; this makes them real.
@@ -67,8 +79,8 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+    <ThemeProvider value={AA2_NAV_THEME}>
+      <Stack screenOptions={{ contentStyle: { backgroundColor: AA2_GROUND } }}>
         <Stack.Screen name="arrival" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="biomarkers" options={{ headerShown: false }} />

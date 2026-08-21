@@ -9,17 +9,24 @@ const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
 export const Colors = {
+  // THE DARK INSTRUMENT LAW (2026-08-21) — AA2 has ONE panel and it is dark.
+  // `light` is kept only so any stray `Colors[scheme]` lookup still type-checks
+  // and still resolves to the panel. It is a mirror, not a mode. If a screen
+  // ever reaches for `light`, it gets the instrument panel, not a white page.
   light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    text: '#ECEDEE',
+    background: '#0D0A04',
+    tint: tintColorDark,
+    icon: '#9BA1A6',
+    tabIconDefault: '#9BA1A6',
+    tabIconSelected: tintColorDark,
   },
   dark: {
     text: '#ECEDEE',
-    background: '#151718',
+    // #151718 was the template's grey. AA2's true ground is Earth #0D0A04 —
+    // the default palette in app/(tabs)/index.tsx. No seam between the
+    // navigation ground and the screen ground.
+    background: '#0D0A04',
     tint: tintColorDark,
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',

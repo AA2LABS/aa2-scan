@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, useColorScheme,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
   TextInput, ActivityIndicator, Alert, SafeAreaView, Platform,
 } from 'react-native';
 import PagerView, { type PagerRef } from '@/components/Pager';
@@ -92,8 +92,16 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 }
 
 export default function MapScreen() {
-  const scheme = useColorScheme();
-  const T = useMemo(() => getTheme(scheme === 'dark'), [scheme]);
+  // THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
+  // This screen was the only one in AA2 carrying a light variant, and it only
+  // covered FIVE tokens (bg, card, border, text, muted). The other forty
+  // colours on this screen — C.white, C.dimWhite, C.glass at white 6%, the
+  // GRID accents — are hardcoded for a dark ground. On a light-mode phone the
+  // background went cream #FAF7F2 while the type stayed white: an unreadable
+  // screen. getTheme's light branch is left in place, unused, not deleted —
+  // the day AA2 builds a real light panel it starts from there. Until then
+  // this screen renders on the instrument ground like every other screen.
+  const T = useMemo(() => getTheme(true), []);
   const [mode, setMode]                   = useState<'on' | 'off'>('on');
   const [page, setPage]                   = useState(0); // ON GRID pager: 0 = nav/dossier, 1 = retail
   const pagerRef = useRef<PagerRef>(null);

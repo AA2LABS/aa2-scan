@@ -9,7 +9,10 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
   const [isOpen, setIsOpen] = useState(false);
-  const theme = useColorScheme() ?? 'light';
+  // THE DARK INSTRUMENT LAW (2026-08-21) — useColorScheme() is now a constant
+  // 'dark'. The old ternary against 'light' is a dead branch; the icon reads
+  // from the dark panel like everything else.
+  const theme = useColorScheme();
 
   return (
     <ThemedView>
@@ -21,7 +24,7 @@ export function Collapsible({ children, title }: PropsWithChildren & { title: st
           name="chevron.right"
           size={18}
           weight="medium"
-          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
+          color={Colors[theme].icon}
           style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
         />
 
