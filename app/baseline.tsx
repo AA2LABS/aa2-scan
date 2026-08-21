@@ -260,10 +260,12 @@ export default function BaselineScreen() {
           )}
 
           <View style={st.footCard}>
-            <Text style={st.footLine}>You are the control group.</Text>
+            <Text style={st.footLine}>A vendor score is a population's opinion of you.</Text>
+            <Text style={[st.footLine, { fontSize: 20, marginBottom: 10 }]}>A baseline is you.</Text>
             <Text style={st.footSub}>
               Every night you add makes every night before it mean more. Nothing here compares you to
               a stranger, an average, or a chart in a magazine — only to the person you were last week.
+              {'\n\n'}You are the control group.
             </Text>
           </View>
         </>

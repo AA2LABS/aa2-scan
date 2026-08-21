@@ -36,6 +36,34 @@
  *
  * CONFIDENCE IS STATED, NEVER ASSUMED. Clarifier tiers govern: under 3 nights
  * the engine says so and stops.
+ *
+ * ── THE DOCTRINE THIS FILE IMPLEMENTS ───────────────────────────────────────
+ *
+ * From AA2_SENSORS_ARE_NOT_CREATED_EQUAL_AND_THE_SLEEVE_LOCKED, founder-locked
+ * before a line of this engine existed:
+ *
+ *     A VENDOR SCORE IS A POPULATION'S OPINION OF YOU.
+ *     A BASELINE IS YOU.
+ *
+ *     "A personal baseline does not need the training set to have included you.
+ *      It is built from your own body, against your own prior, over your own 90
+ *      days. Whatever attenuation exists in the raw optics is present in the
+ *      baseline and present in every subsequent reading — SO THE DELTA REMAINS
+ *      VALID EVEN WHERE THE ABSOLUTE VALUE IS COMPROMISED.
+ *
+ *      Measured against yourself, the bias largely cancels. Measured against a
+ *      population that was never you, it compounds."
+ *
+ * THIS FILE IS THAT LAW IN CODE. Every optical sensor in the stack was tuned on
+ * a training population, and the founder has documented that those populations
+ * under-represent dark skin. A percentile against the member's OWN prior carries
+ * that attenuation identically on both sides of the comparison, so it cancels.
+ * A vendor score cannot do this, because the vendor is comparing him to people
+ * he is not.
+ *
+ * That is why there is no population in this file. Not as a preference — as the
+ * strongest anti-bias architecture available, and it was the founder's before it
+ * was ever code.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
