@@ -186,6 +186,7 @@ export default function BiomarkerManager({
       <View style={bm.grid}>
         {(showAll ? inactiveActivities : inactiveActivities.slice(0, 12)).map(activity => (
           <TouchableOpacity
+            hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
             key={activity}
             onPress={() => toggleActivity(activity)}
             style={bm.inactiveChip}
@@ -198,6 +199,7 @@ export default function BiomarkerManager({
 
       {inactiveActivities.length > 12 && (
         <TouchableOpacity
+          hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
           onPress={() => setShowAll(prev => !prev)}
           style={{ alignItems: 'center', paddingVertical: 12 }}
         >

@@ -872,7 +872,9 @@ export default function ScannerScreen() {
                     backgroundColor:barcodeReady?F.gold:accentColor,
                   }]}/>
                 </TouchableOpacity>
-                <TouchableOpacity style={[s.cancelBtn,{borderColor:P.border}]} onPress={handleCancelCamera}>
+                <TouchableOpacity
+                  hitSlop={{ top: 5, bottom: 5, left: 8, right: 8 }}
+                  style={[s.cancelBtn,{borderColor:P.border}]} onPress={handleCancelCamera}>
                   <Text style={s.cancelText}>✕ CANCEL</Text>
                 </TouchableOpacity>
               </View>
@@ -1319,6 +1321,7 @@ export default function ScannerScreen() {
                           <Text style={s.whyBtnText}>WHY?</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
+                          hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }}
                           onPress={()=>handleWhereToBuy(a)}
                           style={{borderWidth:1,borderColor:'rgba(27,184,255,0.40)',backgroundColor:'rgba(27,184,255,0.12)',borderRadius:8,paddingHorizontal:12,paddingVertical:6}}
                           activeOpacity={0.7}>

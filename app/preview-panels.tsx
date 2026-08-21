@@ -230,12 +230,14 @@ function Panel2() {
           <>
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <TouchableOpacity
+                hitSlop={{ top: 5, bottom: 5, left: 8, right: 8 }}
                 style={{ flex: 1, backgroundColor: BLUE, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
                 activeOpacity={0.8}
                 onPress={() => { logMembraneEvent({ eventType: 'clarifier_confirmed', sourceScreen: 'clarifier', subject: 'stress', value: { confirmed: true } }); }}>
                 <Text style={{ fontFamily: F.monoMd, fontSize: 9, color: '#03050A', letterSpacing: 1 }}>YES · LOG AS STRESS</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                hitSlop={{ top: 5, bottom: 5, left: 8, right: 8 }}
                 style={{ flex: 1, borderWidth: 1, borderColor: BLUE_DIM, borderRadius: 8, paddingVertical: 10, alignItems: 'center' }}
                 activeOpacity={0.8}
                 onPress={() => setClarifyOpen(o => !o)}>
@@ -259,6 +261,7 @@ function Panel2() {
                   </Text>
                 )}
                 <TouchableOpacity
+                  hitSlop={{ top: 5, bottom: 5, left: 8, right: 8 }}
                   activeOpacity={0.8}
                   disabled={clarifyText.trim().length === 0}
                   onPress={submitClarify}
@@ -794,12 +797,14 @@ function Panel14() {
       {/* Action buttons */}
       <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
         <TouchableOpacity
+          hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
           activeOpacity={0.85}
           style={{ flex: 1, backgroundColor: GOLD, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
           onPress={() => { logMembraneEvent({ eventType: 'cookbook_opened', sourceScreen: 'preview-panels' }); router.push('/chef' as any); }}>
           <Text style={{ fontFamily: F.monoMd, fontSize: 10, color: '#03050A', letterSpacing: 1 }}>SHARE RECIPE →</Text>
         </TouchableOpacity>
         <TouchableOpacity
+          hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
           activeOpacity={0.85}
           style={{ flex: 1, borderWidth: 1, borderColor: BLUE, backgroundColor: BLUE_DIM, borderRadius: 10, paddingVertical: 12, alignItems: 'center' }}
           onPress={() => { logMembraneEvent({ eventType: 'cookbook_opened', sourceScreen: 'preview-panels' }); router.push('/chef' as any); }}>

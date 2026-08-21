@@ -194,6 +194,7 @@ interface NAChipProps {
 function NAChip({ label, selected, onPress }: NAChipProps) {
   return (
     <TouchableOpacity
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       onPress={onPress}
       style={{
         borderWidth: 1,
@@ -237,6 +238,7 @@ function ChipSelector({ options, selected, multi = false, onSelect, accentColor 
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
       {options.map(opt => (
         <TouchableOpacity
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           key={opt}
           onPress={() => onSelect(opt)}
           style={{
@@ -274,6 +276,7 @@ function ActivityGrid({ selected, onSelect }: ActivityGridProps) {
         const on = selected.includes(act);
         return (
           <TouchableOpacity
+            hitSlop={{ top: 7, bottom: 7, left: 8, right: 8 }}
             key={act}
             onPress={() => onSelect(act)}
             style={{
@@ -913,6 +916,7 @@ export default function OnboardingScreen() {
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                 {ALLERGEN_CHIPS.map(chip => (
                   <TouchableOpacity
+                    hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }}
                     key={chip}
                     onPress={() => appendAllergen(chip)}
                     style={{
@@ -1084,6 +1088,7 @@ export default function OnboardingScreen() {
             <View style={[st.completePbFill, { width: '50%' }]} />
           </View>
           <TouchableOpacity
+            hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
             style={st.completeBtn}
             onPress={() => setStep('briefing_5')}
             activeOpacity={0.85}
@@ -1091,6 +1096,7 @@ export default function OnboardingScreen() {
             <Text style={st.completeBtnText}>CONTINUE WHEN READY →</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
             onPress={() => setStep('block_4')}
             style={{ marginTop: 16, paddingVertical: 12, alignItems: 'center' }}
             activeOpacity={0.7}

@@ -427,6 +427,7 @@ export default function BioBuddyScreen() {
                   measured against every night you have ever recorded, in the
                   same part of the year, on the same instrument. */}
               <Pressable
+                hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
                 onPress={() => router.push('/baseline' as Href)}
                 style={{ marginTop: 10, borderWidth: 2, borderColor: 'rgba(212,168,71,0.55)', backgroundColor: 'rgba(212,168,71,0.14)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
               >
@@ -439,6 +440,7 @@ export default function BioBuddyScreen() {
                   2026-08-03): an UPPER, not a downer. Whatever you own already
                   covers you; overlap is consensus, never waste. */}
               <Pressable
+                hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
                 onPress={() => router.push('/stack-coverage' as Href)}
                 style={{ marginTop: 10, borderWidth: 1, borderColor: 'rgba(27,184,255,0.35)', backgroundColor: 'rgba(27,184,255,0.08)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
               >
@@ -451,6 +453,7 @@ export default function BioBuddyScreen() {
                   2026-08-19). The readout above is the numbers; this is the
                   same signal moving. The Crown lands here when the SDK does. */}
               <Pressable
+                hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
                 onPress={() => router.push('/membrane' as Href)}
                 style={{ marginTop: 8, borderWidth: 1, borderColor: 'rgba(170,68,255,0.35)', backgroundColor: 'rgba(170,68,255,0.08)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
               >
