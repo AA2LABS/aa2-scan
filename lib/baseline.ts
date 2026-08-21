@@ -39,6 +39,17 @@
  *
  * ── THE DOCTRINE THIS FILE IMPLEMENTS ───────────────────────────────────────
  *
+ * FOUNDER CORRECTION 2026-08-21, APPLIED IN CODE BELOW:
+ *
+ *     "The baseline ADJUSTS, always. That statement is for if you have LIMITED
+ *      DATA, so it's not compromised — but we have since worked through that."
+ *
+ * The passage quoted next was written for the THIN-DATA case: early on, when a
+ * member barely has a baseline, the delta still holds even where the absolute
+ * is compromised. IT IS NOT A LICENCE TO TREAT THE BASELINE AS A FIXED POINT.
+ * A baseline is a living thing. It moves when the member moves. See THE REGIME
+ * LAW below, which exists because this file got that wrong first.
+ *
  * From AA2_SENSORS_ARE_NOT_CREATED_EQUAL_AND_THE_SLEEVE_LOCKED, founder-locked
  * before a line of this engine existed:
  *
@@ -64,6 +75,26 @@
  * That is why there is no population in this file. Not as a preference — as the
  * strongest anti-bias architecture available, and it was the founder's before it
  * was ever code.
+ *
+ * ── THE REGIME LAW — founder correction, 2026-08-21 ─────────────────────────
+ *
+ * A MEDIAN IS NOT A BASELINE. A baseline is the level the body is CURRENTLY
+ * holding, and bodies change level.
+ *
+ * The founder has 221 nights on record. Roughly two hundred of them belong to a
+ * man who was drinking. On 2026-08-12 he stopped, and within two days six
+ * independent metrics stepped to a new level — deep +27%, REM +25%, awake −36%.
+ *
+ * RANKING TONIGHT AGAINST THAT 221-NIGHT MEDIAN RANKS HIM AGAINST A PERSON HE
+ * IS NO LONGER. The first version of this engine did exactly that: it detected
+ * the step change and then ignored its own finding.
+ *
+ * SO THE ENGINE RE-ANCHORS. Where a metric shows a confirmed step change, the
+ * CURRENT REGIME — the nights since — becomes the baseline that speaks. The
+ * older nights are not deleted and are never hidden; they become HISTORY, shown
+ * as where the member came from, never as the standard he is held to.
+ *
+ * This is why every rank carries WHICH BASELINE IT SPOKE FROM, out loud.
  * ────────────────────────────────────────────────────────────────────────────
  */
 
@@ -124,6 +155,16 @@ export type MetricRank = {
   seasonTier: Tier;
   /** True when the two ranks disagree by more than 25 points — season is doing the work. */
   seasonalArtifact: boolean;
+
+  // ── THE REGIME — the baseline the member is CURRENTLY holding ──
+  /** Rank against the nights since this metric last changed level. */
+  regimePct: number | null;
+  regimeMedian: number | null;
+  regimeN: number;
+  regimeSince: string | null;
+  regimeTier: Tier;
+  /** Which baseline actually spoke. Reported to the member, never hidden. */
+  spokeFrom: 'regime' | 'season' | 'all';
 };
 
 export type NightRank = {
@@ -182,13 +223,43 @@ export function seasonalPeers(
   return { peers: [], windowDays: 183 };
 }
 
+/**
+ * A regime needs this many nights before it is allowed to be the baseline.
+ * Below it, the engine falls back to season and says so — a new level with four
+ * nights under it is a rumour, not a baseline.
+ */
+export const MIN_REGIME_NIGHTS = 5;
+
+/** The percentile that actually spoke. */
+export function primaryPct(m: MetricRank): number | null {
+  return m.spokeFrom === 'regime' ? m.regimePct
+       : m.spokeFrom === 'season' ? m.seasonPct
+       : m.allPct;
+}
+export function primaryN(m: MetricRank): number {
+  return m.spokeFrom === 'regime' ? m.regimeN : m.spokeFrom === 'season' ? m.seasonN : m.allN;
+}
+export function primaryMedian(m: MetricRank): number | null {
+  return m.spokeFrom === 'regime' ? m.regimeMedian
+       : m.spokeFrom === 'season' ? m.seasonMedian
+       : m.allMedian;
+}
+export function primaryTier(m: MetricRank): Tier { return tierFor(primaryN(m)); }
+
 // ── THE RANK ─────────────────────────────────────────────────────────────────
 export function rankNight(date: string, rows: NightRow[], source: BiosignalSource): NightRank | null {
   const mine = rows.filter(r => r.source === source);
   const night = mine.find(r => r.reading_date === date);
   if (!night) return null;
+  // A first night has nothing behind it. That is a truthful state, not an error.
 
-  const history = mine.filter(r => r.reading_date !== date);
+
+  // NO LOOK-AHEAD. History is nights that had ALREADY HAPPENED. Caught in
+  // testing 2026-08-21 on real data: ranking 2026-08-07 pulled a regime that
+  // began 2026-08-14 and called that night "the lowest stretch of your own
+  // record" — judging a drinking-era night by a sober-era standard, backwards
+  // through time. A baseline is what you had walked into that night with.
+  const history = mine.filter(r => r.reading_date < date);
   const { peers } = seasonalPeers(date, history);
 
   const metrics: MetricRank[] = [];
@@ -201,6 +272,22 @@ export function rankNight(date: string, rows: NightRow[], source: BiosignalSourc
     const allPct = percentileOf(v, allSeries);
     const seasonPct = percentileOf(v, seaSeries);
 
+    // ── THE REGIME LAW ──
+    // If this metric changed level, the nights SINCE are the baseline the body
+    // is actually holding. The nights before belong to a different regime and
+    // must not be averaged in as if they were the same person.
+    const step = findStepChange(history, m.key, MIN_REGIME_NIGHTS, 10);
+    const regimeRows = step ? history.filter(r => r.reading_date >= step.date) : [];
+    const regSeries = nums(regimeRows, m.key);
+    const regimePct = regSeries.length ? percentileOf(v, regSeries) : null;
+
+    // Priority: the regime speaks when it exists and has enough nights. Then
+    // season. Then the whole record. The member is TOLD which one spoke.
+    const spokeFrom: 'regime' | 'season' | 'all' =
+      regimePct != null && regSeries.length >= MIN_REGIME_NIGHTS ? 'regime'
+      : seasonPct != null && seaSeries.length >= 12 ? 'season'
+      : 'all';
+
     metrics.push({
       key: m.key, label: m.label, unit: m.unit, dir: m.dir, value: v,
       allPct, allMedian: median(allSeries), allN: allSeries.length,
@@ -208,17 +295,16 @@ export function rankNight(date: string, rows: NightRow[], source: BiosignalSourc
       seasonTier: tierFor(seaSeries.length),
       // A gap this wide means the calendar was doing the talking, not the body.
       seasonalArtifact: allPct != null && seasonPct != null && Math.abs(allPct - seasonPct) >= 25,
+      regimePct, regimeMedian: median(regSeries), regimeN: regSeries.length,
+      regimeSince: step ? step.date : null, regimeTier: tierFor(regSeries.length),
+      spokeFrom,
     });
   }
 
   const standouts = metrics.filter(m => {
-    const p = m.seasonPct ?? m.allPct;
-    return p != null && (p >= 85 || p <= 15) && m.seasonTier !== 'SEEDED';
-  }).sort((a, b) => {
-    const pa = Math.abs((a.seasonPct ?? a.allPct ?? 50) - 50);
-    const pb = Math.abs((b.seasonPct ?? b.allPct ?? 50) - 50);
-    return pb - pa;
-  });
+    const p = primaryPct(m);
+    return p != null && (p >= 85 || p <= 15) && primaryTier(m) !== 'SEEDED';
+  }).sort((a, b) => Math.abs((primaryPct(b) ?? 50) - 50) - Math.abs((primaryPct(a) ?? 50) - 50));
 
   return { date, source, metrics, standouts };
 }
@@ -338,9 +424,9 @@ export async function loadNights(days = 730): Promise<NightRow[]> {
  * says out loud when the all-time rank would have misled.
  */
 export function describeRank(m: MetricRank): string {
-  const p = m.seasonPct ?? m.allPct;
-  const n = m.seasonPct != null ? m.seasonN : m.allN;
-  const med = m.seasonPct != null ? m.seasonMedian : m.allMedian;
+  const p = primaryPct(m);
+  const n = primaryN(m);
+  const med = primaryMedian(m);
   if (p == null || n < 3) {
     return `${m.label} ${m.value}${m.unit} — not enough of your own nights yet to say whether that is unusual for you.`;
   }
@@ -353,19 +439,27 @@ export function describeRank(m: MetricRank): string {
     p >= 5  ? 'the bottom tenth of your own nights' :
               'the lowest stretch of your own record';
 
-  const cmp = med == null ? '' :
-    m.value > med ? ` Your own median is ${Math.round(med * 10) / 10}${m.unit}.` :
-    m.value < med ? ` Your own median is ${Math.round(med * 10) / 10}${m.unit}.` : '';
+  const cmp = med == null ? ''
+    : ` Your current median is ${Math.round(med * 10) / 10}${m.unit}.`;
 
-  const season = m.seasonPct != null
-    ? ` Measured against ${n} of your own nights from this time of year.`
-    : ` Measured against ${n} of your own nights.`;
+  // WHICH BASELINE SPOKE — said out loud, every time.
+  const against =
+    m.spokeFrom === 'regime'
+      ? ` Measured against the ${n} nights since ${m.label} changed level on ${m.regimeSince} — not the record before it, because that was a different you.`
+      : m.spokeFrom === 'season'
+        ? ` Measured against ${n} of your own nights from this time of year.`
+        : ` Measured against ${n} of your own nights.`;
 
-  const artifact = m.seasonalArtifact
+  const artifact = m.spokeFrom === 'season' && m.seasonalArtifact
     ? ` Against your whole record it would read very differently — that gap is the calendar, not you.`
     : '';
 
-  return `${m.label} ${m.value}${m.unit} — ${where}.${cmp}${season}${artifact}`;
+  // The old regime is never hidden. It becomes history, not the standard.
+  const from = m.spokeFrom === 'regime' && m.allMedian != null && m.regimeMedian != null
+    ? ` Across everything before that your median was ${Math.round(m.allMedian * 10) / 10}${m.unit} — that is where you came from, not where you are held.`
+    : '';
+
+  return `${m.label} ${m.value}${m.unit} — ${where}.${cmp}${against}${artifact}${from}`;
 }
 
 export function describeStepChange(s: StepChange): string {
