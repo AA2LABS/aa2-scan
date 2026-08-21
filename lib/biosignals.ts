@@ -16,6 +16,7 @@ import { getValidOuraToken } from './ouraAuth';
 import { connectionFor } from './oauth';
 import { fetchWhoopRange } from './whoopSync';
 import { fetchStravaRange } from './stravaSync';
+import { parseGarminExport, GARMIN_NIGHT_FILES, type GarminFile } from './garminImport';
 import { parseOuraExport, countNightFields } from './ouraExport';
 import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
 
@@ -605,48 +606,86 @@ export async function importWhoopExport(): Promise<SyncResult> {
 }
 
 // ── GARMIN — official account export (JSON) ─────────────────────────────────
-// Heuristic reader for Garmin export JSON: finds records carrying a date and
-// any of sleep score / HRV / stress / body battery style values.
-function iso(d: any): string | null {
-  const s = String(d ?? '');
-  const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
-  return m ? m[1] : null;
-}
-
-function harvestGarmin(node: any, acc: Map<string, BiosignalRow>): void {
-  if (Array.isArray(node)) { node.forEach(n => harvestGarmin(n, acc)); return; }
-  if (!node || typeof node !== 'object') return;
-
-  const date = iso(node.calendarDate ?? node.date ?? node.startTimestampGMT ?? node.sleepStartTimestampGMT);
-  if (date) {
-    const row = acc.get(date) ?? { source: 'garmin' as const, readingDate: date };
-    const sleep = node.sleepScores?.overall?.value ?? node.overallSleepScore ?? node.sleepScore;
-    const hrv   = node.lastNightAvg ?? node.weeklyAvg ?? node.hrvValue ?? node.avgOvernightHrv;
-    const stress = node.averageStressLevel ?? node.avgStressLevel;
-    if (typeof sleep === 'number') row.sleep = sleep;
-    if (typeof hrv === 'number') row.hrv = hrv;
-    if (typeof stress === 'number' && stress >= 0) row.stress = stress;
-    if (row.sleep != null || row.hrv != null || row.stress != null) acc.set(date, row);
-  }
-  for (const k of Object.keys(node)) {
-    const v = (node as any)[k];
-    if (v && typeof v === 'object') harvestGarmin(v, acc);
-  }
-}
+// Four files, read by name, parsed field by field in lib/garminImport.ts
+// against the founder's own export. No heuristics. No scraping.
+// ── harvestGarmin REMOVED 2026-08-21, LOGGED NOT ERASED ─────────────────────
+// It was a blind recursive scraper that walked any Garmin JSON looking for
+// field names it had GUESSED: sleepScores.overall.value, lastNightAvg,
+// weeklyAvg, hrvValue, avgOvernightHrv, overallSleepScore.
+//
+// The founder's actual export, read on 2026-08-21, uses NONE of those paths.
+// The real one is sleepScores.overallScore. So the scraper found almost
+// nothing — and worse, `weeklyAvg` is a WEEKLY average. Had it matched, it
+// would have written a week's number into a night's HRV column and the
+// membrane would have compared a week against a night and called it a
+// disagreement.
+//
+// GUESSING WILL NOT BE TOLERATED. lib/garminImport.ts replaces it, written
+// against the real files, field by field.
+// ────────────────────────────────────────────────────────────────────────────
 
 export async function importGarminExport(): Promise<SyncResult> {
-  const picked = await DocumentPicker.getDocumentAsync({ type: ['application/json', 'text/*'], copyToCacheDirectory: true });
-  if (picked.canceled || !picked.assets?.[0]) return { ok: false, days: 0, message: 'Import cancelled.' };
+  // FOUNDER ORDER 2026-08-21: "Fresh GARMIN add that!!!!!!"
+  // Garmin ships a ZIP with ~100 files. The four that carry a night are named
+  // below; the member unzips once and picks them, the same way the WHOOP CSVs
+  // are picked. Multi-select, because one night lives across four files:
+  //   *_sleepData.json        the night
+  //   UDSFile_*.json          the day
+  //   *_healthStatusData.json HRV + the SKIN TEMP DELTA nobody else ships
+  //   *_fitnessAgeData.json   VO2 max, marked as the estimate it is
+  const picked = await DocumentPicker.getDocumentAsync({
+    type: ['application/json', 'text/*', '*/*'],
+    multiple: true,
+    copyToCacheDirectory: true,
+  });
+  if (picked.canceled || !picked.assets?.length) {
+    return { ok: false, days: 0, message: 'Import cancelled.' };
+  }
+
   try {
-    const raw = await FileSystem.readAsStringAsync(picked.assets[0].uri);
-    const json = JSON.parse(raw);
-    const acc = new Map<string, BiosignalRow>();
-    harvestGarmin(json, acc);
-    const result = await upsertReadings([...acc.values()]);
-    if (result.ok) logMembraneEvent({ eventType: 'device_import', sourceScreen: 'biobuddy', subject: 'garmin', value: { days: result.days } });
+    const files: GarminFile[] = [];
+    const ignored: string[] = [];
+    for (const a of picked.assets) {
+      const nm = a.name ?? '';
+      if (!GARMIN_NIGHT_FILES.test(nm)) { ignored.push(nm); continue; }
+      try {
+        files.push({ name: nm, text: await FileSystem.readAsStringAsync(a.uri) });
+      } catch { /* one unreadable file must not sink the import */ }
+    }
+    if (!files.length) {
+      return {
+        ok: false, days: 0,
+        message: 'No Garmin night files in that selection. Unzip the export and pick the files named sleepData, UDSFile, healthStatusData and fitnessAgeData — they live in DI_CONNECT/DI-Connect-Wellness and DI-Connect-Aggregator.',
+      };
+    }
+
+    const parsed = parseGarminExport(files);
+    if (!parsed.rows.length) {
+      return { ok: false, days: 0, message: `Read ${parsed.filesRead.length} file(s) but found no days.` };
+    }
+
+    const result = await upsertReadings(parsed.rows);
+    if (result.ok) {
+      logMembraneEvent({
+        eventType: 'device_import', sourceScreen: 'biobuddy', subject: 'garmin',
+        value: {
+          days: result.days, fieldValues: parsed.fieldValues,
+          sleepRecords: parsed.sleepRecords, napsSkipped: parsed.napsSkipped,
+          first: parsed.firstDate, last: parsed.lastDate,
+        },
+      });
+      // NOTHING IS SILENTLY DROPPED. The member is told what was read, what was
+      // skipped, and that naps were seen and kept out of the nights.
+      const naps = parsed.napsSkipped ? ` ${parsed.napsSkipped} nap(s) seen and kept out of the nights.` : '';
+      const skip = ignored.length ? ` ${ignored.length} file(s) in that selection are not night files and were not read.` : '';
+      return {
+        ...result,
+        message: `${result.message} ${parsed.fieldValues} field values across ${parsed.firstDate} → ${parsed.lastDate}.${naps}${skip}`,
+      };
+    }
     return result;
   } catch (e: any) {
-    return { ok: false, days: 0, message: `Could not read that file as a Garmin JSON export. ${e?.message ?? ''}`.trim() };
+    return { ok: false, days: 0, message: `Could not read that Garmin export. ${e?.message ?? ''}`.trim() };
   }
 }
 
