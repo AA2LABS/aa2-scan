@@ -13,6 +13,9 @@ import { supabase } from './supabase';
 import { logMembraneEvent } from './db';
 import { validateOuraToken, fetchOuraLast30Days, computeOuraBaselines } from './ouraSync';
 import { getValidOuraToken } from './ouraAuth';
+import { connectionFor } from './oauth';
+import { fetchWhoopRange } from './whoopSync';
+import { fetchStravaRange } from './stravaSync';
 import { parseOuraExport, countNightFields } from './ouraExport';
 import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
 
@@ -381,6 +384,94 @@ export async function syncOura(): Promise<SyncResult> {
 //
 // Pick the whole "App Data" folder at once. Every file is optional — hand it
 // only sleepmodel.csv and it still produces full nights.
+// ── WHOOP — cloud API sync (THE LEDGER LANE) ────────────────────────────────
+/**
+ * FOUNDER ORDER 2026-08-21: "MAKE A FUCKING PIPE!"
+ * WHOOP was archive-only: request an export, wait for an email, download a zip.
+ * This is the live lane on the member's own OAuth grant. Same incremental rule
+ * as Oura — never re-pull months already on the membrane.
+ */
+export async function syncWhoop(): Promise<SyncResult> {
+  const conn = await connectionFor('whoop');
+  if (!conn.connected) {
+    return { ok: false, days: 0, message: 'WHOOP is not connected. Tap CONNECT in Bio Buddy and approve the scopes.' };
+  }
+
+  const cov = await getCoverage('whoop');
+  const today = new Date();
+  const endYmd = today.toISOString().slice(0, 10);
+
+  let start: Date;
+  if (cov.lastDate) {
+    // WHOOP revises a cycle after the fact, so the last two days are re-read.
+    start = new Date(cov.lastDate + 'T00:00:00Z');
+    start.setUTCDate(start.getUTCDate() - 2);
+  } else {
+    start = new Date(today.getTime());
+    start.setUTCDate(start.getUTCDate() - 30);   // empty membrane: 30-day first fill
+  }
+  const startYmd = start.toISOString().slice(0, 10);
+
+  try {
+    const { rows, scope } = await fetchWhoopRange(startYmd, endYmd);
+    if (!rows.length) {
+      return { ok: false, days: 0, message: `WHOOP returned no nights between ${startYmd} and ${endYmd}.` };
+    }
+    const result = await upsertReadings(rows);
+    if (result.ok) {
+      logMembraneEvent({ eventType: 'device_sync', sourceScreen: 'biobuddy', subject: 'whoop', value: { days: result.days, lane: 'oauth' } });
+      const extra = scope.napsSkipped ? ` ${scope.napsSkipped} nap(s) skipped — naps are not nights.` : '';
+      return { ...result, message: `${result.message}${extra}` };
+    }
+    return result;
+  } catch (e: any) {
+    // WHOOP's own words, not a shrug.
+    return { ok: false, days: 0, message: String(e?.message ?? e) };
+  }
+}
+
+// ── STRAVA — cloud API sync (THE LEDGER LANE) ───────────────────────────────
+/**
+ * The catalog claimed "Strava API + activities.csv export (wired in-app)".
+ * The audit of 2026-08-21 found only the CSV half existed. This is the API
+ * half. Both lanes land on MILES so the two can be compared honestly.
+ */
+export async function syncStrava(): Promise<SyncResult> {
+  const conn = await connectionFor('strava');
+  if (!conn.connected) {
+    return { ok: false, days: 0, message: 'Strava is not connected. Tap CONNECT in Bio Buddy and approve the scopes.' };
+  }
+
+  const cov = await getCoverage('strava');
+  const today = new Date();
+  const endYmd = today.toISOString().slice(0, 10);
+
+  let start: Date;
+  if (cov.lastDate) {
+    start = new Date(cov.lastDate + 'T00:00:00Z');
+    start.setUTCDate(start.getUTCDate() - 2);
+  } else {
+    start = new Date(today.getTime());
+    start.setUTCDate(start.getUTCDate() - 90);   // activities are sparser than nights
+  }
+  const startYmd = start.toISOString().slice(0, 10);
+
+  try {
+    const pull = await fetchStravaRange(startYmd, endYmd);
+    if (!pull.rows.length) {
+      return { ok: false, days: 0, message: `Strava returned no activities with distance between ${startYmd} and ${endYmd}.` };
+    }
+    const result = await upsertReadings(pull.rows);
+    if (result.ok) {
+      logMembraneEvent({ eventType: 'device_sync', sourceScreen: 'biobuddy', subject: 'strava', value: { days: result.days, activities: pull.activities, lane: 'oauth' } });
+      return { ...result, message: `${result.message} ${pull.activities} activit${pull.activities === 1 ? 'y' : 'ies'} read.` };
+    }
+    return result;
+  } catch (e: any) {
+    return { ok: false, days: 0, message: String(e?.message ?? e) };
+  }
+}
+
 export async function importOuraExport(): Promise<SyncResult> {
   const picked = await DocumentPicker.getDocumentAsync({
     type: ['text/csv', 'text/comma-separated-values', 'text/*', '*/*'],

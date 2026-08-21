@@ -14,11 +14,12 @@ import {
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
-import { connectOura, disconnectOura, ouraConnection, type OuraConnection } from '../../lib/ouraAuth';
+import { connectOura, disconnectOura } from '../../lib/ouraAuth';
+import { connectProvider, disconnectProvider, connectionFor, type Connection, type ProviderKey } from '../../lib/oauth';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
 import {
-  getLiveReadout, getOuraToken, saveOuraToken, syncOura,
+  getLiveReadout, getOuraToken, saveOuraToken, syncOura, syncWhoop, syncStrava,
   importGarminExport, importStravaExport, importOuraExport, importWhoopExport, getStackConsensus, getCoverage,
   type LiveReadout, type BiosignalSource, type StackConsensus, type SourceCoverage,
 } from '../../lib/biosignals';
@@ -172,7 +173,8 @@ export default function BioBuddyScreen() {
   const [coverage, setCoverage] = useState<Partial<Record<BiosignalSource, SourceCoverage>>>({});
   const [hasOuraToken, setHasOuraToken] = useState(false);
   // THE OURA PIPE — OAuth. Founder order 2026-08-21: "MAKE A PIPE."
-  const [ouraConn, setOuraConn] = useState<OuraConnection | null>(null);
+  const [conns, setConns] = useState<Partial<Record<ProviderKey, Connection>>>({});
+  const ouraConn = conns.oura ?? null;
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
   const [aficionadoArmed, setAficionadoArmed] = useState(false);
@@ -194,7 +196,10 @@ export default function BioBuddyScreen() {
       getLiveReadout(), getOuraToken(), getStackConsensus(),
       getCoverage('oura'), getCoverage('garmin'), getCoverage('strava'), getSleepAids(),
     ]);
-    setOuraConn(await ouraConnection());
+    const [cO, cW, cS] = await Promise.all([
+      connectionFor('oura'), connectionFor('whoop'), connectionFor('strava'),
+    ]);
+    setConns({ oura: cO, whoop: cW, strava: cS });
     setSleepAids(aids);
     setProfile(p); setAnimals(an); setVault(v);
     setReadout(live); setHasOuraToken(!!tok); setConsensus(cons);
@@ -732,6 +737,104 @@ export default function BioBuddyScreen() {
                             ? 'Connected ✓ · renews itself · tap to disconnect'
                             : 'Connected ✓ · no refresh issued · tap to disconnect')
                         : 'Sign in with Oura → the ring feeds AA2'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* WHOOP — OAUTH + LIVE SYNC. Founder order 2026-08-21: "dont stop
+                  until finished." WHOOP was archive-only until tonight — request
+                  an export, wait for an email, download a zip. It is the only
+                  instrument in this stack that ships SKIN TEMPERATURE and BLOOD
+                  OXYGEN beside the sleep architecture, and now it ships them
+                  nightly instead of on request. */}
+              <View style={st.kvRow}>
+                <Pressable
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('whoop_oauth'); setSyncMsg(null);
+                    const r = conns.whoop?.connected
+                      ? await disconnectProvider('whoop')
+                      : await connectProvider('whoop');
+                    setSyncMsg(`WHOOP — ${r.message}`);
+                    setSyncing(null);
+                    await load();
+                  }}
+                >
+                  <Text style={st.k}>WHOOP MG · CONNECT</Text>
+                  <Text style={[st.v, { color: conns.whoop?.connected ? GREEN : CYAN }]}>
+                    {syncing === 'whoop_oauth'
+                      ? 'Opening WHOOP…'
+                      : conns.whoop?.connected
+                        ? (conns.whoop.canRefresh
+                            ? 'Connected ✓ · renews itself · tap to disconnect'
+                            : 'Connected ✓ · no refresh issued · tap to disconnect')
+                        : 'Sign in with WHOOP → the strap feeds AA2'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('whoop'); setSyncMsg(null);
+                    const r = await syncWhoop();
+                    setSyncMsg(`WHOOP — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>SYNC NOW</Text>
+                  <Text style={[st.v, { color: CYAN }]}>
+                    {syncing === 'whoop' ? 'Syncing…' : 'Pull the missing nights →'}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* STRAVA — OAUTH + LIVE SYNC. The catalog claimed "Strava API +
+                  activities.csv (wired in-app)". The audit found only the CSV
+                  half existed. This is the other half. Both lanes land on MILES
+                  so they can be compared honestly instead of by accident. */}
+              <View style={st.kvRow}>
+                <Pressable
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('strava_oauth'); setSyncMsg(null);
+                    const r = conns.strava?.connected
+                      ? await disconnectProvider('strava')
+                      : await connectProvider('strava');
+                    setSyncMsg(`STRAVA — ${r.message}`);
+                    setSyncing(null);
+                    await load();
+                  }}
+                >
+                  <Text style={st.k}>STRAVA · CONNECT</Text>
+                  <Text style={[st.v, { color: conns.strava?.connected ? GREEN : CYAN }]}>
+                    {syncing === 'strava_oauth'
+                      ? 'Opening Strava…'
+                      : conns.strava?.connected
+                        ? 'Connected ✓ · renews itself · tap to disconnect'
+                        : 'Sign in with Strava → activities feed AA2'}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('strava'); setSyncMsg(null);
+                    const r = await syncStrava();
+                    setSyncMsg(`STRAVA — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>SYNC NOW</Text>
+                  <Text style={[st.v, { color: CYAN }]}>
+                    {syncing === 'strava' ? 'Syncing…' : 'Pull the missing days →'}
                   </Text>
                 </Pressable>
               </View>
