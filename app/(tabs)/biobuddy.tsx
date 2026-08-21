@@ -43,8 +43,9 @@ const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3
 // because off-grid the phone is the last node standing and the member must
 // have always seen it as part of the stack. Below it the SIGNAL TIER in rank
 // order: Crown → Tactix → WHOOP MG → Oura. Below them the PERIPHERAL TIER,
-// ordered by body placement, never by price: Manta and Beats side by side
-// (both speak to the ears), the Metas apart (the Equalizer's eyes — ICE,
+// ordered by body placement, never by price: Manta, then OZLO — which outranks
+// the Beats because it reads EARS AND ROOM where the Beats read ears only —
+// then Beats, the Metas apart (the Equalizer's eyes — ICE,
 // silent rideshare escalation, live camera out), the Index BPM on the arm.
 // Strava rides last — the software link. Medical-grade devices are the only
 // tier above this stack — enterprise, parked. This is the skeleton.
@@ -59,6 +60,12 @@ const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: bo
   { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: GREEN },
   // PERIPHERAL TIER — by body placement
   { key: 'manta_sound',      name: 'Manta Sound Sleep Mask',       dot: '#C9A0FF', condition: true },
+  // OZLO SITS ABOVE THE BEATS. Founder order 2026-08-21: "the beats are just a
+  // sponsor for ears — vs ears AND room." The Ozlo Smart Case is the only
+  // instrument in the entire stack that reads the ROOM instead of the body:
+  // temperature, light and noise, named by the manufacturer in its own guide.
+  // Everything else here reads James. This one reads where James is.
+  { key: 'ozlo_sleepbuds',   name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', dot: '#4E96C8' },
   { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: GOLD },
   { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: PURPLE },
   { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF' },
@@ -415,6 +422,19 @@ export default function BioBuddyScreen() {
                   );
                 });
               })()}
+              {/* YOUR OWN RECORD — the baseline engine's face. Founder order
+                  2026-08-21. The readout above is tonight. This is tonight
+                  measured against every night you have ever recorded, in the
+                  same part of the year, on the same instrument. */}
+              <Pressable
+                onPress={() => router.push('/baseline' as Href)}
+                style={{ marginTop: 10, borderWidth: 2, borderColor: 'rgba(212,168,71,0.55)', backgroundColor: 'rgba(212,168,71,0.14)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
+              >
+                <Text style={{ color: GOLD, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
+                  YOUR OWN RECORD · RANK TONIGHT →
+                </Text>
+              </Pressable>
+
               {/* STACK COVERAGE — the anti-FOMO cross-reference (founder law
                   2026-08-03): an UPPER, not a downer. Whatever you own already
                   covers you; overlap is consensus, never waste. */}
