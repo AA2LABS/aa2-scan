@@ -10,6 +10,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { buildPersonalTruth, loadMemberProfile, logAwareDollarsFollowed, logMembraneEvent } from '../../lib/db';
 import { getCannabisProfile, getDispensariesByCity } from '../../lib/cannabis-layer';
 
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 const C = {
   nearBlack:    '#03050a',
   electricBlue: '#4a9eff',
@@ -92,6 +93,9 @@ async function geocodeAddress(address: string): Promise<{ lat: number; lng: numb
 }
 
 export default function MapScreen() {
+  const TH = useTheme();
+  const s = useMemo(() => make_s(TH), [TH]);
+
   // THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
   // This screen was the only one in AA2 carrying a light variant, and it only
   // covered FIVE tokens (bg, card, border, text, muted). The other forty
@@ -409,7 +413,7 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
               {stores.map((store, i) => (
                 <TouchableOpacity
                   key={i}
-                  style={[s.storeRow, selectedStore?.name === store.name && { borderColor: GRID.on, backgroundColor: 'rgba(245,146,42,0.08)' }]}
+                  style={[s.storeRow, selectedStore?.name === store.name && { borderColor: GRID.on, backgroundColor: lc(TH, 'rgba(245,146,42,0.08)') }]}
                   onPress={() => setSelectedStore(store)}
                 >
                   <Text style={s.storeName}>{store.name}</Text>
@@ -476,8 +480,8 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
               <Text style={s.vaultLabel}>💰 AWARE DOLLARS</Text>
               <Text style={s.vaultBody}>{retailResult.awareDollars}</Text>
               {retailLog === 'logged' ? (
-                <View style={[s.followBtn, { borderColor: '#8fd6ff' }]}>
-                  <Text style={[s.followTxt, { color: '#8fd6ff' }]}>✓ LOGGED TO VAULT</Text>
+                <View style={[s.followBtn, { borderColor: lc(TH, '#8fd6ff') }]}>
+                  <Text style={[s.followTxt, { color: lc(TH, '#8fd6ff') }]}>✓ LOGGED TO VAULT</Text>
                 </View>
               ) : retailLog === 'failed' ? (
                 <TouchableOpacity style={[s.followBtn, { borderColor: C.orange }]} onPress={followRetail} activeOpacity={0.7}>
@@ -513,7 +517,7 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
       {/* COMPACT MODE TOGGLE */}
       <View style={s.toggleRow}>
         <TouchableOpacity
-          style={[s.toggleBtn, mode === 'on' && { borderColor: GRID.on, backgroundColor: 'rgba(245,146,42,0.12)' }]}
+          style={[s.toggleBtn, mode === 'on' && { borderColor: GRID.on, backgroundColor: lc(TH, 'rgba(245,146,42,0.12)') }]}
           onPress={() => setMode('on')}
         >
           <Text style={s.toggleIcon}>🏪</Text>
@@ -612,8 +616,14 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
   );
 }
 
-const s = StyleSheet.create({
-  root:            { flex: 1, backgroundColor: '#0D0A04' },
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_s = (T: Tokens) => {
+  return StyleSheet.create({
+  root:            { flex: 1, backgroundColor: dl(T, '#0D0A04', '#F0EEE8') },
   header:          { alignItems: 'center', paddingTop: 8, paddingBottom: 10, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
   headerDna:       { fontSize: 22, marginBottom: 2 },
   headerTitle:     { fontSize: 17, fontWeight: '800', color: '#FFFFFF', letterSpacing: 2 },
@@ -621,10 +631,10 @@ const s = StyleSheet.create({
 
   // Compact horizontal toggle
   toggleRow:       { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 10, gap: 10 },
-  toggleBtn:       { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: '#2E2208', backgroundColor: '#1A1408' },
+  toggleBtn:       { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 10, borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)'), backgroundColor: dl(T, '#1A1408', '#FFFFFF') },
   toggleIcon:      { fontSize: 20 },
-  toggleLabel:     { color: 'rgba(255,255,255,0.60)', fontWeight: '900', fontSize: 12, letterSpacing: 1 },
-  toggleSub:       { color: 'rgba(255,255,255,0.60)', fontSize: 9, opacity: 0.7, marginTop: 1 },
+  toggleLabel:     { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontWeight: '900', fontSize: 12, letterSpacing: 1 },
+  toggleSub:       { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 9, opacity: 0.7, marginTop: 1 },
 
   locationBadge:   { marginHorizontal: 12, marginBottom: 6, padding: 8, borderRadius: 8, borderWidth: 1 },
   locationText:    { fontSize: 10, fontWeight: '600' },
@@ -633,42 +643,42 @@ const s = StyleSheet.create({
   // Pager nav (dots + caption)
   pagerNav:        { paddingHorizontal: 12, paddingBottom: 8, alignItems: 'center' },
   dotsRow:         { flexDirection: 'row', gap: 6, marginBottom: 6 },
-  dot:             { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
+  dot:             { width: 6, height: 6, borderRadius: 3, backgroundColor: dl(T, 'rgba(255,255,255,0.25)', 'rgba(0,0,0,0.18)') },
   dotActive:       { width: 18 },
-  pagerCaption:    { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textAlign: 'center' },
+  pagerCaption:    { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1, color: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'), textAlign: 'center' },
 
   // Collapsed bar when result is showing
   scanAgainBar:    { marginHorizontal: 12, marginTop: 8, marginBottom: 4, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
   scanAgainBarText:{ fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
 
-  card:            { marginHorizontal: 12, marginTop: 8, marginBottom: 8, padding: 16, backgroundColor: '#1A1408', borderRadius: 14, borderWidth: 1, borderColor: '#2E2208' },
+  card:            { marginHorizontal: 12, marginTop: 8, marginBottom: 8, padding: 16, backgroundColor: dl(T, '#1A1408', '#FFFFFF'), borderRadius: 14, borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)') },
   cardTitleRow:    { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' },
   gridBadge:       { fontSize: 9, fontWeight: '900', letterSpacing: 1.5, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1 },
   cardTitle:       { color: '#FFFFFF', fontSize: 13, fontWeight: '900', letterSpacing: 1, flex: 1 },
-  cardDesc:        { color: 'rgba(255,255,255,0.60)', fontSize: 11, lineHeight: 17, marginBottom: 14 },
-  sectionLabel:    { color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 6, marginTop: 10 },
-  input:           { backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: '#2E2208', borderRadius: 8, color: '#FFFFFF', padding: 11, fontSize: 13, marginBottom: 10 },
+  cardDesc:        { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 11, lineHeight: 17, marginBottom: 14 },
+  sectionLabel:    { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 6, marginTop: 10 },
+  input:           { backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)'), borderRadius: 8, color: '#FFFFFF', padding: 11, fontSize: 13, marginBottom: 10 },
   primaryBtn:      { paddingVertical: 13, borderRadius: 8, alignItems: 'center', marginTop: 4 },
   primaryBtnText:  { fontWeight: '900', fontSize: 12, letterSpacing: 1.5, color: '#FFFFFF' },
   rowInput:        { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 10 },
   addBtn:          { backgroundColor: C.electricBlue, width: 44, height: 44, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   addBtnText:      { color: C.nearBlack, fontSize: 24, fontWeight: '900', lineHeight: 28 },
-  storeRow:        { padding: 11, borderRadius: 8, borderWidth: 1, borderColor: '#2E2208', marginBottom: 6 },
+  storeRow:        { padding: 11, borderRadius: 8, borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)'), marginBottom: 6 },
   storeName:       { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
-  storeVicinity:   { color: 'rgba(255,255,255,0.60)', fontSize: 11, marginTop: 2 },
+  storeVicinity:   { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 11, marginTop: 2 },
 
   // Retail locator — aisle guidance
-  aisleBlock:      { borderWidth: 1.5, borderRadius: 12, padding: 16, marginBottom: 12, alignItems: 'center', backgroundColor: 'rgba(245,146,42,0.06)' },
-  aisleLabel:      { color: 'rgba(255,255,255,0.60)', fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
+  aisleBlock:      { borderWidth: 1.5, borderRadius: 12, padding: 16, marginBottom: 12, alignItems: 'center', backgroundColor: dl(T, 'rgba(245,146,42,0.06)', 'rgba(168,90,24,0.06)') },
+  aisleLabel:      { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
   aisleHeadline:   { fontSize: 28, fontWeight: '900', letterSpacing: 1, marginBottom: 4, textAlign: 'center' },
   aisleSection:    { color: '#FFFFFF', fontSize: 13, textAlign: 'center', lineHeight: 19 },
 
-  optionCard:      { backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: 11, marginBottom: 8 },
+  optionCard:      { backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderRadius: 8, padding: 11, marginBottom: 8 },
   optionName:      { color: '#FFFFFF', fontWeight: '700', fontSize: 13, marginBottom: 4 },
   optionAisle:     { color: C.orange, fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  optionWhy:       { color: 'rgba(255,255,255,0.60)', fontSize: 12, lineHeight: 18 },
+  optionWhy:       { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 12, lineHeight: 18 },
   optionSavings:   { color: C.gold, fontWeight: '700', fontSize: 12, marginTop: 4 },
-  intelCard:       { backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: '#2E2208', padding: 13, marginBottom: 10 },
+  intelCard:       { backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderRadius: 10, borderLeftWidth: 3, borderLeftColor: C.electricBlue, borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)'), padding: 13, marginBottom: 10 },
   intelHeader:     { color: C.electricBlue, fontSize: 9, fontWeight: '900', letterSpacing: 2, marginBottom: 8 },
   intelBody:       { color: '#FFFFFF', fontSize: 13, lineHeight: 21 },
   vaultCard:       { backgroundColor: 'rgba(201,168,76,0.12)', borderRadius: 10, borderWidth: 1, borderColor: C.gold, padding: 13, marginBottom: 10 },
@@ -676,22 +686,24 @@ const s = StyleSheet.create({
   vaultBody:       { color: '#FFFFFF', fontSize: 13, lineHeight: 20 },
   followBtn:       { marginTop: 12, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
   followTxt:       { fontWeight: '900', fontSize: 12, letterSpacing: 1.5 },
-  waypointRow:     { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: 10, marginBottom: 6 },
+  waypointRow:     { flexDirection: 'row', alignItems: 'center', backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderRadius: 8, padding: 10, marginBottom: 6 },
   waypointLetter:  { color: C.orange, fontWeight: '900', fontSize: 14, width: 24 },
   waypointName:    { color: '#FFFFFF', flex: 1, fontSize: 13 },
   removeWp:        { color: C.red, fontWeight: '800', fontSize: 16, paddingLeft: 8 },
   statsRow:        { flexDirection: 'row', justifyContent: 'space-around', marginTop: 8 },
   statItem:        { alignItems: 'center' },
   statValue:       { color: '#FFFFFF', fontSize: 20, fontWeight: '900' },
-  statLabel:       { color: 'rgba(255,255,255,0.60)', fontSize: 9, letterSpacing: 1.5, marginTop: 2 },
-  loadingCard:     { marginHorizontal: 12, marginVertical: 8, padding: 28, backgroundColor: '#1A1408', borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: '#2E2208' },
+  statLabel:       { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 9, letterSpacing: 1.5, marginTop: 2 },
+  loadingCard:     { marginHorizontal: 12, marginVertical: 8, padding: 28, backgroundColor: dl(T, '#1A1408', '#FFFFFF'), borderRadius: 12, alignItems: 'center', borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)') },
   loadingLabel:    { fontWeight: '900', fontSize: 11, letterSpacing: 2, marginTop: 14, textAlign: 'center' },
-  loadingSubLabel: { color: 'rgba(255,255,255,0.60)', fontSize: 9, letterSpacing: 1, marginTop: 6, textAlign: 'center' },
+  loadingSubLabel: { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 9, letterSpacing: 1, marginTop: 6, textAlign: 'center' },
 
   // OFF GRID rows
-  offRow:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 12, marginBottom: 6, padding: 14, backgroundColor: '#1A1408', borderRadius: 10, borderWidth: 1, borderColor: '#2E2208' },
+  offRow:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 12, marginBottom: 6, padding: 14, backgroundColor: dl(T, '#1A1408', '#FFFFFF'), borderRadius: 10, borderWidth: 1, borderColor: dl(T, '#2E2208', 'rgba(0,0,0,0.12)') },
   offRowTitle:     { color: '#FFFFFF', fontSize: 13, fontWeight: '700', flex: 1 },
   offChip:         { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1 },
   offChipTxt:      { fontSize: 8.5, fontWeight: '900', letterSpacing: 1 },
-  offChev:         { color: 'rgba(255,255,255,0.35)', fontSize: 18 },
+  offChev:         { color: dl(T, 'rgba(255,255,255,0.35)', 'rgba(0,0,0,0.38)'), fontSize: 18 },
 });
+};
+

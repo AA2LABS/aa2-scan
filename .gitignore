@@ -44,3 +44,6 @@ app-example
 .env
 .env
 # vscode
+
+# migration scaffolding — the two-mode codemod, 2026-08-22
+.aa2tools/

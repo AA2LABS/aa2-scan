@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable, TextInput, ActivityIndicator,
 } from 'react-native';
@@ -8,6 +8,7 @@ import { loadMemberProfile, buildPersonalTruth, getCookbookRecipes, getScanHisto
 import { streamClaude } from '../../lib/claude-stream';
 import { CHEF_VOICE, VOICE_MODEL } from '../../lib/voices';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CHEF — Intelligence 0X02 · Temporal Lobe · Food Culture Intelligence
 // Door first, then the function list — every string from the approved door HTML.
@@ -15,8 +16,22 @@ import { CHEF_VOICE, VOICE_MODEL } from '../../lib/voices';
 // Aficionado does NOT live here. Cannabis does NOT live here.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', GREEN = '#34D399';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  GOLD: dl(T, '#D4A847', '#b8861e'),
+  GREEN: dl(T, '#34D399', '#12795A'),
+});
 
 type FnRow = { icon: string; title: string; sub: string; seed?: string; route?: Href; cookbook?: boolean };
 
@@ -46,6 +61,10 @@ const FUNCTIONS: FnRow[] = [
 ];
 
 export default function ChefScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [doorOpen, setDoorOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [cookbookOpen, setCookbookOpen] = useState(false);
@@ -125,7 +144,7 @@ export default function ChefScreen() {
           withoutLabel="WITHOUT"
           withoutText="Generic recipes. Wrong pairings. Nutrition with no context."
           openLabel="Continue →"
-          accent={GOLD}
+          accent={C.GOLD}
           onOpen={() => setDoorOpen(true)}
         />
       </ScrollView>
@@ -137,7 +156,7 @@ export default function ChefScreen() {
       ref={scrollRef}
       style={st.root}
       contentContainerStyle={{ paddingBottom: 40 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GOLD} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.GOLD} />}
     >
       <View style={st.subhead}>
         <Text style={st.subheadL}>◆ THE CHEF</Text>
@@ -155,7 +174,7 @@ export default function ChefScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder="speak or type anything…"
-            placeholderTextColor={FAINT}
+            placeholderTextColor={C.FAINT}
             onSubmitEditing={() => runQuery()}
             returnKeyType="send"
           />
@@ -167,7 +186,7 @@ export default function ChefScreen() {
 
       {(asking || answer) ? (
         <View style={st.answer}>
-          {asking && !answer ? <ActivityIndicator color={GOLD} /> : null}
+          {asking && !answer ? <ActivityIndicator color={C.GOLD} /> : null}
           {answer ? <Text style={st.answerTxt}>{answer}</Text> : null}
         </View>
       ) : null}
@@ -214,7 +233,7 @@ export default function ChefScreen() {
                           <Text style={st.recipeMeta}>{[m.meta, `from ${m.from}`].filter(Boolean).join(' · ')}</Text>
                         </View>
                         <View style={[st.savedChip, { borderColor: 'rgba(52,211,153,0.4)' }]}>
-                          <Text style={[st.savedChipTxt, { color: GREEN }]}>FROM SCAN</Text>
+                          <Text style={[st.savedChipTxt, { color: C.GREEN }]}>FROM SCAN</Text>
                         </View>
                       </View>
                     ))}
@@ -240,22 +259,24 @@ export default function ChefScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { NAVY, INK, MUT, FAINT, LINE, GOLD, GREEN } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   subhead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 54, paddingBottom: 4 },
   subheadL: { fontFamily: 'DMMono-Medium', fontSize: 10, letterSpacing: 1.5, color: GOLD },
   subheadR: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: MUT },
 
   ask: {
-    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: 'rgba(212,168,71,0.5)',
-    backgroundColor: 'rgba(212,168,71,0.06)', borderRadius: 12, padding: 15,
+    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.5)', 'rgba(184,134,30,0.5)'),
+    backgroundColor: dl(T, 'rgba(212,168,71,0.06)', 'rgba(184,134,30,0.06)'), borderRadius: 12, padding: 15,
   },
-  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: '#e8c887' },
+  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: dl(T, '#e8c887', '#8A6410') },
   askRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
   askInput: { flex: 1, color: INK, fontFamily: 'DMSans-Regular', fontSize: 13, paddingVertical: 4 },
 
   answer: {
-    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.07)',
+    marginHorizontal: 14, marginBottom: 4, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 14,
   },
   answerTxt: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, lineHeight: 19 },
@@ -264,7 +285,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: GOLD, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },
@@ -272,26 +293,27 @@ const st = StyleSheet.create({
   sub: { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 0.3, color: MUT, marginTop: 3, lineHeight: 14 },
   arr: { color: FAINT, fontSize: 17 },
 
-  cookbook: { marginLeft: 12, marginBottom: 9, borderLeftWidth: 2, borderLeftColor: 'rgba(212,168,71,0.4)', paddingLeft: 10 },
+  cookbook: { marginLeft: 12, marginBottom: 9, borderLeftWidth: 2, borderLeftColor: dl(T, 'rgba(212,168,71,0.4)', 'rgba(184,134,30,0.4)'), paddingLeft: 10 },
   empty: { fontFamily: 'DMSans-Regular', fontSize: 12, color: FAINT, fontStyle: 'italic', paddingVertical: 8, lineHeight: 17 },
   recipeRow: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.03)',
+    flexDirection: 'row', alignItems: 'center', backgroundColor: dl(T, 'rgba(255,255,255,0.03)', 'rgba(0,0,0,0.02)'),
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 10, padding: 11, marginBottom: 7,
   },
   recipeName: { fontFamily: 'DMSans-Regular', fontSize: 13, fontWeight: '700', color: INK },
   recipeMeta: { fontFamily: 'DMMono-Regular', fontSize: 9, color: MUT, marginTop: 3 },
-  savedChip: { borderWidth: 0.5, borderColor: 'rgba(212,168,71,0.4)', borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4 },
+  savedChip: { borderWidth: 0.5, borderColor: dl(T, 'rgba(212,168,71,0.4)', 'rgba(184,134,30,0.4)'), borderRadius: 6, paddingHorizontal: 7, paddingVertical: 4 },
   savedChipTxt: { fontFamily: 'DMMono-Regular', fontSize: 7.5, letterSpacing: 1, color: GOLD },
 
   action: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(212,168,71,0.5)', backgroundColor: 'rgba(212,168,71,0.08)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.5)', 'rgba(184,134,30,0.5)'), backgroundColor: dl(T, 'rgba(212,168,71,0.08)', 'rgba(184,134,30,0.08)'),
     borderRadius: 12, paddingVertical: 15,
   },
-  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: '#e8c887' },
+  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: dl(T, '#e8c887', '#8A6410') },
 
   note: {
     fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
     textAlign: 'center', marginTop: 20, marginHorizontal: 24, lineHeight: 14,
   },
 });
+};

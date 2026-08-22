@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
 import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { loadMemberProfile, type FullMemberProfile } from '@/lib/db';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 export const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80';
 export const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 export const GREEN = '#34D399', AMBER = '#E0A04A', RED = '#E24B4A';
@@ -31,6 +32,9 @@ export function DoorFlood(props: {
   heroHeight?: number;
   heroLine: string; heroSub: string; rows: Row[]; foot: string;
 }) {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+
   const [open, setOpen] = useState(false);
   const { art, eyebrow, title, accent, heroLine, heroSub, rows, foot } = props;
   const artFit = props.artFit ?? 'cover';
@@ -111,7 +115,13 @@ export function useProfile(): { p: FullMemberProfile | null; loaded: boolean } {
   return { p, loaded };
 }
 
-const st = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_st = (T: Tokens) => {
+  return StyleSheet.create({
   doorRoot: { flex: 1, backgroundColor: NAVY, justifyContent: 'flex-end' },
   doorImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
   doorScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.28)' },
@@ -132,7 +142,7 @@ const st = StyleSheet.create({
   bandLine: { fontSize: 19, fontWeight: '800', textAlign: 'center' },
   bandSub: { fontSize: 12, color: MUT, marginTop: 7, textAlign: 'center', lineHeight: 17 },
   section: { paddingHorizontal: 14, paddingTop: 16 },
-  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13, marginBottom: 10 },
+  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 13, marginBottom: 10 },
   rowIcon: { width: 38, height: 38, borderRadius: 9, borderWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'center', marginRight: 13 },
   rowIconTxt: { fontSize: 17 },
   rowName: { fontSize: 14, fontWeight: '700', color: INK },
@@ -142,3 +152,5 @@ const st = StyleSheet.create({
   chipTxt: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   foot: { textAlign: 'center', fontSize: 11, marginTop: 18 },
 });
+};
+

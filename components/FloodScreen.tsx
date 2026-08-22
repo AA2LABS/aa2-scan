@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ImageSourcePropType, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
 
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 export type FloodRow = {
   icon: string; title: string; desc: string;
   chip?: string; chipKind?: 'clr' | 'watch' | 'hit' | 'accent';
@@ -16,19 +17,35 @@ export type FloodScreenProps = {
   ask?: { q: string; hint: string };
 };
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.15)';
-const GREEN = '#34D399', AMBER = '#E0A04A';
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, '#8A99AD', 'rgba(0,0,0,0.55)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  GREEN: dl(T, '#34D399', '#12795A'),
+  AMBER: dl(T, '#E0A04A', '#8A6410'),
+});
 
-function chipColors(kind: FloodRow['chipKind'], accent: string) {
+function chipColors(T: Tokens, kind: FloodRow['chipKind'], accent: string) {
+  const C = pal(T);
   switch (kind) {
-    case 'clr': return { fg: GREEN, bg: 'rgba(52,211,153,0.12)' };
-    case 'watch': return { fg: AMBER, bg: 'rgba(224,160,74,0.14)' };
-    case 'hit': return { fg: '#FF8C8B', bg: 'rgba(226,75,74,0.14)' };
-    default: return { fg: accent, bg: 'rgba(255,255,255,0.06)' };
+    case 'clr': return { fg: C.GREEN, bg: lc(T, 'rgba(52,211,153,0.12)') };
+    case 'watch': return { fg: C.AMBER, bg: lc(T, 'rgba(224,160,74,0.14)') };
+    case 'hit': return { fg: dl(T, '#FF8C8B', '#C0392B'), bg: lc(T, 'rgba(226,75,74,0.14)') };
+    default: return { fg: lc(T, accent), bg: lc(T, 'rgba(255,255,255,0.06)') };
   }
 }
 
 export default function FloodScreen(props: FloodScreenProps) {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+  const C = pal(TH);
+
   const { doorImage, eyebrow, title, accent, heroLine, heroSub, heroColor, rows, foot, sectionHeader, ask } = props;
   return (
     <ScrollView style={st.root} contentContainerStyle={st.content}>
@@ -41,7 +58,7 @@ export default function FloodScreen(props: FloodScreenProps) {
         </View>
       </View>
       <View style={st.band}>
-        <Text style={[st.bandLine, { color: heroColor ?? INK }]}>{heroLine}</Text>
+        <Text style={[st.bandLine, { color: heroColor ?? C.INK }]}>{heroLine}</Text>
         {heroSub ? <Text style={st.bandSub}>{heroSub}</Text> : null}
       </View>
       {ask ? (
@@ -53,7 +70,7 @@ export default function FloodScreen(props: FloodScreenProps) {
       <View style={st.rows}>
         {sectionHeader ? <Text style={st.sectionH}>{sectionHeader}</Text> : null}
         {rows.map((r, i) => {
-          const c = chipColors(r.chipKind, accent);
+          const c = chipColors(TH, r.chipKind, accent);
           const inner = (
             <>
               <View style={st.rowIcon}><Text style={st.rowIconTxt}>{r.icon}</Text></View>
@@ -89,7 +106,14 @@ export default function FloodScreen(props: FloodScreenProps) {
   );
 }
 
-const st = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_st = (T: Tokens) => {
+  const { NAVY, INK, MUT, LINE, GREEN, AMBER } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   content: { paddingBottom: 40 },
   hero: { height: 260, position: 'relative', justifyContent: 'flex-end' },
@@ -104,11 +128,11 @@ const st = StyleSheet.create({
   ask: { margin: 14, borderWidth: 1, borderRadius: 12, padding: 15 },
   askQ: { fontSize: 19, fontWeight: '800' },
   askH: { fontSize: 11.5, color: MUT, marginTop: 4 },
-  sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: '#5C6B80', marginBottom: 6, marginLeft: 2, marginTop: 8 },
+  sectionH: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: dl(T, '#5C6B80', 'rgba(0,0,0,0.38)'), marginBottom: 6, marginLeft: 2, marginTop: 8 },
   rows: { paddingHorizontal: 14, paddingTop: 4 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 13 },
-  rowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(255,255,255,0.07)' },
-  rowIcon: { width: 36, height: 36, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  rowBorder: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)') },
+  rowIcon: { width: 36, height: 36, borderRadius: 9, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   rowIconTxt: { fontSize: 16, color: INK },
   rowTx: { flex: 1 },
   rowTitle: { fontSize: 14, fontWeight: '700', color: INK },
@@ -117,3 +141,5 @@ const st = StyleSheet.create({
   chipTxt: { fontSize: 9, fontWeight: '700', letterSpacing: 0.5 },
   foot: { textAlign: 'center', fontSize: 11, marginTop: 18, paddingHorizontal: 16, lineHeight: 16 },
 });
+};
+

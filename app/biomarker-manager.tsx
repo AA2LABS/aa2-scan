@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View, Text, TouchableOpacity,
   ScrollView, StyleSheet, Platform,
@@ -6,14 +6,24 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 
-const BLUE        = '#1BB8FF';
-const BLUE_DIM    = 'rgba(27,184,255,0.15)';
-const BLUE_BORDER = 'rgba(27,184,255,0.40)';
-const GREEN       = '#1D9E75';
-const RED         = '#E05252';
-const DARK_BG     = '#0A0804';
-const WHITE       = '#FFFFFF';
-const MUTED       = 'rgba(255,255,255,0.55)';
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  BLUE: dl(T, '#1BB8FF', '#2a7faa'),
+  BLUE_DIM: dl(T, 'rgba(27,184,255,0.15)', 'rgba(42,127,170,0.15)'),
+  BLUE_BORDER: dl(T, 'rgba(27,184,255,0.40)', 'rgba(42,127,170,0.40)'),
+  GREEN: dl(T, '#1D9E75', '#12795A'),
+  RED: dl(T, '#E05252', '#C0392B'),
+  DARK_BG: dl(T, '#0A0804', '#FAF7F2'),
+  WHITE: '#FFFFFF',
+  MUTED: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+});
 
 const F = {
   mono:    'DMMono-Regular',
@@ -59,6 +69,10 @@ export default function BiomarkerManager({
   embedded = false,
   onSave,
 }: Props) {
+  const T = useTheme();
+  const bm = useMemo(() => makeBm(T), [T]);
+  const C = pal(T);
+
   const [active,  setActive]  = useState<string[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [saving,  setSaving]  = useState(false);
@@ -135,7 +149,7 @@ export default function BiomarkerManager({
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: DARK_BG }}
+      style={{ flex: 1, backgroundColor: C.DARK_BG }}
       nestedScrollEnabled
       contentContainerStyle={{
         paddingHorizontal: 24,
@@ -203,7 +217,7 @@ export default function BiomarkerManager({
           onPress={() => setShowAll(prev => !prev)}
           style={{ alignItems: 'center', paddingVertical: 12 }}
         >
-          <Text style={{ fontFamily: F.mono, fontSize: 10, color: BLUE, letterSpacing: 2 }}>
+          <Text style={{ fontFamily: F.mono, fontSize: 10, color: C.BLUE, letterSpacing: 2 }}>
             {showAll ? 'SHOW LESS ↑' : `SHOW ALL ${inactiveActivities.length} ACTIVITIES ↓`}
           </Text>
         </TouchableOpacity>
@@ -219,7 +233,7 @@ export default function BiomarkerManager({
           </Text>
           {history.slice(-5).reverse().map((h, i) => (
             <View key={i} style={bm.histRow}>
-              <View style={[bm.histDot, { backgroundColor: h.action === 'activated' ? GREEN : RED }]} />
+              <View style={[bm.histDot, { backgroundColor: h.action === 'activated' ? C.GREEN : C.RED }]} />
               <Text style={bm.histActivity}>{h.activity}</Text>
               <Text style={bm.histAction}>{h.action === 'activated' ? 'ADDED' : 'REMOVED'}</Text>
             </View>
@@ -230,7 +244,7 @@ export default function BiomarkerManager({
       {/* ── Save button (non-embedded only) ── */}
       {!embedded && (
         <TouchableOpacity
-          style={[bm.saveBtn, { opacity: saving ? 0.6 : 1, backgroundColor: saved ? GREEN : BLUE }]}
+          style={[bm.saveBtn, { opacity: saving ? 0.6 : 1, backgroundColor: saved ? C.GREEN : C.BLUE }]}
           onPress={handleSave}
           disabled={saving}
           activeOpacity={0.85}
@@ -251,7 +265,9 @@ export default function BiomarkerManager({
   );
 }
 
-const bm = StyleSheet.create({
+const makeBm = (T: Tokens) => {
+  const { BLUE, BLUE_DIM, BLUE_BORDER, GREEN, RED, DARK_BG, WHITE, MUTED } = pal(T);
+  return StyleSheet.create({
   eyebrow: {
     fontFamily: 'DMMono-Regular',
     fontSize: 9,
@@ -292,7 +308,7 @@ const bm = StyleSheet.create({
     gap: 6,
     borderWidth: 1,
     borderColor: GREEN,
-    backgroundColor: 'rgba(29,158,117,0.15)',
+    backgroundColor: dl(T, 'rgba(29,158,117,0.15)', 'rgba(18,121,90,0.15)'),
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 7,
@@ -323,7 +339,7 @@ const bm = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: dl(T, 'rgba(255,255,255,0.06)', 'rgba(0,0,0,0.03)'),
     marginVertical: 20,
   },
   histRow: {
@@ -332,7 +348,7 @@ const bm = StyleSheet.create({
     gap: 10,
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.07)',
+    borderBottomColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
   },
   histDot: {
     width: 6,
@@ -367,7 +383,7 @@ const bm = StyleSheet.create({
   saveBtnText: {
     fontFamily: 'DMMono-Medium',
     fontSize: 13,
-    color: '#03050A',
+    color: dl(T, '#03050A', '#F0EEE8'),
     letterSpacing: 2,
   },
   docNote: {
@@ -380,3 +396,4 @@ const bm = StyleSheet.create({
     marginTop: 8,
   },
 });
+};

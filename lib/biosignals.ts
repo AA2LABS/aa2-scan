@@ -32,7 +32,11 @@ import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
  * The same disease AA2 diagnosed in Muse — measured, stored, never wired —
  * was sitting inside AA2. Found and closed 2026-08-21.
  */
-export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' | 'muse' | 'manual';
+// 'ozlo' joins 2026-08-22 by founder order. It is the only instrument in the
+// stack that measures THE ROOM rather than the member — and it is MASK-AGNOSTIC:
+// the buds go under the Manta as readily as under the Ozlo mask, so the room is
+// measured in every configuration, not only the ones that include one product.
+export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' | 'muse' | 'ozlo' | 'manual';
 
 export type BiosignalRow = {
   source: BiosignalSource;
@@ -67,6 +71,21 @@ export type BiosignalRow = {
   respirationAvg?: number | null;
   breathingIndex?: number | null;
   skinTempDelta?: number | null;
+  /**
+   * ─── THE ROOM ─────────────────────────────────────────────────────────────
+   * These three measure THE PLACE, not the person. They are kept beside the
+   * body channels and NEVER averaged into a body baseline.
+   *
+   * roomTempC is ABSOLUTE degrees, and that is the point. skinTempDelta is
+   * already a deviation from the member's OWN baseline; room temperature is a
+   * fact about the room. Put together they answer the one question neither can
+   * answer alone:
+   *     skin moves + room holds -> the MASK did it
+   *     skin moves + room moves -> the ROOM did it
+   */
+  roomTempC?: number | null;
+  roomLight?: number | null;
+  roomNoiseDb?: number | null;
   // RESTLESS MOMENTS ARE NOT AWAKENINGS. Garmin logged 30 and Muse 35 — those
   // agree. WHOOP logged 7 wake events, a different question. Kept apart so the
   // membrane never reports two answers to one question as a disagreement.
@@ -86,7 +105,7 @@ const NIGHT_COLUMNS =
   'time_in_bed_min, deep_min, rem_min, light_min, awake_min, efficiency_pct, ' +
   'latency_min, resting_hr, avg_hr, min_hr, spo2_avg, spo2_min, respiration_avg, ' +
   'breathing_index, skin_temp_delta, restless_moments, wake_events, vo2max, ' +
-  'vo2max_estimated';
+  'vo2max_estimated, room_temp_c, room_light, room_noise_db';
 
 export type SyncResult = { ok: boolean; days: number; message: string };
 
@@ -135,6 +154,10 @@ async function upsertReadings(rows: BiosignalRow[]): Promise<SyncResult> {
       wake_events:      r.wakeEvents ?? null,
       vo2max:           r.vo2max ?? null,
       vo2max_estimated: r.vo2maxEstimated ?? null,
+      // THE ROOM — absolute, never a delta, never folded into a body baseline.
+      room_temp_c:      r.roomTempC ?? null,
+      room_light:       r.roomLight ?? null,
+      room_noise_db:    r.roomNoiseDb ?? null,
     }));
 
     // NO-OVERLAP INTELLIGENCE: the membrane never double-counts a day.
@@ -244,6 +267,9 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
         wakeEvents: r.wake_events ?? null,
         vo2max: r.vo2max ?? null,
         vo2maxEstimated: r.vo2max_estimated ?? null,
+        roomTempC: r.room_temp_c ?? null,
+        roomLight: r.room_light ?? null,
+        roomNoiseDb: r.room_noise_db ?? null,
       };
       out.latest[src] = row; // ascending order → last write wins = newest
       const v = row.hrv ?? row.readiness ?? row.activity ?? row.sleep;
@@ -368,6 +394,8 @@ export async function syncOura(): Promise<SyncResult> {
     breathingIndex: r.breathing_index ?? null,
     skinTempDelta: r.skin_temp_delta ?? null,
     restlessMoments: r.restless_moments ?? null,
+    // NO ROOM HERE, DELIBERATELY. This is the Oura lane. A ring measures the
+    // finger, not the bedroom — the room belongs to the Ozlo case alone.
   })));
 
   // 30-day baselines onto the member row — non-fatal if columns absent.
@@ -816,4 +844,147 @@ export async function getStackConsensus(): Promise<StackConsensus> {
     }
     return { day, rows, notes };
   } catch { return empty; }
+}
+
+/* ─── THE ROOM ────────────────────────────────────────────────────────────────
+ *
+ * FOUNDER ORDER, 2026-08-22:
+ *   "you get the ozlo wired right so the temp can be shown that it comes up
+ *    with."
+ *
+ * ⚠ WHAT IS WIRED AND WHAT IS NOT — SAID PLAINLY.
+ *
+ * The CHANNEL is wired: the column, the source, the reader, the display. A room
+ * temperature can be written, stored, read back and shown beside the body.
+ *
+ * The PIPE is not wired, and it is not going to be claimed. The Ozlo Sleepbuds 2
+ * and Smart Case ship 2026-08-24. No export path, no API and no manual has been
+ * read. NEVER STATE A DEVICE CAPABILITY WITHOUT THE RECEIPT — so until there is
+ * one, a room reading arrives the way every honest first reading arrives: by
+ * hand, marked as entered by hand. The day a pipe is proven, it writes to these
+ * same columns and nothing above it changes.
+ *
+ * WHY THIS EXISTS AT ALL — the one question the stack could not answer:
+ *
+ *   GARMIN skin_temp_delta is ALREADY a deviation from his own baseline.
+ *   OZLO   room_temp_c    is an ABSOLUTE fact about the room.
+ *
+ *     skin moves + room holds -> THE MASK did it
+ *     skin moves + room moves -> THE ROOM did it
+ *
+ * Neither channel can separate those alone. Both together can. That is the
+ * whole reason this file grew.
+ */
+
+export type RoomNight = {
+  date: string;
+  roomTempC: number | null;
+  roomLight: number | null;
+  roomNoiseDb: number | null;
+  /** From GARMIN, same night. Already a delta from his OWN baseline. */
+  skinTempDelta: number | null;
+};
+
+/** Write one night's room. `source` stays 'ozlo' even when entered by hand —
+ *  the instrument is the instrument. `origin_source` is what tells the truth
+ *  about how it arrived: 'manual' until a pipe is proven. */
+export async function saveRoomReading(input: {
+  date: string;                 // YYYY-MM-DD — the night, not the morning
+  tempC?: number | null;
+  light?: number | null;
+  noiseDb?: number | null;
+  byHand?: boolean;             // default true until an Ozlo pipe exists
+}): Promise<SyncResult> {
+  const byHand = input.byHand !== false;
+  return upsertReadings([{
+    source: 'ozlo',
+    originSource: byHand ? 'manual' : 'ozlo',
+    readingDate: input.date,
+    roomTempC:   input.tempC ?? null,
+    roomLight:   input.light ?? null,
+    roomNoiseDb: input.noiseDb ?? null,
+  }]);
+}
+
+/**
+ * The room and the body, night by night, already lined up.
+ *
+ * The join is BY NIGHT and by nothing else. Room temperature comes from the
+ * Ozlo row; skin temperature delta comes from whichever body instrument
+ * recorded one — Garmin today. They are kept in separate columns of the same
+ * night rather than merged, because THEY ARE NOT THE SAME MEASUREMENT and the
+ * membrane must never report a room as if it were a body.
+ */
+export async function readTheRoom(days = 30): Promise<RoomNight[]> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+    const { data, error } = await supabase
+      .from('biosignal_readings')
+      .select('source, reading_date, room_temp_c, room_light, room_noise_db, skin_temp_delta')
+      .eq('member_id', user.id)
+      .gte('reading_date', since)
+      .order('reading_date', { ascending: true });
+    if (error || !data) return [];
+
+    const byNight = new Map<string, RoomNight>();
+    for (const r of data as any[]) {
+      const d = r.reading_date as string;
+      const night = byNight.get(d) ?? { date: d, roomTempC: null, roomLight: null, roomNoiseDb: null, skinTempDelta: null };
+      // The room only ever comes from the instrument that measures the room.
+      if (r.source === 'ozlo') {
+        if (r.room_temp_c    != null) night.roomTempC   = Number(r.room_temp_c);
+        if (r.room_light     != null) night.roomLight   = Number(r.room_light);
+        if (r.room_noise_db  != null) night.roomNoiseDb = Number(r.room_noise_db);
+      }
+      // The body delta comes from a body instrument. An Ozlo row never supplies it.
+      if (r.source !== 'ozlo' && r.skin_temp_delta != null) night.skinTempDelta = Number(r.skin_temp_delta);
+      byNight.set(d, night);
+    }
+    return [...byNight.values()].filter(n =>
+      n.roomTempC != null || n.roomLight != null || n.roomNoiseDb != null || n.skinTempDelta != null);
+  } catch { return []; }
+}
+
+/**
+ * THE SEPARATION. One night in, one sentence out — and it refuses to speak when
+ * it cannot tell the two apart.
+ *
+ * NO NAKED NUMBERS: never returns a bare figure. ZERO SHAME: never a verdict on
+ * the member. It reports which of two things moved, or that it cannot say.
+ */
+export function separateRoomFromBody(
+  night: RoomNight,
+  roomBaselineC: number | null,
+): { line: string; confident: boolean } {
+  const { roomTempC, skinTempDelta } = night;
+  if (skinTempDelta == null) {
+    return { line: 'No skin temperature on this night, so there is nothing to separate yet.', confident: false };
+  }
+  if (roomTempC == null) {
+    return {
+      line: `Your skin ran ${skinTempDelta > 0 ? 'warmer' : 'cooler'} than your own baseline, but the room was not measured — so this cannot tell you whether it was you or the bedroom. That is exactly the gap the Ozlo case closes.`,
+      confident: false,
+    };
+  }
+  if (roomBaselineC == null) {
+    return {
+      line: `Room ${roomTempC.toFixed(1)}°C on record. One night is not a room baseline — a few more and the room can be held constant while the mask changes.`,
+      confident: false,
+    };
+  }
+  const roomMoved = Math.abs(roomTempC - roomBaselineC) >= 1.0;
+  const skinMoved = Math.abs(skinTempDelta) >= 0.3;
+  if (!skinMoved) return { line: 'Skin temperature sat inside your ordinary range. Nothing to attribute.', confident: true };
+  if (roomMoved) {
+    return {
+      line: `Both moved — skin ${skinTempDelta > 0 ? 'up' : 'down'} against your baseline and the room ${roomTempC > roomBaselineC ? 'warmer' : 'cooler'} than its own. The room is the simpler explanation, so this night cannot be credited to what was on your face.`,
+      confident: true,
+    };
+  }
+  return {
+    line: `Skin ${skinTempDelta > 0 ? 'warmer' : 'cooler'} than your baseline while the room held at its own. The room did not do this one.`,
+    confident: true,
+  };
 }

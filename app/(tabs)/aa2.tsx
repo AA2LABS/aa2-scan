@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, ImageSourcePropType } from 'react-native';
 import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { useProfile } from '@/components/DoorFlood';
-
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847';
+import { ModeToggle } from '@/components/ModeToggle';
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 
 // FOCAL POINT — founder bugs 2026-08-01 and 2026-08-19. React Native's own
 // Image has no focal control, so cover-cropping these tiles cut the dog's head
@@ -36,6 +36,8 @@ const DOORS: Door[] = [
 ];
 
 export default function AA2DoorHall() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
   const { p, loaded } = useProfile();
   const sealed = !!p?.onboardingComplete;
   const name = p?.name ?? null;
@@ -51,6 +53,11 @@ export default function AA2DoorHall() {
           ? `Every door reads your membrane${name ? `, ${name}` : ''}. One truth, twelve lenses.`
           : 'Build your membrane and every door behind this wall speaks to your body, not a generic one.'}
       </Text>
+
+      {/* THE BUTTON. The Door Hall is where every door lives, so it is where
+          the decision that repaints all of them belongs. Founder 2026-08-22:
+          "The member still picks because they are able to click the button." */}
+      <ModeToggle />
 
       {loaded ? (
         // CHANGE ANYTHING law: sealed members go straight to THE MEMBRANE · EDIT
@@ -79,16 +86,32 @@ export default function AA2DoorHall() {
   );
 }
 
-const st = StyleSheet.create({
-  root: { flex: 1, backgroundColor: NAVY },
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * you can still read #0E1B33 and #D4A847 in this file, which is how LAW 1 is
+ * proved rather than promised. Every LIGHT value comes from the founder's own
+ * year-old two-mode file, where all ten surfaces sat on one cream ground and
+ * were told apart by the colour of the type, not the colour of the room.
+ *
+ * The SCRIM and the CARD TITLE do not switch. They sit on photographs, and a
+ * photograph is the same brightness in both modes — white type on a dark scrim
+ * is the only thing that reads over every one of these fourteen doors.
+ */
+const makeSt = (T: Tokens) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: dl(T, '#0E1B33', T.bg) },
   content: { padding: 14, paddingBottom: 40 },
-  eyebrow: { fontSize: 10, letterSpacing: 2, fontWeight: '700', color: GOLD, marginTop: 8, marginLeft: 2 },
-  title: { fontSize: 24, fontWeight: '800', color: INK, marginTop: 6, marginLeft: 2 },
-  sub: { fontSize: 12.5, color: MUT, marginTop: 8, marginBottom: 16, marginLeft: 2, lineHeight: 18 },
-  cta: { borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 18 },
-  ctaTxt: { color: '#8fd6ff', fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
+  eyebrow: { fontSize: 10.5, letterSpacing: 2, fontWeight: '700', color: dl(T, '#D4A847', T.gold), marginTop: 8, marginLeft: 2 },
+  title: { fontSize: 24, fontWeight: '800', color: dl(T, '#E8EEF5', T.ink), marginTop: 6, marginLeft: 2 },
+  sub: { fontSize: 13, color: dl(T, '#8A99AD', T.mut), marginTop: 8, marginBottom: 16, marginLeft: 2, lineHeight: 19 },
+  cta: {
+    borderWidth: 1,
+    borderColor:     dl(T, 'rgba(27,184,255,0.5)',  'rgba(42,127,170,0.55)'),
+    backgroundColor: dl(T, 'rgba(27,184,255,0.06)', 'rgba(42,127,170,0.08)'),
+    borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 18,
+  },
+  ctaTxt: { color: dl(T, '#8fd6ff', '#1f6a90'), fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  card: { width: '48.5%', height: 190, borderRadius: 14, overflow: 'hidden', marginBottom: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, justifyContent: 'flex-end' },
+  card: { width: '48.5%', height: 190, borderRadius: 14, overflow: 'hidden', marginBottom: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: dl(T, 'rgba(255,255,255,0.15)', T.line), justifyContent: 'flex-end' },
   cardImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
   cardScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.42)' },
   cardTitle: { color: '#fff', fontSize: 16, fontWeight: '800', padding: 12, textShadowColor: 'rgba(0,0,0,0.6)', textShadowRadius: 8 },

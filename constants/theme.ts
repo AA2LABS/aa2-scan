@@ -5,27 +5,30 @@
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
 
 export const Colors = {
-  // THE DARK INSTRUMENT LAW (2026-08-21) — AA2 has ONE panel and it is dark.
-  // `light` is kept only so any stray `Colors[scheme]` lookup still type-checks
-  // and still resolves to the panel. It is a mirror, not a mode. If a screen
-  // ever reaches for `light`, it gets the instrument panel, not a white page.
+  // TWO MODES. ONE BUTTON. THE WHOLE APP. — founder ruling 2026-08-22.
+  //
+  // CORRECTION LOGGED, NOT ERASED. From 2026-08-21 to 2026-08-22 `light` was a
+  // MIRROR of dark, under THE DARK INSTRUMENT LAW. That law is struck: he asked
+  // for light mode fixed, not deleted, and he had already designed both modes a
+  // year earlier. `light` is a real mode again, and every value below is lifted
+  // from his own file (lib/theme-mode.ts LIGHT) — none of it is invented here.
   light: {
-    text: '#ECEDEE',
-    background: '#0D0A04',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    text: '#1a1a1a',            // LIGHT.ink
+    background: '#F0EEE8',      // LIGHT.bg   — the page ground
+    tint: '#2a7faa',            // LIGHT.blue — the paired accent, not #0a7ea4
+    icon: 'rgba(0,0,0,0.55)',   // LIGHT.mut
+    tabIconDefault: 'rgba(0,0,0,0.38)', // LIGHT.faint
+    tabIconSelected: '#2a7faa',
   },
   dark: {
     text: '#ECEDEE',
     // #151718 was the template's grey. AA2's true ground is Earth #0D0A04 —
     // the default palette in app/(tabs)/index.tsx. No seam between the
-    // navigation ground and the screen ground.
+    // navigation ground and the screen ground. UNCHANGED by the two-mode work:
+    // dark is exactly what shipped, so nobody's app moves under them.
     background: '#0D0A04',
     tint: tintColorDark,
     icon: '#9BA1A6',

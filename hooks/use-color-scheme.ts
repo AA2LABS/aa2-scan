@@ -1,26 +1,33 @@
 /**
  * ─── hooks/use-color-scheme.ts ──────────────────────────────────────────────
- * THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
+ * THE MEMBER PICKS. NOT THE PHONE.
  *
- * AA2 is a dark instrument panel. Every screen in this app is hand-painted
- * against near-black (#0D0A04 Earth, #030D14 Ocean, #040D08 Alpine, #080808
- * Obsidian, #0F0A04 Desert) with white and gold type sitting on white-6%
- * glass. There is no light palette for those screens and there never was.
+ * FOUNDER, 2026-08-22:
+ *   "The member still picks because they are able to click the button that
+ *    chooses light or dark. If you make a light version, there is no fucking
+ *    mixing both light and dark. The whole app would be light. The whole app
+ *    would be dark. Done it before. A year ago. Tactical and K-9 are the only
+ *    dark everything."
  *
- * The stock Expo template shipped `userInterfaceStyle: automatic`, so when the
- * member's PHONE was set to Light, this hook returned 'light' and:
- *   - React Navigation painted DefaultTheme WHITE behind every route
- *   - useThemeColor() resolved Colors.light -> #fff background, #11181C text
- *   - the tab bar tint flipped to #0a7ea4
- *   - map.tsx flipped its 5 theme tokens to cream (#FAF7F2) while the other
- *     forty colours on that screen stayed white -> white text on cream
- *   - the splash flashed #ffffff before a black app
+ * ── CORRECTION, LOGGED NOT ERASED ──────────────────────────────────────────
+ * On 2026-08-21 he said "and fix light mode!" and this file was made to
+ * `return 'dark'` — THE DARK INSTRUMENT LAW. That law is STRUCK. He asked for
+ * light mode FIXED, not removed, and AA2 already had both modes fully designed
+ * a year earlier (`aa2_all10_both_modes_2.html`, ten surfaces, both modes).
+ * The reasoning behind the struck law survives in the build record; it is
+ * history now, not the standard. THE REGIME LAW.
  *
- * That is not a light mode. That is a leak. The panel is locked dark.
- *
- * LAW 1 HONOURED: this changes no screen's appearance, layout or copy. It
- * makes the app render AS DESIGNED on a light-mode phone. Rewire only.
+ * ── WHY THIS NO LONGER READS THE OS ────────────────────────────────────────
+ * The old leak was `useColorScheme()` from react-native reporting the PHONE's
+ * setting into an app that has its own panel. AA2 does not follow the phone.
+ * It follows the button. This hook is now the single choke point that reports
+ * what the MEMBER picked, so the tab layout, the collapsible, the parallax
+ * header and useThemeColor all move together — or none of them move.
  */
-export function useColorScheme(): 'dark' {
-  return 'dark';
+import { useThemeControl } from '@/lib/theme-mode';
+
+export function useColorScheme(): 'light' | 'dark' {
+  // .tokens, not .picked — a forced-dark route (K9 · Tactical) must report
+  // dark to every consumer, or the tab bar goes light under a dark screen.
+  return useThemeControl().tokens.mode;
 }

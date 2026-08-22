@@ -24,13 +24,21 @@
 // invent a signal. If the caller has nothing real, it should not be mounted.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Path, Ellipse, Defs, RadialGradient, Stop, Circle } from 'react-native-svg';
 
-const NAVY  = '#0E1B33';
-const INK   = '#E8EEF5';
-const FAINT = 'rgba(255,255,255,0.32)';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+});
 
 /** Channel values, all normalised 0..1, ordered slow → fast. */
 export type MembraneChannels = {
@@ -227,11 +235,14 @@ export function MembraneChannelMeters({
   labels?: Partial<Record<keyof MembraneChannels, string>>;
   accents?: Partial<Record<keyof MembraneChannels, string>>;
 }) {
+  const TH = useTheme();
+  const s = useMemo(() => make_s(TH), [TH]);
+
   const defLabels: Record<keyof MembraneChannels, string> = {
     slow: 'RECOVERY', drift: 'DRIFT', calm: 'CALM', active: 'ACTIVE', sharp: 'SHARP',
   };
   const defAccents: Record<keyof MembraneChannels, string> = {
-    slow: '#AA44FF', drift: '#7B6FA6', calm: '#1BB8FF', active: '#34D399', sharp: '#D4A847',
+    slow: '#AA44FF', drift: '#7B6FA6', calm: lc(TH, '#1BB8FF'), active: lc(TH, '#34D399'), sharp: lc(TH, '#D4A847'),
   };
   return (
     <View style={{ gap: 8 }}>
@@ -253,11 +264,27 @@ export function MembraneChannelMeters({
   );
 }
 
-const s = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_s = (T: Tokens) => {
+  const { NAVY, INK, FAINT } = pal(T);
+  return StyleSheet.create({
   meterRow:   { flexDirection: 'row', alignItems: 'center', gap: 8 },
   meterName:  { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 1.6, color: FAINT, width: 74 },
-  meterTrack: { width: 74, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.10)', overflow: 'hidden' },
+  meterTrack: { width: 74, height: 3, borderRadius: 2, backgroundColor: dl(T, 'rgba(255,255,255,0.10)', 'rgba(0,0,0,0.05)'), overflow: 'hidden' },
   meterFill:  { height: '100%', borderRadius: 2 },
 });
+};
 
-export { NAVY as MEMBRANE_NAVY, INK as MEMBRANE_INK };
+
+/**
+ * These two were exported as frozen dark hexes and NOTHING in the app imported
+ * them — checked before changing, not assumed. They are re-exported as token
+ * READERS so a future caller gets the mode the member picked instead of a
+ * colour frozen in 2025. Same values in dark; a light answer now exists.
+ */
+export const membraneNavy = (T: Tokens) => pal(T).NAVY;
+export const membraneInk  = (T: Tokens) => pal(T).INK;

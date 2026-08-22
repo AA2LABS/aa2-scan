@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, Pressable, TextInput, ActivityIndicator, RefreshControl,
   Image, Alert, Share,
@@ -10,14 +10,28 @@ import { loadMemberProfile, buildPersonalTruth, logMembraneEvent, getMembraneEve
 import { streamClaude } from '../../lib/claude-stream';
 import { conciergeVoice, VOICE_MODEL } from '../../lib/voices';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CONCIERGE — Intelligence 0X01 · The Voice · Broca's Area
 // Door first, then the function list — every string from the approved door HTML.
 // Javier speaks live. Rows seed the ask. No dead ends.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  GOLD: dl(T, '#D4A847', '#b8861e'),
+});
 
 type FnRow = { icon: string; title: string; sub: string; seed?: string; route?: Href };
 
@@ -123,6 +137,10 @@ function deriveBoard(events: any[]): { trips: TripTile[]; langs: LangTile[] } {
 }
 
 export default function ConciergeScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [doorOpen, setDoorOpen] = useState(false);
   const [profile, setProfile] = useState<FullMemberProfile | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -245,7 +263,7 @@ export default function ConciergeScreen() {
           withoutLabel="WITHOUT"
           withoutText="Navigating everything alone. No memory. No continuity."
           openLabel="Meet the Concierge →"
-          accent={GOLD}
+          accent={C.GOLD}
           onOpen={() => setDoorOpen(true)}
         />
       </ScrollView>
@@ -258,7 +276,7 @@ export default function ConciergeScreen() {
       <ScrollView
         style={st.root}
         contentContainerStyle={{ paddingBottom: 40 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GOLD} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.GOLD} />}
       >
         <View style={st.subhead}>
           <Pressable onPress={() => setSurface('hub')} hitSlop={8}>
@@ -299,7 +317,7 @@ export default function ConciergeScreen() {
                 value={tripInput}
                 onChangeText={setTripInput}
                 placeholder="ADD A TRIP"
-                placeholderTextColor={FAINT}
+                placeholderTextColor={C.FAINT}
                 onSubmitEditing={addTrip}
                 returnKeyType="done"
               />
@@ -337,7 +355,7 @@ export default function ConciergeScreen() {
                 value={langInput}
                 onChangeText={setLangInput}
                 placeholder="ADD LANGUAGE"
-                placeholderTextColor={FAINT}
+                placeholderTextColor={C.FAINT}
                 onSubmitEditing={addLang}
                 returnKeyType="done"
               />
@@ -354,7 +372,7 @@ export default function ConciergeScreen() {
       ref={scrollRef}
       style={st.root}
       contentContainerStyle={{ paddingBottom: 40 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GOLD} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.GOLD} />}
     >
       <View style={st.subhead}>
         <Text style={st.subheadL}>◆ THE CONCIERGE</Text>
@@ -371,7 +389,7 @@ export default function ConciergeScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder="speak or type anything…"
-            placeholderTextColor={FAINT}
+            placeholderTextColor={C.FAINT}
             onSubmitEditing={() => runQuery()}
             returnKeyType="send"
           />
@@ -383,7 +401,7 @@ export default function ConciergeScreen() {
 
       {(asking || answer) ? (
         <View style={st.answer}>
-          {asking && !answer ? <ActivityIndicator color={GOLD} /> : null}
+          {asking && !answer ? <ActivityIndicator color={C.GOLD} /> : null}
           {answer ? <Text style={st.answerTxt}>{answer}</Text> : null}
         </View>
       ) : null}
@@ -428,22 +446,24 @@ export default function ConciergeScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { NAVY, INK, MUT, FAINT, LINE, GOLD } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   subhead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 54, paddingBottom: 4 },
   subheadL: { fontFamily: 'DMMono-Medium', fontSize: 10, letterSpacing: 1.5, color: GOLD },
   subheadR: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: MUT },
 
   ask: {
-    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: 'rgba(212,168,71,0.5)',
-    backgroundColor: 'rgba(212,168,71,0.06)', borderRadius: 12, padding: 15,
+    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.5)', 'rgba(184,134,30,0.5)'),
+    backgroundColor: dl(T, 'rgba(212,168,71,0.06)', 'rgba(184,134,30,0.06)'), borderRadius: 12, padding: 15,
   },
-  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: '#e8c887' },
+  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: dl(T, '#e8c887', '#8A6410') },
   askRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
   askInput: { flex: 1, color: INK, fontFamily: 'DMSans-Regular', fontSize: 13, paddingVertical: 4 },
 
   answer: {
-    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.07)',
+    marginHorizontal: 14, marginBottom: 4, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 14,
   },
   answerTxt: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, lineHeight: 19 },
@@ -452,7 +472,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: GOLD, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },
@@ -462,10 +482,10 @@ const st = StyleSheet.create({
 
   action: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(212,168,71,0.5)', backgroundColor: 'rgba(212,168,71,0.08)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.5)', 'rgba(184,134,30,0.5)'), backgroundColor: dl(T, 'rgba(212,168,71,0.08)', 'rgba(184,134,30,0.08)'),
     borderRadius: 12, paddingVertical: 15,
   },
-  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: '#e8c887' },
+  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: dl(T, '#e8c887', '#8A6410') },
 
   note: {
     fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
@@ -479,29 +499,29 @@ const st = StyleSheet.create({
   },
   vbTopLbl: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 1.5, color: MUT },
   vbBtn: {
-    borderWidth: 1, borderColor: 'rgba(212,168,71,0.5)', backgroundColor: 'rgba(212,168,71,0.08)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.5)', 'rgba(184,134,30,0.5)'), backgroundColor: dl(T, 'rgba(212,168,71,0.08)', 'rgba(184,134,30,0.08)'),
     borderRadius: 9, paddingVertical: 7, paddingHorizontal: 12,
   },
-  vbBtnTxt: { fontFamily: 'DMMono-Medium', fontSize: 9.5, letterSpacing: 1.2, color: '#e8c887' },
+  vbBtnTxt: { fontFamily: 'DMMono-Medium', fontSize: 9.5, letterSpacing: 1.2, color: dl(T, '#e8c887', '#8A6410') },
   tileGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   tile: {
     width: '47.5%', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 12, padding: 10, overflow: 'hidden',
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderRadius: 12, padding: 10, overflow: 'hidden',
   },
   tileDashed: {
-    borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(27,184,255,0.45)',
+    borderWidth: 1, borderStyle: 'dashed', borderColor: dl(T, 'rgba(27,184,255,0.45)', 'rgba(42,127,170,0.45)'),
     backgroundColor: 'transparent', alignItems: 'center', justifyContent: 'center', minHeight: 132,
   },
   tileCover: { width: '100%', height: 76, borderRadius: 8, marginBottom: 8 },
   tileFlagBox: {
     width: '100%', height: 76, borderRadius: 8, marginBottom: 8,
-    backgroundColor: 'rgba(255,255,255,0.07)', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), alignItems: 'center', justifyContent: 'center',
   },
   tileFlag: { fontSize: 40 },
   tileName: { fontFamily: 'DMSans-Regular', fontSize: 13.5, fontWeight: '700', color: INK },
-  tileSub: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: '#e8c887', marginTop: 4 },
+  tileSub: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: dl(T, '#e8c887', '#8A6410'), marginTop: 4 },
   tileSubFaint: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT, marginTop: 4 },
-  tileAddPlus: { fontSize: 26, color: '#1BB8FF', marginBottom: 2 },
+  tileAddPlus: { fontSize: 26, color: dl(T, '#1BB8FF', '#2a7faa'), marginBottom: 2 },
   tileInput: {
     fontFamily: 'DMMono-Regular', fontSize: 10.5, letterSpacing: 1, color: INK,
     textAlign: 'center', paddingVertical: 4, minWidth: 110,
@@ -511,3 +531,4 @@ const st = StyleSheet.create({
     lineHeight: 15, marginTop: 12,
   },
 });
+};

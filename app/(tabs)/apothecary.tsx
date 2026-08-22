@@ -1,7 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 import {
   ActivityIndicator,
   Alert,
@@ -324,6 +325,9 @@ type StackItem = { id: string; name: string };
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 export default function ApothecaryScreen() {
+  const TH = useTheme();
+  const s = useMemo(() => make_s(TH), [TH]);
+
   const { width: screenW, height: screenH } = useWindowDimensions();
   const frameW      = Math.min(screenW * 0.68, 300);
   const frameH      = frameW * 0.58;
@@ -689,8 +693,8 @@ export default function ApothecaryScreen() {
       <View style={s.modeStrip}>
         {MODES.map(m => {
           const isHarv = m.id === 'harvest';
-          const activeColor = isHarv ? '#E8873A' : C.teal;
-          const activeBg    = isHarv ? 'rgba(232,135,58,0.13)' : C.tealDim;
+          const activeColor = isHarv ? lc(TH, '#E8873A') : C.teal;
+          const activeBg    = isHarv ? lc(TH, 'rgba(232,135,58,0.13)') : C.tealDim;
           return (
             <TouchableOpacity
               key={m.id}
@@ -866,11 +870,11 @@ export default function ApothecaryScreen() {
                     <TouchableOpacity
                       key={sm}
                       style={[s.foragerSubBtn,
-                        active && { borderColor: isHarv ? '#E8873A' : C.teal, backgroundColor: isHarv ? 'rgba(232,135,58,0.13)' : C.tealDim },
+                        active && { borderColor: isHarv ? lc(TH, '#E8873A') : C.teal, backgroundColor: isHarv ? lc(TH, 'rgba(232,135,58,0.13)') : C.tealDim },
                       ]}
                       onPress={() => { setForagerSubMode(sm); clearResult(); setForagerQuery(''); }}
                     >
-                      <Text style={[s.foragerSubBtnText, active && { color: isHarv ? '#E8873A' : C.teal }]}>
+                      <Text style={[s.foragerSubBtnText, active && { color: isHarv ? lc(TH, '#E8873A') : C.teal }]}>
                         {sm === 'identify' ? 'IDENTIFY' : sm === 'scan_label' ? 'SCAN LABEL' : sm === 'water_body' ? 'WATER BODY' : 'HARVEST'}
                       </Text>
                     </TouchableOpacity>
@@ -881,10 +885,10 @@ export default function ApothecaryScreen() {
 
             {(foragerSubMode === 'harvest' ? !!harvestResult : hasResult) && !loading ? (
               <TouchableOpacity
-                style={[s.resetBar, { borderColor: foragerSubMode === 'harvest' ? '#E8873A' : C.teal }]}
+                style={[s.resetBar, { borderColor: foragerSubMode === 'harvest' ? lc(TH, '#E8873A') : C.teal }]}
                 onPress={() => { clearResult(); setForagerQuery(''); }}
               >
-                <Text style={[s.resetBarText, { color: foragerSubMode === 'harvest' ? '#E8873A' : C.teal }]}>
+                <Text style={[s.resetBarText, { color: foragerSubMode === 'harvest' ? lc(TH, '#E8873A') : C.teal }]}>
                   {foragerSubMode === 'harvest' ? '🦌  IDENTIFY ANOTHER HARVEST' : '🌿  IDENTIFY ANOTHER FIND'}
                 </Text>
               </TouchableOpacity>
@@ -898,13 +902,13 @@ export default function ApothecaryScreen() {
 
                 <TouchableOpacity
                   style={[s.scanCameraBtn, {
-                    borderColor:     foragerSubMode === 'harvest' ? '#E8873A' : C.teal,
-                    backgroundColor: foragerSubMode === 'harvest' ? 'rgba(232,135,58,0.10)' : C.tealDim,
+                    borderColor:     foragerSubMode === 'harvest' ? lc(TH, '#E8873A') : C.teal,
+                    backgroundColor: foragerSubMode === 'harvest' ? lc(TH, 'rgba(232,135,58,0.10)') : C.tealDim,
                   }]}
                   onPress={openCamera}
                 >
                   <Text style={s.scanCameraBtnIcon}>📷</Text>
-                  <Text style={[s.scanCameraBtnLabel, { color: foragerSubMode === 'harvest' ? '#E8873A' : C.teal }]}>
+                  <Text style={[s.scanCameraBtnLabel, { color: foragerSubMode === 'harvest' ? lc(TH, '#E8873A') : C.teal }]}>
                     {foragerSubMode === 'harvest' ? 'PHOTOGRAPH YOUR HARVEST' : 'FRAME YOUR WILD FIND'}
                   </Text>
                 </TouchableOpacity>
@@ -928,7 +932,7 @@ export default function ApothecaryScreen() {
                 />
                 <TouchableOpacity
                   style={[s.runBtn,
-                    foragerSubMode === 'harvest' && { backgroundColor: '#E8873A', opacity: foragerQuery.trim() ? 1 : 0.4 },
+                    foragerSubMode === 'harvest' && { backgroundColor: lc(TH, '#E8873A'), opacity: foragerQuery.trim() ? 1 : 0.4 },
                   ]}
                   onPress={handleRun}
                   disabled={foragerSubMode === 'harvest' && !foragerQuery.trim() || loading}
@@ -942,8 +946,8 @@ export default function ApothecaryScreen() {
 
             {/* Harvest plain-text result */}
             {foragerSubMode === 'harvest' && !!harvestResult && !loading && (
-              <View style={[s.intelBlock, { borderLeftColor: '#E8873A', marginTop: 12 }]}>
-                <Text style={[s.intelTag, { color: '#E8873A' }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
+              <View style={[s.intelBlock, { borderLeftColor: lc(TH, '#E8873A'), marginTop: 12 }]}>
+                <Text style={[s.intelTag, { color: lc(TH, '#E8873A') }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
                 <Text style={[s.prose, { lineHeight: 22, fontSize: 14 }]}>{harvestResult}</Text>
               </View>
             )}
@@ -956,10 +960,10 @@ export default function ApothecaryScreen() {
             {!!harvestResult && !loading ? (
               <>
                 <TouchableOpacity
-                  style={[s.resetBar, { borderColor: '#E8873A' }]}
+                  style={[s.resetBar, { borderColor: lc(TH, '#E8873A') }]}
                   onPress={() => { clearResult(); setHarvestQuery(''); }}
                 >
-                  <Text style={[s.resetBarText, { color: '#E8873A' }]}>
+                  <Text style={[s.resetBarText, { color: lc(TH, '#E8873A') }]}>
                     🦌  IDENTIFY ANOTHER HARVEST
                   </Text>
                 </TouchableOpacity>
@@ -967,20 +971,20 @@ export default function ApothecaryScreen() {
                 {/* CWD Status card — rendered FIRST */}
                 {(() => {
                   const upper = harvestResult.toUpperCase();
-                  let cwdColor = '#1BB8FF';
+                  let cwdColor = lc(TH, '#1BB8FF');
                   let cwdLabel = 'NOT APPLICABLE';
-                  let cwdBg    = 'rgba(27,184,255,0.08)';
-                  let cwdBorder= 'rgba(27,184,255,0.30)';
+                  let cwdBg    = lc(TH, 'rgba(27,184,255,0.08)');
+                  let cwdBorder= lc(TH, 'rgba(27,184,255,0.30)');
                   if (upper.includes('CASES DETECTED')) {
-                    cwdColor  = '#E05252';
+                    cwdColor  = lc(TH, '#E05252');
                     cwdLabel  = 'CWD · CASES DETECTED';
-                    cwdBg     = 'rgba(224,82,82,0.10)';
-                    cwdBorder = 'rgba(224,82,82,0.40)';
+                    cwdBg     = lc(TH, 'rgba(224,82,82,0.10)');
+                    cwdBorder = lc(TH, 'rgba(224,82,82,0.40)');
                   } else if (upper.includes('LOW RISK')) {
-                    cwdColor  = '#1D9E75';
+                    cwdColor  = lc(TH, '#1D9E75');
                     cwdLabel  = 'CWD · LOW RISK';
-                    cwdBg     = 'rgba(29,158,117,0.10)';
-                    cwdBorder = 'rgba(29,158,117,0.35)';
+                    cwdBg     = lc(TH, 'rgba(29,158,117,0.10)');
+                    cwdBorder = lc(TH, 'rgba(29,158,117,0.35)');
                   }
                   const cwdStart = harvestResult.search(/CWD STATUS/i);
                   const cwdEnd   = harvestResult.indexOf('━━━', cwdStart + 10);
@@ -1002,8 +1006,8 @@ export default function ApothecaryScreen() {
                 })()}
 
                 {/* Full intel block */}
-                <View style={[s.intelBlock, { borderLeftColor: '#E8873A', marginTop: 8 }]}>
-                  <Text style={[s.intelTag, { color: '#E8873A' }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
+                <View style={[s.intelBlock, { borderLeftColor: lc(TH, '#E8873A'), marginTop: 8 }]}>
+                  <Text style={[s.intelTag, { color: lc(TH, '#E8873A') }]}>🦌 HUNTER INTELLIGENCE · HARVEST ANALYSIS</Text>
                   {harvestResult.split('\n').map((line, i) => {
                     const trimmed = line.trim();
                     const isHeader = /^[A-Z][A-Z &]+:$/.test(trimmed) || /^━+$/.test(trimmed) || trimmed === 'CWD STATUS';
@@ -1011,7 +1015,7 @@ export default function ApothecaryScreen() {
                       <Text
                         key={i}
                         style={isHeader
-                          ? [s.intelTag, { color: '#E8873A', marginTop: 10, marginBottom: 2 }]
+                          ? [s.intelTag, { color: lc(TH, '#E8873A'), marginTop: 10, marginBottom: 2 }]
                           : [s.prose, { lineHeight: 22, fontSize: 14 }]}
                       >
                         {line}
@@ -1025,13 +1029,13 @@ export default function ApothecaryScreen() {
                 {/* Header card */}
                 <View style={{
                   flexDirection: 'row', alignItems: 'center', gap: 10,
-                  backgroundColor: 'rgba(232,135,58,0.08)', borderRadius: 10,
-                  borderWidth: 1, borderColor: 'rgba(232,135,58,0.25)',
+                  backgroundColor: lc(TH, 'rgba(232,135,58,0.08)'), borderRadius: 10,
+                  borderWidth: 1, borderColor: lc(TH, 'rgba(232,135,58,0.25)'),
                   padding: 14, marginBottom: 16,
                 }}>
                   <Text style={{ fontSize: 24 }}>🦌</Text>
                   <View>
-                    <Text style={[s.fieldLabel, { color: '#E8873A', marginBottom: 2 }]}>THE HUNTER</Text>
+                    <Text style={[s.fieldLabel, { color: lc(TH, '#E8873A'), marginBottom: 2 }]}>THE HUNTER</Text>
                     <Text style={[s.fieldLabel, { color: C.dim, letterSpacing: 1 }]}>HARVEST INTELLIGENCE</Text>
                   </View>
                 </View>
@@ -1040,13 +1044,13 @@ export default function ApothecaryScreen() {
 
                 <TouchableOpacity
                   style={[s.scanCameraBtn, {
-                    borderColor: '#E8873A',
-                    backgroundColor: 'rgba(232,135,58,0.10)',
+                    borderColor: lc(TH, '#E8873A'),
+                    backgroundColor: lc(TH, 'rgba(232,135,58,0.10)'),
                   }]}
                   onPress={openCamera}
                 >
                   <Text style={s.scanCameraBtnIcon}>📷</Text>
-                  <Text style={[s.scanCameraBtnLabel, { color: '#E8873A' }]}>PHOTOGRAPH YOUR HARVEST →</Text>
+                  <Text style={[s.scanCameraBtnLabel, { color: lc(TH, '#E8873A') }]}>PHOTOGRAPH YOUR HARVEST →</Text>
                 </TouchableOpacity>
 
                 <Text style={s.orDivider}>— or describe it —</Text>
@@ -1078,7 +1082,7 @@ export default function ApothecaryScreen() {
 
                 <TouchableOpacity
                   style={[s.runBtn, {
-                    backgroundColor: '#E8873A',
+                    backgroundColor: lc(TH, '#E8873A'),
                     opacity: harvestQuery.trim() ? 1 : 0.4,
                   }]}
                   onPress={handleRun}
@@ -1380,7 +1384,13 @@ export default function ApothecaryScreen() {
 }
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────
-const s = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_s = (T: Tokens) => {
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
 
   header: {
@@ -1471,11 +1481,11 @@ const s = StyleSheet.create({
     borderRadius: 8, color: C.white, fontFamily: F.mono, fontSize: 13, padding: 12, marginBottom: 12,
   },
   runBtn: { paddingVertical: 14, borderRadius: 8, alignItems: 'center', backgroundColor: C.teal, marginTop: 2 },
-  runBtnText: { fontFamily: F.mono, fontSize: 11, color: '#03050A', letterSpacing: 2, fontWeight: '600' },
+  runBtnText: { fontFamily: F.mono, fontSize: 11, color: dl(T, '#03050A', '#F0EEE8'), letterSpacing: 2, fontWeight: '600' },
 
   rowInput: { flexDirection: 'row', gap: 8, alignItems: 'center', marginBottom: 8 },
   addBtn: { width: 46, height: 46, borderRadius: 8, backgroundColor: C.teal, justifyContent: 'center', alignItems: 'center' },
-  addBtnText: { color: '#03050A', fontSize: 26, fontWeight: '700', lineHeight: 30, fontFamily: F.mono },
+  addBtnText: { color: dl(T, '#03050A', '#F0EEE8'), fontSize: 26, fontWeight: '700', lineHeight: 30, fontFamily: F.mono },
 
   stackRow: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: C.glass,
@@ -1588,8 +1598,10 @@ const s = StyleSheet.create({
   camDoctrine:   { fontSize: 9, letterSpacing: 2, fontFamily: Platform.OS === 'ios' ? 'Courier New' : 'monospace', marginBottom: 8 },
   camHint:       { fontWeight: '900', fontSize: 12, letterSpacing: 2 },
   camControls:   { alignItems: 'center', width: '100%' },
-  captureOuter:  { borderWidth: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.08)', marginBottom: 20 },
+  captureOuter:  { borderWidth: 4, alignItems: 'center', justifyContent: 'center', backgroundColor: dl(T, 'rgba(255,255,255,0.08)', 'rgba(0,0,0,0.04)'), marginBottom: 20 },
   captureInner:  {},
-  camCancelBtn:  { paddingVertical: 12, paddingHorizontal: 28, borderRadius: 10, borderWidth: 1, borderColor: 'rgba(255,255,255,0.20)' },
-  camCancelText: { color: 'rgba(255,255,255,0.60)', fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
+  camCancelBtn:  { paddingVertical: 12, paddingHorizontal: 28, borderRadius: 10, borderWidth: 1, borderColor: dl(T, 'rgba(255,255,255,0.20)', 'rgba(0,0,0,0.14)') },
+  camCancelText: { color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'), fontSize: 12, fontWeight: '800', letterSpacing: 1.5 },
 });
+};
+

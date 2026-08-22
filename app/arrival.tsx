@@ -1,6 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { router, type Href } from 'expo-router';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 import {
   Dimensions,
   FlatList,
@@ -187,6 +188,9 @@ function Slide({
       hands control back instead of routing. */
   onComplete?: () => void;
 }) {
+  const TH = useTheme();
+  const sl = useMemo(() => make_sl(TH), [TH]);
+
   const finish = async () => {
     await markArrivalDone();
     if (onComplete) { onComplete(); return; }
@@ -234,14 +238,14 @@ function Slide({
         </View>
 
         {/* WITH card */}
-        <View style={[sl.panelWith, { borderLeftColor: item.accentColor }]}>
-          <Text style={[sl.labelWith, { color: item.accentColor }]}>WITH</Text>
+        <View style={[sl.panelWith, { borderLeftColor: lc(TH, item.accentColor) }]}>
+          <Text style={[sl.labelWith, { color: lc(TH, item.accentColor) }]}>WITH</Text>
           <Text style={sl.panelText}>{item.with}</Text>
         </View>
 
         {/* Action button */}
         <TouchableOpacity
-          style={[sl.btn, { backgroundColor: item.buttonColor }]}
+          style={[sl.btn, { backgroundColor: lc(TH, item.buttonColor) }]}
           onPress={handleButton}
           activeOpacity={0.85}
         >
@@ -261,7 +265,13 @@ function Slide({
   );
 }
 
-const sl = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_sl = (T: Tokens) => {
+  return StyleSheet.create({
   root: {
     width: SCREEN_W,
     height: SLIDE_H,
@@ -300,7 +310,7 @@ const sl = StyleSheet.create({
   tag: {
     fontFamily: F.mono,
     fontSize: 9,
-    color: 'rgba(255,255,255,0.60)',
+    color: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'),
     letterSpacing: 3,
     marginBottom: 6,
   },
@@ -314,7 +324,7 @@ const sl = StyleSheet.create({
   role: {
     fontFamily: F.sans,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.70)',
+    color: dl(T, 'rgba(255,255,255,0.70)', 'rgba(0,0,0,0.66)'),
     marginBottom: 20,
   },
   panelWithout: {
@@ -322,7 +332,7 @@ const sl = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     borderLeftWidth: 2,
-    borderLeftColor: '#E05252',
+    borderLeftColor: dl(T, '#E05252', '#C0392B'),
     marginBottom: 10,
   },
   panelWith: {
@@ -335,7 +345,7 @@ const sl = StyleSheet.create({
   labelWithout: {
     fontFamily: F.monoMd,
     fontSize: 11,
-    color: '#E05252',
+    color: dl(T, '#E05252', '#C0392B'),
     letterSpacing: 2,
     marginBottom: 6,
   },
@@ -348,7 +358,7 @@ const sl = StyleSheet.create({
   panelText: {
     fontFamily: F.sans,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.85)',
+    color: dl(T, 'rgba(255,255,255,0.85)', 'rgba(0,0,0,0.82)'),
     lineHeight: 20,
   },
   btn: {
@@ -359,7 +369,7 @@ const sl = StyleSheet.create({
   btnText: {
     fontFamily: F.monoMd,
     fontSize: 13,
-    color: '#03050A',
+    color: dl(T, '#03050A', '#F0EEE8'),
     letterSpacing: 1.5,
   },
   skipBtn: {
@@ -372,13 +382,18 @@ const sl = StyleSheet.create({
   skipText: {
     fontFamily: F.mono,
     fontSize: 10,
-    color: 'rgba(255,255,255,0.65)',
+    color: dl(T, 'rgba(255,255,255,0.65)', 'rgba(0,0,0,0.55)'),
     letterSpacing: 2,
   },
 });
+};
+
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function ArrivalScreen({ onComplete }: { onComplete?: () => void } = {}) {
+  const TH = useTheme();
+  const s = useMemo(() => make_s(TH), [TH]);
+
   const { width: SCREEN_W } = useWindowDimensions();
   const flatRef = useRef<FlatList>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -435,10 +450,16 @@ export default function ArrivalScreen({ onComplete }: { onComplete?: () => void 
   );
 }
 
-const s = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_s = (T: Tokens) => {
+  return StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#03050A',
+    backgroundColor: dl(T, '#03050A', '#F0EEE8'),
   },
   dots: {
     position: 'absolute',
@@ -459,6 +480,8 @@ const s = StyleSheet.create({
     width: 18,
   },
   dotInactive: {
-    backgroundColor: 'rgba(255,255,255,0.30)',
+    backgroundColor: dl(T, 'rgba(255,255,255,0.30)', 'rgba(0,0,0,0.34)'),
   },
 });
+};
+

@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo:*)",
+      "Bash(eas build:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(wc -l /Users/jamespitts/Downloads/aa2-scan/app/\\\\\\(tabs\\\\\\)/onboarding.tsx)",
+      "Bash(head -80 /Users/jamespitts/Downloads/aa2-scan/app/\\\\\\(tabs\\\\\\)/onboarding.tsx)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(k\\) for k in d.get\\(''''dependencies'''',{}\\).keys\\(\\)]\")",
+      "Bash(find /Users/jamespitts/Downloads/aa2-scan/node_modules -name AsyncStorage* -maxdepth 4)",
+      "Bash(find /Users/jamespitts/Downloads/aa2-scan/node_modules -path */async-storage* -name package.json)",
+      "Bash(find /Users/jamespitts/Downloads/aa2-scan -name *.json)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); fonts=d.get\\(''''expo'''',{}\\).get\\(''''fonts'''',[]\\); [print\\(f\\) for f in fonts]\")",
+      "Bash(find /Users/jamespitts/Downloads/aa2-scan -name *.ttf -o -name *.otf)",
+      "Bash(find /Users/jamespitts/Downloads/aa2-scan/node_modules/@expo-google-fonts -maxdepth 2 -name *.ttf)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\(''''expo'''',{}\\), indent=2\\)\\)\")",
+      "Bash(find /Users/jamespitts/Downloads/aa2-scan -name app.config.*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(sips -s format jpeg -s formatOptions 75 /Users/jamespitts/Downloads/aa2-scan/assets/images/fish_hero.png --out /Users/jamespitts/Downloads/aa2-scan/assets/images/fish_hero.jpg)",
+      "Bash(cp ~/Downloads/k9_hero.jpg /Users/jamespitts/Downloads/aa2-scan/assets/images/k9_hero.jpg)",
+      "Bash(cp ~/Downloads/equine_hero.jpg /Users/jamespitts/Downloads/aa2-scan/assets/images/equine_hero.jpg)",
+      "Bash(cp ~/Downloads/cattle_hero.jpg /Users/jamespitts/Downloads/aa2-scan/assets/images/cattle_hero.jpg)",
+      "Bash(unzip:*)",
+      "Bash(pip3 install:*)",
+      "Bash(python3 -c \"from PIL import Image; img = Image.open\\(''/Users/jamespitts/Downloads/aa2-scan/ADAPTIL _ Sept 2022 _ Understanding Dog and Cat Relationships - a Poochs Point of View!-2.webp''\\).convert\\(''RGB''\\); img.save\\(''/Users/jamespitts/Downloads/aa2-scan/assets/images/k9_feline_hero.jpg'', ''JPEG'', quality=85\\); print\\(''done''\\)\")",
+      "Bash(python3:*)",
+      "Bash(find /Users/jamespitts/Desktop -name *Screenshot*3.04*)",
+      "Bash(find /Users/jamespitts/Desktop -name *aa2* -o -name *AA2*)",
+      "Bash(find '/Users/jamespitts/Desktop/AA2 APP ' -name *Screenshot*)",
+      "Bash(find '/Users/jamespitts/Desktop/AA2 APP ' -name *.png)",
+      "Bash(jobs -l)",
+      "Bash(cp ~/Downloads/stories.tsx /Users/jamespitts/Downloads/aa2-scan/app/stories.tsx)",
+      "Bash(git -C /Users/jamespitts/Downloads/aa2-scan add app/stories.tsx)",
+      "Bash(git -C /Users/jamespitts/Downloads/aa2-scan commit -m \"feat: 7-door stories screen — Canon v43\")",
+      "Bash(security find-internet-password *)",
+      "Bash(security find-generic-password *)"
+    ]
+  }
+}

@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator, Alert, Image, SafeAreaView, ScrollView, StyleSheet,
   Text, TextInput, TouchableOpacity, View,
 } from 'react-native';
 import { router } from 'expo-router';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 import {
   buildPersonalTruth, loadMemberProfile, logAwareDollarsFollowed,
   logMembraneEvent, getMembraneEvents,
@@ -117,6 +118,9 @@ async function callAficionado(system: string, userContent: string): Promise<stri
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 export default function AficionadoScreen() {
+  const TH = useTheme();
+  const s = useMemo(() => make_s(TH), [TH]);
+
   const [doorOpen, setDoorOpen] = useState(false);
   const [armed, setArmed] = useState<boolean | null>(null); // null = checking
 
@@ -348,8 +352,8 @@ export default function AficionadoScreen() {
                 <Text style={s.vaultLabel}>💰  AWARE DOLLARS</Text>
                 <Text style={s.vaultBody}>{result.actRightDollars}</Text>
                 {logState === 'logged' ? (
-                  <View style={[s.followBtn, { borderColor: '#8fd6ff' }]}>
-                    <Text style={[s.followTxt, { color: '#8fd6ff' }]}>✓ LOGGED TO VAULT</Text>
+                  <View style={[s.followBtn, { borderColor: lc(TH, '#8fd6ff') }]}>
+                    <Text style={[s.followTxt, { color: lc(TH, '#8fd6ff') }]}>✓ LOGGED TO VAULT</Text>
                   </View>
                 ) : logState === 'failed' ? (
                   <TouchableOpacity style={[s.followBtn, { borderColor: C.gold }]} onPress={follow}>
@@ -373,7 +377,13 @@ export default function AficionadoScreen() {
   );
 }
 
-const s = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_s = (T: Tokens) => {
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
 
   // Door
@@ -387,7 +397,7 @@ const s = StyleSheet.create({
   doorTitle: { fontFamily: F.display, fontSize: 52, color: '#fff', letterSpacing: 3, marginBottom: 10 },
   doorSub: { fontFamily: F.serif, fontSize: 17, color: C.dim, lineHeight: 24, marginBottom: 24 },
   doorBtn: { borderRadius: 12, paddingVertical: 16, alignItems: 'center' },
-  doorBtnTxt: { fontFamily: F.mono, fontSize: 12, color: '#03050A', letterSpacing: 2, fontWeight: '600' },
+  doorBtnTxt: { fontFamily: F.mono, fontSize: 12, color: dl(T, '#03050A', '#F0EEE8'), letterSpacing: 2, fontWeight: '600' },
 
   // Header
   header: { alignItems: 'center', paddingTop: 10, paddingBottom: 12, paddingHorizontal: 20, borderBottomWidth: 1, borderBottomColor: C.border },
@@ -420,7 +430,7 @@ const s = StyleSheet.create({
   micBtn: { width: 46, height: 46, borderRadius: 8, borderWidth: 1, borderColor: C.borderSoft, backgroundColor: C.glass, justifyContent: 'center', alignItems: 'center' },
   micTxt: { fontSize: 18 },
   runBtn: { paddingVertical: 14, borderRadius: 8, alignItems: 'center', backgroundColor: ACCENT, marginTop: 2 },
-  runBtnText: { fontFamily: F.mono, fontSize: 11, color: '#03050A', letterSpacing: 2, fontWeight: '600' },
+  runBtnText: { fontFamily: F.mono, fontSize: 11, color: dl(T, '#03050A', '#F0EEE8'), letterSpacing: 2, fontWeight: '600' },
 
   loadingCard: { marginHorizontal: 12, marginVertical: 12, padding: 32, backgroundColor: C.card, borderRadius: 14, borderWidth: 1, borderColor: C.border, alignItems: 'center' },
   loadingLabel: { fontFamily: F.mono, fontSize: 11, color: ACCENT, letterSpacing: 2.5, marginTop: 16, textAlign: 'center' },
@@ -448,3 +458,5 @@ const s = StyleSheet.create({
   followBtn: { marginTop: 14, paddingVertical: 12, borderRadius: 8, borderWidth: 1.5, alignItems: 'center' },
   followTxt: { fontFamily: F.mono, fontSize: 11, letterSpacing: 1.5, fontWeight: '600' },
 });
+};
+

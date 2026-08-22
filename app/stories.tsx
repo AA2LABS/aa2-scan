@@ -4,7 +4,7 @@
  * Canon v44 · April 13, 2026 · SEALED
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, ImageBackground, useWindowDimensions, StatusBar,
@@ -12,8 +12,17 @@ import {
 import { useRouter } from 'expo-router';
 import Svg, { Rect, Line, Circle, Path, G } from 'react-native-svg';
 
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 const CARD_HEIGHT = 230;
 
+/**
+ * ─── THE SEVEN STORY GRAPHICS ───────────────────────────────────────────────
+ * These are ILLUSTRATIONS, not chrome. Each draws on its own dark card
+ * (fill="#0A0F1A") the way a photograph carries its own light, and each is
+ * viewed the same way in both modes. They are deliberately NOT repainted:
+ * changing the art is an edit, and LAW 1 says rewire only. If the founder
+ * wants light-mode artwork, that is NEW ART — not a token swap.
+ */
 const ScannerGraphic = ({ cardW }: { cardW: number }) => (
   <Svg width={cardW} height={CARD_HEIGHT} viewBox={`0 0 ${cardW} ${CARD_HEIGHT}`}>
     <Rect width={cardW} height={CARD_HEIGHT} fill="#0A0F1A" rx={12} />
@@ -137,45 +146,51 @@ const DOORS: DoorConfig[] = [
 ];
 
 interface PhotoCardProps { door: DoorConfig; cardW: number; onPress: () => void; }
-const PhotoCard = ({ door, cardW, onPress }: PhotoCardProps) => (
-  <TouchableOpacity style={[styles.cardWrapper, { borderColor: door.accentColor + '30' }]} onPress={onPress} activeOpacity={0.82}>
+const PhotoCard = ({ door, cardW, onPress }: PhotoCardProps) => {
+  const TH = useTheme();
+  const styles = useMemo(() => make_styles(TH), [TH]);
+  return (
+  <TouchableOpacity style={[styles.cardWrapper, { borderColor: lc(TH, door.accentColor) + '30' }]} onPress={onPress} activeOpacity={0.82}>
     <ImageBackground source={door.image} style={[styles.photoCard, { width: cardW }]} imageStyle={styles.photoImage}>
-      <View style={[styles.photoOverlay, { borderColor: door.accentColor + '50' }]}>
+      <View style={[styles.photoOverlay, { borderColor: lc(TH, door.accentColor) + '50' }]}>
         <View style={styles.cardHeader}>
-          <Text style={[styles.doorNumber, { color: door.accentColor }]}>{door.number}</Text>
-          <View style={[styles.headerLine, { backgroundColor: door.accentColor }]} />
+          <Text style={[styles.doorNumber, { color: lc(TH, door.accentColor) }]}>{door.number}</Text>
+          <View style={[styles.headerLine, { backgroundColor: lc(TH, door.accentColor) }]} />
         </View>
         <View>
           <Text style={styles.doorTitle}>{door.title}</Text>
-          <Text style={[styles.doorSubtitle, { color: door.accentColor }]}>{door.subtitle}</Text>
+          <Text style={[styles.doorSubtitle, { color: lc(TH, door.accentColor) }]}>{door.subtitle}</Text>
         </View>
-        <View style={[styles.enterBadge, { borderColor: door.accentColor }]}>
-          <Text style={[styles.enterText, { color: door.accentColor }]}>ENTER →</Text>
+        <View style={[styles.enterBadge, { borderColor: lc(TH, door.accentColor) }]}>
+          <Text style={[styles.enterText, { color: lc(TH, door.accentColor) }]}>ENTER →</Text>
         </View>
       </View>
     </ImageBackground>
   </TouchableOpacity>
 );
+}
 
 interface GraphicCardProps { door: DoorConfig; cardW: number; onPress: () => void; }
 const GraphicCard = ({ door, cardW, onPress }: GraphicCardProps) => {
+  const TH = useTheme();
+  const styles = useMemo(() => make_styles(TH), [TH]);
   const { GraphicComponent } = door;
   return (
-    <TouchableOpacity style={[styles.cardWrapper, styles.graphicCardWrapper, { borderColor: door.accentColor + '28' }]} onPress={onPress} activeOpacity={0.82}>
+    <TouchableOpacity style={[styles.cardWrapper, styles.graphicCardWrapper, { borderColor: lc(TH, door.accentColor) + '28' }]} onPress={onPress} activeOpacity={0.82}>
       <View style={StyleSheet.absoluteFill} pointerEvents="none">
         {GraphicComponent ? <GraphicComponent cardW={cardW} /> : null}
       </View>
       <View style={[styles.graphicOverlay, { width: cardW }]}>
         <View style={styles.cardHeader}>
-          <Text style={[styles.doorNumber, { color: door.accentColor }]}>{door.number}</Text>
-          <View style={[styles.headerLine, { backgroundColor: door.accentColor }]} />
+          <Text style={[styles.doorNumber, { color: lc(TH, door.accentColor) }]}>{door.number}</Text>
+          <View style={[styles.headerLine, { backgroundColor: lc(TH, door.accentColor) }]} />
         </View>
         <View>
           <Text style={styles.doorTitle}>{door.title}</Text>
-          <Text style={[styles.doorSubtitle, { color: door.accentColor }]}>{door.subtitle}</Text>
+          <Text style={[styles.doorSubtitle, { color: lc(TH, door.accentColor) }]}>{door.subtitle}</Text>
         </View>
-        <View style={[styles.enterBadge, { borderColor: door.accentColor }]}>
-          <Text style={[styles.enterText, { color: door.accentColor }]}>ENTER →</Text>
+        <View style={[styles.enterBadge, { borderColor: lc(TH, door.accentColor) }]}>
+          <Text style={[styles.enterText, { color: lc(TH, door.accentColor) }]}>ENTER →</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -183,6 +198,9 @@ const GraphicCard = ({ door, cardW, onPress }: GraphicCardProps) => {
 };
 
 export default function StoriesScreen() {
+  const TH = useTheme();
+  const styles = useMemo(() => make_styles(TH), [TH]);
+
   const router = useRouter();
   const { width } = useWindowDimensions();
   const cardW = width - 32;
@@ -216,8 +234,14 @@ export default function StoriesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex:1, backgroundColor:'#080808' },
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_styles = (T: Tokens) => {
+  return StyleSheet.create({
+  root: { flex:1, backgroundColor:dl(T, '#080808', '#F0EEE8') },
   scroll: { flex:1 },
   scrollContent: { paddingHorizontal:16, paddingTop:64, paddingBottom:72, gap:16 },
   pageHeader: { marginBottom:16 },
@@ -238,9 +262,11 @@ const styles = StyleSheet.create({
   enterBadge: { position:'absolute', right:20, bottom:20, borderWidth:1, borderRadius:5, paddingHorizontal:10, paddingVertical:6 },
   enterText: { fontFamily:'DMMono_400Regular', fontSize:10, letterSpacing:2 },
   ctaSection: { marginTop:20, alignItems:'center', gap:14 },
-  ctaDivider: { height:1, width:'50%', backgroundColor:'#1E1E1E', marginBottom:6 },
+  ctaDivider: { height:1, width:'50%', backgroundColor:dl(T, '#1E1E1E', 'rgba(0,0,0,0.12)'), marginBottom:6 },
   ctaCaption: { fontFamily:'DMSans_400Regular', fontSize:13, color:'#444', letterSpacing:0.4 },
-  ctaButton: { backgroundColor:'#1D9E75', paddingVertical:18, paddingHorizontal:40, borderRadius:8, width:'100%', alignItems:'center', shadowColor:'#1D9E75', shadowOffset:{width:0,height:4}, shadowOpacity:0.3, shadowRadius:12, elevation:6 },
+  ctaButton: { backgroundColor:dl(T, '#1D9E75', '#12795A'), paddingVertical:18, paddingHorizontal:40, borderRadius:8, width:'100%', alignItems:'center', shadowColor:dl(T, '#1D9E75', '#12795A'), shadowOffset:{width:0,height:4}, shadowOpacity:0.3, shadowRadius:12, elevation:6 },
   ctaButtonText: { fontFamily:'BebasNeue_400Regular', fontSize:24, color:'#FFFFFF', letterSpacing:4 },
   receiptStamp: { fontFamily:'DMMono_400Regular', fontSize:10, color:'#2A2A2A', letterSpacing:3.5, marginTop:4 },
 });
+};
+

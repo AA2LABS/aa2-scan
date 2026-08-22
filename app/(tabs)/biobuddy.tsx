@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable,
   TouchableOpacity, TextInput, Alert,
@@ -18,6 +18,8 @@ import { connectOura, disconnectOura } from '../../lib/ouraAuth';
 import { connectProvider, disconnectProvider, connectionFor, type Connection, type ProviderKey } from '../../lib/oauth';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 import { WASTE_CATALOG, reclaimTotal } from '../../lib/waste-audit';
+import { TheRoom } from '@/components/TheRoom';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura, syncWhoop, syncStrava,
   importGarminExport, importStravaExport, importOuraExport, importWhoopExport, getStackConsensus, getCoverage,
@@ -33,9 +35,25 @@ import {
 // Every string on these pages is the wire's string. Data is the member's own.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.15)', CYAN = '#1BB8FF', GREEN = '#34D399', GOLD = '#D4A847';
-const RED = '#E24B4A', PINK = '#F472B6', YELLOW = '#F5C84B', PURPLE = '#AA44FF';
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  CYAN: dl(T, '#1BB8FF', '#2a7faa'),
+  GREEN: dl(T, '#34D399', '#12795A'),
+  GOLD: dl(T, '#D4A847', '#b8861e'),
+  RED: dl(T, '#E24B4A', '#C0392B'),
+  PINK: '#F472B6',
+  YELLOW: '#F5C84B',
+  PURPLE: '#AA44FF',
+});
 
 const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3 · THE MEMBRANE · EDIT'];
 
@@ -57,9 +75,9 @@ const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: bo
   { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', port: true },
   // SIGNAL TIER — rank order
   { key: 'muse_s_athena',    name: 'Muse S Athena · THE CROWN',    dot: '#8fd6ff' },
-  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: CYAN },
+  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF' },
   { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', alt: 'whoop_5_0' },
-  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: GREEN },
+  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399' },
   // PERIPHERAL TIER — by body placement
   { key: 'manta_sound',      name: 'Manta Sound Sleep Mask',       dot: '#C9A0FF', condition: true },
   // OZLO SITS ABOVE THE BEATS. Founder order 2026-08-21: "the beats are just a
@@ -68,8 +86,8 @@ const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: bo
   // temperature, light and noise, named by the manufacturer in its own guide.
   // Everything else here reads James. This one reads where James is.
   { key: 'ozlo_sleepbuds',   name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', dot: '#4E96C8' },
-  { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: GOLD },
-  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: PURPLE },
+  { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: '#D4A847' },
+  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: '#AA44FF' },
   { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF' },
   // SOFTWARE LINK
   { key: 'strava',           name: 'Strava',                       dot: '#5CD65C' },
@@ -88,12 +106,14 @@ function deviceName(key: string): string {
   return hit ? hit.name : String(key);
 }
 const SOURCE_DOT: Record<string, string> = {
-  garmin: CYAN, oura: GREEN, strava: '#5CD65C', whoop: '#7CE7C4', beats: GOLD, manual: '#8fd6ff',
+  garmin: '#1BB8FF', oura: '#34D399', strava: '#5CD65C', whoop: '#7CE7C4', beats: '#D4A847', manual: '#8fd6ff',
 };
 
-function deviceDot(key: string): string {
+/** The instrument's colour, resolved for the panel the member picked.
+ *  ORIGIN_SOURCE: one instrument, one colour, both modes. */
+function deviceDot(T: Tokens, key: string): string {
   const hit = DEVICES.find(d => d.key === norm(key));
-  return hit ? hit.dot : SOURCE_DOT[norm(key)] ?? CYAN;
+  return lc(T, hit ? hit.dot : SOURCE_DOT[norm(key)] ?? '#1BB8FF');
 }
 
 // Device → biosignal source. The wire's metric per row comes from real rows
@@ -101,6 +121,12 @@ function deviceDot(key: string): string {
 const DEVICE_SOURCE: Record<string, BiosignalSource> = {
   garmin_tactix_8: 'garmin', oura_ring_4: 'oura', strava: 'strava',
   whoop_5_0: 'whoop', whoop_mg: 'whoop', beats_pro_2: 'beats',
+  // THE ROOM. Everything else in this map reads JAMES. This one reads WHERE
+  // JAMES IS — and it does it whatever mask is on his face, because the buds go
+  // under the Manta as readily as under the Ozlo. Founder, 2026-08-22:
+  // "i will know room temp and my temp even if i wear the manta i use the OZLO
+  //  to still read the room."
+  ozlo_sleepbuds: 'ozlo',
 };
 
 function deviceMetric(key: string, readout: LiveReadout | null): string | null {
@@ -117,6 +143,9 @@ function deviceMetric(key: string, readout: LiveReadout | null): string | null {
   if (src === 'strava')  return r.activity != null ? `${r.activity} mi` : null;
   if (src === 'whoop')   return r.readiness != null ? `RECOV ${Math.round(Number(r.readiness))}%` : null;
   if (src === 'beats')   return r.hrv != null ? `${Math.round(Number(r.hrv))}ms` : null;
+  // THE ROOM, in the member's own degrees. Absolute — it is a fact about the
+  // room, not a deviation from him.
+  if (src === 'ozlo')    return r.roomTempC != null ? `ROOM ${Number(r.roomTempC).toFixed(1)}°C` : null;
   return null;
 }
 
@@ -161,9 +190,13 @@ function membraneAccuracy(p: FullMemberProfile | null, animals: AnimalRow[]): nu
   return Math.round((filled / checks.length) * 100);
 }
 
-const CHANNEL_COLORS = [CYAN, PINK, YELLOW, GREEN, PURPLE, GOLD];
+const CHANNEL_COLORS = ['#1BB8FF', '#F472B6', '#F5C84B', '#34D399', '#AA44FF', '#D4A847'];
 
 export default function BioBuddyScreen() {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+  const C = pal(TH);
+
   const params = useLocalSearchParams<{ page?: string }>();
   const [profile, setProfile]   = useState<FullMemberProfile | null>(null);
   const [animals, setAnimals]   = useState<AnimalRow[]>([]);
@@ -290,12 +323,12 @@ export default function BioBuddyScreen() {
     );
   };
 
-  const refresh = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={CYAN} />;
+  const refresh = <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.CYAN} />;
 
   // ── SHARED SMALL RENDERERS ──────────────────────────────────────────────────
   const Chip = ({ label, sel, onPress, add }: { label: string; sel?: boolean; onPress?: () => void; add?: boolean }) => (
     <Pressable onPress={onPress} style={[st.chip, sel && st.chipSel, add && st.chipAdd]}>
-      <Text style={[st.chipTxt, sel && { color: CYAN }, add && { color: MUT }]}>{label}</Text>
+      <Text style={[st.chipTxt, sel && { color: C.CYAN }, add && { color: C.MUT }]}>{label}</Text>
     </Pressable>
   );
 
@@ -307,7 +340,7 @@ export default function BioBuddyScreen() {
           value={addInput.value}
           onChangeText={v => setAddInput({ section, value: v })}
           placeholder="type and save…"
-          placeholderTextColor={FAINT}
+          placeholderTextColor={C.FAINT}
           autoFocus
         />
         <Pressable
@@ -318,7 +351,7 @@ export default function BioBuddyScreen() {
             setAddInput(null);
           }}
         >
-          <Text style={{ color: CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
+          <Text style={{ color: C.CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
         </Pressable>
       </View>
     ) : null;
@@ -329,7 +362,7 @@ export default function BioBuddyScreen() {
         <View style={st.dotsRow}>
           {[0, 1, 2].map(i => (
             <TouchableOpacity key={i} onPress={() => goPage(i)}>
-              <View style={[st.dot, page === i && [st.dotActive, { backgroundColor: CYAN }]]} />
+              <View style={[st.dot, page === i && [st.dotActive, { backgroundColor: C.CYAN }]]} />
             </TouchableOpacity>
           ))}
         </View>
@@ -353,7 +386,7 @@ export default function BioBuddyScreen() {
               withoutLabel="WITHOUT"
               withoutText="Generic truth. A blank chart."
               openLabel="Continue →"
-              accent={CYAN}
+              accent={C.CYAN}
               onOpen={() => goPage(1)}
             />
           </ScrollView>
@@ -421,10 +454,10 @@ export default function BioBuddyScreen() {
                   const src = on ? DEVICE_SOURCE[norm(key)] : undefined;
                   return (
                     <Pressable key={i} onPress={on ? undefined : () => goPage(2)} style={st.readoutRow}>
-                      <View style={[st.readoutDot, { backgroundColor: deviceDot(key), opacity: on ? 1 : 0.5 }]} />
-                      <Text style={[st.readoutName, !on && { color: MUT }]}>{deviceName(key)}</Text>
-                      <Sparkline values={on && src ? readout?.series[src] : undefined} color={deviceDot(key)} />
-                      <Text style={[st.readoutVal, { color: on ? deviceDot(key) : FAINT }]}>
+                      <View style={[st.readoutDot, { backgroundColor: deviceDot(TH, key), opacity: on ? 1 : 0.5 }]} />
+                      <Text style={[st.readoutName, !on && { color: C.MUT }]}>{deviceName(key)}</Text>
+                      <Sparkline values={on && src ? readout?.series[src] : undefined} color={deviceDot(TH, key)} />
+                      <Text style={[st.readoutVal, { color: on ? deviceDot(TH, key) : C.FAINT }]}>
                         {on ? (metric ?? 'AWAITING SIGNAL') : 'CONNECT →'}
                       </Text>
                     </Pressable>
@@ -438,9 +471,9 @@ export default function BioBuddyScreen() {
               <Pressable
                 hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
                 onPress={() => router.push('/baseline' as Href)}
-                style={{ marginTop: 10, borderWidth: 2, borderColor: 'rgba(212,168,71,0.55)', backgroundColor: 'rgba(212,168,71,0.14)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
+                style={{ marginTop: 10, borderWidth: 2, borderColor: lc(TH, 'rgba(212,168,71,0.55)'), backgroundColor: lc(TH, 'rgba(212,168,71,0.14)'), borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
               >
-                <Text style={{ color: GOLD, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
+                <Text style={{ color: C.GOLD, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
                   YOUR OWN RECORD · RANK TONIGHT →
                 </Text>
               </Pressable>
@@ -451,9 +484,9 @@ export default function BioBuddyScreen() {
               <Pressable
                 hitSlop={{ top: 4, bottom: 4, left: 8, right: 8 }}
                 onPress={() => router.push('/stack-coverage' as Href)}
-                style={{ marginTop: 10, borderWidth: 1, borderColor: 'rgba(27,184,255,0.35)', backgroundColor: 'rgba(27,184,255,0.08)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
+                style={{ marginTop: 10, borderWidth: 1, borderColor: lc(TH, 'rgba(27,184,255,0.35)'), backgroundColor: lc(TH, 'rgba(27,184,255,0.08)'), borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
               >
-                <Text style={{ color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
+                <Text style={{ color: C.CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
                   YOUR STACK HAS YOU COVERED →
                 </Text>
               </Pressable>
@@ -466,11 +499,17 @@ export default function BioBuddyScreen() {
                 onPress={() => router.push('/membrane' as Href)}
                 style={{ marginTop: 8, borderWidth: 1, borderColor: 'rgba(170,68,255,0.35)', backgroundColor: 'rgba(170,68,255,0.08)', borderRadius: 10, paddingVertical: 11, alignItems: 'center' }}
               >
-                <Text style={{ color: PURPLE, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
+                <Text style={{ color: C.PURPLE, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }}>
                   SEE IT MOVE · THE MEMBRANE →
                 </Text>
               </Pressable>
             </View>
+
+            {/* THE ROOM — the only card in Bio Buddy that measures the PLACE
+                rather than the person. Founder order 2026-08-22: "you get the
+                ozlo wired right so the temp can be shown that it comes up
+                with." Added beside the stack, changing nothing above it. */}
+            <TheRoom />
 
             {/* STACK CONSENSUS — same day · every device · one assessment */}
             {consensus?.day ? (
@@ -482,9 +521,9 @@ export default function BioBuddyScreen() {
                     <View style={st.consensusVals}>
                       {row.values.map((v, j) => (
                         <View key={j} style={st.consensusVal}>
-                          <View style={[st.readoutDot, { backgroundColor: deviceDot(v.source) }]} />
+                          <View style={[st.readoutDot, { backgroundColor: deviceDot(TH, v.source) }]} />
                           <Text style={st.consensusSrc}>{v.source.toUpperCase()}</Text>
-                          <Text style={[st.consensusNum, { color: deviceDot(v.source) }]}>{v.label}</Text>
+                          <Text style={[st.consensusNum, { color: deviceDot(TH, v.source) }]}>{v.label}</Text>
                         </View>
                       ))}
                     </View>
@@ -502,12 +541,12 @@ export default function BioBuddyScreen() {
                 FAMILY CHANNELS{protectees.length > 0 ? ` · ${protectees.length + 1} LIVES` : ''}
               </Text>
 
-              <View style={[st.lifeCard, { borderLeftColor: CYAN }]}>
+              <View style={[st.lifeCard, { borderLeftColor: C.CYAN }]}>
                 <View style={st.lifeHead}>
                   <Text style={st.lifeName}>{profile?.name ?? 'You'}</Text>
                   <Text style={st.lifeRole}>SUBSCRIBER · BLUE</Text>
                 </View>
-                <View style={[st.lifeWave, { backgroundColor: CYAN + '55' }]} />
+                <View style={[st.lifeWave, { backgroundColor: C.CYAN + '55' }]} />
                 <Text style={st.lifeMeta}>
                   {[
                     profile?.age ? `${profile.age}` : null,
@@ -518,27 +557,27 @@ export default function BioBuddyScreen() {
                 </Text>
                 <View style={st.tagRow}>
                   {allergens.length === 0
-                    ? <View style={[st.tag, st.tagGreen]}><Text style={[st.tagTxt, { color: GREEN }]}>NO ALLERGIES</Text></View>
+                    ? <View style={[st.tag, st.tagGreen]}><Text style={[st.tagTxt, { color: C.GREEN }]}>NO ALLERGIES</Text></View>
                     : allergens.map((a, i) => (
-                      <View key={i} style={[st.tag, st.tagRed]}><Text style={[st.tagTxt, { color: RED }]}>{a.toUpperCase()}</Text></View>
+                      <View key={i} style={[st.tag, st.tagRed]}><Text style={[st.tagTxt, { color: C.RED }]}>{a.toUpperCase()}</Text></View>
                     ))}
                   {goals.length > 0 && (
-                    <View style={[st.tag, st.tagCyan]}><Text style={[st.tagTxt, { color: CYAN }]}>GOAL · {goals[0].toUpperCase()}</Text></View>
+                    <View style={[st.tag, st.tagCyan]}><Text style={[st.tagTxt, { color: C.CYAN }]}>GOAL · {goals[0].toUpperCase()}</Text></View>
                   )}
                   <View style={[st.tag, st.tagGold]}>
-                    <Text style={[st.tagTxt, { color: GOLD }]}>COMMANDER · {commander ? 'ON' : 'OFF'}</Text>
+                    <Text style={[st.tagTxt, { color: C.GOLD }]}>COMMANDER · {commander ? 'ON' : 'OFF'}</Text>
                   </View>
                 </View>
               </View>
 
               {protectees.map((who, i) => {
-                const c = CHANNEL_COLORS[(i + 1) % CHANNEL_COLORS.length];
+                const c = lc(TH, CHANNEL_COLORS[(i + 1) % CHANNEL_COLORS.length]);
                 return (
                   <View key={i} style={[st.lifeCard, { borderLeftColor: c }]}>
                     <View style={st.lifeHead}>
                       <Text style={st.lifeName}>{who}</Text>
                       <Text style={st.lifeRole}>
-                        CHANNEL · {c === PINK ? 'PINK' : c === YELLOW ? 'YELLOW' : c === GREEN ? 'GREEN' : c === PURPLE ? 'PURPLE' : 'GOLD'}
+                        CHANNEL · {c === C.PINK ? 'C.PINK' : c === C.YELLOW ? 'C.YELLOW' : c === C.GREEN ? 'C.GREEN' : c === C.PURPLE ? 'C.PURPLE' : 'C.GOLD'}
                       </Text>
                     </View>
                     <View style={[st.lifeWave, { backgroundColor: c + '55' }]} />
@@ -561,7 +600,7 @@ export default function BioBuddyScreen() {
                   <Text style={st.empty}>No pets on the membrane. Add via + Pet — species toxicology arms the moment they land.</Text>
                 </Pressable>
               ) : pets.map((a, i) => {
-                const c = CHANNEL_COLORS[(i + 3) % CHANNEL_COLORS.length];
+                const c = lc(TH, CHANNEL_COLORS[(i + 3) % CHANNEL_COLORS.length]);
                 return (
                   <View key={i} style={[st.lifeCard, { borderLeftColor: c }]}>
                     <View style={st.lifeHead}>
@@ -572,9 +611,9 @@ export default function BioBuddyScreen() {
                     <View style={st.tagRow}>
                       {a.sensitivities
                         ? a.sensitivities.split(/[,·]/).map(s2 => s2.trim()).filter(Boolean).map((s2, j) => (
-                          <View key={j} style={[st.tag, st.tagRed]}><Text style={[st.tagTxt, { color: RED }]}>{s2.toUpperCase()}</Text></View>
+                          <View key={j} style={[st.tag, st.tagRed]}><Text style={[st.tagTxt, { color: C.RED }]}>{s2.toUpperCase()}</Text></View>
                         ))
-                        : <View style={[st.tag, st.tagGreen]}><Text style={[st.tagTxt, { color: GREEN }]}>FEED · CLEAR</Text></View>}
+                        : <View style={[st.tag, st.tagGreen]}><Text style={[st.tagTxt, { color: C.GREEN }]}>FEED · CLEAR</Text></View>}
                     </View>
                   </View>
                 );
@@ -589,7 +628,7 @@ export default function BioBuddyScreen() {
                   <Text style={st.empty}>No herd on file. + Livestock opens herd baseline, feed safety, and mycotoxin watch.</Text>
                 </Pressable>
               ) : herd.map((a, i) => (
-                <View key={i} style={[st.lifeCard, { borderLeftColor: GOLD }]}>
+                <View key={i} style={[st.lifeCard, { borderLeftColor: C.GOLD }]}>
                   <View style={st.lifeHead}>
                     <Text style={st.lifeName}>{a.name ?? a.species}</Text>
                     <Text style={st.lifeRole}>{[a.species.toUpperCase(), a.breed?.toUpperCase()].filter(Boolean).join(' · ')}</Text>
@@ -597,8 +636,8 @@ export default function BioBuddyScreen() {
                   <Text style={st.lifeMeta}>{a.ageNotes ?? 'herd baseline'}</Text>
                   <View style={st.tagRow}>
                     {a.sensitivities
-                      ? <View style={[st.tag, st.tagRed]}><Text style={[st.tagTxt, { color: RED }]}>{a.sensitivities.toUpperCase()}</Text></View>
-                      : <View style={[st.tag, st.tagGreen]}><Text style={[st.tagTxt, { color: GREEN }]}>FEED BATCH · CLEAR</Text></View>}
+                      ? <View style={[st.tag, st.tagRed]}><Text style={[st.tagTxt, { color: C.RED }]}>{a.sensitivities.toUpperCase()}</Text></View>
+                      : <View style={[st.tag, st.tagGreen]}><Text style={[st.tagTxt, { color: C.GREEN }]}>FEED BATCH · CLEAR</Text></View>}
                   </View>
                 </View>
               ))}
@@ -614,7 +653,7 @@ export default function BioBuddyScreen() {
                 </View>
                 <View style={st.kv}>
                   <Text style={st.k}>HOUSEHOLD ALLERGENS</Text>
-                  <Text style={[st.v, allergens.length ? { color: RED } : null]}>
+                  <Text style={[st.v, allergens.length ? { color: C.RED } : null]}>
                     {allergens.length ? allergens.join(' · ') : 'None declared'}
                   </Text>
                 </View>
@@ -626,7 +665,7 @@ export default function BioBuddyScreen() {
               <Pressable style={st.toggleRow} onPress={() => router.push('/aficionado' as Href)}>
                 <Text style={st.toggleLbl}>Aficionado</Text>
                 <View style={[st.tag, aficionadoArmed ? st.tagGold : st.tagGoldDim]}>
-                  <Text style={[st.tagTxt, { color: GOLD }]}>{aficionadoArmed ? 'OPT-IN · ARMED' : 'OPT-IN · OFF'}</Text>
+                  <Text style={[st.tagTxt, { color: C.GOLD }]}>{aficionadoArmed ? 'OPT-IN · ARMED' : 'OPT-IN · OFF'}</Text>
                 </View>
               </Pressable>
             </View>
@@ -729,7 +768,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>OURA RING 4 · CONNECT</Text>
-                  <Text style={[st.v, { color: ouraConn?.connected ? GREEN : CYAN }]}>
+                  <Text style={[st.v, { color: ouraConn?.connected ? C.GREEN : C.CYAN }]}>
                     {syncing === 'oura_oauth'
                       ? 'Opening Oura…'
                       : ouraConn?.connected
@@ -763,7 +802,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>WHOOP MG · CONNECT</Text>
-                  <Text style={[st.v, { color: conns.whoop?.connected ? GREEN : CYAN }]}>
+                  <Text style={[st.v, { color: conns.whoop?.connected ? C.GREEN : C.CYAN }]}>
                     {syncing === 'whoop_oauth'
                       ? 'Opening WHOOP…'
                       : conns.whoop?.connected
@@ -786,7 +825,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>SYNC NOW</Text>
-                  <Text style={[st.v, { color: CYAN }]}>
+                  <Text style={[st.v, { color: C.CYAN }]}>
                     {syncing === 'whoop' ? 'Syncing…' : 'Pull the missing nights →'}
                   </Text>
                 </Pressable>
@@ -812,7 +851,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>STRAVA · CONNECT</Text>
-                  <Text style={[st.v, { color: conns.strava?.connected ? GREEN : CYAN }]}>
+                  <Text style={[st.v, { color: conns.strava?.connected ? C.GREEN : C.CYAN }]}>
                     {syncing === 'strava_oauth'
                       ? 'Opening Strava…'
                       : conns.strava?.connected
@@ -833,7 +872,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>SYNC NOW</Text>
-                  <Text style={[st.v, { color: CYAN }]}>
+                  <Text style={[st.v, { color: C.CYAN }]}>
                     {syncing === 'strava' ? 'Syncing…' : 'Pull the missing days →'}
                   </Text>
                 </Pressable>
@@ -846,7 +885,7 @@ export default function BioBuddyScreen() {
                   onPress={() => setAddInput({ section: 'oura_token', value: '' })}
                 >
                   <Text style={st.k}>OURA RING 4 · PASTED TOKEN</Text>
-                  <Text style={[st.v, { color: hasOuraToken ? GREEN : FAINT }]}>
+                  <Text style={[st.v, { color: hasOuraToken ? C.GREEN : C.FAINT }]}>
                     {hasOuraToken
                       ? 'Legacy token on the membrane ✓ · tap to replace'
                       : 'Legacy lane — Oura no longer issues these. Use CONNECT.'}
@@ -864,7 +903,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>SYNC NOW</Text>
-                  <Text style={[st.v, { color: CYAN }]}>{syncing === 'oura' ? 'Syncing…' : 'Pull last 30 days →'}</Text>
+                  <Text style={[st.v, { color: C.CYAN }]}>{syncing === 'oura' ? 'Syncing…' : 'Pull last 30 days →'}</Text>
                 </Pressable>
               </View>
               {addInput?.section === 'oura_token' && (
@@ -874,7 +913,7 @@ export default function BioBuddyScreen() {
                     value={addInput.value}
                     onChangeText={v => setAddInput({ section: 'oura_token', value: v })}
                     placeholder="paste your Oura personal access token…"
-                    placeholderTextColor={FAINT}
+                    placeholderTextColor={C.FAINT}
                     autoFocus
                     autoCapitalize="none"
                   />
@@ -899,7 +938,7 @@ export default function BioBuddyScreen() {
                       if (r.ok) await load();
                     }}
                   >
-                    <Text style={{ color: CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
+                    <Text style={{ color: C.CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
                   </Pressable>
                 </View>
               )}
@@ -921,7 +960,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>OURA ACCOUNT EXPORT</Text>
-                  <Text style={[st.v, { color: CYAN }]}>
+                  <Text style={[st.v, { color: C.CYAN }]}>
                     {syncing === 'oura_export' ? 'Reading…' : 'Import App Data CSVs →'}
                   </Text>
                 </Pressable>
@@ -943,7 +982,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>WHOOP ACCOUNT EXPORT</Text>
-                  <Text style={[st.v, { color: CYAN }]}>
+                  <Text style={[st.v, { color: C.CYAN }]}>
                     {syncing === 'whoop_export' ? 'Reading…' : 'Import cycles CSV →'}
                   </Text>
                 </Pressable>
@@ -963,7 +1002,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>GARMIN TACTIX 8</Text>
-                  <Text style={[st.v, { color: CYAN }]}>{syncing === 'garmin' ? 'Reading…' : 'Import export JSON →'}</Text>
+                  <Text style={[st.v, { color: C.CYAN }]}>{syncing === 'garmin' ? 'Reading…' : 'Import export JSON →'}</Text>
                 </Pressable>
                 <Pressable
                   style={st.kv}
@@ -977,7 +1016,7 @@ export default function BioBuddyScreen() {
                   }}
                 >
                   <Text style={st.k}>STRAVA</Text>
-                  <Text style={[st.v, { color: CYAN }]}>{syncing === 'strava' ? 'Reading…' : 'Import activities.csv →'}</Text>
+                  <Text style={[st.v, { color: C.CYAN }]}>{syncing === 'strava' ? 'Reading…' : 'Import activities.csv →'}</Text>
                 </Pressable>
               </View>
 
@@ -1054,7 +1093,7 @@ export default function BioBuddyScreen() {
               </View>
               {wasteSel.length > 0 && (
                 <>
-                  <Text style={[st.scopenote, { color: GOLD }]}>
+                  <Text style={[st.scopenote, { color: C.GOLD }]}>
                     RECLAIMABLE · ${reclaimTotal(wasteSel).toFixed(2)}/MO — the membrane already does these jobs, personally. Cancel them, and this exact spend flows to your Vision Board instead.
                   </Text>
                   <Pressable
@@ -1078,8 +1117,8 @@ export default function BioBuddyScreen() {
                       setRerouting(false);
                       if (ok) await load();
                     }}
-                    style={{ marginTop: 10, borderWidth: 1, borderColor: GOLD, borderRadius: 12, paddingVertical: 12, alignItems: 'center', opacity: wasteRerouted ? 0.55 : 1 }}>
-                    <Text style={{ fontFamily: 'DMMono-Medium', fontSize: 11, letterSpacing: 1.5, color: GOLD }}>
+                    style={{ marginTop: 10, borderWidth: 1, borderColor: C.GOLD, borderRadius: 12, paddingVertical: 12, alignItems: 'center', opacity: wasteRerouted ? 0.55 : 1 }}>
+                    <Text style={{ fontFamily: 'DMMono-Medium', fontSize: 11, letterSpacing: 1.5, color: C.GOLD }}>
                       {rerouting ? 'REROUTING…' : wasteRerouted ? `✓ REROUTED · $${reclaimTotal(wasteSel).toFixed(2)}/MO IN THE VAULT` : `REROUTE $${reclaimTotal(wasteSel).toFixed(2)}/MO → VAULT`}
                     </Text>
                   </Pressable>
@@ -1160,7 +1199,7 @@ export default function BioBuddyScreen() {
                     value={addInput.value}
                     onChangeText={v => setAddInput({ section: addInput.section, value: v })}
                     placeholder={addInput.section === 'pet' ? 'name · species · breed  (e.g. Bear · canine · lab)' : 'name · species · head count'}
-                    placeholderTextColor={FAINT}
+                    placeholderTextColor={C.FAINT}
                     autoFocus
                   />
                   <Pressable
@@ -1184,7 +1223,7 @@ export default function BioBuddyScreen() {
                       setAddInput(null);
                     }}
                   >
-                    <Text style={{ color: CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
+                    <Text style={{ color: C.CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
                   </Pressable>
                 </View>
               )}
@@ -1196,11 +1235,11 @@ export default function BioBuddyScreen() {
               <View style={st.kvRow}>
                 <Pressable style={st.kv} onPress={() => setAddInput({ section: 'meds', value: meds ?? '' })}>
                   <Text style={st.k}>MEDICATIONS</Text>
-                  <Text style={[st.v, { color: meds ? INK : GREEN }]}>{meds || 'No Current Meds'}</Text>
+                  <Text style={[st.v, { color: meds ? C.INK : C.GREEN }]}>{meds || 'No Current Meds'}</Text>
                 </Pressable>
                 <Pressable style={st.kv} onPress={() => router.push('/biomarkers' as Href)}>
                   <Text style={st.k}>BYAR PRINTABLES</Text>
-                  <Text style={[st.v, { color: CYAN }]}>Manage →</Text>
+                  <Text style={[st.v, { color: C.CYAN }]}>Manage →</Text>
                 </Pressable>
               </View>
               {addInput?.section === 'meds' && (
@@ -1208,10 +1247,10 @@ export default function BioBuddyScreen() {
                   <TextInput
                     style={st.addInput} value={addInput.value}
                     onChangeText={v => setAddInput({ section: 'meds', value: v })}
-                    placeholder="current medications…" placeholderTextColor={FAINT} autoFocus
+                    placeholder="current medications…" placeholderTextColor={C.FAINT} autoFocus
                   />
                   <Pressable style={st.addSave} onPress={() => { write('medications', addInput.value.trim(), 'medications'); setAddInput(null); }}>
-                    <Text style={{ color: CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
+                    <Text style={{ color: C.CYAN, fontFamily: 'DMMono-Medium', fontSize: 11 }}>SAVE</Text>
                   </Pressable>
                 </View>
               )}
@@ -1219,7 +1258,7 @@ export default function BioBuddyScreen() {
 
             {/* RESTRICTED LAYERS · ARM TO ENABLE — law: deliberate action required */}
             <View style={st.section}>
-              <Text style={[st.seclabel, { color: GOLD }]}>RESTRICTED LAYERS · ARM TO ENABLE</Text>
+              <Text style={[st.seclabel, { color: C.GOLD }]}>RESTRICTED LAYERS · ARM TO ENABLE</Text>
 
               {/* AFICIONADO */}
               <Pressable
@@ -1228,7 +1267,7 @@ export default function BioBuddyScreen() {
               >
                 <Text style={st.toggleLbl}>Aficionado</Text>
                 <View style={[st.tag, aficionadoArmed ? st.tagGold : st.tagGoldDim]}>
-                  <Text style={[st.tagTxt, { color: GOLD }]}>{aficionadoArmed ? 'OPT-IN · ARMED' : 'OPT-IN · OFF'}</Text>
+                  <Text style={[st.tagTxt, { color: C.GOLD }]}>{aficionadoArmed ? 'OPT-IN · ARMED' : 'OPT-IN · OFF'}</Text>
                 </View>
               </Pressable>
               <View style={st.lockedBox}>
@@ -1236,7 +1275,7 @@ export default function BioBuddyScreen() {
                 <View style={st.chipRow}>
                   {['Strain & Leaf', 'Contaminant Screen', 'Dose', 'Interaction Check', 'Cigar Page'].map((c, i) => (
                     <View key={i} style={[st.chip, aficionadoArmed ? st.chipSel : st.chipLocked]}>
-                      <Text style={[st.chipTxt, !aficionadoArmed && { color: FAINT }]}>{c}</Text>
+                      <Text style={[st.chipTxt, !aficionadoArmed && { color: C.FAINT }]}>{c}</Text>
                     </View>
                   ))}
                 </View>
@@ -1249,7 +1288,7 @@ export default function BioBuddyScreen() {
               >
                 <Text style={st.toggleLbl}>Tactical · Commander Layer</Text>
                 <View style={[st.tag, commander ? st.tagGold : st.tagGoldDim]}>
-                  <Text style={[st.tagTxt, { color: GOLD }]}>{commander ? 'ARMED' : 'OFF'}</Text>
+                  <Text style={[st.tagTxt, { color: C.GOLD }]}>{commander ? 'ARMED' : 'OFF'}</Text>
                 </View>
               </Pressable>
               <View style={st.lockedBox}>
@@ -1257,7 +1296,7 @@ export default function BioBuddyScreen() {
                 <View style={st.chipRow}>
                   {['+ Tactical Unit', 'WADA', 'FEI', 'DoD', 'USADA', 'K9 ONLY'].map((c, i) => (
                     <View key={i} style={[st.chip, commander ? st.chipSel : st.chipLocked]}>
-                      <Text style={[st.chipTxt, !commander && { color: FAINT }]}>{c}</Text>
+                      <Text style={[st.chipTxt, !commander && { color: C.FAINT }]}>{c}</Text>
                     </View>
                   ))}
                 </View>
@@ -1269,11 +1308,11 @@ export default function BioBuddyScreen() {
 
             {/* SAVE CONFIRMATION — real state, never decoration */}
             <View style={st.section}>
-              <View style={[st.saved, saveState === 'failed' && { borderColor: 'rgba(226,75,74,0.5)' }]}>
+              <View style={[st.saved, saveState === 'failed' && { borderColor: lc(TH, 'rgba(226,75,74,0.5)') }]}>
                 <Text style={[
                   st.savedTxt,
-                  saveState === 'failed' && { color: RED },
-                  saveState === 'saving' && { color: MUT },
+                  saveState === 'failed' && { color: C.RED },
+                  saveState === 'saving' && { color: C.MUT },
                 ]}>
                   {saveState === 'failed'
                     ? '◆ NOT SAVED — THE MEMBRANE DID NOT HOLD'
@@ -1294,12 +1333,19 @@ export default function BioBuddyScreen() {
   );
 }
 
-const st = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_st = (T: Tokens) => {
+  const { NAVY, INK, MUT, FAINT, LINE, CYAN, GREEN, GOLD, RED, PINK, YELLOW, PURPLE } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   body: { flex: 1 },
   pagerNav: { paddingTop: 44, paddingBottom: 8, alignItems: 'center', backgroundColor: NAVY },
   dotsRow: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)' },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: dl(T, 'rgba(255,255,255,0.25)', 'rgba(0,0,0,0.18)') },
   dotActive: { width: 18 },
   caption: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: MUT },
 
@@ -1309,15 +1355,15 @@ const st = StyleSheet.create({
 
   ask: {
     flexDirection: 'row', alignItems: 'center', margin: 14, marginBottom: 6,
-    borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.06)', 'rgba(42,127,170,0.06)'),
     borderRadius: 12, padding: 15,
   },
-  askQ: { flex: 1, fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: '#8fd6ff' },
+  askQ: { flex: 1, fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: dl(T, '#8fd6ff', '#1f6a90') },
   askMic: { fontSize: 16, marginLeft: 8 },
 
   memberCard: {
     flexDirection: 'row', alignItems: 'center', marginHorizontal: 14, marginTop: 6,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 14,
   },
   memberName: { fontFamily: 'DMSans-Regular', fontSize: 19, fontWeight: '800', color: INK },
@@ -1338,7 +1384,7 @@ const st = StyleSheet.create({
   readoutVal: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 0.5 },
 
   lifeCard: {
-    borderLeftWidth: 3, backgroundColor: 'rgba(255,255,255,0.07)',
+    borderLeftWidth: 3, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 10,
   },
@@ -1349,34 +1395,34 @@ const st = StyleSheet.create({
   lifeMeta: { fontFamily: 'DMSans-Regular', fontSize: 11.5, color: MUT, lineHeight: 16 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 9 },
   tag: { paddingHorizontal: 7, paddingVertical: 4, borderRadius: 6, borderWidth: 0.5 },
-  tagRed:   { backgroundColor: 'rgba(226,75,74,0.10)',  borderColor: 'rgba(226,75,74,0.45)' },
-  tagGreen: { backgroundColor: 'rgba(52,211,153,0.12)', borderColor: 'rgba(52,211,153,0.35)' },
-  tagCyan:  { backgroundColor: 'rgba(27,184,255,0.10)', borderColor: 'rgba(27,184,255,0.35)' },
-  tagGold:  { backgroundColor: 'rgba(212,168,71,0.10)', borderColor: 'rgba(212,168,71,0.40)' },
-  tagGoldDim: { backgroundColor: 'rgba(212,168,71,0.05)', borderColor: 'rgba(212,168,71,0.25)' },
+  tagRed:   { backgroundColor: dl(T, 'rgba(226,75,74,0.10)', 'rgba(192,57,43,0.10)'),  borderColor: dl(T, 'rgba(226,75,74,0.45)', 'rgba(192,57,43,0.45)') },
+  tagGreen: { backgroundColor: dl(T, 'rgba(52,211,153,0.12)', 'rgba(18,121,90,0.12)'), borderColor: dl(T, 'rgba(52,211,153,0.35)', 'rgba(18,121,90,0.35)') },
+  tagCyan:  { backgroundColor: dl(T, 'rgba(27,184,255,0.10)', 'rgba(42,127,170,0.10)'), borderColor: dl(T, 'rgba(27,184,255,0.35)', 'rgba(42,127,170,0.35)') },
+  tagGold:  { backgroundColor: dl(T, 'rgba(212,168,71,0.10)', 'rgba(184,134,30,0.10)'), borderColor: dl(T, 'rgba(212,168,71,0.40)', 'rgba(184,134,30,0.40)') },
+  tagGoldDim: { backgroundColor: dl(T, 'rgba(212,168,71,0.05)', 'rgba(184,134,30,0.05)'), borderColor: dl(T, 'rgba(212,168,71,0.25)', 'rgba(184,134,30,0.25)') },
   tagTxt: { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 1 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 9,
-    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 0.5, borderColor: dl(T, 'rgba(255,255,255,0.16)', 'rgba(0,0,0,0.12)'), backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
   },
-  chipSel: { borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.10)' },
-  chipAdd: { borderStyle: 'dashed', borderColor: 'rgba(27,184,255,0.35)' },
+  chipSel: { borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.10)', 'rgba(42,127,170,0.10)') },
+  chipAdd: { borderStyle: 'dashed', borderColor: dl(T, 'rgba(27,184,255,0.35)', 'rgba(42,127,170,0.35)') },
   chipLocked: { opacity: 0.45 },
   chipTxt: { fontFamily: 'DMSans-Regular', fontSize: 12.5, color: INK },
 
   addRow: { flexDirection: 'row', gap: 8, marginTop: 10, alignItems: 'center' },
   addInput: {
-    flex: 1, borderWidth: 0.5, borderColor: 'rgba(27,184,255,0.4)', borderRadius: 9,
+    flex: 1, borderWidth: 0.5, borderColor: dl(T, 'rgba(27,184,255,0.4)', 'rgba(42,127,170,0.4)'), borderRadius: 9,
     color: INK, paddingHorizontal: 12, paddingVertical: 9, fontFamily: 'DMSans-Regular', fontSize: 13,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
   },
-  addSave: { borderWidth: 0.5, borderColor: 'rgba(27,184,255,0.5)', borderRadius: 9, paddingHorizontal: 14, paddingVertical: 10 },
+  addSave: { borderWidth: 0.5, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), borderRadius: 9, paddingHorizontal: 14, paddingVertical: 10 },
 
   kvRow: { flexDirection: 'row', gap: 9, marginBottom: 9 },
   kv: {
-    flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth,
+    flex: 1, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth,
     borderColor: LINE, borderRadius: 12, padding: 13,
   },
   k: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.3, color: FAINT },
@@ -1384,14 +1430,14 @@ const st = StyleSheet.create({
 
   toggleRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13,
   },
   toggleLbl: { fontFamily: 'DMSans-Regular', fontSize: 14, fontWeight: '700', color: INK },
 
   aware: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderWidth: 1, borderColor: 'rgba(212,168,71,0.4)', backgroundColor: 'rgba(212,168,71,0.06)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.4)', 'rgba(184,134,30,0.4)'), backgroundColor: dl(T, 'rgba(212,168,71,0.06)', 'rgba(184,134,30,0.06)'),
     borderRadius: 12, padding: 15,
   },
   awareLbl: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 2, color: GOLD },
@@ -1400,15 +1446,15 @@ const st = StyleSheet.create({
 
   action: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.06)', 'rgba(42,127,170,0.06)'),
     borderRadius: 12, paddingVertical: 15,
   },
-  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: '#8fd6ff' },
+  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: dl(T, '#8fd6ff', '#1f6a90') },
 
   doorGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   doorChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.16)', backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 0.5, borderColor: dl(T, 'rgba(255,255,255,0.16)', 'rgba(0,0,0,0.12)'), backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderRadius: 9, paddingHorizontal: 12, paddingVertical: 9,
   },
   doorChipTxt: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 1.5, color: INK },
@@ -1416,14 +1462,14 @@ const st = StyleSheet.create({
 
   change: {
     flexDirection: 'row', alignItems: 'center', margin: 14, marginBottom: 4,
-    borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.06)', 'rgba(42,127,170,0.06)'),
     borderRadius: 12, padding: 15,
   },
-  changeQ: { fontFamily: 'DMSans-Regular', fontSize: 19, fontWeight: '800', color: '#8fd6ff', letterSpacing: 0.3 },
+  changeQ: { fontFamily: 'DMSans-Regular', fontSize: 19, fontWeight: '800', color: dl(T, '#8fd6ff', '#1f6a90'), letterSpacing: 0.3 },
   changeSub: { fontFamily: 'DMSans-Regular', fontSize: 11.5, color: MUT, marginTop: 4 },
 
   saved: {
-    borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.06)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.06)', 'rgba(42,127,170,0.06)'),
     borderRadius: 12, paddingVertical: 15, alignItems: 'center',
   },
   savedTxt: { fontFamily: 'DMMono-Medium', fontSize: 12, letterSpacing: 1.5, color: CYAN },
@@ -1434,8 +1480,8 @@ const st = StyleSheet.create({
   },
 
   lockedBox: {
-    marginTop: 8, borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(212,168,71,0.25)',
-    borderRadius: 12, padding: 12, backgroundColor: 'rgba(212,168,71,0.04)',
+    marginTop: 8, borderWidth: StyleSheet.hairlineWidth, borderColor: dl(T, 'rgba(212,168,71,0.25)', 'rgba(184,134,30,0.25)'),
+    borderRadius: 12, padding: 12, backgroundColor: dl(T, 'rgba(212,168,71,0.04)', 'rgba(184,134,30,0.04)'),
   },
   lockedLbl: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.5, color: GOLD, marginBottom: 9 },
   scopenote: {
@@ -1445,7 +1491,7 @@ const st = StyleSheet.create({
 
   consensusRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 12, marginBottom: 8,
   },
   consensusMetric: { fontFamily: 'DMMono-Medium', fontSize: 9.5, letterSpacing: 1.5, color: MUT, width: 78 },
@@ -1458,3 +1504,5 @@ const st = StyleSheet.create({
     color: MUT, lineHeight: 19, marginTop: 6, paddingHorizontal: 2,
   },
 });
+};
+

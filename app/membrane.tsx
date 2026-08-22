@@ -20,7 +20,7 @@
 // speaks — the words and the body are one thing.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, ActivityIndicator,
   Pressable, TextInput, KeyboardAvoidingView, Platform,
@@ -32,10 +32,20 @@ import { streamClaude } from '../lib/claude-stream';
 import { BIO_BUDDY_VOICE, VOICE_MODEL } from '../lib/voices';
 import { PALETTE, TYPE } from '../lib/theme';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 const NAVY  = PALETTE.navy;
 const INK   = PALETTE.ink;
-const MUT   = 'rgba(255,255,255,0.55)';
-const FAINT = 'rgba(255,255,255,0.32)';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+});
 
 type Metric = 'hrv' | 'sleep' | 'readiness' | 'activity' | 'stress';
 
@@ -70,6 +80,10 @@ const SEEDS = [
 ];
 
 export default function MembraneScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [loading, setLoading]   = useState(true);
   const [readout, setReadout]   = useState<LiveReadout | null>(null);
   const [crownOn, setCrownOn]   = useState(false);   // flips true the day the SDK lands
@@ -205,7 +219,7 @@ export default function MembraneScreen() {
             {/* ── THE CROWN SLOT — always present, never faked ──────────── */}
             <View style={[st.crown, crownOn ? st.crownOn : st.crownOff]}>
               <View style={{ flex: 1 }}>
-                <Text style={[st.crownName, { color: crownOn ? PALETTE.purple : MUT }]}>
+                <Text style={[st.crownName, { color: crownOn ? PALETTE.purple : C.MUT }]}>
                   MUSE S ATHENA · THE CROWN
                 </Text>
                 <Text style={st.crownBody}>
@@ -240,7 +254,7 @@ export default function MembraneScreen() {
                 value={query}
                 onChangeText={setQuery}
                 placeholder="Ask the membrane…"
-                placeholderTextColor={FAINT}
+                placeholderTextColor={C.FAINT}
                 onSubmitEditing={() => ask()}
                 returnKeyType="send"
                 editable={!asking}
@@ -276,7 +290,7 @@ export default function MembraneScreen() {
                 </View>
               ))}
               <View style={[st.chip, !crownOn && st.chipDim]}>
-                <Text style={[st.chipText, !crownOn && { color: FAINT }]}>
+                <Text style={[st.chipText, !crownOn && { color: C.FAINT }]}>
                   CROWN · {crownOn ? 'LIVE' : 'AWAITING'}
                 </Text>
               </View>
@@ -299,7 +313,9 @@ export default function MembraneScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { MUT, FAINT } = pal(T);
+  return StyleSheet.create({
   page:        { flex: 1, backgroundColor: NAVY },
   eyebrow:     { fontFamily: 'DMMono-Regular', fontSize: TYPE.label, letterSpacing: 3, color: FAINT, marginBottom: 8 },
   title:       { color: INK, fontSize: TYPE.heroTitle, fontWeight: '700', marginBottom: 8 },
@@ -309,34 +325,35 @@ const st = StyleSheet.create({
   resting:     { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 2, color: FAINT, marginTop: 6 },
 
   crown:       { flexDirection: 'row', borderRadius: 14, padding: 16, marginTop: 14, borderWidth: 1 },
-  crownOff:    { backgroundColor: 'rgba(255,255,255,0.05)', borderColor: 'rgba(255,255,255,0.14)', borderStyle: 'dashed' },
+  crownOff:    { backgroundColor: dl(T, 'rgba(255,255,255,0.05)', 'rgba(0,0,0,0.03)'), borderColor: dl(T, 'rgba(255,255,255,0.14)', 'rgba(0,0,0,0.11)'), borderStyle: 'dashed' },
   crownOn:     { backgroundColor: 'rgba(170,68,255,0.10)', borderColor: 'rgba(170,68,255,0.45)' },
   crownName:   { fontFamily: 'DMMono-Regular', fontSize: 10.5, letterSpacing: 2, marginBottom: 8 },
   crownBody:   { color: MUT, fontSize: TYPE.detail, lineHeight: 19 },
   awaiting:    { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 11 },
-  await:       { borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', borderStyle: 'dashed', borderRadius: 20, paddingHorizontal: 9, paddingVertical: 4 },
+  await:       { borderWidth: 1, borderColor: dl(T, 'rgba(255,255,255,0.14)', 'rgba(0,0,0,0.11)'), borderStyle: 'dashed', borderRadius: 20, paddingHorizontal: 9, paddingVertical: 4 },
   awaitOn:     { borderStyle: 'solid', borderColor: 'rgba(170,68,255,0.5)' },
   awaitText:   { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: FAINT },
 
   meters:      { marginTop: 16, marginBottom: 18 },
 
   askRow:      { flexDirection: 'row', gap: 9, marginTop: 4 },
-  input:       { flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, color: INK, fontSize: TYPE.body },
-  send:        { paddingHorizontal: 18, justifyContent: 'center', borderRadius: 12, borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.14)' },
+  input:       { flex: 1, backgroundColor: dl(T, 'rgba(255,255,255,0.06)', 'rgba(0,0,0,0.03)'), borderWidth: 1, borderColor: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'), borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, color: INK, fontSize: TYPE.body },
+  send:        { paddingHorizontal: 18, justifyContent: 'center', borderRadius: 12, borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.14)', 'rgba(42,127,170,0.14)') },
   sendText:    { fontFamily: 'DMMono-Regular', fontSize: 10.5, letterSpacing: 2, color: PALETTE.cyan },
 
   seeds:       { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 11 },
-  seed:        { borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7 },
+  seed:        { borderWidth: 1, borderColor: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'), borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7 },
   seedText:    { color: MUT, fontSize: 12 },
 
-  speech:      { backgroundColor: 'rgba(224,160,74,0.14)', borderWidth: 2, borderColor: 'rgba(224,160,74,0.55)', borderRadius: 18, padding: 20, marginTop: 16 },
+  speech:      { backgroundColor: dl(T, 'rgba(224,160,74,0.14)', 'rgba(154,116,24,0.14)'), borderWidth: 2, borderColor: dl(T, 'rgba(224,160,74,0.55)', 'rgba(154,116,24,0.55)'), borderRadius: 18, padding: 20, marginTop: 16 },
   speechLabel: { color: PALETTE.amber, fontSize: 13, letterSpacing: 2, fontWeight: '700', marginBottom: 10 },
   speechText:  { color: 'rgba(232,238,245,0.88)', fontSize: 15, lineHeight: 24, fontWeight: '500' },
 
   chips:       { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 16 },
-  chip:        { borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
-  chipDim:     { borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.12)' },
-  chipText:    { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 1.6, color: 'rgba(255,255,255,0.62)' },
+  chip:        { borderWidth: 1, borderColor: dl(T, 'rgba(255,255,255,0.18)', 'rgba(0,0,0,0.12)'), borderRadius: 20, paddingHorizontal: 10, paddingVertical: 5 },
+  chipDim:     { borderStyle: 'dashed', borderColor: dl(T, 'rgba(255,255,255,0.12)', 'rgba(0,0,0,0.1)') },
+  chipText:    { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 1.6, color: dl(T, 'rgba(255,255,255,0.62)', 'rgba(0,0,0,0.34)') },
 
   note:        { color: FAINT, fontSize: TYPE.detail, lineHeight: 20, marginTop: 20 },
 });
+};

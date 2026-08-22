@@ -19,22 +19,36 @@
 // and is plainly marked NOT ISSUED, because no card exists.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { router, useFocusEffect, type Href } from 'expo-router';
 import { loadMemberProfile, getVaultLedgerTotal, type FullMemberProfile } from '@/lib/db';
 import { PALETTE, TYPE } from '@/lib/theme';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 const NAVY  = PALETTE.navy;
 const INK   = PALETTE.ink;
 const GOLD  = PALETTE.gold;
-const MUT   = 'rgba(255,255,255,0.55)';
-const FAINT = 'rgba(255,255,255,0.32)';
-const LINE  = 'rgba(255,255,255,0.12)';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  LINE: dl(T, 'rgba(255,255,255,0.12)', 'rgba(0,0,0,0.1)'),
+});
 
 const money = (n: number) => `$${(n ?? 0).toFixed(2)}`;
 
 export default function VaultScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [p, setP] = useState<FullMemberProfile | null>(null);
   const [vault, setVault] = useState({ total: 0, thisMonth: 0, entries: 0 });
 
@@ -110,7 +124,7 @@ export default function VaultScreen() {
               <Text style={st.evLabel}>this month</Text>
             </View>
             <View style={st.ev}>
-              <Text style={[st.evNum, { color: FAINT }]}>—</Text>
+              <Text style={[st.evNum, { color: C.FAINT }]}>—</Text>
               <Text style={st.evLabel}>day streak</Text>
             </View>
           </View>
@@ -220,7 +234,9 @@ export default function VaultScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { MUT, FAINT, LINE } = pal(T);
+  return StyleSheet.create({
   page:        { flex: 1, backgroundColor: NAVY },
 
   hero:        { height: 210, justifyContent: 'flex-end', backgroundColor: '#000' },
@@ -230,12 +246,12 @@ const st = StyleSheet.create({
   heroName:    { color: INK, fontSize: 24, fontWeight: '700' },
   heroSub:     { color: MUT, fontSize: TYPE.detail, marginTop: 4 },
   back:        { position: 'absolute', top: 44, left: 16, paddingHorizontal: 10, paddingVertical: 6 },
-  backTxt:     { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: 'rgba(255,255,255,0.7)' },
+  backTxt:     { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: dl(T, 'rgba(255,255,255,0.7)', 'rgba(0,0,0,0.66)') },
 
   sectionLabel:{ fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 2, color: GOLD, paddingHorizontal: 16, paddingTop: 18, paddingBottom: 7 },
 
-  card:        { marginHorizontal: 12, marginBottom: 10, backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: LINE, borderRadius: 16, overflow: 'hidden' },
-  zone:        { paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
+  card:        { marginHorizontal: 12, marginBottom: 10, backgroundColor: dl(T, 'rgba(255,255,255,0.05)', 'rgba(0,0,0,0.03)'), borderWidth: 1, borderColor: LINE, borderRadius: 16, overflow: 'hidden' },
+  zone:        { paddingHorizontal: 14, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)') },
   zoneLast:    { borderBottomWidth: 0 },
   zoneTag:     { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: FAINT, marginBottom: 6 },
 
@@ -244,46 +260,47 @@ const st = StyleSheet.create({
   tinyNote:    { color: FAINT, fontSize: 10.5, lineHeight: 17, marginTop: 8 },
 
   evRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 6 },
-  ev:          { backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 8, paddingHorizontal: 9, paddingVertical: 6, minWidth: 74 },
+  ev:          { backgroundColor: dl(T, 'rgba(255,255,255,0.06)', 'rgba(0,0,0,0.03)'), borderRadius: 8, paddingHorizontal: 9, paddingVertical: 6, minWidth: 74 },
   evNum:       { color: GOLD, fontSize: 14, fontFamily: 'DMMono-Regular' },
   evLabel:     { color: FAINT, fontSize: 9, fontFamily: 'DMMono-Regular', marginTop: 1 },
 
   horizonRow:  { flexDirection: 'row', gap: 6, marginTop: 6 },
   tile:        { flex: 1, minHeight: 56, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
-  tileFilled:  { backgroundColor: 'rgba(52,211,153,0.10)', borderWidth: 1, borderColor: 'rgba(52,211,153,0.42)' },
-  tileEmpty:   { borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.18)' },
+  tileFilled:  { backgroundColor: dl(T, 'rgba(52,211,153,0.10)', 'rgba(18,121,90,0.10)'), borderWidth: 1, borderColor: dl(T, 'rgba(52,211,153,0.42)', 'rgba(18,121,90,0.42)') },
+  tileEmpty:   { borderWidth: 1, borderStyle: 'dashed', borderColor: dl(T, 'rgba(255,255,255,0.18)', 'rgba(0,0,0,0.12)') },
   tileText:    { color: PALETTE.green, fontSize: 10.5, textAlign: 'center', lineHeight: 15 },
   tilePlus:    { color: FAINT, fontSize: 20 },
 
-  ghostBtn:    { marginTop: 11, alignSelf: 'flex-start', borderWidth: 1, borderColor: 'rgba(212,168,71,0.4)', backgroundColor: 'rgba(212,168,71,0.08)', borderRadius: 9, paddingHorizontal: 13, paddingVertical: 9 },
+  ghostBtn:    { marginTop: 11, alignSelf: 'flex-start', borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.4)', 'rgba(184,134,30,0.4)'), backgroundColor: dl(T, 'rgba(212,168,71,0.08)', 'rgba(184,134,30,0.08)'), borderRadius: 9, paddingHorizontal: 13, paddingVertical: 9 },
   ghostTxt:    { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 1.6, color: GOLD },
 
   pbLabel:     { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
   pbText:      { fontFamily: 'DMMono-Regular', fontSize: 9.5, color: FAINT },
-  pbTrack:     { height: 5, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.10)' },
+  pbTrack:     { height: 5, borderRadius: 4, backgroundColor: dl(T, 'rgba(255,255,255,0.10)', 'rgba(0,0,0,0.05)') },
   pbFill:      { height: 5, borderRadius: 4, backgroundColor: GOLD },
 
-  lcHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.07)' },
+  lcHeader:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)') },
   lcTitle:     { color: INK, fontSize: 13.5, fontWeight: '600' },
-  lcPts:       { backgroundColor: 'rgba(52,211,153,0.10)', borderWidth: 1, borderColor: 'rgba(52,211,153,0.42)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
+  lcPts:       { backgroundColor: dl(T, 'rgba(52,211,153,0.10)', 'rgba(18,121,90,0.10)'), borderWidth: 1, borderColor: dl(T, 'rgba(52,211,153,0.42)', 'rgba(18,121,90,0.42)'), borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
   lcPtsTxt:    { color: PALETTE.green, fontSize: 9, fontFamily: 'DMMono-Regular', letterSpacing: 1 },
   lcModes:     { flexDirection: 'row', gap: 6, padding: 14 },
-  lcMode:      { flex: 1, backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: LINE, borderRadius: 10, padding: 12, alignItems: 'center' },
+  lcMode:      { flex: 1, backgroundColor: dl(T, 'rgba(255,255,255,0.06)', 'rgba(0,0,0,0.03)'), borderWidth: 1, borderColor: LINE, borderRadius: 10, padding: 12, alignItems: 'center' },
   lcModePrimary:{ backgroundColor: 'rgba(78,150,200,0.12)', borderColor: 'rgba(78,150,200,0.45)' },
   lcIcon:      { fontSize: 20, marginBottom: 6 },
   lcModeLabel: { color: MUT, fontSize: 10, fontFamily: 'DMMono-Regular', textAlign: 'center', lineHeight: 15 },
 
   debit:       { marginHorizontal: 12, marginBottom: 14, backgroundColor: '#1A1A0A', borderRadius: 16, borderWidth: 1, borderColor: 'rgba(184,134,11,0.75)', padding: 16 },
   dcTop:       { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  dcBrand:     { color: '#B8860B', fontSize: 10, fontFamily: 'DMMono-Regular', letterSpacing: 2 },
-  dcChip:      { width: 24, height: 17, borderRadius: 3, backgroundColor: '#B8860B', opacity: 0.7 },
+  dcBrand:     { color: dl(T, '#B8860B', '#8A6410'), fontSize: 10, fontFamily: 'DMMono-Regular', letterSpacing: 2 },
+  dcChip:      { width: 24, height: 17, borderRadius: 3, backgroundColor: dl(T, '#B8860B', '#8A6410'), opacity: 0.7 },
   dcBalLabel:  { color: '#7A6A3A', fontSize: 9, fontFamily: 'DMMono-Regular', letterSpacing: 1 },
-  dcBalAmt:    { color: '#B8860B', fontSize: 24, fontFamily: 'DMMono-Regular', marginTop: 2 },
+  dcBalAmt:    { color: dl(T, '#B8860B', '#8A6410'), fontSize: 24, fontFamily: 'DMMono-Regular', marginTop: 2 },
   dcNum:       { color: '#5A5238', fontSize: 12, fontFamily: 'DMMono-Regular', letterSpacing: 2, marginTop: 10 },
   dcBottom:    { flexDirection: 'row', justifyContent: 'space-between', marginTop: 7 },
   dcFoot:      { color: '#6A6046', fontSize: 9, fontFamily: 'DMMono-Regular' },
   dcBadge:     { marginTop: 12, alignSelf: 'flex-start', borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(184,134,11,0.5)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  dcBadgeTxt:  { color: '#B8860B', fontSize: 8.5, fontFamily: 'DMMono-Regular', letterSpacing: 1.4 },
+  dcBadgeTxt:  { color: dl(T, '#B8860B', '#8A6410'), fontSize: 8.5, fontFamily: 'DMMono-Regular', letterSpacing: 1.4 },
 
   foot:        { color: FAINT, fontSize: 11, textAlign: 'center', marginTop: 14, paddingHorizontal: 24, lineHeight: 18 },
 });
+};

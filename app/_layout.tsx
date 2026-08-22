@@ -1,14 +1,15 @@
-import { DarkTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 import { useFonts } from 'expo-font';
 import { router, Stack, usePathname, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import 'react-native-reanimated';
 
 import { loadMemberProfile } from '@/lib/db';
 import { ensureSession } from '@/lib/session';
 import { lastRoute, rememberRoute } from '@/lib/lastRoute';
+import { ThemeProviderAA2, useTheme, type Tokens } from '@/lib/theme-mode';
 import { SEAL_FLAG_PATH } from './arrival';
 
 export const unstable_settings = {
@@ -16,18 +17,26 @@ export const unstable_settings = {
 };
 
 /**
- * THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
- * React Navigation paints the ground UNDER every route. On a light-mode phone
- * the old `colorScheme === 'dark' ? DarkTheme : DefaultTheme` handed it
- * DefaultTheme — a WHITE card and a WHITE background behind AA2's near-black
- * screens. Every route flashed white on push, on pop, and behind every modal.
- * AA2's ground is Earth #0D0A04. It is now the ground in the navigator too.
+ * ─── THE GROUND ─────────────────────────────────────────────────────────────
+ * React Navigation paints the ground UNDER every route. Get it wrong and every
+ * push, every pop and every modal flashes a colour the app does not use.
+ *
+ * DARK is unchanged from what shipped: Earth #0D0A04, the default door in
+ * app/(tabs)/index.tsx. Nobody's app moves under them.
+ *
+ * LIGHT is the founder's own ground, #F0EEE8, from the year-old two-mode file.
+ * TWO MODES. ONE BUTTON. THE WHOLE APP — 2026-08-22.
  */
-const AA2_GROUND = '#0D0A04';
-const AA2_NAV_THEME = {
-  ...DarkTheme,
-  colors: { ...DarkTheme.colors, background: AA2_GROUND, card: AA2_GROUND },
-};
+const AA2_GROUND_DARK = '#0D0A04';
+
+function navThemeFor(T: Tokens) {
+  const base = T.mode === 'dark' ? DarkTheme : DefaultTheme;
+  const ground = T.mode === 'dark' ? AA2_GROUND_DARK : T.bg;
+  return {
+    ...base,
+    colors: { ...base.colors, background: ground, card: ground, text: T.ink, border: T.line, primary: T.blue },
+  };
+}
 
 export default function RootLayout() {
 
@@ -93,12 +102,34 @@ export default function RootLayout() {
     })();
   }, []);
 
+  // usePathname is legal here — RootLayout renders INSIDE the router. The
+  // provider needs the route because K9 and TACTICAL are always dark, whatever
+  // the member picked. Founder ruling: "Tactical and K-9 are the only dark
+  // everything."
+  const pathname = usePathname();
+
   return (
-    <ThemeProvider value={AA2_NAV_THEME}>
+    <ThemeProviderAA2 pathname={pathname}>
+      <Shell />
+    </ThemeProviderAA2>
+  );
+}
+
+/**
+ * The shell reads the tokens the provider resolved. It is a separate component
+ * for one reason: a hook cannot read a context its own parent provides.
+ */
+function Shell() {
+  const T = useTheme();
+  const nav = useMemo(() => navThemeFor(T), [T]);
+  const ground = T.mode === 'dark' ? AA2_GROUND_DARK : T.bg;
+
+  return (
+    <ThemeProvider value={nav}>
       {/* Records the room the member is standing in. Renders nothing, touches
           no screen's appearance, layout or copy — Law 1. Rewire only. */}
       <RouteMemory />
-      <Stack screenOptions={{ contentStyle: { backgroundColor: AA2_GROUND } }}>
+      <Stack screenOptions={{ contentStyle: { backgroundColor: ground } }}>
         <Stack.Screen name="arrival" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="biomarkers" options={{ headerShown: false }} />
@@ -106,7 +137,9 @@ export default function RootLayout() {
         <Stack.Screen name="vault" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
-      <StatusBar style="light" />
+      {/* The OS bar draws the OPPOSITE of the ground it sits on, or it vanishes
+          into it. LIGHT ground → dark glyphs. DARK ground → light glyphs. */}
+      <StatusBar style={T.statusBar} />
     </ThemeProvider>
   );
 }

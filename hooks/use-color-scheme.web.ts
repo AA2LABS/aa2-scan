@@ -1,11 +1,14 @@
 /**
  * ─── hooks/use-color-scheme.web.ts ─────────────────────────────────────────
- * THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
+ * THE MEMBER PICKS. NOT THE BROWSER.
  *
- * The web variant previously returned 'light' before hydration, then handed
- * over to the OS setting. AA2 has one panel and it is dark. Static render and
- * hydrated render now agree, so there is no flash between them.
+ * Same choke point as the native file. The member's stored pick is read from
+ * the vault, so the static render and the hydrated render agree once the
+ * provider is ready — and until it is ready the provider reports DARK, which
+ * is what shipped, so nobody sees a flash into a mode they did not choose.
  */
-export function useColorScheme(): 'dark' {
-  return 'dark';
+import { useThemeControl } from '@/lib/theme-mode';
+
+export function useColorScheme(): 'light' | 'dark' {
+  return useThemeControl().tokens.mode;
 }

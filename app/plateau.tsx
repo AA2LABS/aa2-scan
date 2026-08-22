@@ -29,6 +29,7 @@ import { loadMemberProfile, type FullMemberProfile } from '@/lib/db';
 import { getLiveReadout, type LiveReadout, type BiosignalSource } from '@/lib/biosignals';
 import { PALETTE, TYPE, card, KNOWLEDGE_CARD, KNOWLEDGE_TITLE, KNOWLEDGE_BODY, NEUTRAL_CARD } from '@/lib/theme';
 
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 const { navy, ink, mut, gold, cyan, green, purple, amber, red } = PALETTE;
 
 // ── 90-DAY NO-JUDGMENT LAW ───────────────────────────────────────────────────
@@ -48,6 +49,9 @@ function Pyramid({
   faces: { label: string; value: string; color: string }[];
   size: number; accent: string; onFace: (i: number) => void;
 }) {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+
   const [idx, setIdx] = useState(0);
   const fade = useMemo(() => new Animated.Value(1), []);
 
@@ -79,7 +83,7 @@ function Pyramid({
               width: size * w, height: h / 5.6,
               backgroundColor: face.color + (i === 4 ? '35' : String(18 + i * 6)),
               borderTopWidth: i === 0 ? 0 : StyleSheet.hairlineWidth,
-              borderTopColor: 'rgba(255,255,255,0.22)',
+              borderTopColor: lc(TH, 'rgba(255,255,255,0.22)'),
             }} />
           ))}
           {/* the face's data, riding the stone */}
@@ -92,7 +96,7 @@ function Pyramid({
       {/* face pips — which side is showing */}
       <View style={st.pips}>
         {faces.map((_, i) => (
-          <View key={i} style={[st.pip, { backgroundColor: i === idx ? accent : 'rgba(255,255,255,0.22)' }]} />
+          <View key={i} style={[st.pip, { backgroundColor: i === idx ? accent : lc(TH, 'rgba(255,255,255,0.22)') }]} />
         ))}
       </View>
     </Pressable>
@@ -103,6 +107,9 @@ function Pyramid({
 // One star per monument, a beam to each capstone. As above, so below —
 // drawn, not said.
 function Belt() {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+
   return (
     <View style={st.belt} pointerEvents="none">
       {[
@@ -121,6 +128,9 @@ function Belt() {
 }
 
 export default function PlateauScreen() {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+
   const [p, setP] = useState<FullMemberProfile | null>(null);
   const [readout, setReadout] = useState<LiveReadout | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -287,17 +297,23 @@ export default function PlateauScreen() {
   );
 }
 
-const st = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_st = (T: Tokens) => {
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: navy },
   back: { color: '#fff', fontSize: TYPE.label, fontWeight: '700', letterSpacing: 1, marginTop: 34, marginBottom: 10 },
   eyebrow: { color: cyan, fontSize: TYPE.label, letterSpacing: 3, fontWeight: '700', textAlign: 'center' },
   title: { color: '#fff', fontSize: 34, fontWeight: '800', letterSpacing: 1, textAlign: 'center', marginTop: 2 },
-  epigraph: { color: 'rgba(212,168,71,0.9)', fontSize: 15, fontStyle: 'italic', textAlign: 'center', marginTop: 3 },
+  epigraph: { color: dl(T, 'rgba(212,168,71,0.9)', 'rgba(184,134,30,0.9)'), fontSize: 15, fontStyle: 'italic', textAlign: 'center', marginTop: 3 },
 
   belt: { height: 52, marginTop: 8 },
   star: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#fff', shadowColor: '#fff', shadowOpacity: 0.9, shadowRadius: 7, elevation: 6 },
-  beam: { width: 1, height: 34, backgroundColor: 'rgba(255,255,255,0.16)', marginTop: 2 },
-  beltLabel: { position: 'absolute', top: -2, left: 0, right: 0, textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 9, letterSpacing: 3, fontWeight: '700' },
+  beam: { width: 1, height: 34, backgroundColor: dl(T, 'rgba(255,255,255,0.16)', 'rgba(0,0,0,0.12)'), marginTop: 2 },
+  beltLabel: { position: 'absolute', top: -2, left: 0, right: 0, textAlign: 'center', color: dl(T, 'rgba(255,255,255,0.5)', 'rgba(0,0,0,0.5)'), fontSize: 9, letterSpacing: 3, fontWeight: '700' },
 
   plateau: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginTop: 2 },
   site: { alignItems: 'center', flex: 1 },
@@ -305,17 +321,19 @@ const st = StyleSheet.create({
   apexSlash: { fontSize: 13, color: mut, fontWeight: '700' },
   capstone: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#fff', marginBottom: 3, shadowOpacity: 0.9, shadowRadius: 8, elevation: 5 },
   faceText: { position: 'absolute', bottom: 8, alignItems: 'center', paddingHorizontal: 4 },
-  faceLabel: { color: 'rgba(255,255,255,0.92)', fontSize: 9, letterSpacing: 1.4, fontWeight: '800' },
+  faceLabel: { color: dl(T, 'rgba(255,255,255,0.92)', 'rgba(0,0,0,0.51)'), fontSize: 9, letterSpacing: 1.4, fontWeight: '800' },
   faceValue: { fontSize: 17, fontWeight: '800', letterSpacing: 0.5 },
   pips: { flexDirection: 'row', gap: 4, marginTop: 7 },
   pip: { width: 5, height: 5, borderRadius: 3 },
   siteName: { color: ink, fontSize: TYPE.label, letterSpacing: 2, fontWeight: '700', marginTop: 9 },
   siteSub: { color: mut, fontSize: 9, letterSpacing: 0.6, marginTop: 2, textAlign: 'center' },
 
-  slab: { height: 18, borderRadius: 5, marginTop: 12, backgroundColor: 'rgba(27,184,255,0.28)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.28)', alignItems: 'center', justifyContent: 'center' },
+  slab: { height: 18, borderRadius: 5, marginTop: 12, backgroundColor: dl(T, 'rgba(27,184,255,0.28)', 'rgba(42,127,170,0.28)'), borderWidth: StyleSheet.hairlineWidth, borderColor: dl(T, 'rgba(255,255,255,0.28)', 'rgba(0,0,0,0.3)'), alignItems: 'center', justifyContent: 'center' },
   slabTxt: { color: '#DCE9F5', fontSize: 9, letterSpacing: 3, fontWeight: '700' },
   hint: { color: 'rgba(138,153,173,0.85)', fontSize: 9.5, letterSpacing: 1.6, textAlign: 'center', marginTop: 8 },
 
   cardTitle: { color: cyan, fontSize: TYPE.label, letterSpacing: 2, fontWeight: '700', marginBottom: 6 },
   cardBody: { color: 'rgba(232,238,245,0.85)', fontSize: TYPE.body, lineHeight: 21 },
 });
+};
+

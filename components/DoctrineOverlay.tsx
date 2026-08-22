@@ -6,10 +6,11 @@
 // Dark UI canonical: navy #0E1B33, gold #D4A847, green #34D399,
 // cyan #1BB8FF, red #E24B4A, ◆ signature mark.
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import type { DoctrineVerdict, Verdict } from '../lib/chemical-doctrine';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 const COLORS = {
   navyDeep: '#0E1B33',
   navyMid:  '#162544',
@@ -44,6 +45,9 @@ export interface DoctrineOverlayProps {
 }
 
 export function DoctrineOverlay(props: DoctrineOverlayProps) {
+  const TH = useTheme();
+  const styles = useMemo(() => make_styles(TH), [TH]);
+
   const {
     verdict,
     productName,
@@ -181,7 +185,13 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
   );
 }
 
-const styles = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_styles = (T: Tokens) => {
+  return StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: COLORS.navyDeep,
@@ -347,7 +357,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginTop: 12,
     alignItems: 'center',
-    backgroundColor: 'rgba(27,184,255,0.05)',
+    backgroundColor: dl(T, 'rgba(27,184,255,0.05)', 'rgba(42,127,170,0.05)'),
   },
   ctaText: {
     fontSize: 13,
@@ -375,5 +385,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
 });
+};
+
 
 export default DoctrineOverlay;

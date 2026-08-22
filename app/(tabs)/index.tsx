@@ -23,7 +23,7 @@ async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; m
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { CHEF_VOICE, COSMO_CHEMIST_VOICE, VOICE_MODEL } from '../../lib/voices';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator, Alert, FlatList, Image, Linking, Modal, Platform,
   SafeAreaView, ScrollView, StyleSheet, Text, TextInput,
@@ -38,34 +38,48 @@ import { streamClaude, extractVerdict } from '../../lib/claude-stream';
 import { supabase } from '../../lib/supabase';
 import { deviceBuyLink } from '../../lib/affiliate-links';
 
+import { dl, doorsFor, lc, useTheme, DOORS_DARK, type DoorKey, type Tokens } from '@/lib/theme-mode';
 // ─── PALETTE SYSTEM ──────────────────────────────────────────────────────────
-const PALETTES = {
-  earth:   { bg:'#0D0A04', card:'#1A1408', border:'#2E2208', accent:'#C49A2A', name:'Earth'    },
-  ocean:   { bg:'#030D14', card:'#0A1A24', border:'#0E2535', accent:'#4A9EFF', name:'Ocean'    },
-  alpine:  { bg:'#040D08', card:'#0A180D', border:'#0E2214', accent:'#2ECF73', name:'Alpine'   },
-  obsidian:{ bg:'#080808', card:'#131313', border:'#1E1E1E', accent:'#9B59B6', name:'Obsidian' },
-  desert:  { bg:'#0F0A04', card:'#1A1208', border:'#2E1E08', accent:'#F5922A', name:'Desert'  },
-} as const;
-type PaletteKey = keyof typeof PALETTES;
+// THE FIVE DOORS, IN BOTH MODES. The dark five are unchanged and now live in
+// lib/theme-mode.ts as DOORS_DARK — the same literals, to the character:
+//   earth #0D0A04 · ocean #030D14 · alpine #040D08 · obsidian #080808 · desert #0F0A04
+// The light five follow the founder's own two-mode file, where ten surfaces
+// shared ONE cream ground and the door was told apart by its ACCENT, not by the
+// colour of the room. So in light the grounds converge and the accents carry:
+//   gold #b8861e · blue #2a7faa · green #2a882a · purple #5566aa · rust #a85a18
+type PaletteKey = DoorKey;
 
 // ─── FIXED COLORS ────────────────────────────────────────────────────────────
-const F = {
-  white:        '#FFFFFF',
-  dimWhite:     'rgba(255,255,255,0.60)',
-  mutedWhite:   'rgba(255,255,255,0.35)',
-  allClear:     '#2ECFB3',
-  takeNotice:   '#C9A84C',
-  payAttention: '#E05252',
-  red:          '#E05252',
-  gold:         '#C49A2A',
-  teal:         '#2ECFB3',
-  blue:         '#4A9EFF',
-  fishBlue:     '#1BB8FF',
-  orange:       '#F5922A',
-  purple:       '#9B59B6',
-  green:        '#2ECF73',
-  nearBlack:    '#03050A',
-};
+/**
+ * ─── FIXED COLOURS, IN BOTH MODES ───────────────────────────────────────────
+ * These are the colours that do NOT belong to a door — the verdict ladder, the
+ * species accents, the neutral type. Every DARK value is the literal that
+ * shipped, still readable right here. Every LIGHT value is the founder's own.
+ *
+ * `white` and `nearBlack` are the two that do not simply swap: white type sits
+ * on photographs and on the camera viewfinder in BOTH modes, and nearBlack is
+ * the scanner's own frame. They are named separately so the difference is a
+ * decision on the record instead of an accident in a table.
+ */
+const fx = (T: Tokens) => ({
+  white:        dl(T, '#FFFFFF', '#1a1a1a'),
+  onPhoto:      '#FFFFFF',                       // never switches — see above
+  dimWhite:     dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'),
+  mutedWhite:   dl(T, 'rgba(255,255,255,0.35)', 'rgba(0,0,0,0.38)'),
+  allClear:     dl(T, '#2ECFB3', '#12795A'),
+  takeNotice:   dl(T, '#C9A84C', '#b8861e'),
+  payAttention: dl(T, '#E05252', '#C0392B'),
+  red:          dl(T, '#E05252', '#C0392B'),
+  gold:         dl(T, '#C49A2A', '#b8861e'),
+  teal:         dl(T, '#2ECFB3', '#12795A'),
+  blue:         dl(T, '#4A9EFF', '#2a7faa'),
+  fishBlue:     dl(T, '#1BB8FF', '#2a7faa'),
+  orange:       dl(T, '#F5922A', '#a85a18'),
+  purple:       dl(T, '#9B59B6', '#5566aa'),
+  green:        dl(T, '#2ECF73', '#2a882a'),
+  nearBlack:    dl(T, '#03050A', '#F0EEE8'),
+});
+
 
 
 
@@ -91,7 +105,9 @@ const TAB_HERO_POS: Record<string, 'center' | 'top'> = {
 };
 
 // ─── TABS ────────────────────────────────────────────────────────────────────
-const TABS = [
+/** THE EIGHT TABS. Colour comes from the tokens so a tab is the same tab in
+ *  both modes — the accent moves, the meaning does not. */
+const tabsFor = (T: Tokens) => { const F = fx(T); return [
   { id:'scan',       label:'SCAN',          icon:'⚡', color:F.gold     },
   { id:'produce',    label:'PRODUCE',        icon:'🌿', color:F.teal     },
   { id:'meat',       label:'MEAT',           icon:'🥩', color:F.red      },
@@ -100,13 +116,13 @@ const TABS = [
   { id:'grownfolks', label:'WINE & SPIRITS', icon:'🍷', color:F.gold     },
   { id:'species',    label:'SPECIES',        icon:'🐾', color:F.blue     },
   { id:'apothecary', label:'APOTHECARY',     icon:'🧪', color:F.green    },
-];
+]; };
 
-const SPECIES_SUBS = [
+const speciesSubsFor = (T: Tokens) => { const F = fx(T); return [
   { id:'k9',    label:'K9 / PET',     icon:'🐕', color:F.blue },
   { id:'horse', label:'EQUESTRIAN',   icon:'🐴', color:F.gold },
   { id:'agri',  label:'AGRICULTURAL', icon:'🌾', color:F.teal },
-];
+]; };
 
 type FishMode = 'identify' | 'scan' | 'waterbody';
 const FISH_MODES: { id:FishMode; label:string }[] = [
@@ -117,8 +133,10 @@ const FISH_MODES: { id:FishMode; label:string }[] = [
 
 type RecipeChip = { recipeName: string; cookTime: string; ingredientCount: number };
 
-const verdictColor = (v:string) =>
-  v==='ALL CLEAR' ? F.allClear : v==='TAKE NOTICE' ? F.takeNotice : F.payAttention;
+const verdictColor = (T:Tokens, v:string) => {
+  const F = fx(T);
+  return v==='ALL CLEAR' ? F.allClear : v==='TAKE NOTICE' ? F.takeNotice : F.payAttention;
+};
 const verdictGlyph = (v:string) =>
   v==='ALL CLEAR' ? '✓' : v==='TAKE NOTICE' ? '⚠' : '✕';
 
@@ -239,38 +257,108 @@ async function handleWhereToBuy(productName: string): Promise<void> {
   }
 }
 
-async function lookupBarcode(barcode:string):Promise<string> {
+/**
+ * ─── THE PRODUCT PICTURE ────────────────────────────────────────────────────
+ * FOUNDER, 2026-08-22: "you need to find a way to show the product picture with
+ * the results ... this requires a picture with its return."
+ *
+ * The response was ALREADY carrying the photo. lookupBarcode fetched the record,
+ * built a text block out of the name, ingredients and additives, and dropped
+ * everything else on the floor — the picture included. It was never a missing
+ * capability. It was a discarded one.
+ *
+ * WHY A LIST OF KEYS AND NOT ONE. Open Food Facts publishes the front-of-pack
+ * photo under more than one key depending on how the record was built and what
+ * language it was photographed in. Guessing ONE and calling it done is how you
+ * get a screen that works on Cheerios and shows nothing on a Panamanian brand.
+ * So AA2 asks in order of preference, takes the first that answers, and LOGS
+ * WHICH KEY ANSWERED. First real scan writes the receipt into the console —
+ * NEVER STATE A DEVICE CAPABILITY WITHOUT THE RECEIPT applies to APIs too.
+ */
+const OFF_IMAGE_KEYS = [
+  'image_front_url',        // the front of the pack — what he is holding
+  'image_front_small_url',
+  'image_url',              // whatever the record calls its main shot
+  'image_small_url',
+  'image_ingredients_url',  // last resort: the label he was reading anyway
+] as const;
+
+function offImage(p: any): { url: string | null; via: string | null } {
+  for (const k of OFF_IMAGE_KEYS) {
+    const v = p?.[k];
+    if (typeof v === 'string' && v.startsWith('http')) return { url: v, via: k };
+  }
+  // selected_images.front.display.{lang} — the nested shape some records use.
+  const disp = p?.selected_images?.front?.display;
+  if (disp && typeof disp === 'object') {
+    for (const lang of Object.keys(disp)) {
+      const v = disp[lang];
+      if (typeof v === 'string' && v.startsWith('http')) return { url: v, via: `selected_images.front.display.${lang}` };
+    }
+  }
+  return { url: null, via: null };
+}
+
+export type BarcodeLookup = {
+  prompt: string;
+  image: string | null;
+  imageVia: string | null;
+  name: string | null;
+  brand: string | null;
+  quantity: string | null;
+};
+
+async function lookupBarcode(barcode:string):Promise<BarcodeLookup> {
+  const miss = (why:string): BarcodeLookup =>
+    ({ prompt: why, image: null, imageVia: null, name: null, brand: null, quantity: null });
   try {
     const res  = await fetch(`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,{headers:{'User-Agent':'AA2-Scanner/1.0'}});
     const data = await res.json();
-    if (data.status!==1||!data.product) return `Barcode: ${barcode}. Not found in database. Use your knowledge base to analyze this barcode and product. Return full verdict JSON.`;
+    if (data.status!==1||!data.product) {
+      return miss(`Barcode: ${barcode}. Not found in database. Use your knowledge base to analyze this barcode and product. Return full verdict JSON.`);
+    }
     const p = data.product;
-    return [
-      `PRODUCT: ${p.product_name||'Unknown'}${p.brands?' by '+p.brands:''}`,
-      `BARCODE: ${barcode}`,
-      `INGREDIENTS: ${p.ingredients_text_en||p.ingredients_text||'Not listed'}`,
-      `ADDITIVES: ${p.additives_tags?.map((a:string)=>a.replace('en:','')).join(', ')||'none'}`,
-      `ALLERGENS: ${p.allergens_tags?.join(', ')||'none listed'}`,
-      p.nova_group?`NOVA Group: ${p.nova_group}`:'',
-      `\nReturn verdict JSON.`,
-    ].filter(Boolean).join('\n');
-  } catch { return `Barcode: ${barcode}. Lookup failed. Analyze and return verdict JSON.`; }
+    const img = offImage(p);
+    // THE RECEIPT. Which key actually carried the photo, on a real record.
+    console.log('[lookupBarcode] image key:', img.via ?? 'NONE', '| keys present:',
+      Object.keys(p).filter(k => k.startsWith('image')).join(', ') || 'none');
+    return {
+      prompt: [
+        `PRODUCT: ${p.product_name||'Unknown'}${p.brands?' by '+p.brands:''}`,
+        `BARCODE: ${barcode}`,
+        `INGREDIENTS: ${p.ingredients_text_en||p.ingredients_text||'Not listed'}`,
+        `ADDITIVES: ${p.additives_tags?.map((a:string)=>a.replace('en:','')).join(', ')||'none'}`,
+        `ALLERGENS: ${p.allergens_tags?.join(', ')||'none listed'}`,
+        p.nova_group?`NOVA Group: ${p.nova_group}`:'',
+        `\nReturn verdict JSON.`,
+      ].filter(Boolean).join('\n'),
+      image: img.url,
+      imageVia: img.via,
+      name: p.product_name || null,
+      brand: p.brands || null,
+      quantity: p.quantity || null,
+    };
+  } catch { return miss(`Barcode: ${barcode}. Lookup failed. Analyze and return verdict JSON.`); }
 }
 
 // ─── PALETTE DOTS ────────────────────────────────────────────────────────────
 function PaletteDots({ current, onSelect, cardBg }: {
   current: PaletteKey; onSelect: (k:PaletteKey) => void; cardBg: string;
 }) {
+  const TH = useTheme();
+  const F = fx(TH);
+  const pd = useMemo(() => make_pd(TH), [TH]);
+
   return (
     <View style={[pd.bar, { backgroundColor: cardBg }]}>
-      {(Object.keys(PALETTES) as PaletteKey[]).map(k => (
+      {(Object.keys(DOORS_DARK) as PaletteKey[]).map(k => (
         <TouchableOpacity
           key={k}
           onPress={() => onSelect(k)}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           style={pd.dotWrap}>
           <View style={[pd.dot, {
-            backgroundColor: PALETTES[k].accent,
+            backgroundColor: doorsFor(TH)[k].accent,
             opacity: current===k ? 1 : 0.45,
             transform:[{ scale: current===k ? 1.3 : 1 }],
           }]}/>
@@ -279,14 +367,24 @@ function PaletteDots({ current, onSelect, cardBg }: {
     </View>
   );
 }
-const pd = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_pd = (T: Tokens) => {
+  const F = fx(T);
+  return StyleSheet.create({
   bar:     { flexDirection:'row', gap:6, justifyContent:'center', paddingVertical:8, paddingHorizontal:16 },
   dotWrap: { padding:6, alignItems:'center', justifyContent:'center' },
   dot:     { width:16, height:16, borderRadius:8 },
 });
+};
+
 
 // ─── CONCIERGE MESSAGE ───────────────────────────────────────────────────────
 function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
+  const TH = useTheme();
   return (
     <TouchableOpacity
       onPress={onDismiss}
@@ -294,11 +392,11 @@ function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
       style={{
         marginHorizontal: 16,
         marginBottom: 10,
-        backgroundColor: 'rgba(27,184,255,0.08)',
+        backgroundColor: lc(TH, 'rgba(27,184,255,0.08)'),
         borderRadius: 12,
         padding: 14,
         borderWidth: 1,
-        borderColor: 'rgba(27,184,255,0.25)',
+        borderColor: lc(TH, 'rgba(27,184,255,0.25)'),
         flexDirection: 'row',
         alignItems: 'flex-start',
         gap: 10,
@@ -309,7 +407,7 @@ function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
         <Text style={{
           fontFamily: 'DMMono-Regular',
           fontSize: 9,
-          color: '#1BB8FF',
+          color: lc(TH, '#1BB8FF'),
           letterSpacing: 2,
           marginBottom: 4,
         }}>
@@ -318,7 +416,7 @@ function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
         <Text style={{
           fontFamily: 'CormorantGaramond-Italic',
           fontSize: 15,
-          color: 'rgba(255,255,255,0.85)',
+          color: lc(TH, 'rgba(255,255,255,0.85)'),
           lineHeight: 22,
         }}>
           "Don't be shy — you can ask me anything about any food, plant, meat, species, wine, or spirits. No barcode? No problem. I listen just as well as I scan."
@@ -326,7 +424,7 @@ function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
         <Text style={{
           fontFamily: 'DMMono-Regular',
           fontSize: 9,
-          color: 'rgba(255,255,255,0.35)',
+          color: lc(TH, 'rgba(255,255,255,0.35)'),
           marginTop: 6,
           letterSpacing: 1,
         }}>
@@ -339,6 +437,10 @@ function ConciergeMessage({ onDismiss }: { onDismiss: () => void }) {
 
 // ─── MAIN ────────────────────────────────────────────────────────────────────
 export default function ScannerScreen() {
+  const TH = useTheme();
+  const F = fx(TH);
+  const s = useMemo(() => make_s(TH), [TH]);
+
   const { width: screenW, height: screenH } = useWindowDimensions();
   const frameW      = Math.min(screenW * 0.68, 300);
   const frameH      = frameW * 0.58;
@@ -359,6 +461,18 @@ export default function ScannerScreen() {
   const [manualInput,        setManualInput]       = useState('');
   const [loading,            setLoading]           = useState(false);
   const [result,             setResult]            = useState<any>(null);
+  /**
+   * THE PICTURE THAT COMES BACK WITH THE RESULT. Two sources, and the ORDER IS
+   * THE DOCTRINE:
+   *   'camera' — the frame HE just shot. The actual box, in his light, on his
+   *              shelf. No database can beat it and it needs no network.
+   *   'off'    — Open Food Facts' front-of-pack, for a barcode typed or scanned
+   *              without a photo.
+   * If neither exists the card says so. AA2 does not show a stock photo of a
+   * different box — a picture that is not the thing in your hand is worse than
+   * no picture. Same law as the vendor-verdict ban.
+   */
+  const [scanImage, setScanImage] = useState<{uri:string; source:'camera'|'off'} | null>(null);
   const cameraRef = useRef<any>(null);
   const [history,            setHistory]           = useState<ScanRecord[]>([]);
   const [historyVisible,     setHistoryVisible]    = useState(false);
@@ -386,7 +500,9 @@ export default function ScannerScreen() {
   const scannedRef     = useRef(false);
   const lastBarcodeRef = useRef<string|null>(null);
 
-  const P           = PALETTES[palette];
+  const P           = doorsFor(TH)[palette];
+  const TABS = tabsFor(TH);
+  const SPECIES_SUBS = speciesSubsFor(TH);
   const currentTab  = TABS.find(t => t.id===activeTab)!;
   const accentColor = activeTab==='species'
     ? (SPECIES_SUBS.find(s => s.id===speciesSub)?.color ?? F.blue)
@@ -485,7 +601,7 @@ export default function ScannerScreen() {
     }
 
     setCameraMode(false); setScanning(false);
-    setLoading(true); setResult(null);
+    setLoading(true); setResult(null); setScanImage(null);
     try {
       // Speed doctrine: never upload a full-resolution frame. A modern phone
       // shoots 12–48MP; unresized that is a multi-megabyte upload before the
@@ -517,6 +633,11 @@ export default function ScannerScreen() {
         setLoading(false);
         return;
       }
+      // HIS SHOT WINS. The frame is already resized, already in hand, and it is
+      // the real object rather than a database's idea of it. It was being sent
+      // to the vision model and then discarded; now it is the hero of the card.
+      setScanImage({ uri: `data:image/jpeg;base64,${shrunkBase64}`, source: 'camera' });
+
       const profile = memberProfile;
       const personalTruth = buildPersonalTruth(profile);
       const tabContext: TabContext = (activeTab==='scan'||activeTab==='care'||activeTab==='grownfolks'||activeTab==='fish'||activeTab==='species'||activeTab==='apothecary'||activeTab==='forager') ? activeTab as TabContext : 'scan';
@@ -563,7 +684,7 @@ export default function ScannerScreen() {
   };
 
   const runAnalysis = async (query:string, cameraCapture = false) => {
-    setLoading(true); setResult(null); setWinePanel('pairing');
+    setLoading(true); setResult(null); setScanImage(null); setWinePanel('pairing');
     const effectiveSub = activeTab==='species' ? speciesSub : undefined;
     try {
       const profile       = memberProfile;
@@ -575,11 +696,16 @@ export default function ScannerScreen() {
 
       let content = query;
       if (isBarcode) {
-        const bd = await Promise.race<string|null>([
+        const bd = await Promise.race<BarcodeLookup|null>([
           lookupBarcode(query.trim()),
           new Promise<null>(r => setTimeout(()=>r(null),3000)),
         ]);
-        if (bd) content = bd;
+        if (bd) {
+          content = bd.prompt;
+          // The photo rides back with the verdict. It used to be fetched and
+          // thrown away on the same line.
+          if (bd.image) setScanImage({ uri: bd.image, source: 'off' });
+        }
       } else if (!cameraCapture) {
         if (activeTab==='scan') {
           content = `Product name: ${query}. Analyze and return verdict JSON.`;
@@ -807,7 +933,7 @@ export default function ScannerScreen() {
               <TouchableOpacity key={tab.id}
                 style={[s.tabBtn,
                   activeTab===tab.id&&{borderBottomColor:tab.color,borderBottomWidth:2.5,backgroundColor:tab.color+'14'}]}
-                onPress={()=>{ if(tab.id==='apothecary'){ router.push('/apothecary' as any); return; } setActiveTab(tab.id); setResult(null); }}>
+                onPress={()=>{ if(tab.id==='apothecary'){ router.push('/apothecary' as any); return; } setActiveTab(tab.id); setResult(null); setScanImage(null); }}>
                 <Text style={s.tabIcon}>{tab.icon}</Text>
                 <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[s.tabLabel,{color:activeTab===tab.id?tab.color:F.dimWhite}]}>{tab.label}</Text>
               </TouchableOpacity>
@@ -822,7 +948,7 @@ export default function ScannerScreen() {
           {SPECIES_SUBS.map(sub=>(
             <TouchableOpacity key={sub.id}
               style={[s.subTab,{borderColor:speciesSub===sub.id?sub.color:P.border,backgroundColor:speciesSub===sub.id?sub.color+'1A':P.card}]}
-              onPress={()=>{setSpeciesSub(sub.id);setResult(null);}}>
+              onPress={()=>{setSpeciesSub(sub.id);setResult(null);setScanImage(null);}}>
               <Text style={s.subTabIcon}>{sub.icon}</Text>
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[s.subTabLabel,{color:speciesSub===sub.id?sub.color:F.dimWhite,flexShrink:1}]}>{sub.label}</Text>
             </TouchableOpacity>
@@ -836,7 +962,7 @@ export default function ScannerScreen() {
           {FISH_MODES.map(fm=>(
             <TouchableOpacity key={fm.id}
               style={[s.subTab,{borderColor:fishMode===fm.id?F.fishBlue:P.border,backgroundColor:fishMode===fm.id?F.fishBlue+'1A':P.card}]}
-              onPress={()=>{setFishMode(fm.id);setResult(null);}}>
+              onPress={()=>{setFishMode(fm.id);setResult(null);setScanImage(null);}}>
               <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65} style={[s.subTabLabel,{color:fishMode===fm.id?F.fishBlue:F.dimWhite,fontSize:8,flexShrink:1}]}>{fm.label}</Text>
             </TouchableOpacity>
           ))}
@@ -950,6 +1076,43 @@ export default function ScannerScreen() {
           {result&&!loading&&(
             <View style={s.resultBlock}>
 
+              {/* ── THE PRODUCT PICTURE ──────────────────────────────────────
+                  Founder order 2026-08-22: "this requires a picture with its
+                  return." The photo leads the card because it is the fastest
+                  confirmation that AA2 read the RIGHT box — before a single
+                  word of verdict is trusted, the eye checks the picture. */}
+              {scanImage ? (
+                <View style={s.shotWrap}>
+                  <HeroImage
+                    source={{ uri: scanImage.uri }}
+                    style={s.shotImg}
+                    contentFit="cover"
+                    contentPosition="center"
+                    transition={140}
+                  />
+                  <View style={[s.shotFade,{backgroundColor:P.bg}]} pointerEvents="none" />
+                  <View style={s.shotFoot}>
+                    {result.productName ? (
+                      <Text style={[s.shotName,{color:F.white}]} numberOfLines={2}>{result.productName}</Text>
+                    ) : null}
+                    <Text style={[s.shotSrc,{color:F.mutedWhite}]}>
+                      {scanImage.source === 'camera' ? 'YOUR SHOT' : 'OPEN FOOD FACTS'}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                /* NO PICTURE, SAID OUT LOUD. Never a stock photo of a different
+                   box — a picture that is not the thing in your hand is worse
+                   than no picture. */
+                <View style={[s.shotEmpty,{borderColor:P.border,backgroundColor:P.card}]}>
+                  <Text style={[s.shotEmptyGlyph,{color:F.mutedWhite}]}>◻</Text>
+                  <Text style={[s.shotEmptyTxt,{color:F.dimWhite}]}>
+                    No photo on record for this one. Point the camera at it and the
+                    next scan carries its own.
+                  </Text>
+                </View>
+              )}
+
               {/* ALLERGY ALERT */}
               {result.allergyAlert?.triggered&&(
                 <View style={s.allergyAlertCard}>
@@ -975,12 +1138,12 @@ export default function ScannerScreen() {
               )}
 
               {/* VERDICT BANNER */}
-              <View style={[s.verdictBanner,{backgroundColor:verdictColor(result.verdict)+'1A',borderColor:verdictColor(result.verdict)}]}>
-                <View style={[s.verdictIconWrap,{backgroundColor:verdictColor(result.verdict)+'22'}]}>
-                  <Text style={[s.verdictIconText,{color:verdictColor(result.verdict)}]}>{verdictGlyph(result.verdict)}</Text>
+              <View style={[s.verdictBanner,{backgroundColor:verdictColor(TH, result.verdict)+'1A',borderColor:verdictColor(TH, result.verdict)}]}>
+                <View style={[s.verdictIconWrap,{backgroundColor:verdictColor(TH, result.verdict)+'22'}]}>
+                  <Text style={[s.verdictIconText,{color:verdictColor(TH, result.verdict)}]}>{verdictGlyph(result.verdict)}</Text>
                 </View>
                 <View style={{flex:1}}>
-                  <Text style={[s.verdictText,{color:verdictColor(result.verdict)}]}>{result.verdict}</Text>
+                  <Text style={[s.verdictText,{color:verdictColor(TH, result.verdict)}]}>{result.verdict}</Text>
                   <Text style={[s.verdictReason,{color:F.dimWhite}]}>{result.verdictReason}</Text>
                 </View>
               </View>
@@ -1323,9 +1486,9 @@ export default function ScannerScreen() {
                         <TouchableOpacity
                           hitSlop={{ top: 9, bottom: 9, left: 8, right: 8 }}
                           onPress={()=>handleWhereToBuy(a)}
-                          style={{borderWidth:1,borderColor:'rgba(27,184,255,0.40)',backgroundColor:'rgba(27,184,255,0.12)',borderRadius:8,paddingHorizontal:12,paddingVertical:6}}
+                          style={{borderWidth:1,borderColor:lc(TH, 'rgba(27,184,255,0.40)'),backgroundColor:lc(TH, 'rgba(27,184,255,0.12)'),borderRadius:8,paddingHorizontal:12,paddingVertical:6}}
                           activeOpacity={0.7}>
-                          <Text style={{fontFamily:'DMMono-Regular',fontSize:10,color:'#1BB8FF',letterSpacing:1}}>WHERE TO BUY →</Text>
+                          <Text style={{fontFamily:'DMMono-Regular',fontSize:10,color:lc(TH, '#1BB8FF'),letterSpacing:1}}>WHERE TO BUY →</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -1339,12 +1502,12 @@ export default function ScannerScreen() {
                   <Text style={[s.vaultLabel,{color:F.gold}]}>💎 AWARE DOLLARS</Text>
                   <Text style={[s.vaultBody,{color:F.white}]}>{result.actRightDollars}</Text>
                   {awareState==='logged'?(
-                    <View style={[s.scanAgainBtn,{borderColor:'#8fd6ff',marginTop:12}]}>
-                      <Text style={[s.scanAgainText,{color:'#8fd6ff'}]}>✓ LOGGED TO VAULT</Text>
+                    <View style={[s.scanAgainBtn,{borderColor:lc(TH, '#8fd6ff'),marginTop:12}]}>
+                      <Text style={[s.scanAgainText,{color:lc(TH, '#8fd6ff')}]}>✓ LOGGED TO VAULT</Text>
                     </View>
                   ):awareState==='failed'?(
-                    <TouchableOpacity style={[s.scanAgainBtn,{borderColor:'#E0A04A',marginTop:12}]} onPress={followAwareDollars} activeOpacity={0.7}>
-                      <Text style={[s.scanAgainText,{color:'#E0A04A'}]}>⚠ NOT SAVED — RETRY</Text>
+                    <TouchableOpacity style={[s.scanAgainBtn,{borderColor:lc(TH, '#E0A04A'),marginTop:12}]} onPress={followAwareDollars} activeOpacity={0.7}>
+                      <Text style={[s.scanAgainText,{color:lc(TH, '#E0A04A')}]}>⚠ NOT SAVED — RETRY</Text>
                     </TouchableOpacity>
                   ):(
                     <TouchableOpacity
@@ -1534,12 +1697,12 @@ export default function ScannerScreen() {
             :<FlatList data={history} keyExtractor={item=>item.id} contentContainerStyle={{padding:16}}
               renderItem={({item})=>(
                 <View style={[s.historyRow,{borderBottomColor:P.border}]}>
-                  <View style={[s.historyDot,{backgroundColor:verdictColor(item.verdict)}]}/>
+                  <View style={[s.historyDot,{backgroundColor:verdictColor(TH, item.verdict)}]}/>
                   <View style={{flex:1}}>
                     <Text style={[s.historyProduct,{color:F.white}]}>{item.productName}</Text>
                     <Text style={[s.historyMeta,{color:F.dimWhite}]}>{item.tab} · {item.timestamp}</Text>
                   </View>
-                  <Text style={[s.historyVerdict,{color:verdictColor(item.verdict)}]}>{verdictGlyph(item.verdict)}</Text>
+                  <Text style={[s.historyVerdict,{color:verdictColor(TH, item.verdict)}]}>{verdictGlyph(item.verdict)}</Text>
                 </View>
               )}/>
           }
@@ -1555,7 +1718,32 @@ export default function ScannerScreen() {
 }
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────
-const s = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_s = (T: Tokens) => {
+  const F = fx(T);
+  return StyleSheet.create({
+  /* ── THE PRODUCT PICTURE ────────────────────────────────────────────────
+     The fade is the door's own ground pulled up over the bottom of the photo
+     so the name sits on the panel instead of on a hard seam. It is painted
+     with the live palette, so it is correct on all five doors and in both
+     modes without a second recipe. */
+  shotWrap:  { height: 232, borderRadius: 16, overflow: 'hidden', marginBottom: 12 },
+  shotImg:   { width: '100%', height: '100%' },
+  shotFade:  { position: 'absolute', left: 0, right: 0, bottom: 0, height: 92, opacity: 0.72 },
+  shotFoot:  { position: 'absolute', left: 14, right: 14, bottom: 11 },
+  shotName:  { fontSize: 19, fontWeight: '800', letterSpacing: 0.2,
+               textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 8 },
+  shotSrc:   { fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 1.8, marginTop: 4,
+               textShadowColor: 'rgba(0,0,0,0.55)', textShadowRadius: 6 },
+  shotEmpty: { borderRadius: 16, borderWidth: 1, paddingVertical: 22, paddingHorizontal: 18,
+               alignItems: 'center', marginBottom: 12, gap: 8 },
+  shotEmptyGlyph: { fontSize: 26 },
+  shotEmptyTxt:   { fontSize: 13, lineHeight: 19, textAlign: 'center' },
+
   root:            {flex:1},
   header:          {flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:16,paddingTop:8,paddingBottom:8,borderBottomWidth:1},
   receipt:         {fontFamily:Platform.OS==='ios'?'Courier New':'monospace',fontSize:9,color:F.dimWhite,letterSpacing:2,flex:1},
@@ -1596,7 +1784,7 @@ const s = StyleSheet.create({
   frameDoctrine:   {fontSize:9,letterSpacing:2,fontFamily:Platform.OS==='ios'?'Courier New':'monospace',marginBottom:8},
   cameraHint:      {fontWeight:'900',fontSize:12,letterSpacing:2},
   cameraControls:  {alignItems:'center',width:'100%'},
-  captureOuter:    {borderWidth:4,alignItems:'center',justifyContent:'center',backgroundColor:'rgba(255,255,255,0.08)',marginBottom:20},
+  captureOuter:    {borderWidth:4,alignItems:'center',justifyContent:'center',backgroundColor:dl(T, 'rgba(255,255,255,0.08)', 'rgba(0,0,0,0.04)'),marginBottom:20},
   captureInner:    {},
   cancelBtn:       {paddingVertical:12,paddingHorizontal:28,borderRadius:10,borderWidth:1},
   cancelText:      {color:F.dimWhite,fontSize:12,fontWeight:'800',letterSpacing:1.5},
@@ -1611,7 +1799,7 @@ const s = StyleSheet.create({
   allergyAlertAllergen:{fontFamily:'DMMono-Regular',fontSize:11,color:F.red,letterSpacing:2,fontWeight:'700',marginBottom:3},
   allergyAlertBody:{fontSize:12,color:F.dimWhite,lineHeight:18},
   allergyChipRow:  {flexDirection:'row',flexWrap:'wrap',gap:6},
-  allergyChip:     {paddingHorizontal:10,paddingVertical:4,borderRadius:20,backgroundColor:'rgba(46,207,115,0.12)',borderWidth:1,borderColor:'rgba(46,207,115,0.35)'},
+  allergyChip:     {paddingHorizontal:10,paddingVertical:4,borderRadius:20,backgroundColor:dl(T, 'rgba(46,207,115,0.12)', 'rgba(42,136,42,0.12)'),borderWidth:1,borderColor:dl(T, 'rgba(46,207,115,0.35)', 'rgba(42,136,42,0.35)')},
   allergyChipText: {fontFamily:'DMMono-Regular',fontSize:9,color:F.green,letterSpacing:0.5},
   verdictBanner:   {flexDirection:'row',alignItems:'center',gap:14,padding:16,borderRadius:14,borderWidth:2,marginBottom:12},
   verdictIconWrap: {width:48,height:48,borderRadius:24,alignItems:'center',justifyContent:'center'},
@@ -1621,7 +1809,7 @@ const s = StyleSheet.create({
   productName:     {fontSize:16,fontWeight:'700',marginBottom:10,paddingHorizontal:2},
   typeBadge:       {paddingHorizontal:12,paddingVertical:5,borderRadius:8,borderWidth:1,alignSelf:'flex-start',marginBottom:10},
   typeBadgeText:   {fontSize:11,fontWeight:'700',letterSpacing:0.5},
-  recallBanner:    {borderRadius:10,borderWidth:1,padding:12,marginBottom:10,backgroundColor:'rgba(224,82,82,0.12)'},
+  recallBanner:    {borderRadius:10,borderWidth:1,padding:12,marginBottom:10,backgroundColor:dl(T, 'rgba(224,82,82,0.12)', 'rgba(192,57,43,0.12)')},
   recallText:      {fontWeight:'800',fontSize:12},
   intelCard:       {borderRadius:12,borderLeftWidth:3,borderWidth:1,padding:16,marginBottom:10},
   intelHeader:     {fontSize:9,fontWeight:'900',letterSpacing:2,marginBottom:8},
@@ -1650,17 +1838,17 @@ const s = StyleSheet.create({
   flaggedConcern:  {fontSize:12,lineHeight:18},
   // Wine & Spirits
   panelRow:        {flexDirection:'row',gap:10,marginBottom:10},
-  panelBtn:        {flex:1,paddingVertical:11,borderRadius:10,borderWidth:1,borderColor:'rgba(255,255,255,0.12)',alignItems:'center'},
+  panelBtn:        {flex:1,paddingVertical:11,borderRadius:10,borderWidth:1,borderColor:dl(T, 'rgba(255,255,255,0.12)', 'rgba(0,0,0,0.1)'),alignItems:'center'},
   panelBtnText:    {fontSize:11,fontWeight:'900',letterSpacing:1},
   // Alternatives with WHY button
   altCard:         {borderRadius:12,borderWidth:1,padding:16,marginBottom:10},
   altHeader:       {fontSize:9,fontWeight:'900',letterSpacing:2,marginBottom:8},
   altItemRow:      {marginBottom:14},
   altItem:         {fontSize:13,lineHeight:22},
-  whyBtn:          {paddingHorizontal:8,paddingVertical:3,borderRadius:4,borderWidth:1,borderColor:'rgba(255,255,255,0.15)',marginLeft:10},
+  whyBtn:          {paddingHorizontal:8,paddingVertical:3,borderRadius:4,borderWidth:1,borderColor:dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),marginLeft:10},
   whyBtnText:      {fontFamily:'DMMono-Regular',fontSize:8,color:F.dimWhite,letterSpacing:1},
   // Vault
-  vaultCard:       {borderRadius:12,borderWidth:1,padding:16,marginBottom:10,backgroundColor:'rgba(196,154,42,0.10)'},
+  vaultCard:       {borderRadius:12,borderWidth:1,padding:16,marginBottom:10,backgroundColor:dl(T, 'rgba(196,154,42,0.10)', 'rgba(184,134,30,0.10)')},
   vaultLabel:      {fontSize:9,fontWeight:'900',letterSpacing:2,marginBottom:6},
   vaultBody:       {fontSize:13,lineHeight:20},
   scanAgainBtn:    {borderWidth:1.5,borderRadius:10,paddingVertical:14,alignItems:'center',marginTop:4},
@@ -1684,7 +1872,7 @@ const s = StyleSheet.create({
   clearBtnText:    {fontWeight:'800',fontSize:11,letterSpacing:1.5},
   // Recipe modal
   recipeModalRoot:     {flex:1,backgroundColor:'#0D0E10'},
-  recipeModalHeader:   {flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:20,paddingVertical:14,borderBottomWidth:1,borderBottomColor:'rgba(255,255,255,0.07)'},
+  recipeModalHeader:   {flexDirection:'row',alignItems:'center',justifyContent:'space-between',paddingHorizontal:20,paddingVertical:14,borderBottomWidth:1,borderBottomColor:dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)')},
   recipeModalClose:    {fontSize:18,fontWeight:'700',color:F.dimWhite},
   recipeModalHeaderLabel:{fontFamily:'DMMono-Regular',fontSize:9,color:F.orange,letterSpacing:3},
   recipeLoadingWrap:   {flex:1,alignItems:'center',justifyContent:'center',gap:16},
@@ -1692,9 +1880,9 @@ const s = StyleSheet.create({
   recipeNameWrap:      {paddingHorizontal:20,paddingTop:20,paddingBottom:8},
   recipeModalName:     {fontFamily:'CormorantGaramond-Italic',fontSize:24,color:F.white,lineHeight:30},
   recipeMetaRow:       {flexDirection:'row',flexWrap:'wrap',gap:8,paddingHorizontal:20,marginBottom:12},
-  recipeMetaChip:      {paddingHorizontal:12,paddingVertical:5,borderRadius:20,borderWidth:1,borderColor:'rgba(255,255,255,0.12)',backgroundColor:'rgba(255,255,255,0.07)'},
+  recipeMetaChip:      {paddingHorizontal:12,paddingVertical:5,borderRadius:20,borderWidth:1,borderColor:dl(T, 'rgba(255,255,255,0.12)', 'rgba(0,0,0,0.1)'),backgroundColor:dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)')},
   recipeMetaText:      {fontFamily:'DMMono-Regular',fontSize:10,color:F.dimWhite,letterSpacing:0.5},
-  recipePrepCard:      {marginHorizontal:20,marginBottom:16,padding:14,borderRadius:10,backgroundColor:'rgba(255,255,255,0.07)',borderWidth:1,borderColor:'rgba(255,255,255,0.07)'},
+  recipePrepCard:      {marginHorizontal:20,marginBottom:16,padding:14,borderRadius:10,backgroundColor:dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),borderWidth:1,borderColor:dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)')},
   recipePrepText:      {fontFamily:'CormorantGaramond-Regular',fontSize:15,color:F.dimWhite,lineHeight:22,fontStyle:'italic'},
   recipeSection:       {marginHorizontal:20,marginBottom:14},
   recipeSectionHeader: {fontFamily:'DMMono-Regular',fontSize:9,letterSpacing:2.5,marginBottom:10,fontWeight:'700'},
@@ -1704,9 +1892,9 @@ const s = StyleSheet.create({
   recipeFlaggedBlock:  {marginBottom:12},
   recipeFlaggedWarning:{fontFamily:'DMMono-Regular',fontSize:10,color:F.dimWhite,marginTop:3,marginBottom:6,lineHeight:15},
   recipeSafeAltRow:    {flexDirection:'row',flexWrap:'wrap',gap:6,marginTop:4},
-  recipeSafeAltChip:   {paddingHorizontal:10,paddingVertical:4,borderRadius:20,backgroundColor:'rgba(46,207,115,0.12)',borderWidth:1,borderColor:'rgba(46,207,115,0.35)'},
+  recipeSafeAltChip:   {paddingHorizontal:10,paddingVertical:4,borderRadius:20,backgroundColor:dl(T, 'rgba(46,207,115,0.12)', 'rgba(42,136,42,0.12)'),borderWidth:1,borderColor:dl(T, 'rgba(46,207,115,0.35)', 'rgba(42,136,42,0.35)')},
   recipeSafeAltText:   {fontFamily:'DMMono-Regular',fontSize:9,color:F.green,letterSpacing:0.5},
-  cookbookCta:         {marginHorizontal:20,marginTop:16,padding:18,borderRadius:14,borderWidth:1,borderColor:'rgba(196,154,42,0.35)',backgroundColor:'rgba(196,154,42,0.07)',alignItems:'center'},
+  cookbookCta:         {marginHorizontal:20,marginTop:16,padding:18,borderRadius:14,borderWidth:1,borderColor:dl(T, 'rgba(196,154,42,0.35)', 'rgba(184,134,30,0.35)'),backgroundColor:dl(T, 'rgba(196,154,42,0.07)', 'rgba(184,134,30,0.07)'),alignItems:'center'},
   cookbookCtaLabel:    {fontFamily:'CormorantGaramond-Regular',fontSize:18,color:F.white,marginBottom:14,fontStyle:'italic'},
   cookbookCtaRow:      {flexDirection:'row',gap:16,alignItems:'center'},
   cookbookYesBtn:      {paddingHorizontal:32,paddingVertical:12,borderRadius:10,backgroundColor:F.gold},
@@ -1716,9 +1904,11 @@ const s = StyleSheet.create({
   // Info sheet
   infoSheetBackdrop:   {flex:1,justifyContent:'flex-end',backgroundColor:'rgba(0,0,0,0.60)'},
   infoSheetCard:       {borderTopWidth:1,borderTopLeftRadius:20,borderTopRightRadius:20,padding:24,paddingBottom:40},
-  infoSheetHandle:     {width:40,height:4,borderRadius:2,backgroundColor:'rgba(255,255,255,0.18)',alignSelf:'center',marginBottom:18},
+  infoSheetHandle:     {width:40,height:4,borderRadius:2,backgroundColor:dl(T, 'rgba(255,255,255,0.18)', 'rgba(0,0,0,0.12)'),alignSelf:'center',marginBottom:18},
   infoSheetName:       {fontFamily:'DMMono-Regular',fontSize:11,letterSpacing:2,marginBottom:14,fontWeight:'700'},
   infoSheetBody:       {fontFamily:'CormorantGaramond-Regular',fontSize:16,lineHeight:24},
   infoSheetDismissBtn: {marginTop:20,alignItems:'center'},
   infoSheetDismissText:{fontFamily:'DMMono-Regular',fontSize:8,color:F.mutedWhite,letterSpacing:2},
 });
+};
+

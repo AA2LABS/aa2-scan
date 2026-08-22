@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -9,7 +10,11 @@ import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Fonts } from '@/constants/theme';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 export default function TabTwoScreen() {
+  const TH = useTheme();
+  const styles = useMemo(() => make_styles(TH), [TH]);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
@@ -98,7 +103,13 @@ export default function TabTwoScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_styles = (T: Tokens) => {
+  return StyleSheet.create({
   headerImage: {
     color: '#808080',
     bottom: -90,
@@ -110,3 +121,5 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 });
+};
+

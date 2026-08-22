@@ -12,14 +12,29 @@
 // · Suggest-the-Gap law lives in readings, NOT here. This page never sells.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { loadMemberProfile } from '@/lib/db';
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD';
-const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
-const GREEN = '#34D399', PURPLE = '#B48CF2';
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, '#8A99AD', 'rgba(0,0,0,0.55)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  GOLD: dl(T, '#D4A847', '#b8861e'),
+  CYAN: dl(T, '#1BB8FF', '#2a7faa'),
+  GREEN: dl(T, '#34D399', '#12795A'),
+  PURPLE: dl(T, '#B48CF2', '#5566aa'),
+});
 
 const norm = (s: string) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
@@ -80,6 +95,10 @@ function ownedCapabilities(hardware: string[]): Record<string, string[]> {
 }
 
 export default function StackCoverageScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [hardware, setHardware] = useState<string[]>([]);
   const [loaded, setLoaded] = useState(false);
   useEffect(() => { loadMemberProfile().then(p => { setHardware(p?.hardware ?? []); setLoaded(true); }); }, []);
@@ -106,15 +125,15 @@ export default function StackCoverageScreen() {
       {/* THE HEADLINE NUMBERS — always an upper */}
       <View style={st.statRow}>
         <View style={st.stat}>
-          <Text style={[st.statNum, { color: GREEN }]}>{covered.length}</Text>
+          <Text style={[st.statNum, { color: C.GREEN }]}>{covered.length}</Text>
           <Text style={st.statLbl}>SIGNALS COVERED</Text>
         </View>
         <View style={st.stat}>
-          <Text style={[st.statNum, { color: CYAN }]}>{consensus.length}</Text>
+          <Text style={[st.statNum, { color: C.CYAN }]}>{consensus.length}</Text>
           <Text style={st.statLbl}>DOUBLE-CHECKED 2×+</Text>
         </View>
         <View style={st.stat}>
-          <Text style={[st.statNum, { color: GOLD }]}>100%</Text>
+          <Text style={[st.statNum, { color: C.GOLD }]}>100%</Text>
           <Text style={st.statLbl}>MEMBRANE FLOOR</Text>
         </View>
       </View>
@@ -124,11 +143,11 @@ export default function StackCoverageScreen() {
         <>
           <Text style={st.section}>CONSENSUS SIGNALS · TWO OR MORE DEVICES AGREE</Text>
           {consensus.map(m => (
-            <View key={m.key} style={[st.card, { borderLeftColor: GREEN }]}>
+            <View key={m.key} style={[st.card, { borderLeftColor: C.GREEN }]}>
               <View style={st.cardHead}>
                 <Text style={st.metric}>{m.name}</Text>
                 <View style={[st.chip, { backgroundColor: 'rgba(52,211,153,0.15)' }]}>
-                  <Text style={[st.chipTxt, { color: GREEN }]}>{cov[m.key].length}× COVERED</Text>
+                  <Text style={[st.chipTxt, { color: C.GREEN }]}>{cov[m.key].length}× COVERED</Text>
                 </View>
               </View>
               <Text style={st.blurb}>{m.blurb}</Text>
@@ -144,11 +163,11 @@ export default function StackCoverageScreen() {
         <>
           <Text style={st.section}>COVERED SIGNALS · ONE CLEAN SOURCE</Text>
           {covered.filter(m => cov[m.key].length === 1).map(m => (
-            <View key={m.key} style={[st.card, { borderLeftColor: CYAN }]}>
+            <View key={m.key} style={[st.card, { borderLeftColor: C.CYAN }]}>
               <View style={st.cardHead}>
                 <Text style={st.metric}>{m.name}</Text>
                 <View style={[st.chip, { backgroundColor: 'rgba(27,184,255,0.15)' }]}>
-                  <Text style={[st.chipTxt, { color: CYAN }]}>COVERED</Text>
+                  <Text style={[st.chipTxt, { color: C.CYAN }]}>COVERED</Text>
                 </View>
               </View>
               <Text style={st.blurb}>{m.blurb}</Text>
@@ -163,11 +182,11 @@ export default function StackCoverageScreen() {
         <>
           <Text style={st.section}>MEMBRANE FLOOR · CARRIED WITHOUT A WEARABLE</Text>
           {floorOnly.map(m => (
-            <View key={m.key} style={[st.card, { borderLeftColor: PURPLE }]}>
+            <View key={m.key} style={[st.card, { borderLeftColor: C.PURPLE }]}>
               <View style={st.cardHead}>
                 <Text style={st.metric}>{m.name}</Text>
                 <View style={[st.chip, { backgroundColor: 'rgba(180,140,242,0.15)' }]}>
-                  <Text style={[st.chipTxt, { color: PURPLE }]}>FLOOR COVERED</Text>
+                  <Text style={[st.chipTxt, { color: C.PURPLE }]}>FLOOR COVERED</Text>
                 </View>
               </View>
               <Text style={st.blurb}>{m.blurb}</Text>
@@ -189,18 +208,20 @@ export default function StackCoverageScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { NAVY, INK, MUT, LINE, GOLD, CYAN, GREEN, PURPLE } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   back: { color: '#fff', fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 16, marginTop: 34 },
   eyebrow: { color: CYAN, fontSize: 10, letterSpacing: 3, fontWeight: '700', marginBottom: 6 },
   title: { color: '#fff', fontSize: 34, fontWeight: '800', marginBottom: 8 },
   sub: { color: MUT, fontSize: 13, lineHeight: 19, marginBottom: 18 },
   statRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
-  stat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  stat: { flex: 1, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   statNum: { fontSize: 26, fontWeight: '800' },
   statLbl: { color: MUT, fontSize: 8, letterSpacing: 1, marginTop: 3, fontWeight: '700' },
   section: { color: MUT, fontSize: 10, letterSpacing: 2, fontWeight: '700', marginTop: 10, marginBottom: 10 },
-  card: { backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderLeftWidth: 3, borderRadius: 12, padding: 14, marginBottom: 10 },
+  card: { backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderLeftWidth: 3, borderRadius: 12, padding: 14, marginBottom: 10 },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   metric: { color: INK, fontSize: 15, fontWeight: '700', flexShrink: 1 },
   chip: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, marginLeft: 8 },
@@ -208,7 +229,8 @@ const st = StyleSheet.create({
   blurb: { color: MUT, fontSize: 11.5, lineHeight: 16, marginBottom: 6 },
   devices: { color: GOLD, fontSize: 11, fontWeight: '700' },
   upNote: { color: 'rgba(232,238,245,0.65)', fontSize: 10.5, lineHeight: 15, marginTop: 7, fontStyle: 'italic' },
-  footCard: { marginTop: 16, backgroundColor: 'rgba(212,168,71,0.08)', borderWidth: 1, borderColor: 'rgba(212,168,71,0.30)', borderRadius: 14, padding: 16 },
+  footCard: { marginTop: 16, backgroundColor: dl(T, 'rgba(212,168,71,0.08)', 'rgba(184,134,30,0.08)'), borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.30)', 'rgba(184,134,30,0.30)'), borderRadius: 14, padding: 16 },
   footLine: { color: GOLD, fontSize: 15, fontWeight: '800', marginBottom: 6, textAlign: 'center' },
   footSub: { color: MUT, fontSize: 11.5, lineHeight: 17, textAlign: 'center' },
 });
+};

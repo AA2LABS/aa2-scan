@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable, TextInput, ActivityIndicator,
 } from 'react-native';
@@ -8,14 +8,28 @@ import { loadMemberProfile, buildPersonalTruth, logMembraneEvent } from '../../l
 import { streamClaude } from '../../lib/claude-stream';
 import { EQUALIZER_VOICE, VOICE_MODEL } from '../../lib/voices';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─────────────────────────────────────────────────────────────────────────────
 // THE EQUALIZER — Intelligence 0X05 · The Immune System
 // Door first, then the longest function list in the app — every string from
 // the approved door HTML. Nine functions. Aficionado does NOT live here.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.15)', CYAN = '#1BB8FF';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  CYAN: dl(T, '#1BB8FF', '#2a7faa'),
+});
 
 type FnRow = { icon: string; title: string; sub: string; seed?: string; route?: Href };
 
@@ -51,6 +65,10 @@ const FUNCTIONS: FnRow[] = [
 ];
 
 export default function EqualizerScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [doorOpen, setDoorOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [query, setQuery] = useState('');
@@ -105,7 +123,7 @@ export default function EqualizerScreen() {
           withoutLabel="WITHOUT"
           withoutText="Harm enters quietly. Labels lie. No one watching the gate."
           openLabel="Continue →"
-          accent={CYAN}
+          accent={C.CYAN}
           onOpen={() => setDoorOpen(true)}
         />
       </ScrollView>
@@ -117,7 +135,7 @@ export default function EqualizerScreen() {
       ref={scrollRef}
       style={st.root}
       contentContainerStyle={{ paddingBottom: 40 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={CYAN} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.CYAN} />}
     >
       <View style={st.subhead}>
         <Text style={st.subheadL}>◆ THE EQUALIZER</Text>
@@ -134,7 +152,7 @@ export default function EqualizerScreen() {
             value={query}
             onChangeText={setQuery}
             placeholder="ask the Equalizer anything…"
-            placeholderTextColor={FAINT}
+            placeholderTextColor={C.FAINT}
             onSubmitEditing={() => runQuery()}
             returnKeyType="send"
           />
@@ -146,7 +164,7 @@ export default function EqualizerScreen() {
 
       {(asking || answer) ? (
         <View style={st.answer}>
-          {asking && !answer ? <ActivityIndicator color={CYAN} /> : null}
+          {asking && !answer ? <ActivityIndicator color={C.CYAN} /> : null}
           {answer ? <Text style={st.answerTxt}>{answer}</Text> : null}
         </View>
       ) : null}
@@ -179,22 +197,24 @@ export default function EqualizerScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { NAVY, INK, MUT, FAINT, LINE, CYAN } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   subhead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 54, paddingBottom: 4 },
   subheadL: { fontFamily: 'DMMono-Medium', fontSize: 10, letterSpacing: 1.5, color: CYAN },
   subheadR: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: MUT },
 
   ask: {
-    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)',
-    backgroundColor: 'rgba(27,184,255,0.06)', borderRadius: 12, padding: 15,
+    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'),
+    backgroundColor: dl(T, 'rgba(27,184,255,0.06)', 'rgba(42,127,170,0.06)'), borderRadius: 12, padding: 15,
   },
-  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: '#8fd6ff' },
+  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: dl(T, '#8fd6ff', '#1f6a90') },
   askRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 8 },
   askInput: { flex: 1, color: INK, fontFamily: 'DMSans-Regular', fontSize: 13, paddingVertical: 4 },
 
   answer: {
-    marginHorizontal: 14, marginBottom: 4, backgroundColor: 'rgba(255,255,255,0.07)',
+    marginHorizontal: 14, marginBottom: 4, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, padding: 14,
   },
   answerTxt: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, lineHeight: 19 },
@@ -203,7 +223,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: CYAN, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },
@@ -213,13 +233,14 @@ const st = StyleSheet.create({
 
   action: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(27,184,255,0.5)', backgroundColor: 'rgba(27,184,255,0.08)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.5)', 'rgba(42,127,170,0.5)'), backgroundColor: dl(T, 'rgba(27,184,255,0.08)', 'rgba(42,127,170,0.08)'),
     borderRadius: 12, paddingVertical: 15,
   },
-  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: '#8fd6ff' },
+  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: dl(T, '#8fd6ff', '#1f6a90') },
 
   note: {
     fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
     textAlign: 'center', marginTop: 20, marginHorizontal: 24, lineHeight: 14,
   },
 });
+};

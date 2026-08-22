@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable,
 } from 'react-native';
@@ -7,6 +7,7 @@ import DoorCover from '@/components/DoorCover';
 import { loadMemberProfile, type FullMemberProfile } from '../../lib/db';
 import { getRecentDossiers, type TravelDossierRow } from '../../lib/travel-engine';
 
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CHAUFFEUR — Intelligence 0X04 · The Cerebellum
 // Door first, then travel + dossier functions — every string from the approved
@@ -14,8 +15,23 @@ import { getRecentDossiers, type TravelDossierRow } from '../../lib/travel-engin
 // co-signs. Single-exit routes are a security flaw.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = 'rgba(255,255,255,0.55)', FAINT = 'rgba(255,255,255,0.32)';
-const LINE = 'rgba(255,255,255,0.15)', GREEN = '#34D399', CYAN = '#1BB8FF', GOLD = '#D4A847';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+  FAINT: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  GREEN: dl(T, '#34D399', '#12795A'),
+  CYAN: dl(T, '#1BB8FF', '#2a7faa'),
+  GOLD: dl(T, '#D4A847', '#b8861e'),
+});
 
 type FnRow = { icon: string; title: string; sub: string; route: Href };
 
@@ -36,6 +52,10 @@ const FUNCTIONS: FnRow[] = [
 ];
 
 export default function ChauffeurScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [doorOpen, setDoorOpen] = useState(false);
   const [profile, setProfile] = useState<FullMemberProfile | null>(null);
   const [dossier, setDossier] = useState<TravelDossierRow | null>(null);
@@ -70,7 +90,7 @@ export default function ChauffeurScreen() {
           withoutLabel="WITHOUT"
           withoutText="Maps with no memory. Routes with no context."
           openLabel="Continue →"
-          accent={GREEN}
+          accent={C.GREEN}
           onOpen={() => setDoorOpen(true)}
         />
       </ScrollView>
@@ -81,7 +101,7 @@ export default function ChauffeurScreen() {
     <ScrollView
       style={st.root}
       contentContainerStyle={{ paddingBottom: 40 }}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={GREEN} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.GREEN} />}
     >
       <View style={st.subhead}>
         <Text style={st.subheadL}>◆ THE CHAUFFEUR</Text>
@@ -120,7 +140,7 @@ export default function ChauffeurScreen() {
 
       {/* CURRENT DOSSIER — real state, never staged */}
       <View style={st.section}>
-        <Text style={[st.fntitle, { color: GREEN }]}>
+        <Text style={[st.fntitle, { color: C.GREEN }]}>
           {dossier ? 'CURRENT DOSSIER · AWAITING EQUALIZER SEAL' : 'CURRENT DOSSIER'}
         </Text>
         {!loaded ? (
@@ -137,10 +157,10 @@ export default function ChauffeurScreen() {
             </Text>
             <View style={st.tagRow}>
               <View style={[st.tag, st.tagCyan]}>
-                <Text style={[st.tagTxt, { color: CYAN }]}>SAFE ZONES MAPPED</Text>
+                <Text style={[st.tagTxt, { color: C.CYAN }]}>SAFE ZONES MAPPED</Text>
               </View>
               <View style={[st.tag, st.tagGold]}>
-                <Text style={[st.tagTxt, { color: GOLD }]}>AWAITING EQUALIZER ✓</Text>
+                <Text style={[st.tagTxt, { color: C.GOLD }]}>AWAITING EQUALIZER ✓</Text>
               </View>
             </View>
           </View>
@@ -165,23 +185,25 @@ export default function ChauffeurScreen() {
   );
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { NAVY, INK, MUT, FAINT, LINE, GREEN, CYAN, GOLD } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   subhead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 54, paddingBottom: 4 },
   subheadL: { fontFamily: 'DMMono-Medium', fontSize: 10, letterSpacing: 1.5, color: GREEN },
   subheadR: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.5, color: MUT },
 
   ask: {
-    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: 'rgba(52,211,153,0.5)',
-    backgroundColor: 'rgba(52,211,153,0.06)', borderRadius: 12, padding: 15,
+    margin: 14, marginBottom: 6, borderWidth: 1, borderColor: dl(T, 'rgba(52,211,153,0.5)', 'rgba(18,121,90,0.5)'),
+    backgroundColor: dl(T, 'rgba(52,211,153,0.06)', 'rgba(18,121,90,0.06)'), borderRadius: 12, padding: 15,
   },
-  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: '#7CE7C4' },
+  askQ: { fontFamily: 'DMMono-Medium', fontSize: 14, letterSpacing: 1, color: dl(T, '#7CE7C4', '#12795A') },
   askH: { fontFamily: 'DMSans-Regular', fontSize: 11.5, color: MUT, marginTop: 4 },
 
   safetyBar: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginHorizontal: 14, marginBottom: 4, borderWidth: 0.5, borderColor: 'rgba(52,211,153,0.35)',
-    backgroundColor: 'rgba(52,211,153,0.10)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9,
+    marginHorizontal: 14, marginBottom: 4, borderWidth: 0.5, borderColor: dl(T, 'rgba(52,211,153,0.35)', 'rgba(18,121,90,0.35)'),
+    backgroundColor: dl(T, 'rgba(52,211,153,0.10)', 'rgba(18,121,90,0.10)'), borderRadius: 10, paddingHorizontal: 12, paddingVertical: 9,
   },
   safetyL: { fontFamily: 'DMMono-Medium', fontSize: 10, letterSpacing: 1, color: GREEN },
   safetyR: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: MUT },
@@ -190,7 +212,7 @@ const st = StyleSheet.create({
   fntitle: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: GREEN, marginBottom: 10 },
   fnrow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 13, marginBottom: 9,
   },
   ico: { fontSize: 16 },
@@ -201,26 +223,27 @@ const st = StyleSheet.create({
 
   dossier: {
     borderLeftWidth: 3, borderLeftColor: GREEN,
-    backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
+    backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE,
     borderRadius: 12, padding: 14,
   },
   rtitle: { fontFamily: 'DMSans-Regular', fontSize: 16, fontWeight: '800', color: INK },
   rmeta: { fontFamily: 'DMMono-Regular', fontSize: 9.5, color: MUT, marginTop: 5, lineHeight: 15 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 10 },
   tag: { paddingHorizontal: 8, paddingVertical: 5, borderRadius: 6, borderWidth: 0.5 },
-  tagCyan: { backgroundColor: 'rgba(27,184,255,0.10)', borderColor: 'rgba(27,184,255,0.35)' },
-  tagGold: { backgroundColor: 'rgba(212,168,71,0.10)', borderColor: 'rgba(212,168,71,0.40)' },
+  tagCyan: { backgroundColor: dl(T, 'rgba(27,184,255,0.10)', 'rgba(42,127,170,0.10)'), borderColor: dl(T, 'rgba(27,184,255,0.35)', 'rgba(42,127,170,0.35)') },
+  tagGold: { backgroundColor: dl(T, 'rgba(212,168,71,0.10)', 'rgba(184,134,30,0.10)'), borderColor: dl(T, 'rgba(212,168,71,0.40)', 'rgba(184,134,30,0.40)') },
   tagTxt: { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 1 },
 
   action: {
     flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(52,211,153,0.5)', backgroundColor: 'rgba(52,211,153,0.08)',
+    borderWidth: 1, borderColor: dl(T, 'rgba(52,211,153,0.5)', 'rgba(18,121,90,0.5)'), backgroundColor: dl(T, 'rgba(52,211,153,0.08)', 'rgba(18,121,90,0.08)'),
     borderRadius: 12, paddingVertical: 15,
   },
-  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: '#7CE7C4' },
+  actionTxt: { fontFamily: 'DMMono-Medium', fontSize: 12.5, letterSpacing: 1.5, color: dl(T, '#7CE7C4', '#12795A') },
 
   note: {
     fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1, color: FAINT,
     textAlign: 'center', marginTop: 20, marginHorizontal: 24, lineHeight: 14,
   },
 });
+};

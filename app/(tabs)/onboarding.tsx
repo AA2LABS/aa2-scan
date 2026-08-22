@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import PreviewPanels from '../preview-panels';
 import BiomarkerManager from '../biomarker-manager';
 import {
@@ -24,16 +24,24 @@ import { saveSleepAids } from '../../lib/db';
 import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
-const BLUE        = '#1BB8FF';
-const BLUE_DIM    = 'rgba(27,184,255,0.15)';
-const BLUE_BORDER = 'rgba(27,184,255,0.40)';
-const GREEN       = '#1D9E75';
-const RED         = '#E05252';
-const DARK_BG     = '#0A0804';
-const CARD_BG     = '#150F0A';
-const WHITE       = '#FFFFFF';
-const MUTED       = 'rgba(255,255,255,0.55)';
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const pal = (T: Tokens) => ({
+  BLUE: dl(T, '#1BB8FF', '#2a7faa'),
+  BLUE_DIM: dl(T, 'rgba(27,184,255,0.15)', 'rgba(42,127,170,0.15)'),
+  BLUE_BORDER: dl(T, 'rgba(27,184,255,0.40)', 'rgba(42,127,170,0.40)'),
+  GREEN: dl(T, '#1D9E75', '#12795A'),
+  RED: dl(T, '#E05252', '#C0392B'),
+  DARK_BG: dl(T, '#0A0804', '#FAF7F2'),
+  CARD_BG: '#150F0A',
+  WHITE: '#FFFFFF',
+  MUTED: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)'),
+});
 
 // ─── FONTS ───────────────────────────────────────────────────────────────────
 const F = {
@@ -51,10 +59,11 @@ const { width: SCREEN_W } = Dimensions.get('window');
 const ACTIVITY_COL_W = Math.floor((SCREEN_W - 48 - 12) / 3);
 
 // ─── FIELD GLOW HELPERS ──────────────────────────────────────────────────────
-function fieldBorder(value: string | null, focused: boolean): string {
-  if (focused) return BLUE;
-  if (value && value.trim().length > 0) return GREEN;
-  return RED;
+function fieldBorder(T: Tokens, value: string | null, focused: boolean): string {
+  const C = pal(T);
+  if (focused) return C.BLUE;
+  if (value && value.trim().length > 0) return C.GREEN;
+  return C.RED;
 }
 
 function fieldOpacity(value: string | null, focused: boolean): number {
@@ -106,8 +115,11 @@ interface ProgressBarProps {
 }
 
 function MembraneProgressBar({ completed, total, onPress }: ProgressBarProps) {
+  const TH = useTheme();
+  const C = pal(TH);
+
   const pct = completed / total;
-  const barColor = completed >= total ? GREEN : BLUE;
+  const barColor = completed >= total ? C.GREEN : C.BLUE;
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -117,7 +129,7 @@ function MembraneProgressBar({ completed, total, onPress }: ProgressBarProps) {
         top: 0, left: 0, right: 0,
         zIndex: 100,
         height: 4,
-        backgroundColor: BLUE_DIM,
+        backgroundColor: C.BLUE_DIM,
       }}
     >
       <View style={{ height: 4, width: `${pct * 100}%` as any, backgroundColor: barColor }} />
@@ -133,10 +145,13 @@ interface BriefingCardProps {
 }
 
 function BriefingCard({ text, blockLabel, onBegin }: BriefingCardProps) {
+  const TH = useTheme();
+  const C = pal(TH);
+
   return (
     <View style={{
       flex: 1,
-      backgroundColor: DARK_BG,
+      backgroundColor: C.DARK_BG,
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 32,
@@ -144,7 +159,7 @@ function BriefingCard({ text, blockLabel, onBegin }: BriefingCardProps) {
       <Text style={{
         fontFamily: F.mono,
         fontSize: 10,
-        color: BLUE,
+        color: C.BLUE,
         letterSpacing: 3,
         marginBottom: 32,
       }}>
@@ -153,7 +168,7 @@ function BriefingCard({ text, blockLabel, onBegin }: BriefingCardProps) {
       <Text style={{
         fontFamily: F.serifIt,
         fontSize: 24,
-        color: WHITE,
+        color: C.WHITE,
         textAlign: 'center',
         lineHeight: 36,
         marginBottom: 48,
@@ -164,7 +179,7 @@ function BriefingCard({ text, blockLabel, onBegin }: BriefingCardProps) {
         onPress={onBegin}
         style={{
           borderWidth: 1,
-          borderColor: BLUE_BORDER,
+          borderColor: C.BLUE_BORDER,
           borderRadius: 12,
           paddingHorizontal: 32,
           paddingVertical: 16,
@@ -174,7 +189,7 @@ function BriefingCard({ text, blockLabel, onBegin }: BriefingCardProps) {
         <Text style={{
           fontFamily: F.monoMd,
           fontSize: 11,
-          color: BLUE,
+          color: C.BLUE,
           letterSpacing: 2,
         }}>
           TAP TO BEGIN {blockLabel}
@@ -192,14 +207,17 @@ interface NAChipProps {
 }
 
 function NAChip({ label, selected, onPress }: NAChipProps) {
+  const TH = useTheme();
+  const C = pal(TH);
+
   return (
     <TouchableOpacity
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       onPress={onPress}
       style={{
         borderWidth: 1,
-        borderColor: selected ? GREEN : BLUE_BORDER,
-        backgroundColor: selected ? 'rgba(29,158,117,0.15)' : BLUE_DIM,
+        borderColor: selected ? C.GREEN : C.BLUE_BORDER,
+        backgroundColor: selected ? lc(TH, 'rgba(29,158,117,0.15)') : C.BLUE_DIM,
         borderRadius: 20,
         paddingHorizontal: 14,
         paddingVertical: 7,
@@ -210,7 +228,7 @@ function NAChip({ label, selected, onPress }: NAChipProps) {
       <Text style={{
         fontFamily: F.mono,
         fontSize: 11,
-        color: selected ? GREEN : BLUE,
+        color: selected ? C.GREEN : C.BLUE,
         letterSpacing: 1,
       }}>
         {label}
@@ -228,7 +246,11 @@ interface ChipProps {
   accentColor?: string;
 }
 
-function ChipSelector({ options, selected, multi = false, onSelect, accentColor = BLUE }: ChipProps) {
+function ChipSelector({ options, selected, multi = false, onSelect, accentColor }: ChipProps) {
+  const TH = useTheme();
+  const C = pal(TH);
+  const accent = accentColor ?? C.BLUE;
+
   const isSelected = (opt: string) =>
     multi
       ? (selected as string[]).includes(opt)
@@ -243,8 +265,8 @@ function ChipSelector({ options, selected, multi = false, onSelect, accentColor 
           onPress={() => onSelect(opt)}
           style={{
             borderWidth: 1,
-            borderColor: isSelected(opt) ? accentColor : BLUE_BORDER,
-            backgroundColor: isSelected(opt) ? `${accentColor}26` : BLUE_DIM,
+            borderColor: isSelected(opt) ? accent : C.BLUE_BORDER,
+            backgroundColor: isSelected(opt) ? `${accent}26` : C.BLUE_DIM,
             borderRadius: 20,
             paddingHorizontal: 14,
             paddingVertical: 7,
@@ -253,7 +275,7 @@ function ChipSelector({ options, selected, multi = false, onSelect, accentColor 
           <Text style={{
             fontFamily: F.mono,
             fontSize: 11,
-            color: isSelected(opt) ? accentColor : MUTED,
+            color: isSelected(opt) ? accent : C.MUTED,
           }}>
             {opt}
           </Text>
@@ -270,6 +292,9 @@ interface ActivityGridProps {
 }
 
 function ActivityGrid({ selected, onSelect }: ActivityGridProps) {
+  const TH = useTheme();
+  const C = pal(TH);
+
   return (
     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
       {ACTIVITIES.map(act => {
@@ -282,8 +307,8 @@ function ActivityGrid({ selected, onSelect }: ActivityGridProps) {
             style={{
               width: ACTIVITY_COL_W,
               borderWidth: 1,
-              borderColor: on ? BLUE : BLUE_BORDER,
-              backgroundColor: on ? BLUE_DIM : 'transparent',
+              borderColor: on ? C.BLUE : C.BLUE_BORDER,
+              backgroundColor: on ? C.BLUE_DIM : 'transparent',
               borderRadius: 8,
               paddingHorizontal: 6,
               paddingVertical: 8,
@@ -293,7 +318,7 @@ function ActivityGrid({ selected, onSelect }: ActivityGridProps) {
             <Text style={{
               fontFamily: F.mono,
               fontSize: 10,
-              color: on ? BLUE : MUTED,
+              color: on ? C.BLUE : C.MUTED,
               textAlign: 'center',
             }}>
               {act}
@@ -307,8 +332,11 @@ function ActivityGrid({ selected, onSelect }: ActivityGridProps) {
 
 // ─── FIELD LABEL ─────────────────────────────────────────────────────────────
 function FieldLabel({ text }: { text: string }) {
+  const TH = useTheme();
+  const C = pal(TH);
+
   return (
-    <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 8 }}>
+    <Text style={{ fontFamily: F.sans, fontSize: 13, color: C.MUTED, marginBottom: 8 }}>
       {text}
     </Text>
   );
@@ -331,6 +359,10 @@ type FlowStep =
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────────────────
 export default function OnboardingScreen() {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+  const C = pal(TH);
+
   // ── Auth
   const [checkingAuth, setCheckingAuth] = useState(true);
   const sealedRef = React.useRef(false);
@@ -583,7 +615,7 @@ export default function OnboardingScreen() {
   if (checkingAuth) {
     return (
       <SafeAreaView style={st.root}>
-        <ActivityIndicator size="large" color={BLUE} style={{ flex: 1 }} />
+        <ActivityIndicator size="large" color={C.BLUE} style={{ flex: 1 }} />
       </SafeAreaView>
     );
   }
@@ -692,10 +724,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHAT NAME SHOULD THE CONCIERGE CALL YOU?" />
               <TextInput
                 style={[st.input, {
-                  borderColor: fieldBorder(conciergeName, focusedField === 'concierge_name'),
+                  borderColor: fieldBorder(TH, conciergeName, focusedField === 'concierge_name'),
                   opacity: fieldOpacity(conciergeName, focusedField === 'concierge_name'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={conciergeName}
                 onChangeText={setConciergeName}
                 onFocus={() => setFocusedField('concierge_name')}
@@ -717,10 +749,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="YEAR OF BIRTH" />
               <TextInput
                 style={[st.input, {
-                  borderColor: fieldBorder(birthYear, focusedField === 'birth_year'),
+                  borderColor: fieldBorder(TH, birthYear, focusedField === 'birth_year'),
                   opacity: fieldOpacity(birthYear, focusedField === 'birth_year'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={birthYear}
                 onChangeText={setBirthYear}
                 onFocus={() => setFocusedField('birth_year')}
@@ -734,11 +766,11 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHERE ARE YOU BASED?" />
               <TextInput
                 style={[st.input, {
-                  borderColor: fieldBorder(homeLocation, focusedField === 'home_location'),
+                  borderColor: fieldBorder(TH, homeLocation, focusedField === 'home_location'),
                   opacity: fieldOpacity(homeLocation, focusedField === 'home_location'),
                 }]}
                 placeholder="City, Country"
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={homeLocation}
                 onChangeText={setHomeLocation}
                 onFocus={() => setFocusedField('home_location')}
@@ -763,10 +795,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHAT DOES YOUR BEST PHYSICAL DAY FEEL LIKE?" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: fieldBorder(aliveBestDay, focusedField === 'alive_best_day'),
+                  borderColor: fieldBorder(TH, aliveBestDay, focusedField === 'alive_best_day'),
                   opacity: fieldOpacity(aliveBestDay, focusedField === 'alive_best_day'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={aliveBestDay}
                 onChangeText={setAliveBestDay}
                 onFocus={() => setFocusedField('alive_best_day')}
@@ -780,10 +812,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHAT ARE YOU CURRENTLY BUILDING TOWARD?" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: fieldBorder(aliveBuildingToward, focusedField === 'alive_building_toward'),
+                  borderColor: fieldBorder(TH, aliveBuildingToward, focusedField === 'alive_building_toward'),
                   opacity: fieldOpacity(aliveBuildingToward, focusedField === 'alive_building_toward'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={aliveBuildingToward}
                 onChangeText={setAliveBuildingToward}
                 onFocus={() => setFocusedField('alive_building_toward')}
@@ -797,10 +829,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHAT ACTIVITY MAKES YOUR MIND GO COMPLETELY QUIET?" />
               <TextInput
                 style={[st.input, {
-                  borderColor: fieldBorder(aliveQuietActivity, focusedField === 'alive_quiet_activity'),
+                  borderColor: fieldBorder(TH, aliveQuietActivity, focusedField === 'alive_quiet_activity'),
                   opacity: fieldOpacity(aliveQuietActivity, focusedField === 'alive_quiet_activity'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={aliveQuietActivity}
                 onChangeText={setAliveQuietActivity}
                 onFocus={() => setFocusedField('alive_quiet_activity')}
@@ -822,10 +854,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHAT DOES YOUR BODY DO THAT STILL SURPRISES YOU?" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: fieldBorder(aliveBodySurprises, focusedField === 'alive_body_surprises'),
+                  borderColor: fieldBorder(TH, aliveBodySurprises, focusedField === 'alive_body_surprises'),
                   opacity: fieldOpacity(aliveBodySurprises, focusedField === 'alive_body_surprises'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={aliveBodySurprises}
                 onChangeText={setAliveBodySurprises}
                 onFocus={() => setFocusedField('alive_body_surprises')}
@@ -903,10 +935,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="KNOWN FOOD ALLERGIES" />
               <TextInput
                 style={[st.input, {
-                  borderColor: allergiesNa ? GREEN : fieldBorder(foodAllergies, focusedField === 'food_allergies'),
+                  borderColor: allergiesNa ? C.GREEN : fieldBorder(TH, foodAllergies, focusedField === 'food_allergies'),
                   opacity: allergiesNa ? 1 : fieldOpacity(foodAllergies, focusedField === 'food_allergies'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={foodAllergies}
                 onChangeText={v => { setFoodAllergies(v); setAllergiesNa(false); }}
                 onFocus={() => setFocusedField('food_allergies')}
@@ -921,14 +953,14 @@ export default function OnboardingScreen() {
                     onPress={() => appendAllergen(chip)}
                     style={{
                       borderWidth: 1,
-                      borderColor: BLUE_BORDER,
-                      backgroundColor: BLUE_DIM,
+                      borderColor: C.BLUE_BORDER,
+                      backgroundColor: C.BLUE_DIM,
                       borderRadius: 16,
                       paddingHorizontal: 12,
                       paddingVertical: 6,
                     }}
                   >
-                    <Text style={{ fontFamily: F.mono, fontSize: 10, color: BLUE }}>+ {chip}</Text>
+                    <Text style={{ fontFamily: F.mono, fontSize: 10, color: C.BLUE }}>+ {chip}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -954,10 +986,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="CURRENT MEDICATIONS" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: medicationsNa ? GREEN : fieldBorder(medications, focusedField === 'medications'),
+                  borderColor: medicationsNa ? C.GREEN : fieldBorder(TH, medications, focusedField === 'medications'),
                   opacity: medicationsNa ? 1 : fieldOpacity(medications, focusedField === 'medications'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={medications}
                 onChangeText={v => { setMedications(v); setMedicationsNa(false); }}
                 onFocus={() => setFocusedField('medications')}
@@ -988,10 +1020,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="KNOWN MEDICAL CONDITIONS" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: conditionsNa ? GREEN : fieldBorder(medicalConditions, focusedField === 'medical_conditions'),
+                  borderColor: conditionsNa ? C.GREEN : fieldBorder(TH, medicalConditions, focusedField === 'medical_conditions'),
                   opacity: conditionsNa ? 1 : fieldOpacity(medicalConditions, focusedField === 'medical_conditions'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={medicalConditions}
                 onChangeText={v => { setMedicalConditions(v); setConditionsNa(false); }}
                 onFocus={() => setFocusedField('medical_conditions')}
@@ -1032,10 +1064,10 @@ export default function OnboardingScreen() {
               <FieldLabel text="SUPPLEMENT STACK (OPTIONAL)" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: supplementsNa ? GREEN : fieldBorder(supplementStack, focusedField === 'supplement_stack'),
+                  borderColor: supplementsNa ? C.GREEN : fieldBorder(TH, supplementStack, focusedField === 'supplement_stack'),
                   opacity: supplementsNa ? 1 : fieldOpacity(supplementStack, focusedField === 'supplement_stack'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={supplementStack}
                 onChangeText={v => { setSupplementStack(v); setSupplementsNa(false); }}
                 onFocus={() => setFocusedField('supplement_stack')}
@@ -1101,7 +1133,7 @@ export default function OnboardingScreen() {
             style={{ marginTop: 16, paddingVertical: 12, alignItems: 'center' }}
             activeOpacity={0.7}
           >
-            <Text style={{ fontFamily: 'DMMono-Regular', fontSize: 11, color: MUTED, letterSpacing: 2 }}>
+            <Text style={{ fontFamily: 'DMMono-Regular', fontSize: 11, color: C.MUTED, letterSpacing: 2 }}>
               ← BACK TO BLOCK 4
             </Text>
           </TouchableOpacity>
@@ -1126,7 +1158,7 @@ export default function OnboardingScreen() {
 
             <View style={st.fieldGroup}>
               <FieldLabel text="SLEEP AIDS · MASKS & PASSIVE GEAR" />
-              <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginBottom: 8 }}>
+              <Text style={{ fontFamily: F.mono, fontSize: 10, color: C.MUTED, marginBottom: 8 }}>
                 Adds no signal — adds a condition your devices can measure.
               </Text>
               <ChipSelector
@@ -1147,17 +1179,17 @@ export default function OnboardingScreen() {
 
             <View style={st.fieldGroup}>
               <FieldLabel text="OURA PERSONAL API TOKEN" />
-              <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginBottom: 8 }}>
+              <Text style={{ fontFamily: F.mono, fontSize: 10, color: C.MUTED, marginBottom: 8 }}>
                 cloud.ouraring.com/personal-access-tokens
               </Text>
               {wearables.includes('Oura Ring') ? (
                 <TextInput
                   style={[st.input, {
-                    borderColor: fieldBorder(ouraToken, focusedField === 'oura_token'),
+                    borderColor: fieldBorder(TH, ouraToken, focusedField === 'oura_token'),
                     opacity: fieldOpacity(ouraToken, focusedField === 'oura_token'),
                   }]}
                   placeholder="Paste token here"
-                  placeholderTextColor={MUTED}
+                  placeholderTextColor={C.MUTED}
                   value={ouraToken}
                   onChangeText={setOuraToken}
                   onFocus={() => setFocusedField('oura_token')}
@@ -1167,7 +1199,7 @@ export default function OnboardingScreen() {
                 />
               ) : (
                 <View style={[st.input, { opacity: 0.4, justifyContent: 'center' }]}>
-                  <Text style={{ fontFamily: F.mono, fontSize: 11, color: MUTED, letterSpacing: 1 }}>
+                  <Text style={{ fontFamily: F.mono, fontSize: 11, color: C.MUTED, letterSpacing: 1 }}>
                     CONNECT OURA RING ABOVE TO ACTIVATE
                   </Text>
                 </View>
@@ -1218,16 +1250,16 @@ export default function OnboardingScreen() {
             {petSpecies.length > 0 && !petSpecies.includes('No pets') && (
               <View style={st.fieldGroup}>
                 <FieldLabel text="PET NAMES" />
-                <Text style={{ fontFamily: F.mono, fontSize: 10, color: MUTED, marginBottom: 8 }}>
+                <Text style={{ fontFamily: F.mono, fontSize: 10, color: C.MUTED, marginBottom: 8 }}>
                   One per line or comma separated
                 </Text>
                 <TextInput
                   style={[st.inputMulti, {
-                    borderColor: fieldBorder(petNames, focusedField === 'pet_names'),
+                    borderColor: fieldBorder(TH, petNames, focusedField === 'pet_names'),
                     opacity: fieldOpacity(petNames, focusedField === 'pet_names'),
                   }]}
                   placeholder="e.g. Max, Luna, Scout"
-                  placeholderTextColor={MUTED}
+                  placeholderTextColor={C.MUTED}
                   value={petNames}
                   onChangeText={setPetNames}
                   onFocus={() => setFocusedField('pet_names')}
@@ -1268,15 +1300,15 @@ export default function OnboardingScreen() {
                       borderRadius: 14,
                       padding: 20,
                       borderWidth: 1.5,
-                      borderColor: on ? BLUE : BLUE_BORDER,
-                      backgroundColor: on ? 'rgba(27,184,255,0.10)' : CARD_BG,
+                      borderColor: on ? C.BLUE : C.BLUE_BORDER,
+                      backgroundColor: on ? lc(TH, 'rgba(27,184,255,0.10)') : C.CARD_BG,
                     }}
                     activeOpacity={0.8}
                   >
-                    <Text style={{ fontFamily: F.monoMd, fontSize: 14, color: WHITE, letterSpacing: 2 }}>
+                    <Text style={{ fontFamily: F.monoMd, fontSize: 14, color: C.WHITE, letterSpacing: 2 }}>
                       {card.title}
                     </Text>
-                    <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginTop: 6 }}>
+                    <Text style={{ fontFamily: F.sans, fontSize: 13, color: C.MUTED, marginTop: 6 }}>
                       {card.desc}
                     </Text>
                   </TouchableOpacity>
@@ -1301,7 +1333,7 @@ export default function OnboardingScreen() {
           <ScrollView style={{ flex: 1 }} contentContainerStyle={st.blockWrap} keyboardShouldPersistTaps="handled">
             <Text style={st.blockHeader}>BLOCK 8 · NORTH STAR</Text>
 
-            <Text style={{ fontFamily: F.sans, fontSize: 13, color: MUTED, marginBottom: 24, lineHeight: 20 }}>
+            <Text style={{ fontFamily: F.sans, fontSize: 13, color: C.MUTED, marginBottom: 24, lineHeight: 20 }}>
               These answers are never shown back to you as data. They shape everything the system does quietly.
             </Text>
 
@@ -1310,10 +1342,10 @@ export default function OnboardingScreen() {
               <TextInput
                 style={[st.inputMulti, {
                   minHeight: 100,
-                  borderColor: fieldBorder(northStar30d, focusedField === 'north_star_30d'),
+                  borderColor: fieldBorder(TH, northStar30d, focusedField === 'north_star_30d'),
                   opacity: fieldOpacity(northStar30d, focusedField === 'north_star_30d'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={northStar30d}
                 onChangeText={setNorthStar30d}
                 onFocus={() => setFocusedField('north_star_30d')}
@@ -1328,10 +1360,10 @@ export default function OnboardingScreen() {
               <TextInput
                 style={[st.inputMulti, {
                   minHeight: 100,
-                  borderColor: fieldBorder(northStar90d, focusedField === 'north_star_90d'),
+                  borderColor: fieldBorder(TH, northStar90d, focusedField === 'north_star_90d'),
                   opacity: fieldOpacity(northStar90d, focusedField === 'north_star_90d'),
                 }]}
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={northStar90d}
                 onChangeText={setNorthStar90d}
                 onFocus={() => setFocusedField('north_star_90d')}
@@ -1345,11 +1377,11 @@ export default function OnboardingScreen() {
               <FieldLabel text="WHO ARE YOU PROTECTING WITH THIS SYSTEM?" />
               <TextInput
                 style={[st.inputMulti, {
-                  borderColor: fieldBorder(northStarProtecting, focusedField === 'north_star_protecting'),
+                  borderColor: fieldBorder(TH, northStarProtecting, focusedField === 'north_star_protecting'),
                   opacity: fieldOpacity(northStarProtecting, focusedField === 'north_star_protecting'),
                 }]}
                 placeholder="Your name, your family, your dog, your unit..."
-                placeholderTextColor={MUTED}
+                placeholderTextColor={C.MUTED}
                 value={northStarProtecting}
                 onChangeText={setNorthStarProtecting}
                 onFocus={() => setFocusedField('north_star_protecting')}
@@ -1360,7 +1392,7 @@ export default function OnboardingScreen() {
               <Text style={{
                 fontFamily: F.serifIt,
                 fontSize: 16,
-                color: BLUE,
+                color: C.BLUE,
                 textAlign: 'center',
                 marginTop: 16,
                 marginBottom: 8,
@@ -1393,17 +1425,17 @@ export default function OnboardingScreen() {
         >
           <View style={st.completeOuter}>
             <Text style={st.completeEyebrow}>MEMBRANE SEALED · AA2 ACTIVE</Text>
-            <Text style={{ fontFamily: F.serifIt, fontSize: 64, color: WHITE, textAlign: 'center', marginBottom: 8 }}>
+            <Text style={{ fontFamily: F.serifIt, fontSize: 64, color: C.WHITE, textAlign: 'center', marginBottom: 8 }}>
               The membrane holds.
             </Text>
-            <Text style={{ fontFamily: F.sans, fontSize: 15, color: MUTED, textAlign: 'center', marginBottom: 40, lineHeight: 24 }}>
+            <Text style={{ fontFamily: F.sans, fontSize: 15, color: C.MUTED, textAlign: 'center', marginBottom: 40, lineHeight: 24 }}>
               {northStarProtecting.trim()
                 ? `Protecting: ${northStarProtecting.trim()}`
                 : 'Every scan from here is yours alone.'
               }
             </Text>
             <View style={[st.completePbTrack, { marginBottom: 40 }]}>
-              <View style={[st.completePbFill, { width: '100%', backgroundColor: GREEN }]} />
+              <View style={[st.completePbFill, { width: '100%', backgroundColor: C.GREEN }]} />
             </View>
             <TouchableOpacity
               style={[st.completeBtn, { opacity: saving ? 0.6 : 1 }]}
@@ -1422,7 +1454,7 @@ export default function OnboardingScreen() {
             <Text style={{
               fontFamily: 'DMMono-Regular',
               fontSize: 9,
-              color: BLUE,
+              color: C.BLUE,
               letterSpacing: 3,
               marginBottom: 8,
               textAlign: 'center',
@@ -1438,7 +1470,14 @@ export default function OnboardingScreen() {
 }
 
 // ─── STYLES ──────────────────────────────────────────────────────────────────
-const st = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_st = (T: Tokens) => {
+  const { BLUE, BLUE_DIM, BLUE_BORDER, GREEN, RED, DARK_BG, CARD_BG, WHITE, MUTED } = pal(T);
+  return StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: DARK_BG,
@@ -1479,7 +1518,7 @@ const st = StyleSheet.create({
   northBtnText: {
     fontFamily: 'DMMono-Medium',
     fontSize: 13,
-    color: '#03050A',
+    color: dl(T, '#03050A', '#F0EEE8'),
     letterSpacing: 2,
   },
 
@@ -1535,7 +1574,7 @@ const st = StyleSheet.create({
   nextBtnText: {
     fontFamily: 'DMMono-Medium',
     fontSize: 13,
-    color: '#03050A',
+    color: dl(T, '#03050A', '#F0EEE8'),
     letterSpacing: 2,
   },
 
@@ -1550,7 +1589,7 @@ const st = StyleSheet.create({
   sealBtnText: {
     fontFamily: 'DMMono-Medium',
     fontSize: 14,
-    color: '#03050A',
+    color: dl(T, '#03050A', '#F0EEE8'),
     letterSpacing: 2,
   },
 
@@ -1606,7 +1645,9 @@ const st = StyleSheet.create({
   completeBtnText: {
     fontFamily: 'DMMono-Medium',
     fontSize: 13,
-    color: '#03050A',
+    color: dl(T, '#03050A', '#F0EEE8'),
     letterSpacing: 2,
   },
 });
+};
+

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, Image, Pressable, StyleSheet, ImageSourcePropType, useWindowDimensions } from 'react-native';
 
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─────────────────────────────────────────────────────────────────────────────
 // DOOR COVER — the vertical full-bleed door every intelligence opens with.
 // Law: DOOR = COVER · OPEN IT · INTELLIGENCE FLOODS IN · BACK BUTTON ALWAYS WIRED.
@@ -32,6 +33,9 @@ export type DoorCoverProps = {
 };
 
 export default function DoorCover(p: DoorCoverProps) {
+  const TH = useTheme();
+  const st = useMemo(() => make_st(TH), [TH]);
+
   const { height } = useWindowDimensions();
   return (
     <View style={[st.root, { minHeight: height - 120 }]}>
@@ -47,8 +51,8 @@ export default function DoorCover(p: DoorCoverProps) {
             <Text style={st.skipTxt}>SKIP</Text>
           </Pressable>
         ) : p.freeChip ? (
-          <View style={[st.chipBox, { borderColor: 'rgba(52,211,153,0.35)' }]}>
-            <Text style={[st.chipTxt, { color: '#34D399' }]}>{p.freeChip}</Text>
+          <View style={[st.chipBox, { borderColor: lc(TH, 'rgba(52,211,153,0.35)') }]}>
+            <Text style={[st.chipTxt, { color: lc(TH, '#34D399') }]}>{p.freeChip}</Text>
           </View>
         ) : null}
       </View>
@@ -65,7 +69,7 @@ export default function DoorCover(p: DoorCoverProps) {
           <Text style={st.wt}>{p.withText}</Text>
         </View>
         <View style={st.wpillWithout}>
-          <Text style={[st.wk, { color: '#E24B4A' }]}>{p.withoutLabel}</Text>
+          <Text style={[st.wk, { color: lc(TH, '#E24B4A') }]}>{p.withoutLabel}</Text>
           <Text style={st.wt}>{p.withoutText}</Text>
         </View>
 
@@ -80,7 +84,13 @@ export default function DoorCover(p: DoorCoverProps) {
   );
 }
 
-const st = StyleSheet.create({
+/**
+ * TWO MODES, ONE SHEET. Every DARK value below is the literal that shipped —
+ * still readable here, which is how LAW 1 is proved rather than promised.
+ * Every LIGHT value is lifted from the founder's own year-old two-mode file.
+ */
+const make_st = (T: Tokens) => {
+  return StyleSheet.create({
   root: { position: 'relative', justifyContent: 'flex-end', backgroundColor: '#08111F' },
   art: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
   scrim: {
@@ -96,24 +106,26 @@ const st = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6,
   },
   chipTxt: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 2 },
-  skipTxt: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 2, color: 'rgba(255,255,255,0.55)' },
+  skipTxt: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 2, color: dl(T, 'rgba(255,255,255,0.55)', 'rgba(0,0,0,0.55)') },
   bottom: { padding: 18, paddingBottom: 22, zIndex: 2, backgroundColor: 'rgba(8,17,31,0.86)' },
   role: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 2, marginBottom: 7 },
   title: { fontFamily: 'BebasNeue-Regular', fontSize: 44, letterSpacing: 2, lineHeight: 40, color: '#FFF' },
   desc: {
     fontFamily: 'CormorantGaramond-Italic', fontStyle: 'italic', fontSize: 15,
-    color: 'rgba(255,255,255,0.82)', lineHeight: 21, marginTop: 8, marginBottom: 12,
+    color: dl(T, 'rgba(255,255,255,0.82)', 'rgba(0,0,0,0.45)'), lineHeight: 21, marginTop: 8, marginBottom: 12,
   },
   wpillWith: {
-    borderLeftWidth: 2, borderLeftColor: '#1BB8FF', backgroundColor: 'rgba(255,255,255,0.07)',
+    borderLeftWidth: 2, borderLeftColor: dl(T, '#1BB8FF', '#2a7faa'), backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderRadius: 8, padding: 10, marginBottom: 8,
   },
   wpillWithout: {
-    borderLeftWidth: 2, borderLeftColor: '#E24B4A', backgroundColor: 'rgba(255,255,255,0.07)',
+    borderLeftWidth: 2, borderLeftColor: dl(T, '#E24B4A', '#C0392B'), backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
     borderRadius: 8, padding: 10, marginBottom: 14,
   },
-  wk: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.5, color: '#1BB8FF', marginBottom: 3 },
-  wt: { fontFamily: 'DMSans-Regular', fontSize: 12.5, color: 'rgba(255,255,255,0.9)', lineHeight: 17 },
+  wk: { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 1.5, color: dl(T, '#1BB8FF', '#2a7faa'), marginBottom: 3 },
+  wt: { fontFamily: 'DMSans-Regular', fontSize: 12.5, color: dl(T, 'rgba(255,255,255,0.9)', 'rgba(0,0,0,0.86)'), lineHeight: 17 },
   open: { borderWidth: 1, borderRadius: 12, paddingVertical: 15, alignItems: 'center' },
   openTxt: { fontFamily: 'DMMono-Medium', fontSize: 13, letterSpacing: 2 },
 });
+};
+

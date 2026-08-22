@@ -36,13 +36,35 @@ import {
 } from '@/lib/baseline';
 import type { BiosignalSource } from '@/lib/biosignals';
 
-const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD';
-const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
-const GREEN = '#34D399', PURPLE = '#B48CF2', RED = '#E24B4A';
+import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+/**
+ * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
+ * — still readable in this file, which is how LAW 1 is proved rather than
+ * promised. Every LIGHT value is lifted from the founder's own year-old
+ * two-mode file, where all ten surfaces sat on ONE cream ground and were
+ * told apart by the colour of the type, not the colour of the room.
+ */
+const pal = (T: Tokens) => ({
+  NAVY: dl(T, '#0E1B33', '#F0EEE8'),
+  INK: dl(T, '#E8EEF5', '#1a1a1a'),
+  MUT: dl(T, '#8A99AD', 'rgba(0,0,0,0.55)'),
+  LINE: dl(T, 'rgba(255,255,255,0.15)', 'rgba(0,0,0,0.12)'),
+  GOLD: dl(T, '#D4A847', '#b8861e'),
+  CYAN: dl(T, '#1BB8FF', '#2a7faa'),
+  GREEN: dl(T, '#34D399', '#12795A'),
+  PURPLE: dl(T, '#B48CF2', '#5566aa'),
+  RED: dl(T, '#E24B4A', '#C0392B'),
+});
 
-const SOURCE_COLOR: Record<string, string> = {
-  oura: GREEN, whoop: '#7CE7C4', garmin: CYAN, muse: '#8fd6ff',
-  beats: GOLD, strava: '#5CD65C', manual: MUT,
+/** ORIGIN_SOURCE — the pipe is not the sensor. One colour per instrument, in
+ *  both modes. Founder ruling 2026-08-22: two versions of everything. */
+const sourceColor = (T: Tokens): Record<string, string> => {
+  const C = pal(T);
+  return {
+    oura: C.GREEN, whoop: dl(T, '#7CE7C4', '#12795A'), garmin: C.CYAN,
+    muse: dl(T, '#8fd6ff', '#1f6a90'), beats: C.GOLD,
+    strava: dl(T, '#5CD65C', '#2a882a'), manual: C.MUT,
+  };
 };
 const SOURCE_NAME: Record<string, string> = {
   oura: 'OURA RING 4', whoop: 'WHOOP MG', garmin: 'GARMIN TACTIX 8',
@@ -51,6 +73,10 @@ const SOURCE_NAME: Record<string, string> = {
 };
 
 export default function BaselineScreen() {
+  const T = useTheme();
+  const st = useMemo(() => makeSt(T), [T]);
+  const C = pal(T);
+
   const [rows, setRows] = useState<NightRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -113,8 +139,8 @@ export default function BaselineScreen() {
   if (loading) {
     return (
       <View style={[st.root, { alignItems: 'center', justifyContent: 'center' }]}>
-        <ActivityIndicator color={CYAN} />
-        <Text style={{ color: MUT, fontSize: 12, marginTop: 12 }}>Reading your own record…</Text>
+        <ActivityIndicator color={C.CYAN} />
+        <Text style={{ color: C.MUT, fontSize: 12, marginTop: 12 }}>Reading your own record…</Text>
       </View>
     );
   }
@@ -125,7 +151,7 @@ export default function BaselineScreen() {
       <Text style={st.eyebrow}>THE BASELINE</Text>
       <Text style={st.title}>Your Own{'\n'}Record</Text>
       <Text style={st.sub}>
-        Every number here is ranked against <Text style={{ color: INK, fontWeight: '700' }}>your nights</Text> —
+        Every number here is ranked against <Text style={{ color: C.INK, fontWeight: '700' }}>your nights</Text> —
         in the same part of the year, on the same instrument. No population. No normal range.
         Nobody's 61 is anybody else's 74.
       </Text>
@@ -146,15 +172,15 @@ export default function BaselineScreen() {
         <>
           <View style={st.statRow}>
             <View style={st.stat}>
-              <Text style={[st.statNum, { color: CYAN }]}>{totalNights}</Text>
+              <Text style={[st.statNum, { color: C.CYAN }]}>{totalNights}</Text>
               <Text style={st.statLbl}>NIGHTS HELD</Text>
             </View>
             <View style={st.stat}>
-              <Text style={[st.statNum, { color: GREEN }]}>{sources.length}</Text>
+              <Text style={[st.statNum, { color: C.GREEN }]}>{sources.length}</Text>
               <Text style={st.statLbl}>INSTRUMENTS</Text>
             </View>
             <View style={st.stat}>
-              <Text style={[st.statNum, { color: GOLD }]}>{tierFor(totalNights).slice(0, 4)}</Text>
+              <Text style={[st.statNum, { color: C.GOLD }]}>{tierFor(totalNights).slice(0, 4)}</Text>
               <Text style={st.statLbl}>CONFIDENCE</Text>
             </View>
           </View>
@@ -163,7 +189,7 @@ export default function BaselineScreen() {
           {sources.map(([s, n]) => {
             const mine = rows.filter(r => r.source === s);
             const first = mine[0]?.reading_date, last = mine[mine.length - 1]?.reading_date;
-            const col = SOURCE_COLOR[s] ?? MUT;
+            const col = sourceColor(T)[s] ?? C.MUT;
             return (
               <View key={s} style={[st.card, { borderLeftColor: col }]}>
                 <View style={st.cardHead}>
@@ -184,7 +210,7 @@ export default function BaselineScreen() {
             <>
               <Text style={st.section}>{latestDate} · RANKED AGAINST YOU</Text>
               {ranks.map(r => {
-                const col = SOURCE_COLOR[r.source as string] ?? MUT;
+                const col = sourceColor(T)[r.source as string] ?? C.MUT;
                 const show: MetricRank[] = r.standouts.length ? r.standouts : r.metrics.slice(0, 4);
                 return (
                   <View key={r.source as string} style={[st.card, { borderLeftColor: col }]}>
@@ -197,7 +223,7 @@ export default function BaselineScreen() {
                     )}
                     {show.map(m => (
                       <View key={m.key} style={st.rankRow}>
-                        <View style={[st.rankPip, { backgroundColor: pipColor(m) }]} />
+                        <View style={[st.rankPip, { backgroundColor: pipColor(T, m) }]} />
                         <Text style={st.rankTxt}>{describeRank(m)}</Text>
                       </View>
                     ))}
@@ -246,7 +272,7 @@ export default function BaselineScreen() {
                 <Text style={st.knowledgeLbl}>AA2 INTERPRETS · {latestDate}</Text>
                 {disagreements.map((d, i) => (
                   <Text key={i} style={st.knowledgeTxt}>
-                    • <Text style={{ color: INK, fontWeight: '700' }}>{d.label}</Text>{' '}
+                    • <Text style={{ color: C.INK, fontWeight: '700' }}>{d.label}</Text>{' '}
                     {d.parts.map(p => `${SOURCE_NAME[p.s]?.split(' ')[0] ?? p.s} ${Math.round(p.v * 10) / 10}${d.unit}`).join('  ·  ')}
                   </Text>
                 ))}
@@ -275,11 +301,12 @@ export default function BaselineScreen() {
 }
 
 /** Colour by how far from ordinary, never by "good" or "bad". ZERO SHAME. */
-function pipColor(m: MetricRank): string {
+function pipColor(T: Tokens, m: MetricRank): string {
+  const C = pal(T);
   const p = m.seasonPct ?? m.allPct;
-  if (p == null) return MUT;
-  if (p >= 85 || p <= 15) return m.dir === 'neutral' ? PURPLE : (isFavourable(m, p) ? GREEN : GOLD);
-  return MUT;
+  if (p == null) return C.MUT;
+  if (p >= 85 || p <= 15) return m.dir === 'neutral' ? C.PURPLE : (isFavourable(m, p) ? C.GREEN : C.GOLD);
+  return C.MUT;
 }
 function isFavourable(m: MetricRank, p: number): boolean {
   if (m.dir === 'higher') return p >= 50;
@@ -287,7 +314,9 @@ function isFavourable(m: MetricRank, p: number): boolean {
   return true;
 }
 
-const st = StyleSheet.create({
+const makeSt = (T: Tokens) => {
+  const { NAVY, INK, MUT, LINE, GOLD, CYAN, GREEN, PURPLE, RED } = pal(T);
+  return StyleSheet.create({
   root: { flex: 1, backgroundColor: NAVY },
   back: { color: '#fff', fontSize: 10, fontWeight: '700', letterSpacing: 1, marginBottom: 16, marginTop: 34 },
   eyebrow: { color: CYAN, fontSize: 10, letterSpacing: 3, fontWeight: '700', marginBottom: 6 },
@@ -295,12 +324,12 @@ const st = StyleSheet.create({
   sub: { color: MUT, fontSize: 13, lineHeight: 19, marginBottom: 18 },
 
   statRow: { flexDirection: 'row', gap: 10, marginBottom: 22 },
-  stat: { flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  stat: { flex: 1, backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
   statNum: { fontSize: 24, fontWeight: '800' },
   statLbl: { color: MUT, fontSize: 8, letterSpacing: 1, marginTop: 3, fontWeight: '700' },
 
   section: { color: MUT, fontSize: 10, letterSpacing: 2, fontWeight: '700', marginTop: 16, marginBottom: 10 },
-  card: { backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderLeftWidth: 3, borderRadius: 12, padding: 14, marginBottom: 10 },
+  card: { backgroundColor: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'), borderWidth: StyleSheet.hairlineWidth, borderColor: LINE, borderLeftWidth: 3, borderRadius: 12, padding: 14, marginBottom: 10 },
   cardHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   metric: { color: INK, fontSize: 14, fontWeight: '700', flexShrink: 1, letterSpacing: 0.5 },
   chip: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: 7, marginLeft: 8 },
@@ -313,21 +342,22 @@ const st = StyleSheet.create({
   rankTxt: { color: INK, fontSize: 13, lineHeight: 18.5, flex: 1 },
 
   // THE CARD LAW — amber hero. Worn whenever AA2 interprets rather than reports.
-  knowledgeCard: { backgroundColor: 'rgba(212,168,71,0.14)', borderWidth: 2, borderColor: 'rgba(212,168,71,0.55)', borderRadius: 14, padding: 16, marginBottom: 10 },
-  knowledge: { backgroundColor: 'rgba(212,168,71,0.14)', borderWidth: 2, borderColor: 'rgba(212,168,71,0.55)', borderRadius: 12, padding: 12, marginTop: 8 },
+  knowledgeCard: { backgroundColor: dl(T, 'rgba(212,168,71,0.14)', 'rgba(184,134,30,0.14)'), borderWidth: 2, borderColor: dl(T, 'rgba(212,168,71,0.55)', 'rgba(184,134,30,0.55)'), borderRadius: 14, padding: 16, marginBottom: 10 },
+  knowledge: { backgroundColor: dl(T, 'rgba(212,168,71,0.14)', 'rgba(184,134,30,0.14)'), borderWidth: 2, borderColor: dl(T, 'rgba(212,168,71,0.55)', 'rgba(184,134,30,0.55)'), borderRadius: 12, padding: 12, marginTop: 8 },
   knowledgeLbl: { color: GOLD, fontSize: 10, letterSpacing: 2, fontWeight: '800', marginBottom: 8 },
   knowledgeTxt: { color: INK, fontSize: 13, lineHeight: 18.5, marginBottom: 8 },
   ownTheWhy: { color: 'rgba(232,238,245,0.72)', fontSize: 11.5, lineHeight: 16.5, fontStyle: 'italic', marginTop: 2 },
 
   upNote: { color: 'rgba(232,238,245,0.65)', fontSize: 11.5, lineHeight: 16.5, fontStyle: 'italic', marginBottom: 8 },
 
-  emptyCard: { backgroundColor: 'rgba(27,184,255,0.08)', borderWidth: 1, borderColor: 'rgba(27,184,255,0.32)', borderRadius: 14, padding: 18 },
+  emptyCard: { backgroundColor: dl(T, 'rgba(27,184,255,0.08)', 'rgba(42,127,170,0.08)'), borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.32)', 'rgba(42,127,170,0.32)'), borderRadius: 14, padding: 18 },
   emptyTitle: { color: INK, fontSize: 16, fontWeight: '800', marginBottom: 8 },
   emptyBody: { color: MUT, fontSize: 13, lineHeight: 19, marginBottom: 14 },
-  cta: { borderWidth: 1, borderColor: 'rgba(27,184,255,0.45)', backgroundColor: 'rgba(27,184,255,0.10)', borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
+  cta: { borderWidth: 1, borderColor: dl(T, 'rgba(27,184,255,0.45)', 'rgba(42,127,170,0.45)'), backgroundColor: dl(T, 'rgba(27,184,255,0.10)', 'rgba(42,127,170,0.10)'), borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   ctaTxt: { color: CYAN, fontSize: 11, fontWeight: '800', letterSpacing: 1.5 },
 
-  footCard: { marginTop: 20, backgroundColor: 'rgba(212,168,71,0.08)', borderWidth: 1, borderColor: 'rgba(212,168,71,0.30)', borderRadius: 14, padding: 16 },
+  footCard: { marginTop: 20, backgroundColor: dl(T, 'rgba(212,168,71,0.08)', 'rgba(184,134,30,0.08)'), borderWidth: 1, borderColor: dl(T, 'rgba(212,168,71,0.30)', 'rgba(184,134,30,0.30)'), borderRadius: 14, padding: 16 },
   footLine: { color: GOLD, fontSize: 16, fontWeight: '800', marginBottom: 6, textAlign: 'center' },
   footSub: { color: MUT, fontSize: 12, lineHeight: 17.5, textAlign: 'center' },
 });
+};
