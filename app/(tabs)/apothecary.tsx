@@ -18,25 +18,26 @@ import {
 } from 'react-native';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
-const C = {
-  bg:          '#050D09',
-  card:        '#0C1710',
-  cardDeep:    '#081209',
-  border:      '#172E1F',
-  borderSoft:  '#1A3523',
-  teal:        '#1D9E75',
-  tealDim:     'rgba(29,158,117,0.13)',
-  tealMid:     'rgba(29,158,117,0.22)',
-  gold:        '#C9A84C',
-  goldDim:     'rgba(201,168,76,0.13)',
-  red:         '#C94C4C',
-  redDim:      'rgba(201,76,76,0.13)',
-  white:       '#FFFFFF',
-  dim:         'rgba(255,255,255,0.60)',
-  muted:       'rgba(255,255,255,0.32)',
-  glass:       'rgba(255,255,255,0.07)',
-  glassBorder: 'rgba(255,255,255,0.07)',
-};
+/** TWO MODES, ONE PALETTE — the greenhouse in both lights. Dark literals kept verbatim. */
+const palC = (T: Tokens) => ({
+  bg: '#050D09',
+  card: '#0C1710',
+  cardDeep: '#081209',
+  border: dl(T, '#172E1F', '#FFFFFF'),
+  borderSoft: dl(T, '#1A3523', 'rgba(0,0,0,0.12)'),
+  teal: dl(T, '#1D9E75', '#12795A'),
+  tealDim: dl(T, 'rgba(29,158,117,0.13)', 'rgba(18,121,90,0.13)'),
+  tealMid: dl(T, 'rgba(29,158,117,0.22)', 'rgba(18,121,90,0.22)'),
+  gold: dl(T, '#C9A84C', '#b8861e'),
+  goldDim: 'rgba(201,168,76,0.13)',
+  red: dl(T, '#C94C4C', '#C0392B'),
+  redDim: 'rgba(201,76,76,0.13)',
+  white: dl(T, '#FFFFFF', '#1a1a1a'),
+  dim: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'),
+  muted: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  glass: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
+  glassBorder: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
+});
 
 // ─── TYPOGRAPHY ──────────────────────────────────────────────────────────────
 const F = {
@@ -95,16 +96,13 @@ const MODES: { id: Mode; label: string; glyph: string; desc: string }[] = [
 // ─── VERDICT ─────────────────────────────────────────────────────────────────
 type Verdict = 'SAFE' | 'CAUTION' | 'CONTRAINDICATED';
 
-const vColor = (v: Verdict) =>
-  v === 'SAFE' ? C.teal : v === 'CAUTION' ? C.gold : C.red;
-const vDim = (v: Verdict) =>
-  v === 'SAFE' ? C.tealDim : v === 'CAUTION' ? C.goldDim : C.redDim;
+const vColor = (T: Tokens, v: Verdict) => { const C = palC(T); return v === 'SAFE' ? C.teal : v === 'CAUTION' ? C.gold : C.red; };
+const vDim = (T: Tokens, v: Verdict) => { const C = palC(T); return v === 'SAFE' ? C.tealDim : v === 'CAUTION' ? C.goldDim : C.redDim; };
 const vGlyph = (v: Verdict) =>
   v === 'SAFE' ? '✓' : v === 'CAUTION' ? '⚠' : '✕';
 
 type EdibilityLevel = 'safe' | 'conditional' | 'toxic';
-const edibilityColor = (e: EdibilityLevel) =>
-  e === 'safe' ? C.teal : e === 'conditional' ? C.gold : C.red;
+const edibilityColor = (T: Tokens, e: EdibilityLevel) => { const C = palC(T); return e === 'safe' ? C.teal : e === 'conditional' ? C.gold : C.red; };
 const edibilityLabel = (e: EdibilityLevel) =>
   e === 'safe' ? 'SAFE TO CONSUME' : e === 'conditional' ? 'CONDITIONAL — READ NOTES' : 'TOXIC — DO NOT CONSUME';
 
@@ -326,6 +324,7 @@ type StackItem = { id: string; name: string };
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 export default function ApothecaryScreen() {
   const TH = useTheme();
+  const C = palC(TH);
   const s = useMemo(() => make_s(TH), [TH]);
 
   const { width: screenW, height: screenH } = useWindowDimensions();
@@ -1121,12 +1120,12 @@ export default function ApothecaryScreen() {
         {/* ════════════ RESULTS ════════════ */}
         {hasResult && !loading && v && (
           <>
-            <View style={[s.verdictBanner, { backgroundColor: vDim(v), borderColor: vColor(v) }]}>
-              <View style={[s.verdictCircle, { borderColor: vColor(v) }]}>
-                <Text style={[s.verdictGlyph, { color: vColor(v) }]}>{vGlyph(v)}</Text>
+            <View style={[s.verdictBanner, { backgroundColor: vDim(TH, v), borderColor: vColor(TH, v) }]}>
+              <View style={[s.verdictCircle, { borderColor: vColor(TH, v) }]}>
+                <Text style={[s.verdictGlyph, { color: vColor(TH, v) }]}>{vGlyph(v)}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={[s.verdictTag, { color: vColor(v) }]}>{v}</Text>
+                <Text style={[s.verdictTag, { color: vColor(TH, v) }]}>{v}</Text>
                 <Text style={s.verdictSubject} numberOfLines={2}>
                   {result.compoundName || result.stackName || result.protocolName || result.commonName || ''}
                 </Text>
@@ -1135,8 +1134,8 @@ export default function ApothecaryScreen() {
 
             {/* Forager edibility badge */}
             {mode === 'forager' && result.edibility && (
-              <View style={[s.edibilityBadge, { backgroundColor: edibilityColor(result.edibility as EdibilityLevel) + '1A', borderColor: edibilityColor(result.edibility as EdibilityLevel) }]}>
-                <Text style={[s.edibilityBadgeText, { color: edibilityColor(result.edibility as EdibilityLevel) }]}>
+              <View style={[s.edibilityBadge, { backgroundColor: edibilityColor(TH, result.edibility as EdibilityLevel) + '1A', borderColor: edibilityColor(TH, result.edibility as EdibilityLevel) }]}>
+                <Text style={[s.edibilityBadgeText, { color: edibilityColor(TH, result.edibility as EdibilityLevel) }]}>
                   {result.edibility === 'safe' ? '✓' : result.edibility === 'conditional' ? '⚠' : '✕'}  {edibilityLabel(result.edibility as EdibilityLevel)}
                 </Text>
               </View>
@@ -1390,6 +1389,7 @@ export default function ApothecaryScreen() {
  * Every LIGHT value is lifted from the founder's own year-old two-mode file.
  */
 const make_s = (T: Tokens) => {
+  const C = palC(T);
   return StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
 

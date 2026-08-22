@@ -39,7 +39,9 @@
  */
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Appearance } from 'react-native';
 import { vaultRead, vaultWrite } from './tokenVault';
+import { supabase } from './supabase';
 
 export type Mode = 'light' | 'dark';
 
@@ -160,26 +162,72 @@ export function ThemeProviderAA2({
 
   useEffect(() => {
     (async () => {
+      // 1. THE VAULT FIRST — instant, offline, survives relaunch.
       try {
         const v = await vaultRead(KEY);
         if (v === 'light' || v === 'dark') setPicked(v);
       } catch {}
       setReady(true);
+      // 2. THEN THE MEMBRANE. member_profiles.color_mode existed in his schema
+      //    all along — FIELD_MAP carried it and NO screen ever read or wrote
+      //    it. A dead wire from the original two-mode design, found 2026-08-22
+      //    during the all-code audit. The profile is the cross-device truth;
+      //    the vault is the local cache of it.
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from('member_profiles')
+          .select('color_mode')
+          .eq('member_id', user.id)
+          .maybeSingle();
+        const remote = (data as any)?.color_mode;
+        if (remote === 'light' || remote === 'dark') {
+          setPicked(remote);
+          vaultWrite(KEY, remote).catch(() => {});
+        }
+      } catch {}
+    })();
+  }, []);
+
+  // NATIVE CHROME FOLLOWS THE PICK. Appearance.setColorScheme drives what the
+  // OS renders inside the app — keyboard, alerts, share sheets — so a member in
+  // light mode is not handed a dark keyboard. Requires app.json
+  // userInterfaceStyle "automatic" (a build-time setting: next eas build, not
+  // OTA). Until that build, this call is a harmless no-op.
+  useEffect(() => {
+    try { Appearance.setColorScheme(picked); } catch {}
+  }, [picked]);
+
+  /** Writes all three places the pick lives: state (now), vault (next launch),
+   *  membrane (his other devices). Failures downstream never block the screen. */
+  const persist = useCallback((m: Mode) => {
+    vaultWrite(KEY, m).catch(() => {});
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { error } = await supabase
+          .from('member_profiles')
+          .upsert({ member_id: user.id, color_mode: m, updated_at: new Date().toISOString() },
+                  { onConflict: 'member_id' });
+        if (error) console.log('[theme-mode] color_mode write failed:', error.message);
+      } catch {}
     })();
   }, []);
 
   const setMode = useCallback((m: Mode) => {
     setPicked(m);
-    vaultWrite(KEY, m).catch(() => {});
-  }, []);
+    persist(m);
+  }, [persist]);
 
   const toggle = useCallback(() => {
     setPicked(prev => {
       const next: Mode = prev === 'dark' ? 'light' : 'dark';
-      vaultWrite(KEY, next).catch(() => {});
+      persist(next);
       return next;
     });
-  }, []);
+  }, [persist]);
 
   const forced = routeForcesDark(pathname);
   const tokens = forced ? DARK : (picked === 'light' ? LIGHT : DARK);

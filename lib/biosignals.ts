@@ -404,12 +404,17 @@ export async function syncOura(): Promise<SyncResult> {
       const base = computeOuraBaselines(rows);
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from('member_profiles').update({
+        // supabase-js returns its error in the RESULT — it does not throw. The
+        // old try/catch around this write caught nothing while the columns
+        // did not exist, and the baselines silently landed nowhere from
+        // 2026-08-01 to 2026-08-22. The error is now READ, not assumed away.
+        const { error: baseErr } = await supabase.from('member_profiles').update({
           hrv_baseline_30d: base.hrv_baseline_30d,
           readiness_baseline_30d: base.readiness_baseline_30d,
         }).eq('member_id', user.id);
+        if (baseErr) console.log('[biosignals] baseline write FAILED:', baseErr.message);
       }
-    } catch { /* baseline columns optional */ }
+    } catch (e) { console.log('[biosignals] baseline write threw:', e); }
     logMembraneEvent({ eventType: 'device_sync', sourceScreen: 'biobuddy', subject: 'oura', value: { days: result.days } });
   }
   return result;

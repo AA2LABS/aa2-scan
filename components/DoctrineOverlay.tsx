@@ -11,27 +11,29 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import type { DoctrineVerdict, Verdict } from '../lib/chemical-doctrine';
 
 import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
-const COLORS = {
-  navyDeep: '#0E1B33',
-  navyMid:  '#162544',
-  navyCard: '#1A2D52',
-  gold:     '#D4A847',
-  green:    '#34D399',
-  cyan:     '#1BB8FF',
-  red:      '#E24B4A',
-  amber:    '#F59E0B',
-  textHi:   '#F5F1E8',
-  textMid:  '#A8B2CC',
-  textLow:  '#6B7896',
-  border:   '#2A3D66',
-};
+/** TWO MODES, ONE PALETTE — dark literals kept verbatim; light from the founder's file. */
+const colorsFor = (T: Tokens) => ({
+  navyDeep: dl(T, '#0E1B33', '#F0EEE8'),
+  navyMid: dl(T, '#162544', '#FAF7F2'),
+  navyCard: dl(T, '#1A2D52', '#FFFFFF'),
+  gold: dl(T, '#D4A847', '#b8861e'),
+  green: dl(T, '#34D399', '#12795A'),
+  cyan: dl(T, '#1BB8FF', '#2a7faa'),
+  red: dl(T, '#E24B4A', '#C0392B'),
+  amber: dl(T, '#F59E0B', '#9A7418'),
+  textHi: '#F5F1E8',
+  textMid: dl(T, '#A8B2CC', 'rgba(0,0,0,0.55)'),
+  textLow: dl(T, '#6B7896', 'rgba(0,0,0,0.38)'),
+  border: dl(T, '#2A3D66', 'rgba(0,0,0,0.12)'),
+});
 
-function verdictColor(v: Verdict): string {
+function verdictColor(T: Tokens, v: Verdict): string {
+  const C = colorsFor(T);
   switch (v) {
-    case 'ALL CLEAR':     return COLORS.green;
-    case 'TAKE NOTICE':   return COLORS.amber;
-    case 'PAY ATTENTION': return COLORS.red;
-    default:              return COLORS.textMid;
+    case 'ALL CLEAR':     return C.green;
+    case 'TAKE NOTICE':   return C.amber;
+    case 'PAY ATTENTION': return C.red;
+    default:              return C.textMid;
   }
 }
 
@@ -46,6 +48,7 @@ export interface DoctrineOverlayProps {
 
 export function DoctrineOverlay(props: DoctrineOverlayProps) {
   const TH = useTheme();
+  const C = colorsFor(TH);
   const styles = useMemo(() => make_styles(TH), [TH]);
 
   const {
@@ -57,7 +60,7 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
     onDismiss,
   } = props;
 
-  const accent = verdictColor(verdict.verdict);
+  const accent = verdictColor(TH, verdict.verdict);
 
   return (
     <ScrollView
@@ -95,7 +98,7 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
           {verdict.allergenAlerts.map((a, i) => (
             <View key={`a-${i}`} style={styles.alertRow}>
               <Text style={styles.alertName}>{a.allergenName.toUpperCase()}</Text>
-              <Text style={[styles.alertSeverity, { color: COLORS.red }]}>
+              <Text style={[styles.alertSeverity, { color: C.red }]}>
                 {a.severity}
               </Text>
             </View>
@@ -142,8 +145,8 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
 
       {/* CUMULATIVE WARNING */}
       {verdict.cumulativeWarning ? (
-        <View style={[styles.noteBox, { borderColor: COLORS.amber }]}>
-          <Text style={[styles.noteLabel, { color: COLORS.amber }]}>
+        <View style={[styles.noteBox, { borderColor: C.amber }]}>
+          <Text style={[styles.noteLabel, { color: C.amber }]}>
             CUMULATIVE LOAD
           </Text>
           <Text style={styles.noteText}>{verdict.cumulativeWarning}</Text>
@@ -158,11 +161,11 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
       {/* ALTERNATIVE CTA */}
       {verdict.alternativeCTA ? (
         <TouchableOpacity
-          style={[styles.ctaButton, { borderColor: COLORS.cyan }]}
+          style={[styles.ctaButton, { borderColor: C.cyan }]}
           onPress={onAlternative}
           activeOpacity={0.7}
         >
-          <Text style={[styles.ctaText, { color: COLORS.cyan }]}>
+          <Text style={[styles.ctaText, { color: C.cyan }]}>
             {verdict.alternativeCTA}
           </Text>
         </TouchableOpacity>
@@ -191,10 +194,11 @@ export function DoctrineOverlay(props: DoctrineOverlayProps) {
  * Every LIGHT value is lifted from the founder's own year-old two-mode file.
  */
 const make_styles = (T: Tokens) => {
+  const C = colorsFor(T);
   return StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: COLORS.navyDeep,
+    backgroundColor: C.navyDeep,
   },
   scrollContent: {
     padding: 20,
@@ -207,13 +211,13 @@ const make_styles = (T: Tokens) => {
     marginBottom: 24,
   },
   brand: {
-    color: COLORS.gold,
+    color: C.gold,
     fontSize: 16,
     fontWeight: '700',
     letterSpacing: 2,
   },
   memberLabel: {
-    color: COLORS.textLow,
+    color: C.textLow,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 1.5,
@@ -241,25 +245,25 @@ const make_styles = (T: Tokens) => {
     letterSpacing: 2,
   },
   productName: {
-    color: COLORS.textHi,
+    color: C.textHi,
     fontSize: 22,
     fontWeight: '600',
     marginBottom: 24,
     letterSpacing: 0.5,
   },
   section: {
-    backgroundColor: COLORS.navyMid,
+    backgroundColor: C.navyMid,
     borderRadius: 6,
     padding: 14,
     marginBottom: 12,
     borderLeftWidth: 3,
-    borderLeftColor: COLORS.border,
+    borderLeftColor: C.border,
   },
   sectionAlert: {
-    borderLeftColor: COLORS.red,
+    borderLeftColor: C.red,
   },
   sectionLabel: {
-    color: COLORS.textLow,
+    color: C.textLow,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.8,
@@ -271,10 +275,10 @@ const make_styles = (T: Tokens) => {
     alignItems: 'center',
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: C.border,
   },
   alertName: {
-    color: COLORS.textHi,
+    color: C.textHi,
     fontSize: 14,
     fontWeight: '600',
     letterSpacing: 1,
@@ -287,64 +291,64 @@ const make_styles = (T: Tokens) => {
   goalRow: {
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: C.border,
   },
   goalLabel: {
-    color: COLORS.gold,
+    color: C.gold,
     fontSize: 13,
     fontWeight: '600',
     marginBottom: 2,
   },
   goalReason: {
-    color: COLORS.textMid,
+    color: C.textMid,
     fontSize: 13,
     lineHeight: 18,
   },
   chemRow: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: C.border,
   },
   chemName: {
-    color: COLORS.textHi,
+    color: C.textHi,
     fontSize: 13,
     fontWeight: '600',
   },
   chemCategory: {
-    color: COLORS.cyan,
+    color: C.cyan,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.2,
     marginTop: 2,
   },
   chemConcern: {
-    color: COLORS.textMid,
+    color: C.textMid,
     fontSize: 12,
     marginTop: 4,
     lineHeight: 16,
   },
   noteBox: {
-    backgroundColor: COLORS.navyCard,
+    backgroundColor: C.navyCard,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: C.border,
     borderRadius: 6,
     padding: 14,
     marginBottom: 12,
   },
   noteLabel: {
-    color: COLORS.cyan,
+    color: C.cyan,
     fontSize: 10,
     fontWeight: '700',
     letterSpacing: 1.5,
     marginBottom: 6,
   },
   noteText: {
-    color: COLORS.textHi,
+    color: C.textHi,
     fontSize: 13,
     lineHeight: 19,
   },
   scoreText: {
-    color: COLORS.amber,
+    color: C.amber,
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.2,
@@ -370,13 +374,13 @@ const make_styles = (T: Tokens) => {
     alignItems: 'center',
   },
   dismissText: {
-    color: COLORS.textLow,
+    color: C.textLow,
     fontSize: 11,
     fontWeight: '600',
     letterSpacing: 2,
   },
   footer: {
-    color: COLORS.textLow,
+    color: C.textLow,
     fontSize: 9,
     fontWeight: '600',
     letterSpacing: 2.5,

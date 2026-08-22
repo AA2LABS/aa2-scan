@@ -119,12 +119,14 @@ export default function Membrane({
   channels,
   turbulence = 0.2,
   speech = 0,
-  accent = '#1BB8FF',
+  accent: accentIn = '#1BB8FF',
   size = 300,
   showFace = true,
   showCarrier = true,
   animate = true,
 }: MembraneProps) {
+  const TH = useTheme();
+  const accent = lc(TH, accentIn);
   const [t, setT] = useState(0);
   const raf = useRef<number | null>(null);
   const last = useRef(0);

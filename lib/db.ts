@@ -349,6 +349,37 @@ export async function getVaultLedgerTotal(): Promise<{ total: number; thisMonth:
   }
 }
 
+/**
+ * THE DOCTRINE FEED — the last N times the member ACTED RIGHT, for the Vault's
+ * card wire (founder order 2026-08-22: aa2_panel_05_card_face.html). The panel
+ * mocks six card swipes; the app has no issued card yet, so the REAL feed is
+ * the vault_ledger — every row is a moment a scan changed a purchase. Real
+ * rows or an honest empty state. NO FAKE DATA.
+ */
+export async function getVaultLedgerEntries(limit = 6): Promise<{
+  productName: string | null; alternativeName: string | null;
+  amountSaved: number; followedAt: string | null; source: string | null;
+}[]> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from('vault_ledger')
+      .select('product_name, alternative_name, amount_saved, followed_at, source')
+      .eq('user_id', user.id)
+      .order('followed_at', { ascending: false })
+      .limit(limit);
+    if (error) { console.log('[db.ts] getVaultLedgerEntries error:', error.message); return []; }
+    return (data ?? []).map((r: any) => ({
+      productName: r.product_name ?? null,
+      alternativeName: r.alternative_name ?? null,
+      amountSaved: Number(r.amount_saved) || 0,
+      followedAt: r.followed_at ?? null,
+      source: r.source ?? null,
+    }));
+  } catch (e) { console.log('[db.ts] getVaultLedgerEntries failed:', e); return []; }
+}
+
 // ─── MEMBRANE EVENTS ──────────────────────────────────────────────────────────
 // Every membrane write that isn't a scan or a dollar — clarifier corrections,
 // armed restricted layers, function runs. Nothing changes the body silently.

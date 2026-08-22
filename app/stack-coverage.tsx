@@ -17,7 +17,7 @@ import { View, Text, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { loadMemberProfile } from '@/lib/db';
 
-import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 /**
  * TWO MODES, ONE PALETTE. Every DARK value below is the literal that shipped
  * — still readable in this file, which is how LAW 1 is proved rather than
@@ -146,7 +146,7 @@ export default function StackCoverageScreen() {
             <View key={m.key} style={[st.card, { borderLeftColor: C.GREEN }]}>
               <View style={st.cardHead}>
                 <Text style={st.metric}>{m.name}</Text>
-                <View style={[st.chip, { backgroundColor: 'rgba(52,211,153,0.15)' }]}>
+                <View style={[st.chip, { backgroundColor: lc(T, 'rgba(52,211,153,0.15)') }]}>
                   <Text style={[st.chipTxt, { color: C.GREEN }]}>{cov[m.key].length}× COVERED</Text>
                 </View>
               </View>
@@ -166,7 +166,7 @@ export default function StackCoverageScreen() {
             <View key={m.key} style={[st.card, { borderLeftColor: C.CYAN }]}>
               <View style={st.cardHead}>
                 <Text style={st.metric}>{m.name}</Text>
-                <View style={[st.chip, { backgroundColor: 'rgba(27,184,255,0.15)' }]}>
+                <View style={[st.chip, { backgroundColor: lc(T, 'rgba(27,184,255,0.15)') }]}>
                   <Text style={[st.chipTxt, { color: C.CYAN }]}>COVERED</Text>
                 </View>
               </View>
@@ -185,7 +185,7 @@ export default function StackCoverageScreen() {
             <View key={m.key} style={[st.card, { borderLeftColor: C.PURPLE }]}>
               <View style={st.cardHead}>
                 <Text style={st.metric}>{m.name}</Text>
-                <View style={[st.chip, { backgroundColor: 'rgba(180,140,242,0.15)' }]}>
+                <View style={[st.chip, { backgroundColor: lc(T, 'rgba(180,140,242,0.15)') }]}>
                   <Text style={[st.chipTxt, { color: C.PURPLE }]}>FLOOR COVERED</Text>
                 </View>
               </View>

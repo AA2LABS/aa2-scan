@@ -8,7 +8,7 @@ import { loadMemberProfile, buildPersonalTruth, getCookbookRecipes, getScanHisto
 import { streamClaude } from '../../lib/claude-stream';
 import { CHEF_VOICE, VOICE_MODEL } from '../../lib/voices';
 
-import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CHEF — Intelligence 0X02 · Temporal Lobe · Food Culture Intelligence
 // Door first, then the function list — every string from the approved door HTML.
@@ -232,7 +232,7 @@ export default function ChefScreen() {
                           <Text style={st.recipeName}>{m.name}</Text>
                           <Text style={st.recipeMeta}>{[m.meta, `from ${m.from}`].filter(Boolean).join(' · ')}</Text>
                         </View>
-                        <View style={[st.savedChip, { borderColor: 'rgba(52,211,153,0.4)' }]}>
+                        <View style={[st.savedChip, { borderColor: lc(T, 'rgba(52,211,153,0.4)') }]}>
                           <Text style={[st.savedChipTxt, { color: C.GREEN }]}>FROM SCAN</Text>
                         </View>
                       </View>

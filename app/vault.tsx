@@ -22,7 +22,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, ImageBackground } from 'react-native';
 import { router, useFocusEffect, type Href } from 'expo-router';
-import { loadMemberProfile, getVaultLedgerTotal, type FullMemberProfile } from '@/lib/db';
+import { loadMemberProfile, getVaultLedgerTotal, getVaultLedgerEntries, type FullMemberProfile } from '@/lib/db';
 import { PALETTE, TYPE } from '@/lib/theme';
 
 import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
@@ -51,14 +51,18 @@ export default function VaultScreen() {
 
   const [p, setP] = useState<FullMemberProfile | null>(null);
   const [vault, setVault] = useState({ total: 0, thisMonth: 0, entries: 0 });
+  const [feed, setFeed] = useState<Awaited<ReturnType<typeof getVaultLedgerEntries>>>([]);
 
   useFocusEffect(useCallback(() => {
     let alive = true;
     (async () => {
-      const [prof, led] = await Promise.all([loadMemberProfile(), getVaultLedgerTotal()]);
+      const [prof, led, fd] = await Promise.all([
+        loadMemberProfile(), getVaultLedgerTotal(), getVaultLedgerEntries(6),
+      ]);
       if (!alive) return;
       setP(prof);
       setVault(led);
+      setFeed(fd);
     })();
     return () => { alive = false; };
   }, []));
@@ -206,25 +210,110 @@ export default function VaultScreen() {
         </Text>
       </View>
 
-      {/* ── AA2 DEBIT CARD ──────────────────────────────────────────── */}
-      <Text style={st.sectionLabel}>AA2 DEBIT CARD</Text>
-      <View style={st.debit}>
-        <View style={st.dcTop}>
-          <Text style={st.dcBrand}>AA2 · ACT RIGHT</Text>
-          <View style={st.dcChip} />
+      {/* ── AA2 PAY · THE CARD ──────────────────────────────────────────
+          THE CORRECT WIRE — founder order 2026-08-22:
+          aa2_panel_05_card_face.html (Panel 05 · AA2 Pay · v50).
+          The panel's layout and copy, with ONE law over it: NO FAKE DATA.
+          The panel mocks a balance, six swipes and a travel switch. Here the
+          balance is the real ACT RIGHT total, the feed is the real ledger,
+          and everything the engine cannot yet do says so on the card. */}
+      <Text style={st.sectionLabel}>AA2 PAY · THE CARD</Text>
+      <Text style={st.payDoctrine}>
+        Every swipe is a scan. Every transaction is a doctrine event. The card
+        is the membrane that never sleeps.
+      </Text>
+
+      {/* THE CARD FACE. A physical card is an OBJECT — like a photograph it
+          carries its own light, so the face stays navy in both modes while the
+          page around it follows the member's pick. */}
+      <View style={st.aa2card}>
+        <View style={st.acGrid} pointerEvents="none" />
+        <View style={st.acTop}>
+          <View>
+            <Text style={st.acWord}>AA2 PANAMA</Text>
+            <Text style={st.acTag}>AWARE · ADAPT · ADVANCE</Text>
+          </View>
+          <Text style={st.acBio}>BIOMEMBRANE ◆</Text>
         </View>
-        <View style={{ marginTop: 12 }}>
-          <Text style={st.dcBalLabel}>ACT RIGHT BALANCE</Text>
-          <Text style={st.dcBalAmt}>{money(vault.total)}</Text>
-        </View>
-        <Text style={st.dcNum}>•••• •••• •••• ••••</Text>
-        <View style={st.dcBottom}>
-          <Text style={st.dcFoot}>{name.toUpperCase()}</Text>
-          <Text style={st.dcFoot}>STRIPE · WHITE LABELED</Text>
+        <Text style={st.acNum}>••••  ••••  ••••  ••••</Text>
+        <View style={st.acBottom}>
+          <View>
+            <Text style={st.acLbl}>CARDHOLDER</Text>
+            <Text style={st.acName}>{name.toUpperCase()}</Text>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Text style={st.acLbl}>ACT RIGHT BALANCE</Text>
+            <Text style={st.acBal}>{money(vault.total)}</Text>
+          </View>
         </View>
         <View style={st.dcBadge}>
           <Text style={st.dcBadgeTxt}>NOT ISSUED · BALANCE IS REAL</Text>
         </View>
+      </View>
+
+      {/* Panel stat row — real numbers only. The panel's 7-day spend and
+          aligned-percent have no engine yet; the month and the count do. */}
+      <View style={st.payStats}>
+        <View style={st.payStat}>
+          <Text style={st.payStatK}>THIS MONTH</Text>
+          <Text style={st.payStatV}>{money(vault.thisMonth)}</Text>
+        </View>
+        <View style={st.payStat}>
+          <Text style={st.payStatK}>DOCTRINE EVENTS</Text>
+          <Text style={st.payStatV}>{vault.entries}</Text>
+        </View>
+      </View>
+
+      {/* DOCTRINE FEED — the panel's "last 6 swipes", made honest: the last
+          six times a scan changed a purchase, straight from the ledger. */}
+      <Text style={st.sectionLabel}>DOCTRINE FEED · LAST {feed.length || 6}</Text>
+      <View style={st.card}>
+        {feed.length ? feed.map((f, i) => (
+          <View key={i} style={[st.feedRow, i < feed.length - 1 && st.feedRowLine]}>
+            <View style={{ flex: 1 }}>
+              <Text style={st.feedName} numberOfLines={1}>
+                {f.alternativeName ?? f.productName ?? 'Aware choice'}
+              </Text>
+              <Text style={st.feedSub} numberOfLines={1}>
+                {f.productName && f.alternativeName ? `instead of ${f.productName}` : 'ACT RIGHT'}
+                {f.followedAt ? ` · ${new Date(f.followedAt).toLocaleDateString()}` : ''}
+              </Text>
+            </View>
+            <Text style={st.feedAmt}>+{money(f.amountSaved)}</Text>
+          </View>
+        )) : (
+          <Text style={st.empty}>
+            No doctrine events yet. The first time a scan changes what you buy,
+            it lands here — with the dollars it kept.
+          </Text>
+        )}
+      </View>
+
+      {/* THE LOOP — the panel's five steps, verbatim. Doctrine copy, not data. */}
+      <Text style={st.sectionLabel}>THE LOOP · CARD AS PASSIVE SCANNER</Text>
+      <View style={st.card}>
+        <Text style={st.loopIntro}>
+          No barcode needed. The card watches the merchant code and feeds the
+          membrane silently — every swipe contributes to the doctrine.
+        </Text>
+        {[
+          ['01', 'SWIPE',    'CARD · TAP · APPLEPAY'],
+          ['02', 'MCC',      'MERCHANT CODE'],
+          ['03', 'CATEGORY', 'FOOD · MED · TRAVEL'],
+          ['04', 'FLAG',     'DOCTRINE NOTE'],
+          ['05', 'LOAD',     'CUMULATIVE 30D'],
+        ].map(([n, k, v]) => (
+          <View key={n} style={st.loopRow}>
+            <Text style={st.loopNum}>{n}</Text>
+            <Text style={st.loopK}>{k}</Text>
+            <Text style={st.loopV}>{v}</Text>
+          </View>
+        ))}
+        <Text style={st.loopFoot}>
+          WHITE LABEL · ONE ENGINE · MANY COUNTRIES — the card is
+          country-agnostic. The brand wears the country instance without
+          changing the engine beneath.
+        </Text>
       </View>
 
       <Text style={st.foot}>
@@ -301,6 +390,45 @@ const makeSt = (T: Tokens) => {
   dcBadge:     { marginTop: 12, alignSelf: 'flex-start', borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(184,134,11,0.5)', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
   dcBadgeTxt:  { color: dl(T, '#B8860B', '#8A6410'), fontSize: 8.5, fontFamily: 'DMMono-Regular', letterSpacing: 1.4 },
 
+
+  /* ── AA2 PAY · THE CARD — Panel 05 wire ──────────────────────────────────
+     The card face is an OBJECT: navy gradient in both modes, like the panel.
+     Everything around it themes with the member's pick. */
+  payDoctrine: { fontFamily: 'CormorantGaramond-Italic', fontSize: 15.5, lineHeight: 22,
+                 color: MUT, marginHorizontal: 16, marginBottom: 12,
+                 borderLeftWidth: 1, borderLeftColor: dl(T, 'rgba(212,168,71,0.40)', 'rgba(154,116,24,0.40)'), paddingLeft: 12 },
+  aa2card:  { marginHorizontal: 12, marginBottom: 10, aspectRatio: 1.586,
+              backgroundColor: '#0A1428', borderRadius: 18, borderWidth: 0.5,
+              borderColor: 'rgba(212,168,71,0.25)', padding: 20,
+              justifyContent: 'space-between', overflow: 'hidden' },
+  acGrid:   { ...StyleSheet.absoluteFillObject, opacity: 0.4,
+              borderColor: 'rgba(255,255,255,0.025)', borderWidth: 0 },
+  acTop:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  acWord:   { fontFamily: 'DMSans-Regular', fontSize: 14, fontWeight: '500', letterSpacing: 2.4, color: '#D4A847' },
+  acTag:    { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 2, color: 'rgba(255,255,255,0.55)', marginTop: 4 },
+  acBio:    { fontFamily: 'DMMono-Regular', fontSize: 8.5, letterSpacing: 2, color: 'rgba(255,255,255,0.32)' },
+  acNum:    { fontFamily: 'DMMono-Medium', fontSize: 17, letterSpacing: 3, color: 'rgba(255,255,255,0.85)' },
+  acBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  acLbl:    { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 2, color: 'rgba(255,255,255,0.32)', marginBottom: 3 },
+  acName:   { fontFamily: 'DMSans-Regular', fontSize: 13, fontWeight: '600', letterSpacing: 1.2, color: '#FFFFFF' },
+  acBal:    { fontFamily: 'BebasNeue-Regular', fontSize: 24, letterSpacing: 1, color: '#34D399' },
+  payStats: { flexDirection: 'row', gap: 10, marginHorizontal: 12, marginBottom: 10 },
+  payStat:  { flex: 1, backgroundColor: dl(T, 'rgba(255,255,255,0.05)', '#FFFFFF'), borderWidth: 1,
+              borderColor: LINE, borderRadius: 14, padding: 14 },
+  payStatK: { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.8, color: FAINT },
+  payStatV: { fontFamily: 'BebasNeue-Regular', fontSize: 26, color: dl(T, '#D4A847', '#b8861e'), marginTop: 5 },
+  feedRow:  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 10 },
+  feedRowLine: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE },
+  feedName: { fontSize: 13.5, fontWeight: '700', color: dl(T, INK, '#1a1a1a') },
+  feedSub:  { fontFamily: 'DMMono-Regular', fontSize: 10.5, letterSpacing: 0.5, color: FAINT, marginTop: 3 },
+  feedAmt:  { fontFamily: 'DMMono-Medium', fontSize: 14, color: dl(T, '#34D399', '#12795A') },
+  loopIntro:{ fontSize: 13, lineHeight: 19, color: MUT, padding: 16, paddingBottom: 8 },
+  loopRow:  { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, gap: 12 },
+  loopNum:  { fontFamily: 'DMMono-Medium', fontSize: 11, color: dl(T, '#D4A847', '#b8861e'), width: 22 },
+  loopK:    { fontFamily: 'DMMono-Medium', fontSize: 11.5, letterSpacing: 1.5, color: dl(T, INK, '#1a1a1a'), width: 88 },
+  loopV:    { fontFamily: 'DMMono-Regular', fontSize: 10.5, letterSpacing: 1, color: FAINT, flex: 1 },
+  loopFoot: { fontFamily: 'DMMono-Regular', fontSize: 10.5, letterSpacing: 0.8, lineHeight: 16,
+              color: FAINT, padding: 16, paddingTop: 10 },
   foot:        { color: FAINT, fontSize: 11, textAlign: 'center', marginTop: 14, paddingHorizontal: 24, lineHeight: 18 },
 });
 };

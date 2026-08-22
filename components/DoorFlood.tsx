@@ -4,7 +4,14 @@ import { Image } from 'expo-image';
 import { router, type Href } from 'expo-router';
 import { loadMemberProfile, type FullMemberProfile } from '@/lib/db';
 
-import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
+/**
+ * EXPORTED AS DARK LITERALS ON PURPOSE. Six door screens import these to tag
+ * their rows (travel, equine, agricultural, depth-on-demand, k9, vision-board).
+ * They are DATA — a row's identity colour — and data keeps its dark literal;
+ * the components that RENDER them (below, and FloodScreen) resolve with lc()
+ * for the panel the member picked. One colour, one meaning, both modes.
+ */
 export const NAVY = '#0E1B33', INK = '#E8EEF5', MUT = '#8A99AD', FAINT = '#5C6B80';
 export const LINE = 'rgba(255,255,255,0.15)', GOLD = '#D4A847', CYAN = '#1BB8FF';
 export const GREEN = '#34D399', AMBER = '#E0A04A', RED = '#E24B4A';
@@ -36,7 +43,11 @@ export function DoorFlood(props: {
   const st = useMemo(() => make_st(TH), [TH]);
 
   const [open, setOpen] = useState(false);
-  const { art, eyebrow, title, accent, heroLine, heroSub, rows, foot } = props;
+  const { art, eyebrow, title, heroLine, heroSub, rows, foot } = props;
+  // On the PHOTO cover the accent stays exactly as passed — a photograph is the
+  // same brightness in both modes. On the open panel it resolves to the pick.
+  const accent = props.accent;
+  const accentOnPanel = lc(TH, props.accent);
   const artFit = props.artFit ?? 'cover';
   const heroH  = props.heroHeight ?? 210;
 
@@ -65,7 +76,7 @@ export function DoorFlood(props: {
         <Image source={art} contentFit={artFit} contentPosition={props.artPosition ?? 'center'} style={st.heroImg} />
         <View style={st.heroScrim} />
         <View style={st.heroContent}>
-          <Text style={[st.eyebrow, { color: accent }]}>{eyebrow}</Text>
+          <Text style={[st.eyebrow, { color: accentOnPanel }]}>{eyebrow}</Text>
           <Text style={st.title}>{title}</Text>
         </View>
         <Pressable style={st.back} onPress={() => router.back()}>
@@ -73,7 +84,7 @@ export function DoorFlood(props: {
         </Pressable>
       </View>
       <View style={st.band}>
-        <Text style={[st.bandLine, { color: accent }]}>{heroLine}</Text>
+        <Text style={[st.bandLine, { color: accentOnPanel }]}>{heroLine}</Text>
         <Text style={st.bandSub}>{heroSub}</Text>
       </View>
       <View style={st.section}>
@@ -87,23 +98,23 @@ export function DoorFlood(props: {
             disabled={!r.route}
             onPress={() => { if (r.route) router.push(r.route as Href); }}
           >
-            <View style={[st.rowIcon, { borderColor: accent + '40', backgroundColor: accent + '14' }]}>
-              <Text style={[st.rowIconTxt, { color: accent }]}>{r.icon}</Text>
+            <View style={[st.rowIcon, { borderColor: accentOnPanel + '40', backgroundColor: accentOnPanel + '14' }]}>
+              <Text style={[st.rowIconTxt, { color: accentOnPanel }]}>{r.icon}</Text>
             </View>
             <View style={{ flex: 1 }}>
               <Text style={st.rowName}>{r.title}</Text>
               <Text style={st.rowDesc}>{r.desc}</Text>
             </View>
             {r.chip ? (
-              <View style={[st.chip, { backgroundColor: (r.chipColor ?? accent) + '1F' }]}>
-                <Text style={[st.chipTxt, { color: r.chipColor ?? accent }]}>{r.chip}</Text>
+              <View style={[st.chip, { backgroundColor: (r.chipColor ? lc(TH, r.chipColor) : accentOnPanel) + '1F' }]}>
+                <Text style={[st.chipTxt, { color: r.chipColor ? lc(TH, r.chipColor) : accentOnPanel }]}>{r.chip}</Text>
               </View>
             ) : null}
-            {r.route ? <Text style={[st.rowGo, { color: accent }]}>›</Text> : null}
+            {r.route ? <Text style={[st.rowGo, { color: accentOnPanel }]}>›</Text> : null}
           </Pressable>
         ))}
       </View>
-      <Text style={[st.foot, { color: accent }]}>{foot}</Text>
+      <Text style={[st.foot, { color: accentOnPanel }]}>{foot}</Text>
     </ScrollView>
   );
 }

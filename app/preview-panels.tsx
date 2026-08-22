@@ -1040,7 +1040,7 @@ function StoryPanel({ story }: { story: typeof NINE_STORIES[0] }) {
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled
         >
-          <Text style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: 3, color: story.accent, marginBottom: 8 }}>
+          <Text style={{ fontFamily: F.mono, fontSize: 10, letterSpacing: 3, color: lc(TH, story.accent), marginBottom: 8 }}>
             STORY {story.n} OF 9 · {story.audience}
           </Text>
           <Text style={{ fontFamily: F.display, fontSize: 38, color: C.WHITE, letterSpacing: 1, marginBottom: 12, lineHeight: 40 }}>
@@ -1058,8 +1058,8 @@ function StoryPanel({ story }: { story: typeof NINE_STORIES[0] }) {
             </Text>
           ))}
           {story.quote ? (
-            <View style={{ borderLeftWidth: 2, borderLeftColor: story.accent, paddingLeft: 14, marginTop: 4, marginBottom: 7 }}>
-              <Text style={{ fontFamily: F.serifIt, fontSize: 19, color: story.accent, lineHeight: 26 }}>
+            <View style={{ borderLeftWidth: 2, borderLeftColor: lc(TH, story.accent), paddingLeft: 14, marginTop: 4, marginBottom: 7 }}>
+              <Text style={{ fontFamily: F.serifIt, fontSize: 19, color: lc(TH, story.accent), lineHeight: 26 }}>
                 “{story.quote}”
               </Text>
             </View>

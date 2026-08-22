@@ -11,24 +11,25 @@ import {
 } from '@/lib/db';
 
 // ─── PALETTE (mirrors apothecary.tsx) ────────────────────────────────────────
-const C = {
-  bg:          '#050D09',
-  card:        '#0C1710',
-  border:      '#172E1F',
-  borderSoft:  '#1A3523',
-  teal:        '#1D9E75',
-  gold:        '#C9A84C',
-  goldDim:     'rgba(201,168,76,0.13)',
-  goldMid:     'rgba(201,168,76,0.22)',
-  red:         '#C94C4C',
-  redDim:      'rgba(201,76,76,0.13)',
-  tealDim:     'rgba(29,158,117,0.13)',
-  white:       '#FFFFFF',
-  dim:         'rgba(255,255,255,0.60)',
-  muted:       'rgba(255,255,255,0.32)',
-  glass:       'rgba(255,255,255,0.07)',
-  glassBorder: 'rgba(255,255,255,0.07)',
-};
+/** TWO MODES, ONE PALETTE — the greenhouse in both lights. Dark literals kept verbatim. */
+const palC = (T: Tokens) => ({
+  bg: '#050D09',
+  card: '#0C1710',
+  border: dl(T, '#172E1F', '#FFFFFF'),
+  borderSoft: dl(T, '#1A3523', 'rgba(0,0,0,0.12)'),
+  teal: dl(T, '#1D9E75', '#12795A'),
+  gold: dl(T, '#C9A84C', '#b8861e'),
+  goldDim: 'rgba(201,168,76,0.13)',
+  goldMid: 'rgba(201,168,76,0.22)',
+  red: dl(T, '#C94C4C', '#C0392B'),
+  redDim: 'rgba(201,76,76,0.13)',
+  tealDim: dl(T, 'rgba(29,158,117,0.13)', 'rgba(18,121,90,0.13)'),
+  white: dl(T, '#FFFFFF', '#1a1a1a'),
+  dim: dl(T, 'rgba(255,255,255,0.60)', 'rgba(0,0,0,0.55)'),
+  muted: dl(T, 'rgba(255,255,255,0.32)', 'rgba(0,0,0,0.38)'),
+  glass: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
+  glassBorder: dl(T, 'rgba(255,255,255,0.07)', 'rgba(0,0,0,0.03)'),
+});
 const F = {
   display: 'BebasNeue-Regular',
   serif:   'CormorantGaramond-Regular',
@@ -37,7 +38,8 @@ const F = {
   monoMd:  'DMMono-Medium',
 };
 
-const ACCENT = C.gold;
+// The screen's accent, resolved for the panel the member picked.
+const accentFor = (T: Tokens) => palC(T).gold;
 
 // ─── MODES ───────────────────────────────────────────────────────────────────
 type Mode = 'cigar' | 'pipe' | 'strain' | 'contaminant' | 'dose' | 'interaction';
@@ -64,8 +66,8 @@ const MODES: { id: Mode; label: string; glyph: string; desc: string; run: string
 
 // ─── VERDICT ─────────────────────────────────────────────────────────────────
 type Verdict = 'SAFE' | 'CAUTION' | 'CONTRAINDICATED';
-const vColor = (v: Verdict) => v === 'SAFE' ? C.teal : v === 'CAUTION' ? C.gold : C.red;
-const vDim   = (v: Verdict) => v === 'SAFE' ? C.tealDim : v === 'CAUTION' ? C.goldDim : C.redDim;
+const vColor = (T: Tokens, v: Verdict) => { const C = palC(T); return v === 'SAFE' ? C.teal : v === 'CAUTION' ? C.gold : C.red; };
+const vDim   = (T: Tokens, v: Verdict) => { const C = palC(T); return v === 'SAFE' ? C.tealDim : v === 'CAUTION' ? C.goldDim : C.redDim; };
 const vGlyph = (v: Verdict) => v === 'SAFE' ? '✓' : v === 'CAUTION' ? '⚠' : '✕';
 
 // ─── SYSTEM PROMPTS ──────────────────────────────────────────────────────────
@@ -119,6 +121,8 @@ async function callAficionado(system: string, userContent: string): Promise<stri
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
 export default function AficionadoScreen() {
   const TH = useTheme();
+  const C = palC(TH);
+  const ACCENT = accentFor(TH);
   const s = useMemo(() => make_s(TH), [TH]);
 
   const [doorOpen, setDoorOpen] = useState(false);
@@ -242,7 +246,7 @@ export default function AficionadoScreen() {
   // ── DATA SCREEN ──────────────────────────────────────────────────────────
   const hasResult = !!result;
   const v: Verdict | undefined = result?.verdict;
-  const bColor = v ? vColor(v) : ACCENT;
+  const bColor = v ? vColor(TH, v) : ACCENT;
 
   return (
     <SafeAreaView style={s.root}>
@@ -316,7 +320,7 @@ export default function AficionadoScreen() {
 
         {hasResult && !loading && (
           <>
-            <View style={[s.verdictBanner, { backgroundColor: v ? vDim(v) : C.goldDim, borderColor: bColor }]}>
+            <View style={[s.verdictBanner, { backgroundColor: v ? vDim(TH, v) : C.goldDim, borderColor: bColor }]}>
               <View style={[s.verdictCircle, { borderColor: bColor }]}>
                 <Text style={[s.verdictGlyph, { color: bColor }]}>{v ? vGlyph(v) : '◆'}</Text>
               </View>
@@ -383,6 +387,8 @@ export default function AficionadoScreen() {
  * Every LIGHT value is lifted from the founder's own year-old two-mode file.
  */
 const make_s = (T: Tokens) => {
+  const C = palC(T);
+  const ACCENT = accentFor(T);
   return StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
 

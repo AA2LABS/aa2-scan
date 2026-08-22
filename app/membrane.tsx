@@ -32,7 +32,7 @@ import { streamClaude } from '../lib/claude-stream';
 import { BIO_BUDDY_VOICE, VOICE_MODEL } from '../lib/voices';
 import { PALETTE, TYPE } from '../lib/theme';
 
-import { dl, useTheme, type Tokens } from '@/lib/theme-mode';
+import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 const NAVY  = PALETTE.navy;
 const INK   = PALETTE.ink;
 /**
@@ -207,7 +207,7 @@ export default function MembraneScreen() {
                 channels={channels ?? { slow: 0.32, drift: 0.32, calm: 0.32, active: 0.22, sharp: 0.18 }}
                 turbulence={hasAny ? turbulence : 0.08}
                 speech={speech}
-                accent={hasAny ? accent : 'rgba(255,255,255,0.28)'}
+                accent={hasAny ? accent : lc(T, 'rgba(255,255,255,0.28)')}
                 size={300}
                 showFace={hasAny}
               />

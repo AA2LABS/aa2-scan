@@ -11,20 +11,28 @@ import { buildPersonalTruth, loadMemberProfile, logAwareDollarsFollowed, logMemb
 import { getCannabisProfile, getDispensariesByCity } from '../../lib/cannabis-layer';
 
 import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
-const C = {
-  nearBlack:    '#03050a',
-  electricBlue: '#4a9eff',
-  teal:         '#2ecfb3',
-  orange:       '#f5922a',
-  gold:         '#c9a84c',
-  red:          '#e05252',
-  white:        '#ffffff',
-  dimWhite:     'rgba(255,255,255,0.65)',
-  glass:        'rgba(255,255,255,0.06)',
-  glassBorder:  'rgba(255,255,255,0.11)',
-};
+/**
+ * TWO MODES, ONE PALETTE — founder ruling 2026-08-22. On 2026-08-21 this screen
+ * was the one that proved the half-theme leak: FIVE tokens flipped light while
+ * these forty stayed dark-tuned, white type on a cream ground. The fix then was
+ * to lock it dark; the fix NOW is to finish what the original light branch
+ * started. Every DARK value is the literal that shipped; every LIGHT value is
+ * the founder's own from the year-old two-mode file.
+ */
+const palC = (T: Tokens) => ({
+  nearBlack:    dl(T, '#03050a', '#F0EEE8'),
+  electricBlue: dl(T, '#4a9eff', '#2a7faa'),
+  teal:         dl(T, '#2ecfb3', '#12795A'),
+  orange:       dl(T, '#f5922a', '#a85a18'),
+  gold:         dl(T, '#c9a84c', '#b8861e'),
+  red:          dl(T, '#e05252', '#C0392B'),
+  white:        dl(T, '#ffffff', '#1a1a1a'),
+  dimWhite:     dl(T, 'rgba(255,255,255,0.65)', 'rgba(0,0,0,0.55)'),
+  glass:        dl(T, 'rgba(255,255,255,0.06)', 'rgba(0,0,0,0.03)'),
+  glassBorder:  dl(T, 'rgba(255,255,255,0.11)', 'rgba(0,0,0,0.12)'),
+});
 
-const GRID = { on: C.orange, off: C.teal };
+const gridC = (T: Tokens) => { const C = palC(T); return { on: C.orange, off: C.teal }; };
 
 const anthropic = new Anthropic({
   apiKey: process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY,
@@ -96,16 +104,15 @@ export default function MapScreen() {
   const TH = useTheme();
   const s = useMemo(() => make_s(TH), [TH]);
 
-  // THE DARK INSTRUMENT LAW — founder order 2026-08-21: "and fix light mode!"
-  // This screen was the only one in AA2 carrying a light variant, and it only
-  // covered FIVE tokens (bg, card, border, text, muted). The other forty
-  // colours on this screen — C.white, C.dimWhite, C.glass at white 6%, the
-  // GRID accents — are hardcoded for a dark ground. On a light-mode phone the
-  // background went cream #FAF7F2 while the type stayed white: an unreadable
-  // screen. getTheme's light branch is left in place, unused, not deleted —
-  // the day AA2 builds a real light panel it starts from there. Until then
-  // this screen renders on the instrument ground like every other screen.
-  const T = useMemo(() => getTheme(true), []);
+  // 2026-08-21: this screen carried a light variant that covered only FIVE
+  // tokens while forty stayed dark-tuned — so light mode was locked out and
+  // THE DARK INSTRUMENT LAW written over it. 2026-08-22, that law is STRUCK:
+  // the founder ordered light mode FIXED, not removed. The other forty
+  // colours now flip with the pick (palC above), so getTheme's original
+  // light branch finally has the rest of the screen to stand on.
+  const T = useMemo(() => getTheme(TH.mode === 'dark'), [TH.mode]);
+  const C = useMemo(() => palC(TH), [TH]);
+  const GRID = useMemo(() => gridC(TH), [TH]);
   const [mode, setMode]                   = useState<'on' | 'off'>('on');
   const [page, setPage]                   = useState(0); // ON GRID pager: 0 = nav/dossier, 1 = retail
   const pagerRef = useRef<PagerRef>(null);
@@ -622,6 +629,7 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
  * Every LIGHT value is lifted from the founder's own year-old two-mode file.
  */
 const make_s = (T: Tokens) => {
+  const C = palC(T);
   return StyleSheet.create({
   root:            { flex: 1, backgroundColor: dl(T, '#0D0A04', '#F0EEE8') },
   header:          { alignItems: 'center', paddingTop: 8, paddingBottom: 10, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: C.glassBorder },
