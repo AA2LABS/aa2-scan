@@ -1,13 +1,14 @@
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 import { useFonts } from 'expo-font';
-import { router, Stack, type Href } from 'expo-router';
+import { router, Stack, usePathname, type Href } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { loadMemberProfile } from '@/lib/db';
 import { ensureSession } from '@/lib/session';
+import { lastRoute, rememberRoute } from '@/lib/lastRoute';
 import { SEAL_FLAG_PATH } from './arrival';
 
 export const unstable_settings = {
@@ -62,9 +63,14 @@ export default function RootLayout() {
         // ARRIVAL COVER CUT (founder order 2026-08-01): its "synced / off-grid"
         // copy claimed state that does not exist — a Representative Doctrine
         // violation on the front porch. The Nine Stories ARE the welcome.
+        // WHERE YOU LEFT OFF (founder order 2026-08-22). A sealed member used
+        // to land on /concierge every single launch — "all the doors in one
+        // place," which was never where he came from. Now the last room he
+        // actually stood in opens, and the hub is only the fallback.
         const sealedLocal = await FileSystem.getInfoAsync(SEAL_FLAG_PATH);
         if (sealedLocal.exists) {
-          setTimeout(() => router.replace('/concierge' as Href), 100);
+          const back = (await lastRoute()) ?? '/concierge';
+          setTimeout(() => router.replace(back as Href), 100);
           return;
         }
         // No local seal — ask the membrane itself (returning member,
@@ -76,7 +82,8 @@ export default function RootLayout() {
         } catch {}
         if (sealed) {
           try { await FileSystem.writeAsStringAsync(SEAL_FLAG_PATH, '1'); } catch {}
-          setTimeout(() => router.replace('/concierge' as Href), 100);
+          const back = (await lastRoute()) ?? '/concierge';
+          setTimeout(() => router.replace(back as Href), 100);
         } else {
           setTimeout(() => router.replace('/onboarding' as Href), 100);
         }
@@ -88,6 +95,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={AA2_NAV_THEME}>
+      {/* Records the room the member is standing in. Renders nothing, touches
+          no screen's appearance, layout or copy — Law 1. Rewire only. */}
+      <RouteMemory />
       <Stack screenOptions={{ contentStyle: { backgroundColor: AA2_GROUND } }}>
         <Stack.Screen name="arrival" options={{ headerShown: false, animation: 'none' }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -99,4 +109,14 @@ export default function RootLayout() {
       <StatusBar style="light" />
     </ThemeProvider>
   );
+}
+
+/**
+ * THE ROOM RECORDER. Writes the current door to the vault on every change so
+ * the next launch can open it. Nothing is rendered; nothing is blocked.
+ */
+function RouteMemory() {
+  const pathname = usePathname();
+  useEffect(() => { rememberRoute(pathname); }, [pathname]);
+  return null;
 }

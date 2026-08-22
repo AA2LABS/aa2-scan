@@ -20,7 +20,19 @@ import { parseGarminExport, GARMIN_NIGHT_FILES, type GarminFile } from './garmin
 import { parseOuraExport, countNightFields } from './ouraExport';
 import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
 
-export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' | 'manual';
+/**
+ * THE CROWN HAS HAD A SEAT SINCE 2026-08-14 AND NOTHING EVER SAT IN IT.
+ *
+ * supabase/migrations/20260814210000_origin_source.sql widened the database's
+ * own CHECK constraint on BOTH source and origin_source to include 'muse' a
+ * week ago. The membrane was made ready for the Crown. The app never used the
+ * slot — this union simply never caught up, so no code path could write a
+ * Muse reading even though the database would have accepted one.
+ *
+ * The same disease AA2 diagnosed in Muse — measured, stored, never wired —
+ * was sitting inside AA2. Found and closed 2026-08-21.
+ */
+export type BiosignalSource = 'oura' | 'garmin' | 'strava' | 'whoop' | 'beats' | 'muse' | 'manual';
 
 export type BiosignalRow = {
   source: BiosignalSource;
