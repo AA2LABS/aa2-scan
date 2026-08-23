@@ -86,6 +86,11 @@ export type BiosignalRow = {
   roomTempC?: number | null;
   roomLight?: number | null;
   roomNoiseDb?: number | null;
+  /** THE FOURTH CHANNEL — barometric pressure. Weather fronts crossing a
+   *  night. Restored 2026-08-22 after the NO BAROMETER correction was itself
+   *  struck: the vendor's product page names all four channels and the app
+   *  charts pressure on camera. One document is not the receipt. */
+  roomPressure?: number | null;
   // RESTLESS MOMENTS ARE NOT AWAKENINGS. Garmin logged 30 and Muse 35 — those
   // agree. WHOOP logged 7 wake events, a different question. Kept apart so the
   // membrane never reports two answers to one question as a disagreement.
@@ -105,7 +110,7 @@ const NIGHT_COLUMNS =
   'time_in_bed_min, deep_min, rem_min, light_min, awake_min, efficiency_pct, ' +
   'latency_min, resting_hr, avg_hr, min_hr, spo2_avg, spo2_min, respiration_avg, ' +
   'breathing_index, skin_temp_delta, restless_moments, wake_events, vo2max, ' +
-  'vo2max_estimated, room_temp_c, room_light, room_noise_db';
+  'vo2max_estimated, room_temp_c, room_light, room_noise_db, room_pressure';
 
 export type SyncResult = { ok: boolean; days: number; message: string };
 
@@ -158,6 +163,7 @@ async function upsertReadings(rows: BiosignalRow[]): Promise<SyncResult> {
       room_temp_c:      r.roomTempC ?? null,
       room_light:       r.roomLight ?? null,
       room_noise_db:    r.roomNoiseDb ?? null,
+      room_pressure:    r.roomPressure ?? null,
     }));
 
     // NO-OVERLAP INTELLIGENCE: the membrane never double-counts a day.
@@ -270,6 +276,7 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
         roomTempC: r.room_temp_c ?? null,
         roomLight: r.room_light ?? null,
         roomNoiseDb: r.room_noise_db ?? null,
+        roomPressure: r.room_pressure ?? null,
       };
       out.latest[src] = row; // ascending order → last write wins = newest
       const v = row.hrv ?? row.readiness ?? row.activity ?? row.sleep;
@@ -886,6 +893,7 @@ export type RoomNight = {
   roomTempC: number | null;
   roomLight: number | null;
   roomNoiseDb: number | null;
+  roomPressure: number | null;
   /** From GARMIN, same night. Already a delta from his OWN baseline. */
   skinTempDelta: number | null;
 };
@@ -898,6 +906,7 @@ export async function saveRoomReading(input: {
   tempC?: number | null;
   light?: number | null;
   noiseDb?: number | null;
+  pressure?: number | null;
   byHand?: boolean;             // default true until an Ozlo pipe exists
 }): Promise<SyncResult> {
   const byHand = input.byHand !== false;
@@ -908,6 +917,7 @@ export async function saveRoomReading(input: {
     roomTempC:   input.tempC ?? null,
     roomLight:   input.light ?? null,
     roomNoiseDb: input.noiseDb ?? null,
+    roomPressure: input.pressure ?? null,
   }]);
 }
 
@@ -927,7 +937,7 @@ export async function readTheRoom(days = 30): Promise<RoomNight[]> {
     const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
     const { data, error } = await supabase
       .from('biosignal_readings')
-      .select('source, reading_date, room_temp_c, room_light, room_noise_db, skin_temp_delta')
+      .select('source, reading_date, room_temp_c, room_light, room_noise_db, room_pressure, skin_temp_delta')
       .eq('member_id', user.id)
       .gte('reading_date', since)
       .order('reading_date', { ascending: true });
@@ -936,19 +946,20 @@ export async function readTheRoom(days = 30): Promise<RoomNight[]> {
     const byNight = new Map<string, RoomNight>();
     for (const r of data as any[]) {
       const d = r.reading_date as string;
-      const night = byNight.get(d) ?? { date: d, roomTempC: null, roomLight: null, roomNoiseDb: null, skinTempDelta: null };
+      const night = byNight.get(d) ?? { date: d, roomTempC: null, roomLight: null, roomNoiseDb: null, roomPressure: null, skinTempDelta: null };
       // The room only ever comes from the instrument that measures the room.
       if (r.source === 'ozlo') {
         if (r.room_temp_c    != null) night.roomTempC   = Number(r.room_temp_c);
         if (r.room_light     != null) night.roomLight   = Number(r.room_light);
         if (r.room_noise_db  != null) night.roomNoiseDb = Number(r.room_noise_db);
+        if (r.room_pressure  != null) night.roomPressure = Number(r.room_pressure);
       }
       // The body delta comes from a body instrument. An Ozlo row never supplies it.
       if (r.source !== 'ozlo' && r.skin_temp_delta != null) night.skinTempDelta = Number(r.skin_temp_delta);
       byNight.set(d, night);
     }
     return [...byNight.values()].filter(n =>
-      n.roomTempC != null || n.roomLight != null || n.roomNoiseDb != null || n.skinTempDelta != null);
+      n.roomTempC != null || n.roomLight != null || n.roomNoiseDb != null || n.roomPressure != null || n.skinTempDelta != null);
   } catch { return []; }
 }
 
