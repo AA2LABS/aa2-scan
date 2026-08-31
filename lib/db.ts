@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { canonHardware } from './device-catalog';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SOVEREIGNTY DOCTRINE
@@ -588,6 +589,12 @@ export async function saveOnboardingField(field: string, rawValue: any): Promise
     const target = FIELD_MAP[field];
     if (!target) { console.log(`[db.ts] saveOnboardingField: no map for "${field}"`); return false; }
 
+    // CANON STORAGE LAW: device_connections.hardware holds KEYS, never display
+    // names — see lib/device-catalog.ts. This is the floor under every screen:
+    // whatever a caller hands in, the record stores the key.
+    if (field === 'wearables')
+      return upsertField(target.table, id, target.column, canonHardware(toArray(rawValue)));
+
     switch (target.kind) {
       case 'array':
         return upsertField(target.table, id, target.column, toArray(rawValue));
@@ -783,7 +790,7 @@ export async function saveMemberProfile(profile: FullMemberProfile): Promise<boo
 
       supabase.from('device_connections').upsert({
         member_id: id,
-        hardware:  profile.hardware ?? [],
+        hardware:  canonHardware(profile.hardware ?? []),   // CANON STORAGE LAW — keys, never names
       }, { onConflict: 'member_id' }),
 
       supabase.from('activity_profiles').upsert({

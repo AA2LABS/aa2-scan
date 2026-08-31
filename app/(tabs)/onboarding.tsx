@@ -21,7 +21,7 @@ import { saveOnboardingField, saveAnimals, markOnboardingComplete, loadMemberPro
 import * as FileSystem from 'expo-file-system/legacy';
 import ArrivalScreen, { SEAL_FLAG_PATH } from '../arrival';
 import { saveSleepAids } from '../../lib/db';
-import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
+import { SLEEP_AID_OPTIONS, deviceKey, canonHardware } from '../../lib/device-catalog';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
 
 import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
@@ -236,6 +236,11 @@ function NAChip({ label, selected, onPress }: NAChipProps) {
     </TouchableOpacity>
   );
 }
+
+// BLOCK 5 wearable chips — the labels the member reads. What gets STORED is
+// the key each label resolves to (CANON STORAGE LAW, lib/device-catalog.ts),
+// never the label itself.
+const WEARABLE_OPTIONS = ['Garmin','Oura Ring','Apple Watch','Whoop','Fitbit','Polar','Samsung Watch','None'];
 
 // ─── CHIP SELECTOR ────────────────────────────────────────────────────────────
 interface ChipProps {
@@ -552,13 +557,20 @@ export default function OnboardingScreen() {
   };
 
   // ── Wearable toggle
+  // CANON STORAGE LAW (lib/device-catalog.ts): device_connections.hardware
+  // stores KEYS, never the label on the chip. The array is canonicalized on
+  // every write, so a membrane carrying legacy name rows heals on first touch.
   const toggleWearable = (w: string) => {
-    const next = wearables.includes(w)
-      ? wearables.filter(x => x !== w)
-      : [...wearables, w];
+    const key = deviceKey(w);
+    const canon = canonHardware(wearables);
+    const next = canon.includes(key) ? canon.filter(x => x !== key) : [...canon, key];
     setWearables(next);
     saveField('wearables', next);
   };
+  /** Chip selection compares through the key — the label is never the record. */
+  const wearableSelected = WEARABLE_OPTIONS.filter(
+    o => wearables.some(w => deviceKey(w) === deviceKey(o)),
+  );
 
   // ── Pet species toggle
   const togglePetSpecies = (s: string) => {
@@ -1149,8 +1161,8 @@ export default function OnboardingScreen() {
             <View style={st.fieldGroup}>
               <FieldLabel text="WHICH WEARABLES DO YOU USE?" />
               <ChipSelector
-                options={['Garmin','Oura Ring','Apple Watch','Whoop','Fitbit','Polar','Samsung Watch','None']}
-                selected={wearables}
+                options={WEARABLE_OPTIONS}
+                selected={wearableSelected}
                 multi
                 onSelect={toggleWearable}
               />
@@ -1182,7 +1194,7 @@ export default function OnboardingScreen() {
               <Text style={{ fontFamily: F.mono, fontSize: 10, color: C.MUTED, marginBottom: 8 }}>
                 cloud.ouraring.com/personal-access-tokens
               </Text>
-              {wearables.includes('Oura Ring') ? (
+              {wearableSelected.includes('Oura Ring') ? (
                 <TextInput
                   style={[st.input, {
                     borderColor: fieldBorder(TH, ouraToken, focusedField === 'oura_token'),

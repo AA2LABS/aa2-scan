@@ -43,7 +43,9 @@ export default function SealTest() {
     await step('activities[]',            () => saveOnboardingField('activities', 'hiking, lifting'));
     await step('trains_others → commander', () => saveOnboardingField('trains_others', 'yes'));
     // device + baseline
-    await step('wearables[] → hardware',  () => saveOnboardingField('wearables', 'Oura Ring 4, Garmin Tactix 8'));
+    // CANON STORAGE LAW: hardware stores KEYS. Written as keys here so the seal
+    // test proves the same shape the screens write.
+    await step('wearables[] → hardware',  () => saveOnboardingField('wearables', 'oura_ring_4, garmin_tactix_8'));
     await step('sleep_score (int)',       () => saveOnboardingField('sleep_score', '4'));
     // animals (multi-row)
     await step('saveAnimals x2', () => saveAnimals([

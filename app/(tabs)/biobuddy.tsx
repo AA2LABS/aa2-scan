@@ -13,7 +13,7 @@ import {
   saveSleepAids, getSleepAids, logAwareDollarsFollowed,
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
-import { SLEEP_AID_OPTIONS } from '../../lib/device-catalog';
+import { SLEEP_AID_OPTIONS, deviceKey as catalogDeviceKey } from '../../lib/device-catalog';
 import { connectOura, disconnectOura } from '../../lib/ouraAuth';
 import { connectProvider, disconnectProvider, connectionFor, type Connection, type ProviderKey } from '../../lib/oauth';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
@@ -104,6 +104,18 @@ const norm = (s: string) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').
 function deviceName(key: string): string {
   const hit = DEVICES.find(d => d.key === norm(key));
   return hit ? hit.name : String(key);
+}
+
+// CANON STORAGE LAW — see lib/device-catalog.ts. hardware[] holds KEYS; the
+// name is only ever the label. This stack list carries its own display names
+// ("WHOOP MG 5.0" where the catalog says "WHOOP MG"), so a stored value
+// resolves against THIS list first — by key, by alt spelling, by normalized
+// display name — and falls through to the catalog for everything else. Legacy
+// rows that were written as names land on the device they always meant.
+function deviceKeyOf(stored: string): string {
+  const n = norm(stored);
+  const local = DEVICES.find(d => d.key === n || d.alt === n || norm(d.name) === n);
+  return local ? local.key : catalogDeviceKey(stored);
 }
 const SOURCE_DOT: Record<string, string> = {
   garmin: '#1BB8FF', oura: '#34D399', strava: '#5CD65C', whoop: '#7CE7C4', beats: '#D4A847', manual: '#8fd6ff',
@@ -287,6 +299,17 @@ export default function BioBuddyScreen() {
     return present ? arr.filter(a => norm(a) !== norm(item)) : [...arr, item];
   };
 
+  // CANON STORAGE LAW: the stack writes KEYS. It also canonicalizes the whole
+  // array on the way out, so any legacy name row already in the record heals
+  // the next time the member touches a chip — no migration, no lost device.
+  const canonHW = (list: string[]) => {
+    const out: string[] = [];
+    for (const h of list) { const k = deviceKeyOf(h); if (k && !out.includes(k)) out.push(k); }
+    return out;
+  };
+  const toggleDevice = (key: string) =>
+    write('wearables', toggleArr(canonHW(hardware), key), `device:${key}`);
+
   const pets = animals.filter(a => !/(horse|equine|cattle|cow|livestock|goat|sheep|pig)/i.test(a.species));
   const herd = animals.filter(a =>  /(horse|equine|cattle|cow|livestock|goat|sheep|pig)/i.test(a.species));
 
@@ -332,7 +355,9 @@ export default function BioBuddyScreen() {
     </Pressable>
   );
 
-  const AddInline = ({ section, field, current, subject }: { section: string; field: string; current: string[]; subject: string }) =>
+  // `canon` — supplied only by the hardware stack, where the record stores keys
+  // rather than the words the member typed (CANON STORAGE LAW).
+  const AddInline = ({ section, field, current, subject, canon }: { section: string; field: string; current: string[]; subject: string; canon?: (list: string[]) => string[] }) =>
     addInput?.section === section ? (
       <View style={st.addRow}>
         <TextInput
@@ -347,7 +372,7 @@ export default function BioBuddyScreen() {
           style={st.addSave}
           onPress={() => {
             const v = addInput.value.trim();
-            if (v) write(field, [...current, v], subject);
+            if (v) write(field, canon ? canon([...current, v]) : [...current, v], subject);
             setAddInput(null);
           }}
         >
@@ -432,9 +457,13 @@ export default function BioBuddyScreen() {
                 // FOUNDER LAW (2026-08-01): the full stack ALWAYS shows.
                 // Straight colored line when not connected · live waveform when
                 // connected · NO BLANK STATE — that is not how you sell a product.
-                const connected = new Set(hardware.map(h => norm(h)));
+                // CANON STORAGE LAW: resolve every stored value to its key
+                // before matching. Legacy name rows ("Muse S Athena · THE
+                // CROWN") light their own device instead of rendering a second
+                // time as an extra with nothing behind it.
+                const connected = new Set(hardware.map(deviceKeyOf));
                 const mantaOn = sleepAids.some(a => norm(a).includes('manta'));
-                const extras = hardware.filter(h => !DEVICES.some(d => d.key === norm(h) || d.alt === norm(h)));
+                const extras = hardware.filter(h => !DEVICES.some(d => d.key === deviceKeyOf(h)));
                 const rows = [
                   ...DEVICES.map(d => ({
                     key: d.key,
@@ -721,17 +750,17 @@ export default function BioBuddyScreen() {
               </View>
               <View style={st.chipRow}>
                 {DEVICES.map((d, i) => {
-                  const sel = hardware.some(h => norm(h) === d.key);
+                  const sel = hardware.some(h => deviceKeyOf(h) === d.key);
                   return (
                     <Chip
                       key={i} label={d.name} sel={sel}
-                      onPress={() => write('wearables', toggleArr(hardware, d.name), `device:${d.name}`)}
+                      onPress={() => toggleDevice(d.key)}
                     />
                   );
                 })}
                 <Chip label="+ Add device" add onPress={() => setAddInput({ section: 'device', value: '' })} />
               </View>
-              <AddInline section="device" field="wearables" current={hardware} subject="device:add" />
+              <AddInline section="device" field="wearables" current={hardware} subject="device:add" canon={canonHW} />
             </View>
 
             {/* CONNECT & SYNC — the device wire. Real feeds, honest states. */}

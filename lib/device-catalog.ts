@@ -119,7 +119,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
     organ: 'HEART',
     adds: 'Field-grade everything — sleep, stress, HRV, Body Battery, on-demand ECG with AFib detection, pulse ox in three modes — plus an open live pulse the membrane hears directly. The tactical wrist.',
-    note: 'Elevate Gen 5 platform. ECG confirmed on-device — never pitch a member ECG hardware when this is already on the wrist.' },
+    note: 'Elevate Gen 5 platform. ECG confirmed on-device — never pitch a member ECG hardware when this is already on the wrist. THE THIRD THERMOMETER, RECEIPTED 2026-08-24: the on-watch temperature widget reads the WATCH CASE, not the body and not the room — a hybrid smeared between radiating wrist and ambient air (founder read 78°F on-wrist and asked the right question). Its engineering purpose is BAROMETER CALIBRATION — pressure drifts with temperature, so the case sensor keeps altitude and pressure honest (accurate as a thermometer only submerged, or off-wrist ~20 min). PROVENANCE LAW: this channel must never enter the membrane as body temp or room temp. Ozlo case = ROOM. WHOOP = SKIN. GW1 = CASE (blend). Three thermometers, three different truths — and the blend is a cross-check: it should land between the other two; when it does not, suspect a loose strap or off-wrist. Receipt: Garmin support FAQ + forums, DC Rainmaker 2023-12. BONUS RECEIPT: the sensor exists because the Tactix carries a BAROMETER — from 2026-08-24 the stack holds TWO pressure instruments (GW1 + Ozlo case), and pressure can be cross-checked instrument-against-instrument.' },
   { key: 'garmin', name: 'Garmin (Fenix 8 · Venu 4 · Forerunner · Instinct 3)', tier: 'FILE EXPORT',
     live: true,
     dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
@@ -205,7 +205,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     organ: 'EYES · EARS',
     dataPath: 'MANUFACTURER RECEIPT — Ozlo Sleepbuds 2 User Guide, filed to AA2 DOCS/MANUALS 2026-08-21. Smart Case carries a TEMPERATURE, LIGHT AND NOISE SENSOR — the guide names three room channels and no others. Bluetooth to the phone, Bluetooth Low Energy to the buds: the case is the radio. Case button plays and pauses a Sleep Sound and snoozes the alarm with the phone untouched. Four sizes of SILICONE tip. A case reset "deletes all sleep and usage data," so the case does hold sleep data, and the status light shows a distinct FIRMWARE & DATA TRANSFER state — but no export path or public API is documented.',
     adds: 'Ears you can lie down on, and a second pair of eyes. The Crown reads your brain and has no speakers of its own — these are the only audio in the stack you can sleep or meditate in while a headband is already on your head. The bundled mask makes it a COMPLETE SECOND BLACKOUT SYSTEM, lighter than the Manta, for sessions where the Manta is too much hardware to stack. And the case adds the room itself: noise, light and temperature — the one exposure layer nothing else in your stack can see.',
-    note: 'TWO BLACKOUT SYSTEMS, NOT ONE. Manta is the deep blackout for sleep sessions. Ozlo mask + buds is the lighter rig that coexists with the Crown — Manta plus a headband is two things wrapped around the head, which is the whole reason this exists. ENVIRONMENT + is measured, not ingested: no export path found, so it stands as a CONDITION device under the sleep-aid law until one exists. The case listens to the ROOM, so on Manta nights it will hear the Manta and log your own sleep aid as ambient noise — bud nights are the clean arm. TWO CORRECTIONS, BOTH LOGGED, NEITHER ERASED. 2026-08-21: this entry\'s barometric pressure claim was struck because the user guide names only temperature, light and noise. 2026-08-22: THAT CORRECTION WAS ITSELF WRONG — the vendor\'s own product page states the case tracks sound, light, temperature AND BAROMETRIC PRESSURE, and reviewers chart the app\'s pressure graph on camera. The guide also omits the light sensor everyone can watch working, which is proof of an incomplete document, not absent hardware. ONE DOCUMENT IS NOT THE RECEIPT. ENVIRONMENT + stands on FOUR measured channels — sound, light, temperature, pressure — and pressure is the one channel no body-worn instrument reads: weather fronts crossing a night. Final receipt lands 2026-08-24 with the founder\'s own case.' },
+    note: 'TWO BLACKOUT SYSTEMS, NOT ONE. Manta is the deep blackout for sleep sessions. Ozlo mask + buds is the lighter rig that coexists with the Crown — Manta plus a headband is two things wrapped around the head, which is the whole reason this exists. ENVIRONMENT + is measured, not ingested: no export path found, so it stands as a CONDITION device under the sleep-aid law until one exists. The case listens to the ROOM, so on Manta nights it will hear the Manta and log your own sleep aid as ambient noise — bud nights are the clean arm. TWO CORRECTIONS, BOTH LOGGED, NEITHER ERASED. 2026-08-21: this entry\'s barometric pressure claim was struck because the user guide names only temperature, light and noise. 2026-08-22: THAT CORRECTION WAS ITSELF WRONG — the vendor\'s own product page states the case tracks sound, light, temperature AND BAROMETRIC PRESSURE, and reviewers chart the app\'s pressure graph on camera. The guide also omits the light sensor everyone can watch working, which is proof of an incomplete document, not absent hardware. ONE DOCUMENT IS NOT THE RECEIPT. ENVIRONMENT + stands on FOUR measured channels — sound, light, temperature, pressure — and pressure is the one channel no body-worn instrument reads: weather fronts crossing a night. Final receipt lands 2026-08-24 with the founder\'s own case. LID-CLOSED LAW, RECEIPTED 2026-08-24 from vendor support copy: the case\'s environmental sensors — room temperature, light, noise — FUNCTION NORMALLY WITH THE LID COMPLETELY CLOSED on the nightstand, and closed is the RECOMMENDED posture: buds stay docked and charging, indicator lights stay sealed away from the sleeper. The Room is measured all night by an instrument that emits nothing into the room it measures.' },
 
   // ── LEGACY — the junk drawer is the onramp ────────────────────────────────
   // Discontinued or older-generation hardware. The device does not have to be
@@ -258,7 +258,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
 // ─── LOOKUPS ─────────────────────────────────────────────────────────────────
 
 function normKey(s: string): string {
-  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
 export function findDevice(nameOrKey: string): ApprovedDevice | null {
@@ -276,6 +276,34 @@ export function deviceAdds(nameOrKey: string): string | null {
 /** APPROVED-ONLY LAW: anything not in this catalog is not selectable. */
 export function isApproved(nameOrKey: string): boolean {
   return findDevice(nameOrKey) !== null;
+}
+
+// ─── CANON STORAGE LAW (2026-08-31) ──────────────────────────────────────────
+// device_connections.hardware stores KEYS. Never display names. A name and a
+// key never compare equal, so a name-stored device rendered TWICE on the stack
+// — once as its own row, once as an unrecognised "extra" — and its readings
+// resolved to no device at all, which is what put AWAITING SIGNAL on a live
+// wire. The name is the label. The key is the record. One of them is stored.
+
+/**
+ * The canonical stored id for one device. Display names, alternate spellings
+ * and keys all resolve to the same key. Anything outside the catalog has no
+ * key to resolve to and is stored as typed, so a member's own write-in still
+ * reads back as itself on the stack.
+ */
+export function deviceKey(nameOrKey: string): string {
+  return findDevice(nameOrKey)?.key ?? String(nameOrKey).trim();
+}
+
+/** A whole hardware array canonicalized — legacy name rows collapse onto the
+ *  key they were always meant to be, duplicates included. */
+export function canonHardware(list: string[]): string[] {
+  const out: string[] = [];
+  for (const raw of list) {
+    const k = deviceKey(raw);
+    if (k && !out.includes(k)) out.push(k);
+  }
+  return out;
 }
 
 /** LIVE devices stream a real-time signal the membrane can hear second-by-second. */
