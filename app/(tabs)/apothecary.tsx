@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { brokerAnthropic } from "../../lib/claude";
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import React, { useMemo, useRef, useState } from 'react';
@@ -51,10 +51,9 @@ const F = {
 };
 
 // ─── ANTHROPIC ───────────────────────────────────────────────────────────────
-const anthropic = new Anthropic({
-  apiKey: process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+// REWIRED 2026-09-02 · Ship Blocker #1 — the Anthropic key is gone from the device.
+// Same call shape, same return envelope; the request now leaves through the Concierge broker.
+const anthropic = brokerAnthropic;
 
 // ─── MODES ───────────────────────────────────────────────────────────────────
 type Mode = 'compound' | 'formulate' | 'condition' | 'forager' | 'harvest';
@@ -279,22 +278,14 @@ If you cannot identify the species from the description or image, say IDENTIFICA
 
 // ─── HARVEST ANALYSIS ────────────────────────────────────────────────────────
 async function runHarvestAnalysis(query: string, location: string = 'Belgrade, MT'): Promise<string> {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY!,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1200,
-      system: HUNTER_PROMPT + `\n\nMember location: ${location}`,
-      messages: [{ role: 'user', content: `Harvest analysis request: ${query}` }],
-    }),
+  // REWIRED 2026-09-02 · Ship Blocker #1 — same request, no key on the device.
+  const response = await anthropic.messages.create({
+    model: "claude-sonnet-4-6",
+    max_tokens: 1200,
+    system: HUNTER_PROMPT + `\n\nMember location: ${location}`,
+    messages: [{ role: 'user', content: `Harvest analysis request: ${query}` }],
   });
-  const data = await response.json();
-  return data.content?.[0]?.text ?? 'Analysis unavailable.';
+  return (response.content[0] as any).text ?? "Analysis unavailable.";
 }
 
 // ─── BARCODE LOOKUP ──────────────────────────────────────────────────────────

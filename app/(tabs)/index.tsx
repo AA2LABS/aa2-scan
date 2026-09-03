@@ -1,24 +1,16 @@
-// AA2 mobile-safe Claude call — plain fetch, identical mechanism to scanner-vision.ts
+// ─── AA2 CONCIERGE CALL ───────────────────────────────────────────────────────
+// REWIRED 2026-09-02 · Ship Blocker #1. The Anthropic key no longer ships in this
+// bundle. Same signature, same return — the request leaves through the broker.
+import { claudeCall } from '../../lib/claude';
 async function aa2Claude(opts:{ system:string; content:any; max_tokens:number; model?:string; }): Promise<string> {
-  const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('API key not found in build environment');
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: opts.model ?? 'claude-haiku-4-5', // speed doctrine 2026-07-29 — voices override per-call
-      max_tokens: opts.max_tokens,
-      system: opts.system,
-      messages: [{ role: 'user', content: opts.content }],
-    }),
+  const reply = await claudeCall({
+    model: opts.model, // speed doctrine 2026-07-29 — voices override per-call
+    system: opts.system,
+    content: opts.content,
+    maxTokens: opts.max_tokens,
   });
-  if (!r.ok) { const t = await r.text(); throw new Error('API ' + r.status + ': ' + t.slice(0,200)); }
-  const j = await r.json();
-  return (j.content ?? []).filter((b:any)=>b?.type==='text').map((b:any)=>String(b.text??'')).join('\n').trim();
+  if (!reply.ok) throw new Error(reply.error ?? 'Concierge unavailable');
+  return reply.text;
 }
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';

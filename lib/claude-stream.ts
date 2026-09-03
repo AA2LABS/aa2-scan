@@ -1,10 +1,15 @@
-// ─── lib/claude-stream.ts ──────────────────────────────────────────────────────
-// React Native safe streaming Claude call.
+// ─── lib/claude-stream.ts ─────────────────────────────────────────────────────
+// React Native safe streaming Concierge call.
 // RN's fetch cannot read a response body incrementally, so we use XMLHttpRequest
 // and watch xhr.responseText grow, parsing SSE frames as they arrive.
+//
+// REWIRED 2026-09-02 — Ship Blocker #1. The Anthropic key no longer exists on
+// this device. The XHR now dials the AA2 Concierge broker, which forwards the
+// stream back frame for frame, so every line of the parser below is untouched:
+// the shape on the wire is still Anthropic's SSE. Only the address and the
+// credential changed.
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-haiku-4-5'; // speed doctrine 2026-07-29: scan verdicts on the fast tier — one-line revert to 'claude-sonnet-4-6'
+import { brokerAuth, brokerUrl, MODEL } from './claude';
 
 export interface StreamClaudeInput {
   system: string;
@@ -14,14 +19,19 @@ export interface StreamClaudeInput {
   onPartial?: (accumulated: string) => void;
 }
 
-export function streamClaude(input: StreamClaudeInput): Promise<string> {
-  return new Promise<string>((resolve, reject) => {
-    const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      reject(new Error('API key not found in build environment'));
-      return;
-    }
+export async function streamClaude(input: StreamClaudeInput): Promise<string> {
+  const base = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
+  if (!base) {
+    throw new Error('No EXPO_PUBLIC_SUPABASE_URL — the Concierge broker has no address.');
+  }
 
+  // The member credential has to be in hand before the socket opens, and
+  // XMLHttpRequest headers are set synchronously — so it is awaited here,
+  // outside the executor, rather than inside it.
+  const headers = await brokerAuth();
+  const url = brokerUrl();
+
+  return new Promise<string>((resolve, reject) => {
     let accumulated = '';
     let seen = 0;
 
@@ -67,10 +77,10 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
     };
 
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', ANTHROPIC_API_URL);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('x-api-key', apiKey);
-    xhr.setRequestHeader('anthropic-version', '2023-06-01');
+    xhr.open('POST', url);
+    for (const [k, v] of Object.entries(headers)) {
+      xhr.setRequestHeader(k, v);
+    }
 
     xhr.onprogress = () => {
       drain(xhr.responseText);
@@ -86,7 +96,9 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
         );
         resolve(accumulated);
       } else {
-        reject(new Error('API ' + xhr.status + ': ' + String(xhr.responseText || '').slice(0, 200)));
+        // The broker answers a refusal in JSON, not SSE — surface its reason
+        // rather than a bare status, so a missing secret says so out loud.
+        reject(new Error('Concierge ' + xhr.status + ': ' + String(xhr.responseText || '').slice(0, 200)));
       }
     };
 
@@ -99,7 +111,7 @@ export function streamClaude(input: StreamClaudeInput): Promise<string> {
         max_tokens: input.max_tokens,
         system: input.system,
         stream: true,
-        messages: [{ role: 'user', content: input.content }],
+        content: input.content,
       }),
     );
   });

@@ -6,7 +6,7 @@ import {
 import PagerView, { type PagerRef } from '@/components/Pager';
 import * as Location from 'expo-location';
 import { router } from 'expo-router';
-import Anthropic from '@anthropic-ai/sdk';
+import { brokerAnthropic } from "../../lib/claude";
 import { buildPersonalTruth, loadMemberProfile, logAwareDollarsFollowed, logMembraneEvent } from '../../lib/db';
 import { getCannabisProfile, getDispensariesByCity } from '../../lib/cannabis-layer';
 
@@ -34,10 +34,9 @@ const palC = (T: Tokens) => ({
 
 const gridC = (T: Tokens) => { const C = palC(T); return { on: C.orange, off: C.teal }; };
 
-const anthropic = new Anthropic({
-  apiKey: process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+// REWIRED 2026-09-02 · Ship Blocker #1 — the Anthropic key is gone from the device.
+// Same call shape, same return envelope; the request now leaves through the Concierge broker.
+const anthropic = brokerAnthropic;
 
 const MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 

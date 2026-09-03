@@ -1,8 +1,13 @@
 // ─── lib/scanner-vision.ts ────────────────────────────────────────────────────
 // AA2 Scanner · Vision pipeline (v50 Lock #31, mode 1)
 // Camera capture base64 → Claude vision API → verdict JSON.
+//
+// REWIRED 2026-09-02 — Ship Blocker #1. The Anthropic key is gone from this
+// device; the image and the prompt now leave through the AA2 Concierge broker.
+// Every prompt below is unchanged, word for word. Only the wire moved.
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
+import { claudeCall } from './claude';
+
 const MODEL = 'claude-haiku-4-5'; // speed doctrine 2026-07-29: scan verdicts on the fast tier — one-line revert to 'claude-sonnet-4-6'
 const MAX_TOKENS = 2000;
 
@@ -25,11 +30,6 @@ export interface VisionScanResult {
 }
 
 export async function scanWithVision(input: VisionScanInput): Promise<VisionScanResult> {
-  const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return { ok: false, rawText: '', errorMessage: 'API key missing' };
-  }
-
   const userContent = [
     {
       type: 'image' as const,
@@ -60,39 +60,23 @@ export async function scanWithVision(input: VisionScanInput): Promise<VisionScan
       return { ok: true, rawText: streamed };
     }
 
-    const response = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system: input.systemPrompt,
-        messages: [{ role: 'user', content: userContent }],
-      }),
+    const reply = await claudeCall({
+      model: MODEL,
+      system: input.systemPrompt,
+      content: userContent,
+      maxTokens: MAX_TOKENS,
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('[scanner-vision] API error', response.status, errText);
-      return { ok: false, rawText: '', errorMessage: 'API ' + response.status };
+    if (!reply.ok) {
+      console.error('[scanner-vision] broker error', reply.error);
+      return { ok: false, rawText: '', errorMessage: reply.error ?? 'Concierge unavailable' };
     }
 
-    const json = await response.json();
-    const textContent = (json.content ?? [])
-      .filter((b: any) => b?.type === 'text')
-      .map((b: any) => String(b.text ?? ''))
-      .join('\n')
-      .trim();
-
-    if (!textContent) {
+    if (!reply.text) {
       return { ok: false, rawText: '', errorMessage: 'Empty response' };
     }
 
-    return { ok: true, rawText: textContent };
+    return { ok: true, rawText: reply.text };
   } catch (err: any) {
     console.error('[scanner-vision] threw:', err);
     return { ok: false, rawText: '', errorMessage: err?.message || 'Unknown error' };

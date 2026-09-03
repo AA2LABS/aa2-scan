@@ -4,6 +4,12 @@
 //
 // Existing scan UI calls scanWithDoctrine(memberId, scan).
 // Everything else lives in this file.
+//
+// REWIRED 2026-09-02 — Ship Blocker #1. callConcierge no longer holds a key;
+// it dials the AA2 Concierge broker. The Chemical Doctrine prompt, the
+// allergen pass, the exposure log and every verdict path are untouched.
+
+import { claudeCall } from './claude';
 
 import {
   detectAllergenHits,
@@ -37,7 +43,6 @@ export interface ScanWithDoctrineResult {
   timestamp: string;
 }
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-haiku-4-5'; // speed doctrine 2026-07-29: scan verdicts on the fast tier — one-line revert to 'claude-sonnet-4-6'
 const MAX_TOKENS = 1500;
 
@@ -129,52 +134,25 @@ async function callConcierge(prompts: {
   system: string;
   user: string;
 }): Promise<DoctrineVerdict> {
-  const apiKey = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    console.error('[scan-with-doctrine] EXPO_PUBLIC_ANTHROPIC_API_KEY missing');
-    return parseDoctrineResponse('{}');
-  }
-
   try {
-    const response = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        system: prompts.system,
-        messages: [{ role: 'user', content: prompts.user }],
-      }),
+    const reply = await claudeCall({
+      model: MODEL,
+      system: prompts.system,
+      user: prompts.user,
+      maxTokens: MAX_TOKENS,
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error(
-        '[scan-with-doctrine] Anthropic API error',
-        response.status,
-        errText,
-      );
+    if (!reply.ok) {
+      console.error('[scan-with-doctrine] Concierge broker error', reply.error);
       return parseDoctrineResponse('{}');
     }
 
-    const json = await response.json();
-
-    const textContent = (json.content ?? [])
-      .filter((b: any) => b?.type === 'text')
-      .map((b: any) => String(b.text ?? ''))
-      .join('\n')
-      .trim();
-
-    if (!textContent) {
+    if (!reply.text) {
       console.error('[scan-with-doctrine] empty response from Concierge');
       return parseDoctrineResponse('{}');
     }
 
-    return parseDoctrineResponse(textContent);
+    return parseDoctrineResponse(reply.text);
   } catch (err) {
     console.error('[scan-with-doctrine] callConcierge threw:', err);
     return parseDoctrineResponse('{}');

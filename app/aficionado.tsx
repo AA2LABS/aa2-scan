@@ -9,6 +9,7 @@ import {
   buildPersonalTruth, loadMemberProfile, logAwareDollarsFollowed,
   logMembraneEvent, getMembraneEvents,
 } from '@/lib/db';
+import { claudeMessage } from '@/lib/claude';
 
 // ─── PALETTE (mirrors apothecary.tsx) ────────────────────────────────────────
 /** TWO MODES, ONE PALETTE — the greenhouse in both lights. Dark literals kept verbatim. */
@@ -98,24 +99,15 @@ function parseDollars(text?: string | null): number | null {
   return m ? parseFloat(m[1]) : null;
 }
 
-// ─── RAW FETCH HELPER (mirrors apothecary.tsx) ───────────────────────────────
+// ─── CONCIERGE HELPER (mirrors apothecary.tsx) ───────────────────────────────
 async function callAficionado(system: string, userContent: string): Promise<string> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY!,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
-      system,
-      messages: [{ role: 'user', content: userContent }],
-    }),
+  // REWIRED 2026-09-02 · Ship Blocker #1 — no key on the device; the broker holds it.
+  return await claudeMessage({
+    model: 'claude-sonnet-4-6',
+    maxTokens: 3000,
+    system,
+    user: userContent,
   });
-  const data = await res.json();
-  return data.content?.[0]?.text ?? '';
 }
 
 // ─── COMPONENT ───────────────────────────────────────────────────────────────
