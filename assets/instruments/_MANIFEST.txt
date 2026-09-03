@@ -1,0 +1,25 @@
+AA2 INSTRUMENT MARKS — placed 2026-09-03. Lives at /assets/instruments in the repo root.
+Require pattern when wiring a tile: require('@/assets/instruments/logo-<brand>.png')
+
+ONE MARK PER BRAND, NOT PER DEVICE. A brand mark serves every catalog entry
+under that brand — logo-garmin.png stands behind garmin_tactix_8, garmin,
+garmin_index_bpm, garmin_legacy and garmin_alpha alike. The catalog carries a
+`brand` key; the tile resolves the mark from BRAND_MARK in lib/device-catalog.ts.
+Resized to 512 px max edge for the bundle. Vendor marks are the vendor's —
+source them from each vendor's affiliate or press kit so the usage is licensed.
+
+MARKS (8):
+  Ozlo ................. logo-ozlo.png     444x468  (product shot w/ OzloCare badge — swap for the clean sun mark when available)
+  Manta Sleep .......... logo-manta.png    512x512
+  Muse ................. logo-muse.png     400x400
+  Oura ................. logo-oura.png     512x384
+  Meta ................. logo-meta.png     512x493  (Oakley Meta HSTN · THE EYES)
+  Beats ................ logo-beats.png    512x341  (Beats Pro 2)
+  Apollo ............... logo-apollo.png   512x512  (asset placed; NO catalog entry until the instrument arrives and carries its acquired date)
+  Garmin ............... logo-garmin.png   512x512
+
+STILL NEEDED:
+  WHOOP ................ logo-whoop.png    (whoop_5_0, whoop_mg)
+  Samsung .............. logo-samsung.png  (z_fold THE PORT, samsung, samsung_legacy)
+  Strava ............... logo-strava.png
+  BetterSleep .......... logo-bettersleep.png

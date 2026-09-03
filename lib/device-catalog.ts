@@ -53,6 +53,7 @@ export type DeviceOrgan =
 
 export interface ApprovedDevice {
   key: string;          // normalized id stored in device_connections.hardware
+  brand?: string;       // vendor mark key — one mark serves every device under the brand (assets/instruments)
   name: string;
   tier: DeviceTier;
   dataPath: string;     // how the data reaches the membrane
@@ -66,26 +67,54 @@ export interface ApprovedDevice {
   note?: string;        // honest limitation, spoken plainly, never hidden
 }
 
+/**
+ * THE MARK — placed 2026-09-03. One vendor mark per brand, served from
+ * assets/instruments (see its _MANIFEST). A device resolves its mark through
+ * `brand`, never by name, so five Garmin entries share one file. A brand with
+ * no file here simply renders without a mark until the asset lands — the tile
+ * must treat undefined as "no mark yet", never as an error.
+ */
+export const BRAND_MARK: Record<string, number> = {
+  ozlo:   require('@/assets/instruments/logo-ozlo.png'),
+  manta:  require('@/assets/instruments/logo-manta.png'),
+  muse:   require('@/assets/instruments/logo-muse.png'),
+  oura:   require('@/assets/instruments/logo-oura.png'),
+  meta:   require('@/assets/instruments/logo-meta.png'),
+  beats:  require('@/assets/instruments/logo-beats.png'),
+  garmin: require('@/assets/instruments/logo-garmin.png'),
+  // whoop, samsung, strava, bettersleep — add the line when the file lands
+};
+
+export function brandMark(d: Pick<ApprovedDevice, 'brand'>): number | undefined {
+  return d.brand ? BRAND_MARK[d.brand] : undefined;
+}
+
+/** Resolve a mark from whatever the member stored — key, alt spelling or name. */
+export function brandMarkFor(nameOrKey: string): number | undefined {
+  const d = findDevice(nameOrKey);
+  return d ? brandMark(d) : undefined;
+}
+
 export const DEVICE_CATALOG: ApprovedDevice[] = [
   // ── THE PORT ──────────────────────────────────────────────────────────────
-  { key: 'z_fold', name: 'Samsung Z Fold · THE PORT', tier: 'PORT',
+  { key: 'z_fold', brand: 'samsung', name: 'Samsung Z Fold · THE PORT', tier: 'PORT',
     founderStack: true, live: true,
     dataPath: 'Health Connect — the single port. Every device and app in the stack writes here; the membrane reads one pipe.',
     organ: 'THE PORT',
     adds: 'The carrier. Always on, always present — the one organ that never comes off. Health Connect structurally refuses vendor verdicts: it holds raw signal only, so no company\'s score can ride in through the pipe.' },
 
   // ── FLAGSHIP ──────────────────────────────────────────────────────────────
-  { key: 'whoop_5_0', name: 'WHOOP 5.0', tier: 'FULL API', flagship: true,
+  { key: 'whoop_5_0', brand: 'whoop', name: 'WHOOP 5.0', tier: 'FULL API', flagship: true,
     dataPath: 'WHOOP developer API + webhooks — recovery, sleep, strain pushed to the membrane automatically',
     adds: 'The recovery engine. Your daily readiness verdict, pushed to the membrane the moment it lands — no phone ritual. Screenless: AA2 gets you out of your phone, and so does this.' },
-  { key: 'whoop_mg', name: 'WHOOP MG', tier: 'FULL API', flagship: true,
+  { key: 'whoop_mg', brand: 'whoop', name: 'WHOOP MG', tier: 'FULL API', flagship: true,
     founderStack: true, live: true, acquired: '2026-08-07',
     dataPath: 'WHOOP developer API + webhooks; open Bluetooth heart-rate broadcast verified',
     organ: 'HEART',
     adds: 'Everything WHOOP 5.0 adds, plus FDA-cleared ECG and blood-pressure insights — medical-grade signals in a screenless strap. Broadcasts a live heartbeat the membrane hears directly.' },
 
   // ── FULL API ──────────────────────────────────────────────────────────────
-  { key: 'oura_ring_4', name: 'Oura Ring 4', tier: 'FULL API',
+  { key: 'oura_ring_4', brand: 'oura', name: 'Oura Ring 4', tier: 'FULL API',
     founderStack: true, firstData: '2026-01',
     dataPath: 'Oura cloud API v2 — personal token, nightly automatic pull (wired in-app)',
     organ: 'HEART',
@@ -114,17 +143,17 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     adds: 'The activity river. Whatever device records the workout, Strava funnels it into one stream the membrane can read — and it carries your whole archive, however many years deep it runs.' },
 
   // ── FILE EXPORT ───────────────────────────────────────────────────────────
-  { key: 'garmin_tactix_8', name: 'Garmin Tactix 8', tier: 'FILE EXPORT',
+  { key: 'garmin_tactix_8', brand: 'garmin', name: 'Garmin Tactix 8', tier: 'FILE EXPORT',
     founderStack: true, live: true, firstData: '2026-01', acquired: '2025-12-29',
     dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
     organ: 'HEART',
     adds: 'Field-grade everything — sleep, stress, HRV, Body Battery, on-demand ECG with AFib detection, pulse ox in three modes — plus an open live pulse the membrane hears directly. The tactical wrist.',
     note: 'Elevate Gen 5 platform. ECG confirmed on-device — never pitch a member ECG hardware when this is already on the wrist. THE THIRD THERMOMETER, RECEIPTED 2026-08-24: the on-watch temperature widget reads the WATCH CASE, not the body and not the room — a hybrid smeared between radiating wrist and ambient air (founder read 78°F on-wrist and asked the right question). Its engineering purpose is BAROMETER CALIBRATION — pressure drifts with temperature, so the case sensor keeps altitude and pressure honest (accurate as a thermometer only submerged, or off-wrist ~20 min). PROVENANCE LAW: this channel must never enter the membrane as body temp or room temp. Ozlo case = ROOM. WHOOP = SKIN. GW1 = CASE (blend). Three thermometers, three different truths — and the blend is a cross-check: it should land between the other two; when it does not, suspect a loose strap or off-wrist. Receipt: Garmin support FAQ + forums, DC Rainmaker 2023-12. BONUS RECEIPT: the sensor exists because the Tactix carries a BAROMETER — from 2026-08-24 the stack holds TWO pressure instruments (GW1 + Ozlo case), and pressure can be cross-checked instrument-against-instrument.' },
-  { key: 'garmin', name: 'Garmin (Fenix 8 · Venu 4 · Forerunner · Instinct 3)', tier: 'FILE EXPORT',
+  { key: 'garmin', brand: 'garmin', name: 'Garmin (Fenix 8 · Venu 4 · Forerunner · Instinct 3)', tier: 'FILE EXPORT',
     live: true,
     dataPath: 'Garmin Connect export JSON/FIT (wired in-app) + open BLE heart-rate broadcast',
     adds: 'The Garmin engine at every price point — deep daily wellness data by export, live heart rate by broadcast.' },
-  { key: 'garmin_index_bpm', name: 'Garmin Index BPM', tier: 'FILE EXPORT',
+  { key: 'garmin_index_bpm', brand: 'garmin', name: 'Garmin Index BPM', tier: 'FILE EXPORT',
     founderStack: true, acquired: '2026-08-04',
     dataPath: 'Garmin Connect — FDA-cleared oscillometric cuff, Wi-Fi standalone, exportable PDF for a physician',
     organ: 'BLOOD',
@@ -152,18 +181,18 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'In-ear heart rate during workouts → Apple Health',
     organ: 'EARS',
     adds: 'Heart rate from the earbuds you already wear — zero new hardware, one more signal.' },
-  { key: 'beats_pro_2', name: 'Beats Pro 2', tier: 'AGGREGATOR',
+  { key: 'beats_pro_2', brand: 'beats', name: 'Beats Pro 2', tier: 'AGGREGATOR',
     founderStack: true,
     dataPath: 'In-ear heart rate → Apple Health / Health Connect',
     organ: 'EARS',
     adds: 'Workout heart rate from the ears — and the ASRT audio channel: training the body and the subconscious on the same device.' },
-  { key: 'oakley_meta', name: 'Meta Oakley HSTN · THE EYES', tier: 'AGGREGATOR',
+  { key: 'oakley_meta', brand: 'meta', name: 'Meta Oakley HSTN · THE EYES', tier: 'AGGREGATOR',
     founderStack: true,
     dataPath: 'Meta AI app → Health Connect; on-board camera, microphone, open-ear audio',
     organ: 'EYES',
     adds: 'The eyes. Hands-free scanning, live camera for the safety path, and the Equalizer looking at what you are looking at — the one device that sees the world instead of the wrist.' },
 
-  { key: 'samsung', name: 'Samsung Galaxy Watch 8 / Galaxy Ring 2', tier: 'AGGREGATOR',
+  { key: 'samsung', brand: 'samsung', name: 'Samsung Galaxy Watch 8 / Galaxy Ring 2', tier: 'AGGREGATOR',
     dataPath: 'Samsung Health export + Health Connect',
     adds: 'Android-side full vitals with watch-and-ring fusion — day on the wrist, night on the finger.' },
   { key: 'pixel_watch', name: 'Google Pixel Watch 4', tier: 'AGGREGATOR',
@@ -171,7 +200,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     adds: 'Android-native with a real API behind it — Fitbit\'s engine on Google\'s wrist.' },
 
   // ── LIVE BLE — the nerve ──────────────────────────────────────────────────
-  { key: 'muse_s_athena', name: 'Muse S Athena · THE CROWN', tier: 'LIVE BLE',
+  { key: 'muse_s_athena', brand: 'muse', name: 'Muse S Athena · THE CROWN', tier: 'LIVE BLE',
     founderStack: true, live: true, flagship: true, acquired: '2026-08-10',
     dataPath: 'Muse SDK — LIVE stream: up to eight EEG channels, fNIRS optodes, PPG, six-axis motion. Mindfulness + sleep to Health Connect.',
     organ: 'BRAIN',
@@ -188,7 +217,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     adds: 'A simple live heartbeat for the membrane — budget chest-strap truth.' },
 
   // ── CONDITION — passive gear, no signal, a measurable variable ─────────────
-  { key: 'manta_sound', name: 'Manta Sound Sleep Mask', tier: 'CONDITION',
+  { key: 'manta_sound', brand: 'manta', name: 'Manta Sound Sleep Mask', tier: 'CONDITION',
     founderStack: true,
     dataPath: 'No data of its own — the member\'s existing devices record the outcome',
     organ: 'EYES · EARS',
@@ -201,7 +230,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   // instead of played off a mask — which makes the same track testable two ways
   // against one brain. That comparison needs the Crown, the buds and the mask
   // on one head, and nobody else has that table.
-  { key: 'ozlo_sleepbuds', name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', tier: 'ENVIRONMENT +',
+  { key: 'ozlo_sleepbuds', brand: 'ozlo', name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', tier: 'ENVIRONMENT +',
     organ: 'EYES · EARS',
     dataPath: 'MANUFACTURER RECEIPT — Ozlo Sleepbuds 2 User Guide, filed to AA2 DOCS/MANUALS 2026-08-21. Smart Case carries a TEMPERATURE, LIGHT AND NOISE SENSOR — the guide names three room channels and no others. Bluetooth to the phone, Bluetooth Low Energy to the buds: the case is the radio. Case button plays and pauses a Sleep Sound and snoozes the alarm with the phone untouched. Four sizes of SILICONE tip. A case reset "deletes all sleep and usage data," so the case does hold sleep data, and the status light shows a distinct FIRMWARE & DATA TRANSFER state — but no export path or public API is documented.',
     adds: 'Ears you can lie down on, and a second pair of eyes. The Crown reads your brain and has no speakers of its own — these are the only audio in the stack you can sleep or meditate in while a headband is already on your head. The bundled mask makes it a COMPLETE SECOND BLACKOUT SYSTEM, lighter than the Manta, for sessions where the Manta is too much hardware to stack. And the case adds the room itself: noise, light and temperature — the one exposure layer nothing else in your stack can see.',
@@ -214,16 +243,16 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
   { key: 'fitbit_legacy', name: 'Fitbit (older: Charge 2–5 · Versa · Ionic · Alta · Blaze)', tier: 'LEGACY',
     dataPath: 'Fitbit account export (full archive, works regardless of whether the device still powers on)',
     adds: 'Years of resting heart rate, steps, and sleep sitting in an account you stopped opening. The band can be dead in a drawer — the record still starts your baseline years before today.' },
-  { key: 'garmin_legacy', name: 'Garmin (older: Vívosmart · Vívoactive 3/4 · Forerunner 235/245 · Fenix 5/6)', tier: 'LEGACY',
+  { key: 'garmin_legacy', brand: 'garmin', name: 'Garmin (older: Vívosmart · Vívoactive 3/4 · Forerunner 235/245 · Fenix 5/6)', tier: 'LEGACY',
     dataPath: 'Garmin Connect full account export (JSON/FIT)',
     adds: 'Garmin never deletes your history. Whatever you wore in 2019 is still exportable — bring it and the membrane wakes up already knowing your old normal.' },
   { key: 'apple_watch_legacy', name: 'Apple Watch (older: Series 3–9 · SE)', tier: 'LEGACY',
     dataPath: 'Apple Health export.xml — the whole archive, all devices you ever paired',
     adds: 'One export file carries every watch you have ever owned. The membrane reads them as one continuous life, not four separate gadgets.' },
-  { key: 'samsung_legacy', name: 'Samsung (older: Gear · Galaxy Watch 3–6 · Galaxy Fit)', tier: 'LEGACY',
+  { key: 'samsung_legacy', brand: 'samsung', name: 'Samsung (older: Gear · Galaxy Watch 3–6 · Galaxy Fit)', tier: 'LEGACY',
     dataPath: 'Samsung Health export + Health Connect',
     adds: 'The Android drawer. Old Gear and Galaxy history exports the same as the new ones — the years count even if the watch does not turn on.' },
-  { key: 'oura_legacy', name: 'Oura Ring Gen 2 / Gen 3', tier: 'LEGACY',
+  { key: 'oura_legacy', brand: 'oura', name: 'Oura Ring Gen 2 / Gen 3', tier: 'LEGACY',
     dataPath: 'Oura API v2 + account export — same account, same history',
     adds: 'Gen 2 and Gen 3 nights live in the same account as Gen 4. Upgrading never cost you your baseline — most members do not know that.' },
   { key: 'polar_legacy', name: 'Polar (older: M400 · V800 · Vantage V/M · H7 strap)', tier: 'LEGACY',
@@ -238,7 +267,7 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     note: 'Some dead-vendor accounts no longer export. If the file will not come out, the answer is a straight no — never a maybe.' },
 
   // ── SPECIES — extended sensory reach ──────────────────────────────────────
-  { key: 'garmin_alpha', name: 'Garmin Alpha 300 / T 20 Collar', tier: 'SPECIES',
+  { key: 'garmin_alpha', brand: 'garmin', name: 'Garmin Alpha 300 / T 20 Collar', tier: 'SPECIES',
     dataPath: 'Garmin export — GPS + activity',
     adds: 'Working-K9 location and load inside the same membrane as the handler — Spoke 27 in the field.' },
   { key: 'fitbark', name: 'FitBark 2 / GPS', tier: 'SPECIES',

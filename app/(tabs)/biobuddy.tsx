@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl, Pressable,
-  TouchableOpacity, TextInput, Alert,
+  TouchableOpacity, TextInput, Alert, Image,
 } from 'react-native';
 import PagerView, { type PagerRef } from '@/components/Pager';
 import Svg, { Polyline } from 'react-native-svg';
@@ -13,7 +13,7 @@ import {
   saveSleepAids, getSleepAids, logAwareDollarsFollowed,
   type FullMemberProfile, type AnimalRow,
 } from '../../lib/db';
-import { SLEEP_AID_OPTIONS, deviceKey as catalogDeviceKey } from '../../lib/device-catalog';
+import { SLEEP_AID_OPTIONS, deviceKey as catalogDeviceKey, brandMarkFor } from '../../lib/device-catalog';
 import { connectOura, disconnectOura } from '../../lib/ouraAuth';
 import { connectProvider, disconnectProvider, connectionFor, type Connection, type ProviderKey } from '../../lib/oauth';
 import { DIET_OPTIONS, toggleDietValue } from '../../lib/diet';
@@ -481,9 +481,14 @@ export default function BioBuddyScreen() {
                 return rows.map(({ key, on }, i) => {
                   const metric = on ? deviceMetric(key, readout) : null;
                   const src = on ? DEVICE_SOURCE[norm(key)] : undefined;
+                  // THE MARK (2026-09-03): the vendor's own mark beside the ORIGIN_SOURCE
+                  // dot. The dot stays — one instrument, one colour, both modes. A brand
+                  // whose file has not landed renders no mark, never a placeholder.
+                  const mark = brandMarkFor(key);
                   return (
                     <Pressable key={i} onPress={on ? undefined : () => goPage(2)} style={st.readoutRow}>
                       <View style={[st.readoutDot, { backgroundColor: deviceDot(TH, key), opacity: on ? 1 : 0.5 }]} />
+                      {mark ? <Image source={mark} style={[st.readoutMark, !on && { opacity: 0.5 }]} resizeMode="contain" /> : null}
                       <Text style={[st.readoutName, !on && { color: C.MUT }]}>{deviceName(key)}</Text>
                       <Sparkline values={on && src ? readout?.series[src] : undefined} color={deviceDot(TH, key)} />
                       <Text style={[st.readoutVal, { color: on ? deviceDot(TH, key) : C.FAINT }]}>
@@ -1408,6 +1413,7 @@ const make_st = (T: Tokens) => {
 
   readoutRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE },
   readoutDot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
+  readoutMark: { width: 20, height: 20, borderRadius: 4, marginRight: 8 },
   readoutName: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, flexBasis: 112, flexShrink: 1, minWidth: 74, marginRight: 4 },
   readoutWave: { flex: 1, height: 2, borderRadius: 1, marginHorizontal: 10 },
   readoutVal: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 0.5 },
