@@ -68,29 +68,35 @@ const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3
 // because off-grid the phone is the last node standing. Medical-grade devices
 // are the only tier above this stack — enterprise, parked. This is the skeleton.
 // Key = normalized device id in device_connections.hardware.
-const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: boolean; condition?: boolean }[] = [
+// TWO AXES, BOTH REQUIRED (founder ruling 2026-09-04): SITE is where the
+// instrument sits on the body and decides the ORDER; ORGAN is what it reads
+// and decides COVERAGE. Coverage is the job of YOUR STACK HAS YOU COVERED —
+// a partial stack is never shown here as a body missing organs. FOMO, not
+// remorse: nobody is less than a whole person; AA2 monitors all of you a
+// little bit at a time.
+const DEVICES: { key: string; name: string; dot: string; site: string; organ: string; alt?: string; port?: boolean; condition?: boolean }[] = [
   // THE HEAD — brain, eyes, ears
-  { key: 'muse_s_athena',    name: 'Muse S Athena · THE CROWN',    dot: '#8fd6ff' },
-  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: '#AA44FF' },
-  { key: 'manta_sound',      name: 'Manta Sound Sleep Mask',       dot: '#C9A0FF', condition: true },
+  { key: 'muse_s_athena',    name: 'Muse S Athena · THE CROWN',    dot: '#8fd6ff', site: 'head',       organ: 'brain' },
+  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: '#AA44FF', site: 'face',       organ: 'eyes' },
+  { key: 'manta_sound',      name: 'Manta Sound Sleep Mask',       dot: '#C9A0FF', site: 'head',       organ: 'eyes · ears', condition: true },
   // OZLO SITS ABOVE THE BEATS. Founder order 2026-08-21: "the beats are just a
   // sponsor for ears — vs ears AND room." The Ozlo Smart Case is the only
   // instrument in the entire stack that reads the ROOM instead of the body.
-  { key: 'ozlo_sleepbuds',   name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', dot: '#4E96C8' },
-  { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: '#D4A847' },
+  { key: 'ozlo_sleepbuds',   name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', dot: '#4E96C8', site: 'ears · nightstand', organ: 'ears · the room' },
+  { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: '#D4A847', site: 'ears',       organ: 'ears · heart' },
   // THE ARM — heart: WHOOP on the bicep, the cuff on the upper arm
-  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', alt: 'whoop_5_0' },
-  { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF' },
+  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', site: 'bicep',      organ: 'heart', alt: 'whoop_5_0' },
+  { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF', site: 'upper arm',  organ: 'heart · blood' },
   // THE WRIST
-  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF' },
+  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF', site: 'wrist',      organ: 'heart · body' },
   // THE FINGER
-  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399' },
+  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399', site: 'finger',     organ: 'heart' },
   // THE POCKET — THE PORT, always on (you are holding it)
-  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', port: true },
+  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', site: 'pocket',     organ: 'the port', port: true },
   // THE ANKLE — the touch instrument, left ankle
-  { key: 'apollo',           name: 'Apollo Neuro',                 dot: '#F2B84B', alt: 'apollo_neuro' },
+  { key: 'apollo',           name: 'Apollo Neuro',                 dot: '#F2B84B', site: 'left ankle', organ: 'skin · touch', alt: 'apollo_neuro' },
   // SOFTWARE LINK
-  { key: 'strava',           name: 'Strava',                       dot: '#5CD65C' },
+  { key: 'strava',           name: 'Strava',                       dot: '#5CD65C', site: 'software',   organ: 'body · movement' },
 ];
 
 const ACTIVITY_CHIPS = ['Hiking', 'Strength', 'Backcountry Ski', 'Trail Run', 'Cycling', 'Fly Fishing', 'Ranch Work'];
