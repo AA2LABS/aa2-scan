@@ -15,7 +15,7 @@ MARKS (8):
   Oura ................. logo-oura.png     512x384
   Meta ................. logo-meta.png     512x493  (Oakley Meta HSTN · THE EYES)
   Beats ................ logo-beats.png    512x341  (Beats Pro 2)
-  Apollo ............... logo-apollo.png   512x512  (asset placed; NO catalog entry until the instrument arrives and carries its acquired date)
+  Apollo ............... logo-apollo.png   512x512  (wired 2026-09-04 — catalog key apollo, readout row at the LEFT ANKLE; acquired/firstData stay blank until the box is in hand)
   Garmin ............... logo-garmin.png   512x512
 
 STILL NEEDED:

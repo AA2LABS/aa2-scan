@@ -82,6 +82,7 @@ export const BRAND_MARK: Record<string, number> = {
   meta:   require('@/assets/instruments/logo-meta.png'),
   beats:  require('@/assets/instruments/logo-beats.png'),
   garmin: require('@/assets/instruments/logo-garmin.png'),
+  apollo: require('@/assets/instruments/logo-apollo.png'),
   // whoop, samsung, strava, bettersleep — add the line when the file lands
 };
 
@@ -222,6 +223,18 @@ export const DEVICE_CATALOG: ApprovedDevice[] = [
     dataPath: 'No data of its own — the member\'s existing devices record the outcome',
     organ: 'EYES · EARS',
     adds: 'Adds no signal. Adds a CONDITION. Your ring and strap already measure every night; the mask splits your own history into mask nights and bare nights and the membrane shows you the difference with receipts. Its head strap also seats a crown that was never given a replacement band.' },
+
+  // ── THE TOUCH INSTRUMENT — founder order 2026-09-04: Apollo joins the stack ──
+  // Ordered 2026-09-04 (Stealth, Apollo Wearable + SmartVibes AI, one year).
+  // DOUBLE TIMESTAMP LAW: `acquired` is written the day the box is in the
+  // founder's hand, never the order date; `firstData` when the first dose
+  // lands in the port. Both stay blank until then.
+  { key: 'apollo', brand: 'apollo', name: 'Apollo Neuro', tier: 'CONDITION',
+    founderStack: true,
+    dataPath: 'No signal of its own on Android — an actuator, not a sensor. The dose is a timestamp AA2 writes to the port itself (MindfulnessSessionRecord, provenance STATED); the response is measured by the Crown and the heart instruments. On iOS the Apollo app writes Mindful Minutes to Apple Health.',
+    organ: 'SKIN',
+    adds: 'Touch. Gentle vibration at the ankle, wrist, chest or hip — the one instrument in the stack that puts something INTO the body instead of reading something out of it. Adds a CONDITION: dose nights versus bare nights, judged by your own Crown and your own heart, never by its app. Founder placement: LEFT ANKLE — Apollo\'s own sleep placement and the distal-first rule.',
+    note: 'PLACEMENT IS DOSE — site and charge state ride on every session record. Apollo works in Airplane Mode and over clothing (vendor FAQ). Battery per vendor pages: 8 to 12 hours depending on intensity; charge about one hour. Not worn 24/7 — the Actuator Taper: the dose steps down as the baseline improves.' },
 
   // ── ENVIRONMENT + — the first thing in the catalog that measures the ROOM ──
   // Founder class, named 2026-08-19. Everything else in this catalog reads the

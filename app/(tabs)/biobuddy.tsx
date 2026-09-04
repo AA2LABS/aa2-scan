@@ -57,38 +57,38 @@ const pal = (T: Tokens) => ({
 
 const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3 · THE MEMBRANE · EDIT'];
 
-// FULL STACK LAW (founder order 2026-08-14): the stack displays as a
-// hierarchy of signal. THE PORT sits on top — the phone is a member of the
-// chain, always shown, always active; on the web version it still shows,
-// because off-grid the phone is the last node standing and the member must
-// have always seen it as part of the stack. Below it the SIGNAL TIER in rank
-// order: Crown → Tactix → WHOOP MG → Oura. Below them the PERIPHERAL TIER,
-// ordered by body placement, never by price: Manta, then OZLO — which outranks
-// the Beats because it reads EARS AND ROOM where the Beats read ears only —
-// then Beats, the Metas apart (the Equalizer's eyes — ICE,
-// silent rideshare escalation, live camera out), the Index BPM on the arm.
-// Strava rides last — the software link. Medical-grade devices are the only
-// tier above this stack — enterprise, parked. This is the skeleton.
+// FULL STACK LAW — HEAD TO TOE (founder order 2026-09-04, supersedes the
+// 2026-08-14 "hierarchy of signal" order): the stack displays as the BODY,
+// top down, by the organ each instrument extends — the Body Doctrine is the
+// map. Crown on the brain first; the eyes; the ears; the heart on the arm;
+// the wrist; the finger; the pocket, where THE PORT always rides and is
+// always on; the ankle last, where the Apollo sits per Apollo's own sleep
+// placement and the founder's distal-first rule. Strava rides below the body
+// — the software link. The Port still shows on every surface, including web,
+// because off-grid the phone is the last node standing. Medical-grade devices
+// are the only tier above this stack — enterprise, parked. This is the skeleton.
 // Key = normalized device id in device_connections.hardware.
 const DEVICES: { key: string; name: string; dot: string; alt?: string; port?: boolean; condition?: boolean }[] = [
-  // THE PORT
-  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', port: true },
-  // SIGNAL TIER — rank order
+  // THE HEAD — brain, eyes, ears
   { key: 'muse_s_athena',    name: 'Muse S Athena · THE CROWN',    dot: '#8fd6ff' },
-  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF' },
-  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', alt: 'whoop_5_0' },
-  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399' },
-  // PERIPHERAL TIER — by body placement
+  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: '#AA44FF' },
   { key: 'manta_sound',      name: 'Manta Sound Sleep Mask',       dot: '#C9A0FF', condition: true },
   // OZLO SITS ABOVE THE BEATS. Founder order 2026-08-21: "the beats are just a
   // sponsor for ears — vs ears AND room." The Ozlo Smart Case is the only
-  // instrument in the entire stack that reads the ROOM instead of the body:
-  // temperature, light and noise, named by the manufacturer in its own guide.
-  // Everything else here reads James. This one reads where James is.
+  // instrument in the entire stack that reads the ROOM instead of the body.
   { key: 'ozlo_sleepbuds',   name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', dot: '#4E96C8' },
   { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: '#D4A847' },
-  { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: '#AA44FF' },
+  // THE ARM — heart: WHOOP on the bicep, the cuff on the upper arm
+  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', alt: 'whoop_5_0' },
   { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF' },
+  // THE WRIST
+  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF' },
+  // THE FINGER
+  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399' },
+  // THE POCKET — THE PORT, always on (you are holding it)
+  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', port: true },
+  // THE ANKLE — the touch instrument, left ankle
+  { key: 'apollo',           name: 'Apollo Neuro',                 dot: '#F2B84B', alt: 'apollo_neuro' },
   // SOFTWARE LINK
   { key: 'strava',           name: 'Strava',                       dot: '#5CD65C' },
 ];
