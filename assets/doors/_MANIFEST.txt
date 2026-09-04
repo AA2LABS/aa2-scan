@@ -26,3 +26,18 @@ IN-DOOR SCAN IMAGES (3) — the "scan this category" surface inside the intellig
   K9 food scan ......... scan-k9-food.jpg       (Lab eating)
   Equine feed scan ..... scan-equine-feed.jpg   (horse at feed)
   Agri feed scan ....... scan-agri-feed.jpg     (hand-feeding cattle)
+
+FIXED DOOR PICS — founder's AA2-branded renders, wired 2026-09-04 (founder order: "now I need them wired").
+Same filenames, same require paths — no screen changed. Prior art moved to retired-2026-06-20/ (retired, not deleted).
+  Bio Buddy ............ door-biobuddy.jpg          BIO CONTROL PANEL · AA2 Panama · Safer Nation
+  The Chauffeur ........ door-chauffeur.webp        SAFE ROUTE · Membrane Intelligence
+  The Equalizer ........ door-equalizer.jpg         MEMBRANE SECURITY · Uber · Lyft · Waymo · instant safety alerts
+  The Chef ............. door-chef.jpg              LIVE COOKING · drag a live to join
+  K9 Tactical .......... door-k9-tactical.jpg       OPS COMMAND · mission brief · kill switch
+  The Concierge ........ door-concierge.jpg         DATA · BIOS · DATA · The Adaptive Life Framework
+  Depth-On-Demand ...... door-depth-on-demand.png   THE DOCTRINE CARDS · Adaptive Advantage · 2-T · K9
+  Scanner hero ......... ../images/tab-scan.jpg     SCAN & RESULTS · the Snickers scan
+STAGED, NOT WIRED (no screen exists yet for them — ask for the wire):
+  The Cookbook ......... door-cookbook.jpg          INTERNATIONAL LIVE COOKING RECIPES
+  I AM THE RECEIPT ..... door-receipt.jpg           the poster · door-hall hero when aa2.tsx gets one
+Source: FIXED DOOR PICS.zip + AA2_ORIGINAL_UE.html (the founder's room map: SCAN · MEMBRANE · TACTICAL · CHEF · DOCTRINE).
