@@ -19,6 +19,12 @@ export default function DepthOnDemandScreen() {
     { icon: '⚘', title: 'Your Conditions',
       desc: conds.length ? `Context curated for: ${conds.join(', ')}` : 'No conditions declared.',
       chip: conds.length ? 'CURATED' : 'CLEAR', chipColor: conds.length ? SAND : GREEN },
+    // THE CLARIFIER ROUTING RULE — route 1 of 3. The Curator is how the
+    // member reaches the Clarifier from inside the Learning Center.
+    { icon: '◎', title: 'Speak to the Curator',
+      desc: 'The device saw a spike and not the reason. Tell the Curator what happened and the Clarifier reclassifies it.',
+      chip: 'CLARIFIER', chipColor: SAND,
+      route: '/clarifier' },
     { icon: '◈', title: 'Language By Location',
       desc: home ? `Anchored to ${home}. Survival relevance — you learn what you scan.`
                  : 'Scan a foreign label and learn the language through it.',

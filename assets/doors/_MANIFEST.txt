@@ -37,7 +37,23 @@ Same filenames, same require paths — no screen changed. Prior art moved to ret
   The Concierge ........ door-concierge.jpg         DATA · BIOS · DATA · The Adaptive Life Framework
   Depth-On-Demand ...... door-depth-on-demand.png   THE DOCTRINE CARDS · Adaptive Advantage · 2-T · K9
   Scanner hero ......... ../images/tab-scan.jpg     SCAN & RESULTS · the Snickers scan
-STAGED, NOT WIRED (no screen exists yet for them — ask for the wire):
+WIRED 2026-09-12 (founder order: "build the doors to match the document") —
+this section is no longer STAGED. Both are live:
   The Cookbook ......... door-cookbook.jpg          INTERNATIONAL LIVE COOKING RECIPES
-  I AM THE RECEIPT ..... door-receipt.jpg           the poster · door-hall hero when aa2.tsx gets one
+                                                    -> app/cookbook.tsx (new screen, DoorFlood)
+                                                    -> app/(tabs)/aa2.tsx:37 grid card, route '/cookbook'
+                                                    NOTE: the Chef's inline cookbook drawer is UNCHANGED.
+                                                    This is the standalone door, not a replacement.
+  I AM THE RECEIPT ..... door-receipt.jpg           the poster · door-hall hero
+                                                    -> app/(tabs)/aa2.tsx:63-71, hero above the grid
+
+AWAITING ART — screen exists, render does not:
+  The Clarifier ........ door-clarifier.???         NO FILE YET. app/clarifier.tsx currently opens on
+                                                    door-depth-on-demand.png as a stand-in (one require
+                                                    line, app/clarifier.tsx:88). Drop a real render here
+                                                    and change that one line.
+                                                    THE CLARIFIER ROUTING RULE — three ways in, all live:
+                                                      1. app/depth-on-demand.tsx:27   the Curator
+                                                      2. app/(tabs)/concierge.tsx:57  ask the Concierge
+                                                      3. app/(tabs)/aa2.tsx:35        the button
 Source: FIXED DOOR PICS.zip + AA2_ORIGINAL_UE.html (the founder's room map: SCAN · MEMBRANE · TACTICAL · CHEF · DOCTRINE).

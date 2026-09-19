@@ -49,6 +49,12 @@ const FUNCTIONS: FnRow[] = [
   { icon: '🔄', title: 'Continuity between sessions',
     sub: 'Nothing repeated. Nothing lost. Pick up exactly where you left off.',
     seed: 'Pick up exactly where we left off — what was I working on?' },
+  // THE CLARIFIER ROUTING RULE — route 2 of 3. "Or you can just ask the
+  // concierge, hey I need the clarifier." The member never has to find the
+  // right door; they say what happened and the Concierge routes it.
+  { icon: '◎', title: 'Bring me the Clarifier',
+    sub: 'Something moved your numbers and the device could not see why — you supply the context',
+    route: '/clarifier' as Href },
   { icon: '📋', title: 'Explain any part of the system',
     sub: 'What a spoke does · how the Vault works · what AWARE DOLLARS means',
     seed: 'Explain how the Vault works and what AWARE DOLLARS means.' },

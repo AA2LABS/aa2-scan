@@ -29,6 +29,12 @@ const DOORS: Door[] = [
   { title: 'Equine',          art: require('../../assets/doors/door-equine.jpg'),          route: '/equine' as Href,       pos: 'top' },
   { title: 'Agricultural',    art: require('../../assets/doors/door-agricultural.jpg'),    route: '/agricultural' as Href, pos: 'top' },
   { title: 'Aficionado',      art: require('../../assets/doors/door-aficionado.png'),      route: '/aficionado' as Href },
+  // THE CLARIFIER ROUTING RULE — route 3 of 3: the button. Routes 1 and 2 are
+  // Depth-On-Demand -> the Curator, and asking the Concierge. Placeholder art
+  // until a door-clarifier render exists; the screen is real either way.
+  { title: 'The Clarifier',   art: require('../../assets/doors/door-depth-on-demand.png'), route: '/clarifier' as Href },
+  // Wired 2026-09-12 from _MANIFEST.txt "STAGED, NOT WIRED ... ask for the wire".
+  { title: 'The Cookbook',    art: require('../../assets/doors/door-cookbook.jpg'),        route: '/cookbook' as Href },
   // The Vault had the Vision Board's art and the Vision Board's route — which
   // is why opening the Vault landed you on the Vision Board. It has its own
   // door art and its own screen now.
@@ -53,6 +59,16 @@ export default function AA2DoorHall() {
           ? `Every door reads your membrane${name ? `, ${name}` : ''}. One truth, twelve lenses.`
           : 'Build your membrane and every door behind this wall speaks to your body, not a generic one.'}
       </Text>
+
+      {/* I AM THE RECEIPT — the founder's poster, wired 2026-09-12 as the
+          door-hall hero exactly as _MANIFEST.txt specified. Not a grid card:
+          the hall has an identity before it has a list. */}
+      <View style={st.hero}>
+        <Image source={require('../../assets/doors/door-receipt.jpg')} contentFit="cover" contentPosition="center" style={st.heroImg} />
+        <View style={st.heroScrim} />
+        <Text style={st.heroTxt}>I AM THE RECEIPT</Text>
+        <Text style={st.heroSub}>N=1</Text>
+      </View>
 
       {/* THE BUTTON. The Door Hall is where every door lives, so it is where
           the decision that repaints all of them belongs. Founder 2026-08-22:
@@ -110,6 +126,11 @@ const makeSt = (T: Tokens) => StyleSheet.create({
     borderRadius: 12, paddingVertical: 15, alignItems: 'center', marginBottom: 18,
   },
   ctaTxt: { color: dl(T, '#8fd6ff', '#1f6a90'), fontWeight: '800', fontSize: 14, letterSpacing: 0.5 },
+  hero: { height: 168, borderRadius: 14, overflow: 'hidden', marginBottom: 16, borderWidth: StyleSheet.hairlineWidth, borderColor: dl(T, 'rgba(255,255,255,0.15)', T.line), justifyContent: 'flex-end' },
+  heroImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
+  heroScrim: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(8,12,22,0.38)' },
+  heroTxt: { color: '#fff', fontSize: 19, fontWeight: '800', letterSpacing: 1.5, paddingHorizontal: 14, textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 10 },
+  heroSub: { color: '#fff', fontSize: 10.5, fontWeight: '700', letterSpacing: 3, opacity: 0.85, paddingHorizontal: 14, paddingBottom: 13, paddingTop: 3, textShadowColor: 'rgba(0,0,0,0.7)', textShadowRadius: 8 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   card: { width: '48.5%', height: 190, borderRadius: 14, overflow: 'hidden', marginBottom: 13, borderWidth: StyleSheet.hairlineWidth, borderColor: dl(T, 'rgba(255,255,255,0.15)', T.line), justifyContent: 'flex-end' },
   cardImg: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, width: '100%', height: '100%' },
