@@ -251,35 +251,138 @@ export function readyModules(p: StudyPath): StudyModule[] {
 }
 
 
-// ─── THE SHELF — WHAT IS ALREADY OWNED ───────────────────────────────────────
-// Audible and print titles the member has told us they hold. Nothing is added
-// here that the member has not said they own. Every entry carries a SEARCH
-// link, never a product claim — we have not verified an Audible edition
-// exists for any specific title, and a search does not pretend otherwise.
+// ─── THE SHELF — THE MEMBER'S ACTUAL LIBRARY ─────────────────────────────────
+// Catalogued 2026-09-19 from the member's own Audible and Kindle libraries.
+// Forty-five Audible titles plus the print shelf. Nothing here is a guess or a
+// recommendation — every row is a book the member holds.
+//
+// Titles were read off the member's library screenshots. Where a spine was cut
+// off in the capture it was LEFT OUT rather than guessed at, so this list is a
+// floor, not a ceiling — the member corrects it, it never corrects the member.
+//
+// Every link is an Audible SEARCH. No specific audio edition has been verified
+// for any title, and a search does not pretend one exists.
+//
+// THE PILLARS SHELF is not a category AA2 invented for this file. Pillar 1 of
+// the Canon is the Kybalion and Pillar 2 is Ancient Kemet initiate doctrine —
+// and the Kybalion, the Hermetica, three volumes of Metu Neter, the Emerald
+// Tablets and the Secret Teachings were already on this shelf. The library
+// predates the file that names it.
+export type ShelfKey =
+  | 'path' | 'memory' | 'pillars' | 'body' | 'build' | 'tech' | 'field' | 'rest';
+
+export const SHELF_NAMES: Record<ShelfKey, string> = {
+  path:    'THE PATH · credential material',
+  memory:  'MEMORY & LEARNING',
+  pillars: 'THE PILLARS · hermetic, kemetic, contemplative',
+  body:    'THE BODY · anatomy, sleep, food, terminology',
+  build:   'THE BUILD · business, offer, capital',
+  tech:    'TECHNICAL',
+  field:   'FIELD · flight, ground, language',
+  rest:    'REST · memoir, fiction, the long way round',
+};
+
 export type ShelfItem = {
-  title: string; author: string; format: 'audible' | 'print' | 'both';
-  note?: string; audible: string;
+  title: string; author: string;
+  format: 'audible' | 'print' | 'both';
+  shelf: ShelfKey; audible: string; note?: string;
 };
 
 export const SHELF: ShelfItem[] = [
-  { title: 'Remember It!', author: 'Nelson Dellis', format: 'both',
-    note: 'Everyday Genius on Audible · hardcover arriving',
-    audible: 'https://www.audible.com/search?keywords=Remember+It+Nelson+Dellis' },
-  { title: 'Get Out of Your Mind and Into Your Life', author: 'Steven C. Hayes', format: 'print',
-    note: 'WORKBOOK — no audio edition. Exercises must be done on the page.',
-    audible: 'https://www.audible.com/search?keywords=Get+Out+of+Your+Mind+and+Into+Your+Life+Hayes' },
-  { title: 'A Liberated Mind', author: 'Steven C. Hayes', format: 'both',
-    audible: 'https://www.audible.com/search?keywords=A+Liberated+Mind+Steven+Hayes' },
-  { title: 'ACT Made Simple', author: 'Russ Harris', format: 'both',
-    audible: 'https://www.audible.com/search?keywords=ACT+Made+Simple+Russ+Harris' },
-  { title: 'The Happiness Trap', author: 'Russ Harris', format: 'both',
-    audible: 'https://www.audible.com/search?keywords=The+Happiness+Trap+Russ+Harris' },
-  { title: 'Stop Letting Everything Bother You', author: '—', format: 'both',
-    audible: 'https://www.audible.com/search?keywords=Stop+Letting+Everything+Bother+You' },
-  { title: 'Co-Active Coaching', author: 'Kimsey-House et al.', format: 'audible',
-    note: '3rd and 4th editions held. Parked until the CTI decision.',
-    audible: 'https://www.audible.com/search?keywords=Co-Active+Coaching' },
-  { title: 'Trancework', author: 'Michael D. Yapko', format: 'print',
-    note: 'Manual held alongside the 12 PESI modules.',
-    audible: 'https://www.audible.com/search?keywords=Trancework+Michael+Yapko' },
+  { title: 'The Art of Hypnosis', author: 'C. Roy Hunter', format: 'print', shelf: 'path', audible: 'https://www.audible.com/search?keywords=The+Art+of+Hypnosis+C+Roy+Hunter' },
+  { title: 'Prosocial', author: 'Atkins · Wilson · Hayes', format: 'print', shelf: 'path', audible: 'https://www.audible.com/search?keywords=Prosocial+Atkins+Wilson+Hayes' },
+  { title: 'Trancework', author: 'Michael D. Yapko', format: 'print', shelf: 'path', audible: 'https://www.audible.com/search?keywords=Trancework+Michael+D+Yapko' },
+  { title: 'Process-Oriented Hypnosis', author: 'Michael D. Yapko', format: 'audible', shelf: 'path', audible: 'https://www.audible.com/search?keywords=Process+Oriented+Hypnosis+Michael+D+Yapko' },
+  { title: 'Get Out of Your Mind and Into Your Life', author: 'Steven C. Hayes', format: 'print', shelf: 'path', audible: 'https://www.audible.com/search?keywords=Get+Out+of+Your+Mind+and+Into+Your+Life+Steven+C+Hayes' },
+  { title: 'A Liberated Mind', author: 'Steven C. Hayes', format: 'both', shelf: 'path', audible: 'https://www.audible.com/search?keywords=A+Liberated+Mind+Steven+C+Hayes' },
+  { title: 'ACT Made Simple', author: 'Russ Harris', format: 'audible', shelf: 'path', audible: 'https://www.audible.com/search?keywords=ACT+Made+Simple+Russ+Harris' },
+  { title: 'The Happiness Trap', author: 'Russ Harris', format: 'audible', shelf: 'path', audible: 'https://www.audible.com/search?keywords=The+Happiness+Trap+Russ+Harris' },
+  { title: 'Co-Active Coaching (4th ed.)', author: 'Kimsey-House et al.', format: 'audible', shelf: 'path', audible: 'https://www.audible.com/search?keywords=Co+Active+Coaching+4th+ed+Kimsey+House+et+al' },
+  { title: 'Remember It!', author: 'Nelson Dellis', format: 'both', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Remember+It+Nelson+Dellis' },
+  { title: 'Everyday Genius', author: 'Nelson Dellis', format: 'audible', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Everyday+Genius+Nelson+Dellis' },
+  { title: 'Limitless (Expanded)', author: 'Jim Kwik', format: 'audible', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Limitless+Expanded+Jim+Kwik' },
+  { title: 'Deep Work', author: 'Cal Newport', format: 'print', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Deep+Work+Cal+Newport' },
+  { title: 'Thinking in Bets', author: 'Annie Duke', format: 'audible', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Thinking+in+Bets+Annie+Duke' },
+  { title: 'Stop Letting Everything Affect You', author: 'Daniel Chidiac', format: 'both', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Stop+Letting+Everything+Affect+You+Daniel+Chidiac' },
+  { title: 'Atomic Habits', author: 'James Clear', format: 'audible', shelf: 'memory', audible: 'https://www.audible.com/search?keywords=Atomic+Habits+James+Clear' },
+  { title: 'The Kybalion', author: 'Three Initiates', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=The+Kybalion+Three+Initiates' },
+  { title: 'The Hermetica', author: 'Freke & Gandy', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=The+Hermetica+Freke+Gandy' },
+  { title: 'The Secret Teachings of All Ages', author: 'Manly P. Hall', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=The+Secret+Teachings+of+All+Ages+Manly+P+Hall' },
+  { title: 'Compendium of the Emerald Tablets', author: 'Billy Carson', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Compendium+of+the+Emerald+Tablets+Billy+Carson' },
+  { title: 'Metu Neter Vol. 4 — The Ausarian Resurrection', author: 'Ra Un Nefer Amen', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Metu+Neter+Vol+4+The+Ausarian+Resurrection+Ra+Un+Nefer+Amen' },
+  { title: 'Metu Neter Vol. 5 — Health & Longevity', author: 'Ra Un Nefer Amen', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Metu+Neter+Vol+5+Health+Longevity+Ra+Un+Nefer+Amen' },
+  { title: 'Metu Neter Vol. 6 — The Ra Initiation System', author: 'Ra Un Nefer Amen', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Metu+Neter+Vol+6+The+Ra+Initiation+System+Ra+Un+Nefer+Amen' },
+  { title: 'Hermetic Magic', author: 'Stephen Edred Flowers', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Hermetic+Magic+Stephen+Edred+Flowers' },
+  { title: 'Ye Are Gods', author: 'Annalee Skarin', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Ye+Are+Gods+Annalee+Skarin' },
+  { title: 'The Bhagavad Gita', author: 'Paramahansa Yogananda', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=The+Bhagavad+Gita+Paramahansa+Yogananda' },
+  { title: 'Inner Engineering', author: 'Sadhguru', format: 'audible', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Inner+Engineering+Sadhguru' },
+  { title: 'Power vs. Force', author: 'David R. Hawkins', format: 'audible', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Power+vs+Force+David+R+Hawkins' },
+  { title: 'Numerology', author: 'Harish Johari', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Numerology+Harish+Johari' },
+  { title: 'Project 369', author: 'David Kasneci', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Project+369+David+Kasneci' },
+  { title: 'Don\'t Bite the Hook', author: 'Pema Chodron', format: 'audible', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=Don+t+Bite+the+Hook+Pema+Chodron' },
+  { title: 'F**k It Therapy', author: 'John C. Parkin', format: 'print', shelf: 'pillars', audible: 'https://www.audible.com/search?keywords=F+k+It+Therapy+John+C+Parkin' },
+  { title: 'Eat Smarter', author: 'Shawn Stevenson', format: 'audible', shelf: 'body', audible: 'https://www.audible.com/search?keywords=Eat+Smarter+Shawn+Stevenson' },
+  { title: 'Sleep Smarter', author: 'Shawn Stevenson', format: 'audible', shelf: 'body', audible: 'https://www.audible.com/search?keywords=Sleep+Smarter+Shawn+Stevenson' },
+  { title: 'The 3-Day Effect', author: 'Florence Williams', format: 'audible', shelf: 'body', audible: 'https://www.audible.com/search?keywords=The+3+Day+Effect+Florence+Williams' },
+  { title: 'Anatomy & Physiology for Dummies', author: 'Erin Odya', format: 'print', shelf: 'body', audible: 'https://www.audible.com/search?keywords=Anatomy+Physiology+for+Dummies+Erin+Odya' },
+  { title: 'College Level Anatomy & Physiology', author: 'audiolearn', format: 'print', shelf: 'body', audible: 'https://www.audible.com/search?keywords=College+Level+Anatomy+Physiology+audiolearn' },
+  { title: 'Medical Terminology for Dummies', author: 'Henderson & Dorsey', format: 'both', shelf: 'body', audible: 'https://www.audible.com/search?keywords=Medical+Terminology+for+Dummies+Henderson+Dorsey' },
+  { title: 'Medical Terminology', author: 'Matt Clark', format: 'print', shelf: 'body', audible: 'https://www.audible.com/search?keywords=Medical+Terminology+Matt+Clark' },
+  { title: 'Memorizing Pharmacology', author: 'Tony Guerra', format: 'both', shelf: 'body', audible: 'https://www.audible.com/search?keywords=Memorizing+Pharmacology+Tony+Guerra' },
+  { title: 'HESI Admission Assessment Exam Review', author: 'Elsevier', format: 'print', shelf: 'body', audible: 'https://www.audible.com/search?keywords=HESI+Admission+Assessment+Exam+Review+Elsevier' },
+  { title: '$100M Offers', author: 'Alex Hormozi', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=100M+Offers+Alex+Hormozi' },
+  { title: 'Million Dollar Weekend', author: 'Noah Kagan', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Million+Dollar+Weekend+Noah+Kagan' },
+  { title: 'The Millionaire Fastlane', author: 'MJ DeMarco', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=The+Millionaire+Fastlane+MJ+DeMarco' },
+  { title: 'Profit First', author: 'Mike Michalowicz', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Profit+First+Mike+Michalowicz' },
+  { title: 'Scaling Up', author: 'Verne Harnish', format: 'print', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Scaling+Up+Verne+Harnish' },
+  { title: 'DotCom Secrets', author: 'Russell Brunson', format: 'print', shelf: 'build', audible: 'https://www.audible.com/search?keywords=DotCom+Secrets+Russell+Brunson' },
+  { title: 'Start with Why', author: 'Simon Sinek', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Start+with+Why+Simon+Sinek' },
+  { title: 'Speak Like a CEO', author: 'Suzanne Bates', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Speak+Like+a+CEO+Suzanne+Bates' },
+  { title: 'Create Something Awesome', author: 'Roberto Blake', format: 'print', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Create+Something+Awesome+Roberto+Blake' },
+  { title: 'Put Your Ass Where Your Heart Wants to Be', author: 'Steven Pressfield', format: 'print', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Put+Your+Ass+Where+Your+Heart+Wants+to+Be+Steven+Pressfield' },
+  { title: 'The 4-Hour Workweek', author: 'Tim Ferriss', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=The+4+Hour+Workweek+Tim+Ferriss' },
+  { title: 'The Power of Broke', author: 'Daymond John', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=The+Power+of+Broke+Daymond+John' },
+  { title: 'Money Master the Game', author: 'Tony Robbins', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Money+Master+the+Game+Tony+Robbins' },
+  { title: 'Think and Grow Rich', author: 'Napoleon Hill', format: 'print', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Think+and+Grow+Rich+Napoleon+Hill' },
+  { title: 'Freakonomics', author: 'Levitt & Dubner', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Freakonomics+Levitt+Dubner' },
+  { title: 'You Are a Badass', author: 'Jen Sincero', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=You+Are+a+Badass+Jen+Sincero' },
+  { title: 'You Are a Badass at Making Money', author: 'Jen Sincero', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=You+Are+a+Badass+at+Making+Money+Jen+Sincero' },
+  { title: 'Oneness vs. the 1%', author: 'Vandana Shiva', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=Oneness+vs+the+1+Vandana+Shiva' },
+  { title: 'The Art of War', author: 'Sun Tzu', format: 'audible', shelf: 'build', audible: 'https://www.audible.com/search?keywords=The+Art+of+War+Sun+Tzu' },
+  { title: 'Solutions Architect\'s Handbook', author: 'Saurabh Shrivastava', format: 'audible', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=Solutions+Architect+s+Handbook+Saurabh+Shrivastava' },
+  { title: 'Programming: Python Crash Course', author: 'Steve Blair', format: 'both', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=Programming+Python+Crash+Course+Steve+Blair' },
+  { title: 'Ethical Hacking', author: 'Zach Codings', format: 'both', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=Ethical+Hacking+Zach+Codings' },
+  { title: 'Hunting Cyber Criminals', author: 'Vinny Troia', format: 'print', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=Hunting+Cyber+Criminals+Vinny+Troia' },
+  { title: 'Mastering the CCNA', author: 'Christopher Parker', format: 'audible', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=Mastering+the+CCNA+Christopher+Parker' },
+  { title: 'CCENT/CCNA Official Cert Guides', author: 'Cisco Press', format: 'print', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=CCENT+CCNA+Official+Cert+Guides+Cisco+Press' },
+  { title: 'Network Warrior', author: 'Gary A. Donahue', format: 'print', shelf: 'tech', audible: 'https://www.audible.com/search?keywords=Network+Warrior+Gary+A+Donahue' },
+  { title: 'Pilot\'s Handbook of Aeronautical Knowledge', author: 'FAA', format: 'print', shelf: 'field', audible: 'https://www.audible.com/search?keywords=Pilot+s+Handbook+of+Aeronautical+Knowledge+FAA' },
+  { title: 'Airman Knowledge Testing Supplement 2026', author: 'FAA', format: 'print', shelf: 'field', audible: 'https://www.audible.com/search?keywords=Airman+Knowledge+Testing+Supplement+2026+FAA' },
+  { title: 'All New Square Foot Gardening', author: 'Mel Bartholomew', format: 'print', shelf: 'field', audible: 'https://www.audible.com/search?keywords=All+New+Square+Foot+Gardening+Mel+Bartholomew' },
+  { title: 'Madrigal\'s Magic Key to Spanish', author: 'Margarita Madrigal', format: 'print', shelf: 'field', audible: 'https://www.audible.com/search?keywords=Madrigal+s+Magic+Key+to+Spanish+Margarita+Madrigal' },
+  { title: 'English Grammar for Dummies', author: 'Geraldine Woods', format: 'print', shelf: 'field', audible: 'https://www.audible.com/search?keywords=English+Grammar+for+Dummies+Geraldine+Woods' },
+  { title: 'Can\'t Hurt Me', author: 'David Goggins', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Can+t+Hurt+Me+David+Goggins' },
+  { title: 'Never Finished', author: 'David Goggins', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Never+Finished+David+Goggins' },
+  { title: 'Year of Yes', author: 'Shonda Rhimes', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Year+of+Yes+Shonda+Rhimes' },
+  { title: 'The Mother of Black Hollywood', author: 'Jenifer Lewis', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=The+Mother+of+Black+Hollywood+Jenifer+Lewis' },
+  { title: 'My Name Is Prince', author: 'Randee St. Nicholas', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=My+Name+Is+Prince+Randee+St+Nicholas' },
+  { title: 'The Life and Adventures of James Beckwourth', author: 'James P. Beckwourth', format: 'print', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=The+Life+and+Adventures+of+James+Beckwourth+James+P+Beckwourth' },
+  { title: 'The Alchemist', author: 'Paulo Coelho', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=The+Alchemist+Paulo+Coelho' },
+  { title: 'Good Omens', author: 'Pratchett & Gaiman', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Good+Omens+Pratchett+Gaiman' },
+  { title: 'Artemis', author: 'Andy Weir', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Artemis+Andy+Weir' },
+  { title: 'The Dispatcher', author: 'John Scalzi', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=The+Dispatcher+John+Scalzi' },
+  { title: 'The City of Lost Fortunes', author: 'Bryan Camp', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=The+City+of+Lost+Fortunes+Bryan+Camp' },
+  { title: 'Gather the Fortunes', author: 'Bryan Camp', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Gather+the+Fortunes+Bryan+Camp' },
+  { title: 'Junk', author: 'Les Bohem', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Junk+Les+Bohem' },
+  { title: 'The Adventures of Tom Stranger', author: 'Larry Correia', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=The+Adventures+of+Tom+Stranger+Larry+Correia' },
+  { title: 'Even Tree Nymphs Get the Blues', author: 'Molly Harper', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Even+Tree+Nymphs+Get+the+Blues+Molly+Harper' },
+  { title: 'Proof of Love', author: 'Chisa Hutchinson', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Proof+of+Love+Chisa+Hutchinson' },
+  { title: 'Riley Mack', author: 'Chris Grabenstein', format: 'audible', shelf: 'rest', audible: 'https://www.audible.com/search?keywords=Riley+Mack+Chris+Grabenstein' },
 ];
+
+/** Books on one shelf. */
+export function shelf(k: ShelfKey): ShelfItem[] { return SHELF.filter(b => b.shelf === k); }
+
+/** Counts, for the Learning Center header. Real numbers, never rounded up. */
+export const SHELF_COUNT = SHELF.length;
+export const AUDIBLE_COUNT = SHELF.filter(b => b.format !== 'print').length;

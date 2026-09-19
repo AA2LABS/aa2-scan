@@ -3,8 +3,9 @@ import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'r
 import { router } from 'expo-router';
 import { useTheme, dl, type Tokens } from '@/lib/theme-mode';
 import {
-  STUDY_PATHS, SHELF, pathMinutes, readyModules,
-  type StudyPath, type StudyModule,
+  STUDY_PATHS, SHELF, SHELF_NAMES, SHELF_COUNT, AUDIBLE_COUNT, shelf,
+  pathMinutes, readyModules,
+  type StudyPath, type StudyModule, type ShelfKey,
 } from '@/lib/study-content';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -81,28 +82,44 @@ export default function StudyScreen() {
         {/* ── THE SHELF ─────────────────────────────────────────────── */}
         <Text style={s.legend}>THE SHELF · WHAT YOU ALREADY OWN</Text>
         <Text style={s.legendBody}>
-          Listed because you said you hold it. Every link is an Audible search, not a product
-          claim — no specific audio edition has been verified.
+          {SHELF_COUNT} titles catalogued, {AUDIBLE_COUNT} of them on Audible. Every row is a book
+          you hold. Links are Audible searches, never product claims.
         </Text>
-        <View style={s.card}>
-          {SHELF.map((b, i) => (
-            <View key={b.title} style={[s.shelfRow, i === SHELF.length - 1 && s.last]}>
-              <View style={{ flex: 1 }}>
-                <Text style={s.shelfTitle}>{b.title}</Text>
-                <Text style={s.shelfAuthor}>{b.author}</Text>
-                {b.note ? <Text style={s.shelfNote}>{b.note}</Text> : null}
+
+        {(Object.keys(SHELF_NAMES) as ShelfKey[]).map(k => {
+          const books = shelf(k);
+          if (!books.length) return null;
+          return (
+            <View key={k}>
+              <View style={s.shelfHead}>
+                <Text style={s.shelfName}>{SHELF_NAMES[k]}</Text>
+                <Text style={s.shelfCount}>{books.length}</Text>
               </View>
-              <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                <Text style={[s.fmt, b.format === 'print' && s.fmtPrint]}>
-                  {b.format.toUpperCase()}
-                </Text>
-                <TouchableOpacity onPress={() => open(b.audible)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-                  <Text style={s.audible}>AUDIBLE ↗</Text>
-                </TouchableOpacity>
+              <View style={s.card}>
+                {books.map((b, i) => (
+                  <View key={b.title} style={[s.shelfRow, i === books.length - 1 && s.last]}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.shelfTitle}>{b.title}</Text>
+                      <Text style={s.shelfAuthor}>{b.author}</Text>
+                      {b.note ? <Text style={s.shelfNote}>{b.note}</Text> : null}
+                    </View>
+                    <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                      <Text style={[s.fmt, b.format === 'print' && s.fmtPrint]}>
+                        {b.format === 'both' ? 'BOTH' : b.format.toUpperCase()}
+                      </Text>
+                      {b.format !== 'print' && (
+                        <TouchableOpacity onPress={() => open(b.audible)}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                          <Text style={s.audible}>AUDIBLE ↗</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  </View>
+                ))}
               </View>
             </View>
-          ))}
-        </View>
+          );
+        })}
 
         <Text style={s.foot}>You learn what you scan. You keep what you check.</Text>
       </ScrollView>
@@ -244,6 +261,10 @@ const make = (T: Tokens) => {
     audTxt: { color: MUT, fontSize: 10, letterSpacing: 1.3 },
     audArrow: { fontSize: 13, fontWeight: '700' },
 
+    shelfHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
+      marginTop: 22, marginBottom: 8 },
+    shelfName: { color: SAND, fontSize: 9, letterSpacing: 1.6, fontWeight: '700' },
+    shelfCount: { color: FAINT, fontSize: 9, letterSpacing: 1.2 },
     legend: { color: FAINT, fontSize: 10, letterSpacing: 1.8, marginTop: 26, marginBottom: 6 },
     legendBody: { color: MUT, fontSize: 11, lineHeight: 17, marginBottom: 12 },
     card: { backgroundColor: CARD, borderWidth: 1, borderColor: LINE, borderRadius: 6 },
