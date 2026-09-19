@@ -264,6 +264,49 @@ export default function VaultScreen() {
         </View>
       </View>
 
+      {/* WHITE LABEL — Panel 05's "one engine, many countries" row, wired
+          2026-09-19. Panama is the live instance; the other two are declared
+          and marked NOT YET LIVE rather than drawn as if they shipped. */}
+      <Text style={st.sectionLabel}>WHITE LABEL · ONE ENGINE · MANY COUNTRIES</Text>
+      <Text style={st.payDoctrine}>
+        The card is country-agnostic. The brand wears the country instance —
+        Panama, Costa Rica, Mexico — without changing the engine beneath.
+      </Text>
+      <View style={st.instRow}>
+        {[
+          ['AA2 PANAMA',     'USD · BIOMEMBRANE', true],
+          ['AA2 COSTA RICA', 'CRC · BIOMEMBRANE', false],
+          ['AA2 MEXICO',     'MXN · BIOMEMBRANE', false],
+        ].map(([nm, cur, live]) => (
+          <View key={String(nm)} style={[st.inst, live ? st.instLive : null]}>
+            <Text style={[st.instName, live ? st.instNameLive : null]}>{nm}</Text>
+            <Text style={st.instCur}>{cur}</Text>
+            {!live && <Text style={st.instSoon}>NOT YET LIVE</Text>}
+          </View>
+        ))}
+      </View>
+
+      {/* TRAVEL MODE — Panel 05's border-crossing strip. The panel shows a
+          completed switch; there is no location engine on the card yet, so the
+          row declares what the switch WILL carry and says plainly that it is
+          not armed. NO FAKE DATA. */}
+      <Text style={st.sectionLabel}>TRAVEL MODE · INSTANCE SWITCH</Text>
+      <View style={st.card}>
+        <Text style={st.loopIntro}>
+          When the border is crossed the instance switches without being told —
+          scanner region, cannabis layer, emergency number, FX and the dossier
+          all follow the country, not the phone.
+        </Text>
+        <View style={st.swRow}>
+          {['SCANNER · REGION', 'CANNABIS LAYER', 'EMERGENCY · LOCAL', 'FX · LIVE', 'DOSSIER'].map(k => (
+            <View key={k} style={st.swChip}><Text style={st.swTxt}>{k}</Text></View>
+          ))}
+        </View>
+        <View style={st.dcBadge}>
+          <Text style={st.dcBadgeTxt}>NOT ARMED · NO CARD RAIL</Text>
+        </View>
+      </View>
+
       {/* DOCTRINE FEED — the panel's "last 6 swipes", made honest: the last
           six times a scan changed a purchase, straight from the ledger. */}
       <Text style={st.sectionLabel}>DOCTRINE FEED · LAST {feed.length || 6}</Text>
@@ -337,6 +380,16 @@ const makeSt = (T: Tokens) => {
   back:        { position: 'absolute', top: 44, left: 16, paddingHorizontal: 10, paddingVertical: 6 },
   backTxt:     { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 2, color: dl(T, 'rgba(255,255,255,0.7)', 'rgba(0,0,0,0.66)') },
 
+  instRow:     { flexDirection: 'row', gap: 8, paddingHorizontal: 16 },
+  inst:        { flex: 1, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 4, padding: 10, opacity: 0.45 },
+  instLive:    { borderColor: GOLD, opacity: 1 },
+  instName:    { fontFamily: 'DMMono-Regular', fontSize: 9, letterSpacing: 1.2, color: INK },
+  instNameLive:{ color: GOLD },
+  instCur:     { fontFamily: 'DMMono-Regular', fontSize: 7, letterSpacing: 1.1, color: INK, opacity: 0.5, marginTop: 4 },
+  instSoon:    { fontFamily: 'DMMono-Regular', fontSize: 7, letterSpacing: 1.1, color: INK, opacity: 0.4, marginTop: 6 },
+  swRow:       { flexDirection: 'row', flexWrap: 'wrap', gap: 6, paddingHorizontal: 14, paddingBottom: 12 },
+  swChip:      { borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', borderRadius: 3, paddingHorizontal: 8, paddingVertical: 5 },
+  swTxt:       { fontFamily: 'DMMono-Regular', fontSize: 8, letterSpacing: 1.1, color: INK, opacity: 0.6 },
   sectionLabel:{ fontFamily: 'DMMono-Regular', fontSize: 9.5, letterSpacing: 2, color: GOLD, paddingHorizontal: 16, paddingTop: 18, paddingBottom: 7 },
 
   card:        { marginHorizontal: 12, marginBottom: 10, backgroundColor: dl(T, 'rgba(255,255,255,0.05)', 'rgba(0,0,0,0.03)'), borderWidth: 1, borderColor: LINE, borderRadius: 16, overflow: 'hidden' },
