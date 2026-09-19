@@ -9,6 +9,13 @@ export default function DepthOnDemandScreen() {
   const home = p?.homeLocation ?? null;
 
   const rows: Row[] = [
+    // THE STUDY LAYER — wired 2026-09-19. Doctrine says Spoke 17 carries the
+    // instructor lesson modules; this is the door to them.
+    { icon: '▤', title: 'The Study Layer',
+      desc: 'Dellis · Hunter · Yapko · Prosocial · the BCH exam. Every session points at the requirement it feeds and cites where it came from.',
+      chip: '5 PATHS', chipColor: SAND,
+      route: '/study' },
+
     { icon: '◎', title: 'Tied To What You Scan',
       desc: 'Every flagged chemical opens a lesson. Depth only when you ask for it.',
       chip: 'LIVE', chipColor: SAND },
