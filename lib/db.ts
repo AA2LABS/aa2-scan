@@ -869,3 +869,203 @@ export async function saveCookbookRecipe(params: {
     console.log('[db.ts] saveCookbookRecipe failed silently:', e);
   }
 }
+
+// ─── THE RETENTION LAYER · SPOKE 17 ──────────────────────────────────────────
+// 2026-09-19. Study sessions and recall checks.
+//
+// SOVEREIGNTY DOCTRINE holds: these are the only doors to study_sessions and
+// recall_checks. No screen touches Supabase.
+//
+// NO NAKED NUMBERS — nothing below returns a score. getRetentionRecord returns
+// COUNTS, and every rate the member sees is rendered beside the counts that
+// produced it. A rate with no denominator is a lie with a decimal point.
+//
+// SERVE THE TABLE — an unanswered check is UNANSWERED. It is never counted as
+// a miss, never shown as overdue in red, never used to tell the member they
+// are behind.
+
+export type StudySession = {
+  id: string; pathSlug: string; moduleId: string; moduleLabel: string | null;
+  startedAt: string; endedAt: string | null; minutes: number | null;
+  felt: 'locked' | 'ordinary' | 'scattered' | null; note: string | null;
+};
+
+export type RecallCheck = {
+  id: string; sessionId: string; prompt: string; intervalDay: number;
+  dueAt: string; answeredAt: string | null; held: boolean | null;
+  moduleLabel?: string | null; pathSlug?: string | null;
+};
+
+/** Open a session. Returns the id, or null if there is no auth user. */
+export async function startStudySession(input: {
+  pathSlug: string; moduleId: string; moduleLabel?: string;
+}): Promise<string | null> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const { data, error } = await supabase.from('study_sessions').insert({
+      user_id: user.id,
+      path_slug: input.pathSlug,
+      module_id: input.moduleId,
+      module_label: input.moduleLabel ?? null,
+    }).select('id').single();
+    if (error) { console.log('[db.ts] startStudySession:', error.message); return null; }
+    return data?.id ?? null;
+  } catch (e) { console.log('[db.ts] startStudySession failed:', e); return null; }
+}
+
+/**
+ * Close a session and schedule its recall checks at +1, +3, +7 and +30 days.
+ * The prompts come from lib/study-content.ts — the member's own module, our
+ * wording, never the book's.
+ */
+export async function endStudySession(input: {
+  sessionId: string; minutes: number;
+  felt?: 'locked' | 'ordinary' | 'scattered'; note?: string;
+  prompts: string[];
+}): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+
+    const { error: ue } = await supabase.from('study_sessions').update({
+      ended_at: new Date().toISOString(),
+      minutes:  input.minutes,
+      felt:     input.felt ?? null,
+      note:     input.note ?? null,
+    }).eq('id', input.sessionId).eq('user_id', user.id);
+    if (ue) { console.log('[db.ts] endStudySession:', ue.message); return false; }
+
+    const now = Date.now();
+    const rows = [1, 3, 7, 30].flatMap(day =>
+      input.prompts.map(p => ({
+        user_id: user.id,
+        session_id: input.sessionId,
+        prompt: p,
+        interval_day: day,
+        due_at: new Date(now + day * 86400000).toISOString(),
+      })));
+    if (rows.length) {
+      const { error: ie } = await supabase.from('recall_checks').insert(rows);
+      if (ie) console.log('[db.ts] recall schedule:', ie.message);
+    }
+    return true;
+  } catch (e) { console.log('[db.ts] endStudySession failed:', e); return false; }
+}
+
+/** Checks that have come due and have not been answered. Oldest first. */
+export async function getDueRecallChecks(limit = 20): Promise<RecallCheck[]> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+    const { data, error } = await supabase
+      .from('recall_checks')
+      .select('id, session_id, prompt, interval_day, due_at, answered_at, held, study_sessions(module_label, path_slug)')
+      .eq('user_id', user.id)
+      .is('answered_at', null)
+      .lte('due_at', new Date().toISOString())
+      .order('due_at', { ascending: true })
+      .limit(limit);
+    if (error) { console.log('[db.ts] getDueRecallChecks:', error.message); return []; }
+    return (data ?? []).map((r: any) => ({
+      id: r.id, sessionId: r.session_id, prompt: r.prompt,
+      intervalDay: r.interval_day, dueAt: r.due_at,
+      answeredAt: r.answered_at, held: r.held,
+      moduleLabel: r.study_sessions?.module_label ?? null,
+      pathSlug:    r.study_sessions?.path_slug ?? null,
+    }));
+  } catch (e) { console.log('[db.ts] getDueRecallChecks failed:', e); return []; }
+}
+
+/** One tap. Held, or did not hold. */
+export async function answerRecallCheck(id: string, held: boolean): Promise<boolean> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    const { error } = await supabase.from('recall_checks')
+      .update({ held, answered_at: new Date().toISOString() })
+      .eq('id', id).eq('user_id', user.id);
+    if (error) { console.log('[db.ts] answerRecallCheck:', error.message); return false; }
+    return true;
+  } catch (e) { console.log('[db.ts] answerRecallCheck failed:', e); return false; }
+}
+
+export type RetentionRecord = {
+  sessions: number; minutes: number;
+  answered: number; held: number; pending: number;
+  /** Per interval: how many answered and how many held. Counts, never a rate. */
+  byInterval: { day: number; answered: number; held: number }[];
+  /** Per path: same shape. */
+  byPath: { pathSlug: string; sessions: number; minutes: number; answered: number; held: number }[];
+  /** By how the member said the session FELT. The correlation nobody sells. */
+  byFelt: { felt: string; sessions: number; answered: number; held: number }[];
+};
+
+/**
+ * The cumulative record. Returns counts only — the screen renders the rate
+ * beside the counts that produced it, never alone.
+ */
+export async function getRetentionRecord(): Promise<RetentionRecord> {
+  const empty: RetentionRecord = {
+    sessions: 0, minutes: 0, answered: 0, held: 0, pending: 0,
+    byInterval: [], byPath: [], byFelt: [],
+  };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return empty;
+
+    const [{ data: ss }, { data: rc }] = await Promise.all([
+      supabase.from('study_sessions')
+        .select('id, path_slug, minutes, felt').eq('user_id', user.id),
+      supabase.from('recall_checks')
+        .select('session_id, interval_day, held, answered_at').eq('user_id', user.id),
+    ]);
+
+    const sessions = ss ?? [];
+    const checks   = rc ?? [];
+    const sessById = new Map(sessions.map((s: any) => [s.id, s]));
+
+    const answered = checks.filter((c: any) => c.answered_at != null);
+    const held     = answered.filter((c: any) => c.held === true);
+
+    const bump = (m: Map<string, any>, k: string, seed: any) => {
+      if (!m.has(k)) m.set(k, { ...seed });
+      return m.get(k);
+    };
+
+    const iv = new Map<string, any>();
+    for (const c of answered) {
+      const r = bump(iv, String(c.interval_day), { day: c.interval_day, answered: 0, held: 0 });
+      r.answered++; if (c.held === true) r.held++;
+    }
+
+    const bp = new Map<string, any>();
+    for (const s of sessions) {
+      const r = bump(bp, s.path_slug, { pathSlug: s.path_slug, sessions: 0, minutes: 0, answered: 0, held: 0 });
+      r.sessions++; r.minutes += Number(s.minutes) || 0;
+    }
+    const bf = new Map<string, any>();
+    for (const s of sessions) {
+      if (!s.felt) continue;
+      const r = bump(bf, s.felt, { felt: s.felt, sessions: 0, answered: 0, held: 0 });
+      r.sessions++;
+    }
+    for (const c of answered) {
+      const s: any = sessById.get(c.session_id);
+      if (!s) continue;
+      const rp = bp.get(s.path_slug); if (rp) { rp.answered++; if (c.held === true) rp.held++; }
+      if (s.felt) { const rf = bf.get(s.felt); if (rf) { rf.answered++; if (c.held === true) rf.held++; } }
+    }
+
+    return {
+      sessions: sessions.length,
+      minutes:  sessions.reduce((n: number, s: any) => n + (Number(s.minutes) || 0), 0),
+      answered: answered.length,
+      held:     held.length,
+      pending:  checks.length - answered.length,
+      byInterval: [...iv.values()].sort((a, b) => a.day - b.day),
+      byPath:     [...bp.values()].sort((a, b) => b.minutes - a.minutes),
+      byFelt:     [...bf.values()],
+    };
+  } catch (e) { console.log('[db.ts] getRetentionRecord failed:', e); return empty; }
+}

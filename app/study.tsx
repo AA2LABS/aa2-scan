@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { router } from 'expo-router';
+import { router, type Href } from 'expo-router';
 import { useTheme, dl, type Tokens } from '@/lib/theme-mode';
 import {
   STUDY_PATHS, SHELF, SHELF_NAMES, SHELF_COUNT, AUDIBLE_COUNT, shelf,
@@ -72,6 +72,15 @@ export default function StudyScreen() {
         <Text style={s.scopeNote}>
           Scoped, not targeted. Nothing here counts down at you or says you are behind.
         </Text>
+
+        <TouchableOpacity style={s.recCta} activeOpacity={0.85}
+          onPress={() => router.push('/retention' as Href)}>
+          <View style={{ flex: 1 }}>
+            <Text style={s.recTitle}>The Retention Record</Text>
+            <Text style={s.recSub}>Not how long you studied — what you still hold.</Text>
+          </View>
+          <Text style={s.recArrow}>→</Text>
+        </TouchableOpacity>
 
         {STUDY_PATHS.map(p => (
           <PathCard key={p.slug} s={s} p={p}
@@ -160,7 +169,7 @@ function PathCard({ s, p, open: isOpen, onToggle }: {
             </TouchableOpacity>
           </View>
 
-          {p.modules.map(m => <ModuleRow key={m.id} s={s} m={m} accent={p.accent} />)}
+          {p.modules.map(m => <ModuleRow key={m.id} s={s} m={m} accent={p.accent} pathSlug={p.slug} />)}
 
           <TouchableOpacity style={s.audRow} onPress={() => open(p.audible)} activeOpacity={0.8}>
             <Text style={s.audTxt}>
@@ -174,7 +183,7 @@ function PathCard({ s, p, open: isOpen, onToggle }: {
   );
 }
 
-function ModuleRow({ s, m, accent }: { s: any; m: StudyModule; accent: string }) {
+function ModuleRow({ s, m, accent, pathSlug }: { s: any; m: StudyModule; accent: string; pathSlug: string }) {
   const [show, setShow] = useState(false);
   const pending = m.status !== 'ready';
   return (
@@ -198,6 +207,12 @@ function ModuleRow({ s, m, accent }: { s: any; m: StudyModule; accent: string })
             <Text key={i} style={s.recall}>· {r}</Text>
           ))}
           <Text style={s.heldNote}>One tap: held, or did not hold. No score, ever.</Text>
+          {!pending && (
+            <TouchableOpacity activeOpacity={0.85} style={[s.startBtn, { borderColor: accent }]}
+              onPress={() => router.push(`/study-session?path=${pathSlug}&module=${m.id}` as Href)}>
+              <Text style={[s.startTxt, { color: accent }]}>START THIS SESSION →</Text>
+            </TouchableOpacity>
+          )}
         </View>
       )}
     </View>
@@ -261,6 +276,13 @@ const make = (T: Tokens) => {
     audTxt: { color: MUT, fontSize: 10, letterSpacing: 1.3 },
     audArrow: { fontSize: 13, fontWeight: '700' },
 
+    recCta: { flexDirection: 'row', alignItems: 'center', gap: 12, marginTop: 18, marginBottom: 8,
+      borderWidth: 1, borderColor: SAND, borderRadius: 6, padding: 14 },
+    recTitle: { color: SAND, fontSize: 14, fontWeight: '700' },
+    recSub: { color: MUT, fontSize: 11, lineHeight: 16, marginTop: 3 },
+    recArrow: { color: SAND, fontSize: 17, fontWeight: '700' },
+    startBtn: { borderWidth: 1, borderRadius: 4, paddingVertical: 10, alignItems: 'center', marginTop: 10 },
+    startTxt: { fontSize: 10, letterSpacing: 1.4, fontWeight: '700' },
     shelfHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end',
       marginTop: 22, marginBottom: 8 },
     shelfName: { color: SAND, fontSize: 9, letterSpacing: 1.6, fontWeight: '700' },
