@@ -20,8 +20,14 @@ export default function TravelScreen() {
       desc: meds ? 'Your medications travel in the dossier, border-ready.' : 'No medications on file.',
       chip: meds ? 'ON FILE' : 'NONE', chipColor: meds ? ORANGE : GREEN },
     { icon: '◈', title: 'Travel Dossier',
-      desc: 'Safety · allergen · medical · language · routes — compiled and printable.',
-      chip: 'API PENDING', chipColor: AMBER },
+      desc: 'Safety · allergen · medical · emergency · cannabis · language · altitude · border · dispensary · routes · competition. Eleven modules, compiled before departure.',
+      chip: 'OPEN', chipColor: ORANGE,
+      route: '/travel-dossier' },
+
+    { icon: '◇', title: 'Build the Dossier',
+      desc: 'Six questions decide which of the eleven modules compile. Nothing compiles that is not needed.',
+      chip: '6 QUESTIONS', chipColor: ORANGE,
+      route: '/travel-dossier-builder' },
   ];
 
   return (
