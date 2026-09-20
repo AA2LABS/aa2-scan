@@ -146,27 +146,62 @@ const PROSOCIAL: StudyPath = {
 };
 
 // ─── 3 · YAPKO — FOUNDATIONS OF CLINICAL HYPNOSIS ────────────────────────────
-// 12 recorded sessions, 13.0 CE hours, post-test at 80% for the certificate.
-// Module TITLES are inside the PESI portal — not published, so not invented.
+// 12 recorded sessions, ~1 hour each. 13.0 CE hours. Post-test at 80% for the
+// certificate of completion.
+//
+// THE SESSIONS HAVE NO INDIVIDUAL TITLES. They are labelled "Clinical Hypnosis
+// Session One Training" and so on, straight through. There is nothing to fill
+// in and this file no longer pretends otherwise.
+//
+// The ARC below is Yapko's own, stated by him in the opening minutes of
+// Session 1: the first few sessions cover fundamentals, basic concepts,
+// terminology and theoretical perspectives; the later sessions cover the
+// structural elements — methods of induction, producing hypnotic phenomena,
+// and the nature of clinical interventions — with special attention to
+// anxiety, depression and pain. That is his description of his own course,
+// not a table of contents invented here.
 const YAPKO: StudyPath = {
   slug: 'yapko-foundations',
   audible: 'https://www.audible.com/search?keywords=Michael+Yapko+Trancework',
   title: 'Foundations of Clinical Hypnosis',
   author: 'Michael D. Yapko, PhD',
-  provider: 'PESI / Psychotherapy Networker · product NRS001942 · $199.99 · 13.0 CE hrs',
+  provider: 'PESI / Psychotherapy Networker · NRS001942 · $199.99 · 13.0 CE hrs',
   source: 'https://catalog.psychotherapynetworker.org/sales/pn_c_001942_clinicalhypnosis_organic-827750',
-  sourceNote: '12 modules confirmed. Titles live inside the PESI portal and are NOT published — filled on first sign-in, never guessed. CE hours do not apply without a licence; the certificate of completion does.',
+  sourceNote: '12 sessions of roughly an hour each, numbered not titled. CE hours do not apply without a licence; the certificate of completion does, and it is gated behind a post-test at 80%. Transcripts are provided — search them for the terminology discussion.',
   feeds: 'Certificate of completion · post-test at 80%',
   accent: '#1BB8FF',
-  modules: Array.from({ length: 12 }, (_, i) => ({
-    id: `y${i + 1}`,
-    label: `Module ${String(i + 1).padStart(2, '0')} — title pending portal`,
-    intent: 'Watch once without notes. Watch again and record what you would say differently.',
-    scope: 65,
-    recall: ['What was the single technique in this module?',
-             'Could you demonstrate it without the video?'],
-    status: 'pending-portal' as ModuleStatus,
-  })),
+  modules: [
+    { id: 'y1', label: 'Session 01 — the opening and the arc', scope: 65, status: 'ready',
+      intent: 'Watch once without notes. He lays out the whole course progression in the first two minutes and tells his own origin story. Note his vocabulary: he never says hypnotherapy.',
+      recall: ['What does he say the course covers, in order?',
+               'What is an induction — in his words?'] },
+    { id: 'y2', label: 'Session 02 — fundamentals and terminology', scope: 65, status: 'ready',
+      intent: 'THE ONE TO WATCH CLOSELY. Terminology is where the line between hypnosis and therapy gets drawn. Search the transcript for "not a therapy", "hypnosis is not", "a tool", "vehicle". Screenshot what you find.',
+      recall: ['Is hypnosis a therapy, or something used inside one?',
+               'Which words does he use, and which does he avoid?'] },
+    { id: 'y3', label: 'Session 03 — concepts and theoretical perspectives', scope: 65, status: 'ready',
+      intent: 'The competing models. The BCH examiners honour any theory "clearly and logically presented" — so pick the one you can defend and know why.',
+      recall: ['Name the main theoretical perspectives.',
+               'Which one matches what you actually believe, and why?'] },
+    ...Array.from({ length: 5 }, (_, i) => ({
+      id: `y${i + 4}`,
+      label: `Session 0${i + 4} — structure: induction and hypnotic phenomena`,
+      intent: 'Technique block. Watch once, then run it on yourself and record it before moving on. Reading about an induction is not knowing one.',
+      scope: 65,
+      recall: ['Can you run this without the video?',
+               'What went differently when you did it than when he did it?'],
+      status: 'ready' as ModuleStatus,
+    })),
+    ...Array.from({ length: 4 }, (_, i) => ({
+      id: `y${i + 9}`,
+      label: `Session ${String(i + 9).padStart(2, '0')} — clinical intervention: anxiety, depression, pain`,
+      intent: 'His stated speciality. Watch for WHAT he does, not what he treats — the structure is yours to use; the diagnosis is not your lane.',
+      scope: 65,
+      recall: ['What is the structure of the intervention?',
+               'Which part of this belongs to the licensed lane, and which is method?'],
+      status: 'ready' as ModuleStatus,
+    })),
+  ],
 };
 
 // ─── 4 · DELLIS — REMEMBER IT! ───────────────────────────────────────────────
