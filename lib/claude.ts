@@ -75,6 +75,8 @@ export async function claudeCall(opts: {
   content?: unknown;
   maxTokens?: number;
   model?: string;
+  /** 'heka' = THE CONCIERGE speaking for HEKA. The broker builds the rules server side. */
+  lane?: 'heka';
 }): Promise<BrokerReply> {
   const base = (process.env.EXPO_PUBLIC_SUPABASE_URL ?? '').trim();
   if (!base) {
@@ -89,6 +91,7 @@ export async function claudeCall(opts: {
         model: opts.model ?? MODEL,
         max_tokens: opts.maxTokens ?? 1800,
         ...(opts.system ? { system: opts.system } : {}),
+        ...(opts.lane ? { lane: opts.lane } : {}),
         ...(opts.content !== undefined ? { content: opts.content } : { user: opts.user ?? '' }),
       }),
     });

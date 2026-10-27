@@ -22,9 +22,11 @@ import { TheRoom } from '@/components/TheRoom';
 import { dl, lc, useTheme, type Tokens } from '@/lib/theme-mode';
 import {
   getLiveReadout, getOuraToken, saveOuraToken, syncOura, syncWhoop, syncStrava,
-  importGarminExport, importStravaExport, importOuraExport, importWhoopExport, getStackConsensus, getCoverage,
+  importGarminExport, importStravaExport, importOuraExport, importWhoopExport, importMuseExport, getStackConsensus, getCoverage,
   type LiveReadout, type BiosignalSource, type StackConsensus, type SourceCoverage,
 } from '../../lib/biosignals';
+// LAW 9 · BATTERY ON THE SENSING FACE — wired 2026-10-27, owed since 2026-09-04.
+import { getBatteryStates, type BatteryState } from '../../lib/battery';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BIO BUDDY — Spoke 5 · The Nervous System · Intelligence 0X03
@@ -74,7 +76,38 @@ const PAGES = ['STEP 1 · THE DOOR', 'STEP 2 · CONTROL PANEL · FLOOD', 'STEP 3
 // a partial stack is never shown here as a body missing organs. FOMO, not
 // remorse: nobody is less than a whole person; AA2 monitors all of you a
 // little bit at a time.
-const DEVICES: { key: string; name: string; dot: string; site: string; organ: string; alt?: string; port?: boolean; condition?: boolean }[] = [
+/**
+ * ─── THE READABLE LAW · FOUNDER ORDER 2026-10-26 ────────────────────────────
+ *
+ *   "take everything out that stack that is not able to be read live
+ *    off the control panel"
+ *
+ * THE CONTROL PANEL IS THE SENSING FACE. It reads. A row that cannot report
+ * is not a quiet instrument — it is the panel claiming a channel it does not
+ * have. Twelve rows where five can answer is the screen overstating how much
+ * of the member is actually being read, and that is the one thing a sensing
+ * face must never do.
+ *
+ * `readable` is a property of THE WIRE, never of the member's stack. THE
+ * MEMBRANE (page 3) still lists every instrument he owns — that is where FOMO
+ * lives, per LAW 22. This flag only governs what the sensing face claims it
+ * can hear.
+ *
+ * WHY EACH ONE IS OFF, so no row is ever dropped silently:
+ *   Muse S Athena    — the Crown's CSV lane lands with the next build and OSC
+ *                      after that. One word flips it back.
+ *   Meta Oakley      — no source, and the panel's old `58 bpm` had no witness
+ *                      anywhere in the canon.
+ *   Manta Sound      — a CONDITION, not a sensor. It never reported.
+ *   Ozlo Sleepbuds   — the case holds the data and ships no export. The
+ *                      canon's own words: a door with no handle.
+ *   Beats Pro 2      — in-ear heart rate is real and witnessed, but no import
+ *                      lane exists, so nothing can arrive.
+ *   Garmin Index BPM — no source key; blood pressure has nowhere to land yet.
+ *   Apollo Neuro     — an INTERVENTION, not a sensor (LAW 12). Logged as a
+ *                      dose with a timestamp, never read as a stream.
+ */
+const DEVICES: { key: string; name: string; dot: string; site: string; organ: string; alt?: string; port?: boolean; condition?: boolean; readable?: boolean }[] = [
   // THE HEAD — brain, eyes, ears
   { key: 'muse_s_athena',    name: 'Muse S Athena · THE CROWN',    dot: '#8fd6ff', site: 'head',       organ: 'brain' },
   { key: 'oakley_meta',      name: 'Meta Oakley HSTN · THE EYES',  dot: '#AA44FF', site: 'face',       organ: 'eyes' },
@@ -85,18 +118,35 @@ const DEVICES: { key: string; name: string; dot: string; site: string; organ: st
   { key: 'ozlo_sleepbuds',   name: 'Ozlo Sleepbuds + Mask · ENVIRONMENT +', dot: '#4E96C8', site: 'ears · nightstand', organ: 'ears · the room' },
   { key: 'beats_pro_2',      name: 'Beats Pro 2',                  dot: '#D4A847', site: 'ears',       organ: 'ears · heart' },
   // THE ARM — heart: WHOOP on the bicep, the cuff on the upper arm
-  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', site: 'bicep',      organ: 'heart', alt: 'whoop_5_0' },
+  { key: 'whoop_mg',         name: 'WHOOP MG 5.0',                 dot: '#7CE7C4', site: 'bicep',      organ: 'heart', alt: 'whoop_5_0', readable: true },
   { key: 'garmin_index_bpm', name: 'Garmin Index BPM',             dot: '#57B8FF', site: 'upper arm',  organ: 'heart · blood' },
   // THE WRIST
-  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF', site: 'wrist',      organ: 'heart · body' },
+  { key: 'garmin_tactix_8',  name: 'Garmin Tactix 8',              dot: '#1BB8FF', site: 'wrist',      organ: 'heart · body', readable: true },
   // THE FINGER
-  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399', site: 'finger',     organ: 'heart' },
-  // THE POCKET — THE PORT, always on (you are holding it)
-  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', site: 'pocket',     organ: 'the port', port: true },
+  { key: 'oura_ring_4',      name: 'Oura Ring 4',                  dot: '#34D399', site: 'finger',     organ: 'heart', readable: true },
+  // THE POCKET — THE HOST, always on (you are holding it)
+  { key: 'z_fold',           name: 'Samsung Z Fold · THE PORT',    dot: '#FFFFFF', site: 'pocket',     organ: 'the port', port: true, readable: true },
+  // ── THE PORT ITSELF · FOUNDER QUESTION 2026-10-26 ───────────────────────
+  //   "doesnt health connnect get a port???"
+  //
+  // It does, and it did not have one. §9.11 names Health Connect THE SINGLE
+  // PORT; LAW 23 names it "one door, not ten witnesses — the pipe is not the
+  // sensor." It is the thing that turns Garmin, WHOOP and Oura from account
+  // exports into live reads, and it is the only row on this panel that is
+  // itself a DOOR rather than an instrument. It belongs here BECAUSE of the
+  // readable law: this row is how the member learns whether the door is open.
+  //
+  // ⚠ A NAMING COLLISION IN THE CANON, SURFACED AND NOT RESOLVED. LAW 22 puts
+  // the Samsung Z Fold at "pocket / the port"; §9.11 calls Health Connect
+  // "the single port." Two different things carry one title. The phone is the
+  // HOST — the hardware running the screen. Health Connect is the PORT — the
+  // data door on it. Both rows stand until the founder rules on the title.
+  { key: 'health_connect',   name: 'Health Connect · THE PORT',    dot: '#A8E05F', site: 'phone',      organ: 'the port · every source', port: true, readable: true },
   // THE ANKLE — the touch instrument, left ankle
   { key: 'apollo',           name: 'Apollo Neuro',                 dot: '#F2B84B', site: 'left ankle', organ: 'skin · touch', alt: 'apollo_neuro' },
-  // SOFTWARE LINK
-  { key: 'strava',           name: 'Strava',                       dot: '#5CD65C', site: 'software',   organ: 'body · movement' },
+  // SOFTWARE LINK — it keeps its row because it carries the ride the watch
+  // does not own (LAW 23), and because the pipe exists today.
+  { key: 'strava',           name: 'Strava',                       dot: '#5CD65C', site: 'software',   organ: 'body · movement', readable: true },
 ];
 
 const ACTIVITY_CHIPS = ['Hiking', 'Strength', 'Backcountry Ski', 'Trail Run', 'Cycling', 'Fly Fishing', 'Ranch Work'];
@@ -145,11 +195,67 @@ const DEVICE_SOURCE: Record<string, BiosignalSource> = {
   // "i will know room temp and my temp even if i wear the manta i use the OZLO
   //  to still read the room."
   ozlo_sleepbuds: 'ozlo',
+  // ── THE CROWN TAKES ITS SEAT · 2026-10-26 ────────────────────────────────
+  // The database has accepted 'muse' since 2026-08-14, and the top of
+  // lib/biosignals.ts has carried a written note about the empty seat ever
+  // since. THIS MAP WAS THE LAST THING MISSING. With no entry here,
+  // deviceMetric() returned null for the Crown and its row read AWAITING
+  // SIGNAL forever no matter what was written to the membrane — the only
+  // instrument in the stack that MEASURES instead of infers was the one
+  // instrument on this screen that could not report.
+  muse_s_athena: 'muse',
 };
+
+/**
+ * THE CROWN'S NUMBER — RELATIVE THETA, DERIVED IN THE OPEN.
+ *
+ * Mind Monitor emits absolute band power in BELS, which is log10 of power. You
+ * cannot ratio logarithms directly, so each band is returned to linear power
+ * with 10^v before the share is taken. The derivation lives here, in code the
+ * founder can read, rather than inside a column pretending to be a reading.
+ *
+ * WHY THETA AND NOT ALPHA. Canon v70 amendment 2026-09-19 §4.4, verbatim:
+ * "Theta, not alpha. The older alpha view is stated to be not entirely true;
+ * theta is the better representation." And the ruling: "Mind Monitor work
+ * watches theta."
+ *
+ * The approved panel HTML shows this row as "α 7.8Hz". That is an alpha PEAK
+ * FREQUENCY and Mind Monitor does not record one — it records band power. A
+ * number on a screen is a capability claim like any other, so rather than
+ * manufacture 7.8Hz from data that cannot produce it, the row reports the
+ * thing actually measured. NEVER STATE A DEVICE CAPABILITY WITHOUT THE RECEIPT.
+ */
+function crownMetric(r: { eegTheta?: number | null; eegDelta?: number | null; eegAlpha?: number | null; eegBeta?: number | null; eegGamma?: number | null; eegContactGoodPct?: number | null }): string | null {
+  // LAW 23 FIRST, BEFORE ANY NUMBER IS PRINTED. Canon §9.9: "bad contact makes
+  // the file useless regardless of settings." Under 70% good contact the bands
+  // are not a softer measurement — they are not a measurement, and the row
+  // says so instead of lending a bad session the authority of a figure.
+  const contact = r.eegContactGoodPct;
+  if (contact != null && contact < 70) return `LOW CONTACT · ${Math.round(Number(contact))}%`;
+
+  const bands = [r.eegDelta, r.eegTheta, r.eegAlpha, r.eegBeta, r.eegGamma];
+  if (r.eegTheta == null) return null;
+  // A band is only comparable against bands from the same recording, so the
+  // share is computed only when every band in the set actually landed.
+  if (bands.some(b => b == null)) return `θ ${Number(r.eegTheta).toFixed(2)} B`;
+  const lin = bands.map(b => Math.pow(10, Number(b)));
+  const total = lin.reduce((a, b) => a + b, 0);
+  if (!(total > 0)) return null;
+  const thetaShare = (lin[1] / total) * 100;
+  return `θ ${Math.round(thetaShare)}%`;
+}
 
 function deviceMetric(key: string, readout: LiveReadout | null): string | null {
   // THE PORT: the phone is running this screen — active by definition, honest by definition.
-  if (norm(key) === 'z_fold') return 'ACTIVE · PORT';
+  if (norm(key) === 'z_fold') return 'ACTIVE · HOST';
+  // THE PORT REPORTS ON ITSELF. Health Connect needs a native build, an
+  // Android manifest permission and an Expo config plugin — Canon Part XXI
+  // calls it "the largest remaining wire and the highest-leverage one," and
+  // nothing in this repository imports it yet. Until it does, this row says
+  // so out loud rather than sitting quiet and letting the panel imply the
+  // door is open. The day the module lands, this line reports the number of
+  // sources flowing through it.
+  if (norm(key) === 'health_connect') return 'CLOSED · NEEDS NATIVE BUILD';
   // Manta adds no signal — it adds a CONDITION the membrane measures against (founder law 2026-08-01).
   if (norm(key) === 'manta_sound') return 'CONDITION ARMED';
   const src = DEVICE_SOURCE[norm(key)];
@@ -160,10 +266,27 @@ function deviceMetric(key: string, readout: LiveReadout | null): string | null {
   if (src === 'oura')    return r.readiness != null ? `${Math.round(Number(r.readiness))} RDY` : r.hrv != null ? `${Math.round(Number(r.hrv))} HRV` : null;
   if (src === 'strava')  return r.activity != null ? `${r.activity} mi` : null;
   if (src === 'whoop')   return r.readiness != null ? `RECOV ${Math.round(Number(r.readiness))}%` : null;
-  if (src === 'beats')   return r.hrv != null ? `${Math.round(Number(r.hrv))}ms` : null;
+  // ── BEATS PRO 2 · CORRECTED 2026-10-26 ──────────────────────────────────
+  // This row used to print `${hrv}ms`. HRV FROM THE BEATS HAS NO WITNESS.
+  // What is witnessed is HEART RATE: the device catalog carries in-ear heart
+  // rate to Apple Health, and the founder's own correction stands on the
+  // record — "They do report. You're wrong. They report from behind the ears,
+  // so they are extraordinary." The ear is a superior optical site to the
+  // wrist. None of that is a receipt for beat-to-beat variability, and Canon
+  // §9.9 refuses the identical claim for the Crown in as many words:
+  // "whether Muse exposes beat-to-beat intervals of sufficient quality for
+  // true HRV is unconfirmed. Do not assert it." The same sentence governs an
+  // earbud. So the row reports the channel that has a receipt and prints
+  // nothing for the one that does not.
+  if (src === 'beats') {
+    const hr = r.restingHr ?? r.avgHr;
+    return hr != null ? `${Math.round(Number(hr))} bpm` : null;
+  }
   // THE ROOM, in the member's own degrees. Absolute — it is a fact about the
   // room, not a deviation from him.
   if (src === 'ozlo')    return r.roomTempC != null ? `ROOM ${Number(r.roomTempC).toFixed(1)}°C` : null;
+  // THE CROWN. Last in the chain and derived in the open — see crownMetric.
+  if (src === 'muse')    return crownMetric(r);
   return null;
 }
 
@@ -225,6 +348,8 @@ export default function BioBuddyScreen() {
   const [hasOuraToken, setHasOuraToken] = useState(false);
   // THE OURA PIPE — OAuth. Founder order 2026-08-21: "MAKE A PIPE."
   const [conns, setConns] = useState<Partial<Record<ProviderKey, Connection>>>({});
+  // LAW 9 — the charge of each instrument, as reported by that instrument.
+  const [battery, setBattery] = useState<Record<string, BatteryState>>({});
   const ouraConn = conns.oura ?? null;
   const [syncing, setSyncing]   = useState<string | null>(null);
   const [syncMsg, setSyncMsg]   = useState<string | null>(null);
@@ -250,6 +375,9 @@ export default function BioBuddyScreen() {
     const [cO, cW, cS] = await Promise.all([
       connectionFor('oura'), connectionFor('whoop'), connectionFor('strava'),
     ]);
+    // LAW 9 · BATTERY ON THE SENSING FACE. Only what an instrument actually
+    // reported; nothing is inferred, and a healthy charge says nothing.
+    setBattery(await getBatteryStates());
     setConns({ oura: cO, whoop: cW, strava: cS });
     setSleepAids(aids);
     setProfile(p); setAnimals(an); setVault(v);
@@ -454,33 +582,50 @@ export default function BioBuddyScreen() {
               </View>
             </View>
 
-            {/* LIVE READOUT · FULL STACK */}
+            {/* LIVE READOUT · WHAT REPORTS */}
             <View style={st.section}>
-              <Text style={st.seclabel}>LIVE READOUT · FULL STACK</Text>
+              {/* The label followed the law. It read FULL STACK while five of
+                  thirteen rows could answer. It now names what it is. */}
+              <Text style={st.seclabel}>LIVE READOUT · WHAT REPORTS</Text>
               {!loaded ? (
                 <Text style={st.empty}>Reading your stack…</Text>
               ) : (() => {
-                // FOUNDER LAW (2026-08-01): the full stack ALWAYS shows.
-                // Straight colored line when not connected · live waveform when
-                // connected · NO BLANK STATE — that is not how you sell a product.
+                // THE READABLE LAW — FOUNDER ORDER 2026-10-26:
+                //   "take everything out that stack that is not able to be
+                //    read live off the control panel"
+                //
+                // THIS SUPERSEDES THE 2026-08-01 FULL-STACK-ALWAYS-SHOWS LAW
+                // ON THIS SECTION ONLY, per Canon Law 0.1. Logged, not erased:
+                // that law said the whole stack renders here with a flat line
+                // when unconnected so the screen never looked empty. It was
+                // right about blank states and wrong about silent ones — a
+                // flat line beside an instrument with no pipe at all is not
+                // "not connected yet," it is a channel the panel cannot hear
+                // and should never have claimed.
+                //
+                // THE MEMBRANE STILL CARRIES THE WHOLE STACK (page 3,
+                // HARDWARE STACK). Nothing is removed from what he owns.
+                //
                 // CANON STORAGE LAW: resolve every stored value to its key
                 // before matching. Legacy name rows ("Muse S Athena · THE
                 // CROWN") light their own device instead of rendering a second
                 // time as an extra with nothing behind it.
                 const connected = new Set(hardware.map(deviceKeyOf));
-                const mantaOn = sleepAids.some(a => norm(a).includes('manta'));
-                const extras = hardware.filter(h => !DEVICES.some(d => d.key === deviceKeyOf(h)));
+                // An onboarding entry AA2 has no wire for cannot report either,
+                // so an unknown extra no longer takes a seat on the sensing face.
+                const extras = hardware.filter(h =>
+                  !DEVICES.some(d => d.key === deviceKeyOf(h)) && !!DEVICE_SOURCE[norm(deviceKeyOf(h))]
+                );
                 const rows = [
-                  ...DEVICES.map(d => ({
+                  ...DEVICES.filter(d => d.readable).map(d => ({
                     key: d.key,
-                    // FULL STACK LAW: THE PORT is always on (you are holding it);
-                    // Manta arms as a condition via sleep aids; alt keys honor
-                    // prior onboarding spellings (WHOOP 5.0 → WHOOP MG 5.0 row).
+                    // A PORT is always on — the host because you are holding
+                    // it, Health Connect because a door reports its own state.
+                    // Everything else reports only once declared, and alt keys
+                    // honour prior onboarding spellings (WHOOP 5.0 → MG row).
                     on: d.port
                       ? true
-                      : d.condition
-                        ? mantaOn
-                        : connected.has(d.key) || (d.alt ? connected.has(d.alt) : false),
+                      : connected.has(d.key) || (d.alt ? connected.has(d.alt) : false),
                   })),
                   ...extras.map(h => ({ key: h, on: true })),
                 ];
@@ -491,12 +636,23 @@ export default function BioBuddyScreen() {
                   // dot. The dot stays — one instrument, one colour, both modes. A brand
                   // whose file has not landed renders no mark, never a placeholder.
                   const mark = brandMarkFor(key);
+                  // LAW 9 · SILENCE-FIRST. `speaks` is false for a healthy
+                  // charge and for a stale reading, so a row stays quiet unless
+                  // the number would change what the member does next. An
+                  // instrument that has never reported its charge renders
+                  // nothing at all — no guess, no placeholder, no decay model.
+                  const bat = on ? battery[norm(key)] : undefined;
                   return (
                     <Pressable key={i} onPress={on ? undefined : () => goPage(2)} style={st.readoutRow}>
                       <View style={[st.readoutDot, { backgroundColor: deviceDot(TH, key), opacity: on ? 1 : 0.5 }]} />
                       {mark ? <Image source={mark} style={[st.readoutMark, !on && { opacity: 0.5 }]} resizeMode="contain" /> : null}
                       <Text style={[st.readoutName, !on && { color: C.MUT }]}>{deviceName(key)}</Text>
                       <Sparkline values={on && src ? readout?.series[src] : undefined} color={deviceDot(TH, key)} />
+                      {bat?.speaks ? (
+                        <Text style={[st.readoutBat, { color: bat.level === 'critical' ? C.RED : C.GOLD }]}>
+                          {bat.level === 'critical' ? '⚠ ' : ''}{bat.percent}%
+                        </Text>
+                      ) : null}
                       <Text style={[st.readoutVal, { color: on ? deviceDot(TH, key) : C.FAINT }]}>
                         {on ? (metric ?? 'AWAITING SIGNAL') : 'CONNECT →'}
                       </Text>
@@ -1060,6 +1216,29 @@ export default function BioBuddyScreen() {
                 </Pressable>
               </View>
 
+              {/* MUSE S ATHENA · THE CROWN — MIND MONITOR CSV.
+                  Added 2026-10-26. Without this row the pipe built in
+                  lib/museImport.ts would be unreachable from the app — a lane
+                  with no door, which is the dead end the sweep exists to kill.
+                  §9.9: the Muse app returns verdicts, Mind Monitor returns the
+                  measurement, so this is the only Crown lane AA2 will read. */}
+              <View style={st.kvRow}>
+                <Pressable
+                  style={st.kv}
+                  onPress={async () => {
+                    if (syncing) return;
+                    setSyncing('muse'); setSyncMsg(null);
+                    const r = await importMuseExport();
+                    setSyncMsg(`MUSE — ${r.message}`);
+                    setSyncing(null);
+                    if (r.ok) await load();
+                  }}
+                >
+                  <Text style={st.k}>MUSE S ATHENA · THE CROWN</Text>
+                  <Text style={[st.v, { color: C.CYAN }]}>{syncing === 'muse' ? 'Reading…' : 'Import Mind Monitor CSV →'}</Text>
+                </Pressable>
+              </View>
+
               {syncMsg ? <Text style={st.empty}>{syncMsg}</Text> : null}
             </View>
 
@@ -1420,6 +1599,8 @@ const make_st = (T: Tokens) => {
   readoutRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: LINE },
   readoutDot: { width: 8, height: 8, borderRadius: 4, marginRight: 10 },
   readoutMark: { width: 20, height: 20, borderRadius: 4, marginRight: 8 },
+  // LAW 9 — the charge, and only when it changes what you do next.
+  readoutBat: { fontFamily: 'DMMono-Medium', fontSize: 9, letterSpacing: 0.6, marginRight: 8 },
   readoutName: { fontFamily: 'DMSans-Regular', fontSize: 13, color: INK, flexBasis: 112, flexShrink: 1, minWidth: 74, marginRight: 4 },
   readoutWave: { flex: 1, height: 2, borderRadius: 1, marginHorizontal: 10 },
   readoutVal: { fontFamily: 'DMMono-Regular', fontSize: 10, letterSpacing: 0.5 },

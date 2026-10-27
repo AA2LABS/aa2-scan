@@ -26,6 +26,15 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { buildPersonalTruth, loadMemberProfile, saveScan, logAwareDollarsFollowed } from '../../lib/db';
 import { scanWithVision, isVisionEmpty, TabContext } from '../../lib/scanner-vision';
+// PANEL 02 · SCAN RESULT · DOCTRINE OVERLAY — wired 2026-10-26 to the approved
+// mockup. Canon v70 amendment 2026-09-19 listed this screen as outstanding:
+// "result screen is not to panel specification."
+import { ScanResultPanel, paperCodeFor } from '../../components/ScanResultPanel';
+import { getCumulativeLoad } from '../../lib/exposure-tracker';
+// PANEL 01 · THE PROFILE SELECTOR — wired 2026-10-27. Panel 02 shipped a
+// SWITCH control on 2026-10-26 with nothing behind it; this is what is behind it.
+import { ProfileSelector, subjectsFrom, type ScanSubject } from '../../components/ProfileSelector';
+import { getAnimals } from '../../lib/db';
 import { streamClaude, extractVerdict } from '../../lib/claude-stream';
 import { supabase } from '../../lib/supabase';
 import { deviceBuyLink } from '../../lib/affiliate-links';
@@ -136,9 +145,11 @@ const verdictGlyph = (v:string) =>
 const SEVERITY_PREFIX = 'SEVERITY RULE — NON-NEGOTIABLE:\nAlways render results in severity order from most dangerous to least dangerous.\nThe most dangerous information must appear FIRST in your response.\nNever bury a warning below informational content.\nA member should never scroll to find a lethal warning.\nEMIT JSON KEYS IN EXACTLY THE ORDER GIVEN IN THE SCHEMA. "verdict" and "verdictReason" MUST be the first two keys you write, before anything else, so the member sees the decision the instant it is made.\n\n';
 
 function buildSystemPrompt(tab:string, personalTruth:string, speciesSub?:string):string {
-  const base = SEVERITY_PREFIX + `You are The Equalizer — AA2's immune system and first line of truth. Backed by 9 internal databases consulted silently.\n\nCRITICAL RULES:\n1. NEVER name any database in any user-facing field.\n2. Speak as The Equalizer in first person. Direct, calm, factual.\n3. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference.\n4. Return ONLY valid JSON — no markdown, no backticks, no preamble.\n5. Alternatives NEVER shame the user's choice. Suggest alternatives only for better value, cleaner production, or similar character. No moral judgment.\n6. If any ingredient in this product matches the member's known allergens or suspected sensitivities from their personal truth, set allergyAlert.triggered to true and name the specific allergen, ingredient, and 3 safe alternative product names.${personalTruth}`;
+  const base = SEVERITY_PREFIX + `You are The Equalizer — AA2's immune system and first line of truth. Backed by 9 internal databases consulted silently.\n\nCRITICAL RULES:\n1. NEVER name any database in any user-facing field.\n2. Speak as The Equalizer in first person. Direct, calm, factual.\n3. NEVER use the words Heimdall, Kybalion, Denzel, Logic, or any mythological reference.\n4. Return ONLY valid JSON — no markdown, no backticks, no preamble.\n5. Alternatives NEVER shame the user's choice. Suggest alternatives only for better value, cleaner production, or similar character. No moral judgment.\n6. If any ingredient in this product matches the member's known allergens or suspected sensitivities from their personal truth, set allergyAlert.triggered to true and name the specific allergen, ingredient, and 3 safe alternative product names.
+7. PANEL 02 FIELDS — allergenMatch, goalConflict, chemicalFlags, brandHistory, brand. NEVER INVENT ONE. If you do not know a product's manufacturer recall history, brandHistory is null — a fabricated count is the worst thing on the screen. If the member has declared no goal this product conflicts with, goalConflict is null. If nothing matches their allergens, allergenMatch is null. A null is a truthful blank and it renders as nothing; a guess renders as evidence.
+8. chemicalFlags carries CHEMICAL DOCTRINE, not an ingredient list. "impact" says what the chemical does over time to this biology in this context — never "contains X". Mark severity red only for an acute or compounding harm; amber for a cumulative-load concern. Order the array most dangerous first.${personalTruth}`;
 
-  const baseSchema = `{"verdict":"ALL CLEAR"|"TAKE NOTICE"|"PAY ATTENTION","verdictReason":"one sentence","productName":"string","keyFindings":["string","string","string"],"equalizerVoice":"string","chefNote":[{"recipeName":"string","cookTime":"string e.g. 25 min","ingredientCount":number},{"recipeName":"string","cookTime":"string","ingredientCount":number},{"recipeName":"string","cookTime":"string","ingredientCount":number}],"actRightDollars":"REQUIRED. Dollar amount saved. End with: That goes directly into your AA2 Vault as AWARE DOLLARS.","recallAlert":"string or null","alternatives":["string"],"allergyAlert":{"triggered":boolean,"allergen":"string","ingredient":"string","safeAlternatives":["string","string","string"]}|null}`;
+  const baseSchema = `{"verdict":"ALL CLEAR"|"TAKE NOTICE"|"PAY ATTENTION","verdictReason":"one sentence","productName":"string","keyFindings":["string","string","string"],"equalizerVoice":"string","chefNote":[{"recipeName":"string","cookTime":"string e.g. 25 min","ingredientCount":number},{"recipeName":"string","cookTime":"string","ingredientCount":number},{"recipeName":"string","cookTime":"string","ingredientCount":number}],"actRightDollars":"REQUIRED. Dollar amount saved. End with: That goes directly into your AA2 Vault as AWARE DOLLARS.","recallAlert":"string or null","alternatives":["string"],"allergyAlert":{"triggered":boolean,"allergen":"string","ingredient":"string","safeAlternatives":["string","string","string"]}|null,"brand":"string or null — manufacturer and category, e.g. NESTLÉ · CONFECTIONERY","allergenMatch":{"allergen":"string","severity":"SEVERE"|"MODERATE"|"MILD","matchedAs":["the exact ingredient words found, e.g. almonds, hazelnuts"],"onset":"string e.g. ~15 min","reactions":["RESPIRATORY","SKIN"],"primaryIngredient":boolean}|null,"goalConflict":{"goal":"the member's stated goal this product works against","conflictedBy":["the specific ingredients responsible"],"why":"one or two sentences — the mechanism, not a scolding"}|null,"chemicalFlags":[{"name":"exact chemical or additive name","role":"DYE"|"PRESERVATIVE"|"SWEETENER"|"EMULSIFIER"|"THICKENER"|"FLAVOR"|"OTHER","impact":"what it does over time to THIS biology in THIS context — never just 'contains'","severity":"red"|"amber"}],"brandHistory":{"recalls":number,"window":"string e.g. 5 YEAR PATTERN","note":"manufacturer-level pattern only, never a verdict on this item"}|null}`;
 
   if (tab==='scan')    return `${base}\n\nTAB: PACKAGED/BARCODED GOODS.\n\nReturn:\n${baseSchema}`;
   if (tab==='produce') return `${base}\n\nTAB: FRESH PRODUCE. Assess pesticide residue, ripeness, origin, EWG Dirty Dozen / Clean 15.\n\nReturn:\n${baseSchema}`;
@@ -470,6 +481,16 @@ export default function ScannerScreen() {
   const [historyVisible,     setHistoryVisible]    = useState(false);
   const [barcodeReady,       setBarcodeReady]      = useState(false);
   const [memberProfile,      setMemberProfile]     = useState<any>(null);
+  // PANEL 02 · the 30-day bar. From the member's own exposure history through
+  // lib/exposure-tracker — never from the model, which cannot know what they
+  // ate last Tuesday. null means no history yet, which renders no section at
+  // all rather than a confident zero.
+  const [cumulativeLoad,     setCumulativeLoad]    = useState<number|null>(null);
+  // PANEL 01 — who this scan is for. The same bottle is a different answer for
+  // a nine-year-old, and a worse one for a dog.
+  const [animals,            setAnimals]           = useState<any[]>([]);
+  const [subject,            setSubject]           = useState<ScanSubject|null>(null);
+  const [pickerOpen,         setPickerOpen]        = useState(false);
   const [winePanel,          setWinePanel]         = useState<'pairing'|'health'>('pairing');
   // Recipe modal state
   const [recipeModalVisible, setRecipeModalVisible] = useState(false);
@@ -503,9 +524,26 @@ export default function ScannerScreen() {
   const heroImage = TAB_HEROES[heroKey] ?? null;
 
   useEffect(() => { loadMemberProfile().then(setMemberProfile); }, []);
+  // The animals are real profiles on the membrane, so they are real scan
+  // subjects. There is no family-channel table yet, so no human dependents
+  // are invented here — the list shows exactly what the membrane holds.
+  useEffect(() => { getAnimals().then(setAnimals).catch(() => setAnimals([])); }, []);
 
   // Reset the AWARE DOLLARS log affordance whenever the scan result changes.
   useEffect(() => { setAwareState('idle'); }, [result]);
+  // PANEL 02 · THE 30-DAY CUMULATIVE LOAD. Read once a verdict exists, because
+  // the bar is context for THIS scan. Failure is silent and leaves it null —
+  // the panel then shows no load section, which is the honest state. A member
+  // never sees a load number AA2 could not actually compute.
+  useEffect(() => {
+    let alive = true;
+    const memberId = memberProfile?.memberId;
+    if (!result || !memberId) { setCumulativeLoad(null); return; }
+    getCumulativeLoad(memberId)
+      .then(v => { if (alive) setCumulativeLoad(v); })
+      .catch(() => { if (alive) setCumulativeLoad(null); });
+    return () => { alive = false; };
+  }, [result, memberProfile?.memberId]);
 
   const followAwareDollars = async () => {
     const amt = parseAwareAmount(result?.actRightDollars);
@@ -1105,8 +1143,13 @@ export default function ScannerScreen() {
                 </View>
               )}
 
-              {/* ALLERGY ALERT */}
-              {result.allergyAlert?.triggered&&(
+              {/* ALLERGY ALERT — the pre-panel card. PANEL 02 carries a fuller
+                  allergen block (severity tier, the exact words matched, onset,
+                  reaction systems), so when that data is present this simpler
+                  card stands down rather than saying the same thing twice.
+                  It still runs for every scan that returns the old shape — the
+                  warning is never lost, only de-duplicated. */}
+              {result.allergyAlert?.triggered&&!result.allergenMatch&&(
                 <View style={s.allergyAlertCard}>
                   <View style={s.allergyAlertTop}>
                     <Text style={s.allergyAlertIcon}>⚠</Text>
@@ -1139,6 +1182,79 @@ export default function ScannerScreen() {
                   <Text style={[s.verdictReason,{color:F.dimWhite}]}>{result.verdictReason}</Text>
                 </View>
               </View>
+
+              {/* ── PANEL 02 · THE EVIDENCE STACK ───────────────────────────
+                  Built to aa2_panel_02_scan_result.html, in the panel's own
+                  order, which is also the severity order: allergen → goal →
+                  chemistry → sensitivity → cumulative load → brand pattern →
+                  the Paper Layer signature → a better YES.
+
+                  It renders only while the verdict is final. A streaming
+                  partial has a verdict and nothing behind it yet, and evidence
+                  that appears half-built reads as evidence that changed its
+                  mind. */}
+              {!result.__streaming && (
+                <ScanResultPanel
+                  TH={TH}
+                  // ── WHO THIS VERDICT IS FOR ────────────────────────────────
+                  // The membrane carries `name` and `age` and nothing else of
+                  // this shape — there is no stored role and no stored
+                  // multiplier, so neither is read as if there were.
+                  //
+                  // THE ONLY RECEIPT IN CANON IS THE CHILD'S 2.0×. The Travel
+                  // Dossier states it plainly: "Child sensitivity scaling is a
+                  // first-class attribute — a nine-year-old carries a 2.0×
+                  // multiplier," and Chemical Doctrine Principle 4 says
+                  // children, animals and stressed adults are not mini adults
+                  // and that sensitivity scales dynamically.
+                  //
+                  // THE MEMBRANE ANSWERS FIRST. Migration 20261026200000 made
+                  // role and sensitivity_multiplier real columns, so a scaling
+                  // factor is now a value the member can see, correct and
+                  // disagree with instead of a number computed inside a render
+                  // function where nobody could audit it.
+                  //
+                  // ⚠ THE FALLBACK IS A DERIVATION, NOT A RULING, and it runs
+                  // only when the membrane has not been told. Canon gives the
+                  // multiplier for a nine-year-old and no ladder between nine
+                  // and adult, so rather than invent a curve this applies the
+                  // one documented figure to anyone under 18 and leaves every
+                  // adult unscaled. It scales in the direction of protection.
+                  // A finer ladder belongs in the column, not here.
+                  // PANEL 01 ANSWERS PANEL 02. Whoever is selected in the
+                  // profile sheet is who this verdict is for; with nothing
+                  // selected it falls back to the member themselves.
+                  scanningFor={(() => {
+                    const subs = subjectsFrom(memberProfile, animals);
+                    const chosen = subs.find(x => x.key === subject?.key) ?? subs[0] ?? null;
+                    if (!chosen) return null;
+                    return { name: chosen.name, role: chosen.role, age: chosen.age, multiplier: chosen.multiplier };
+                  })()}
+                  onSwitchProfile={() => setPickerOpen(true)}
+                  brand={result.brand ?? null}
+                  // The barcode the camera actually read. Panel 02 prints it
+                  // because a verdict without the thing it judged is an opinion.
+                  barcode={lastBarcodeRef.current ?? null}
+                  allergenMatch={result.allergenMatch ?? null}
+                  goalConflict={result.goalConflict ?? null}
+                  chemicalFlags={result.chemicalFlags ?? null}
+                  cumulativeLoad={cumulativeLoad}
+                  brandHistory={result.brandHistory ?? null}
+                  paperCode={paperCodeFor(
+                    `${result.productName ?? storedProductName ?? 'scan'}|${result.verdict}|${new Date().toDateString()}`
+                  )}
+                  // NEVER A BARE NO, ALWAYS A BETTER YES. The safe alternative
+                  // named against the allergen outranks the general one, and
+                  // it opens the same WHY sheet every other alternative uses —
+                  // one door, not a second mechanism.
+                  onFindAlternative={(() => {
+                    const alt =
+                      result.allergyAlert?.safeAlternatives?.[0] ??
+                      (Array.isArray(result.alternatives) ? result.alternatives[0] : undefined);
+                    return alt ? () => openWhyAlternative(alt) : undefined;
+                  })()}
+                />
+              )}
 
               {/* Fish safety tag badge */}
               {activeTab==='fish'&&result.safetyTag&&(
@@ -1704,6 +1820,19 @@ export default function ScannerScreen() {
           </TouchableOpacity>
         </SafeAreaView>
       </Modal>
+
+      {/* ── PANEL 01 · THE PROFILE SELECTOR ────────────────────────────────
+          Reached from Panel 02's SWITCH control. It offers the member and
+          every animal on the membrane, each with its own sensitivity scaling
+          and the reason for it. Chemical Doctrine Principle 4 on a sheet. */}
+      <ProfileSelector
+        TH={TH}
+        visible={pickerOpen}
+        subjects={subjectsFrom(memberProfile, animals)}
+        selectedKey={subject?.key ?? 'member'}
+        onPick={setSubject}
+        onClose={() => setPickerOpen(false)}
+      />
 
     </SafeAreaView>
   );

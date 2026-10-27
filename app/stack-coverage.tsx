@@ -196,6 +196,23 @@ export default function StackCoverageScreen() {
         </>
       )}
 
+      {/* ── THE DOOR TO THE PROOF · LAW 23 ─────────────────────────────────
+          Canon: "The spread table is the screen that turns YOUR STACK HAS YOU
+          COVERED from a checkmark into the proof." This page is the checkmark.
+          Without this row the spread table would be a room with no door, which
+          is the dead end the sweep exists to kill. */}
+      <Pressable
+        onPress={() => router.push('/spread' as any)}
+        style={[st.footCard, { borderColor: C.CYAN, marginBottom: 12 }]}
+      >
+        <Text style={[st.footLine, { color: C.CYAN }]}>THE SPREAD · SEE WHAT THEY DISAGREE ON →</Text>
+        <Text style={st.footSub}>
+          Coverage says you are covered. The spread says what the coverage found — one
+          night, every instrument that answered, and the difference on the end. The
+          Clarifier’s accuracy comes from the spread, not the average.
+        </Text>
+      </Pressable>
+
       <View style={st.footCard}>
         <Text style={st.footLine}>The prince’s stack and the peasant’s phone read the same law.</Text>
         <Text style={st.footSub}>

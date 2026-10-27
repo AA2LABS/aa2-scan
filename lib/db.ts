@@ -17,6 +17,25 @@ export type FullMemberProfile = {
   name?:              string;
   age?:               string;
   biologicalSex?:     string;
+  /**
+   * ─── SENSITIVITY IS A FIELD, NOT A GUESS ───────────────────────────────────
+   * Added 2026-10-26 with migration 20261026200000.
+   *
+   * Panel 02 leads with who the verdict is for, and the scaling factor is a
+   * life-safety value — Chemical Doctrine Principle 4: children, animals and
+   * stressed adults are not mini adults. Before these fields existed the scan
+   * screen derived both from age inside a render function, which is a number
+   * nobody could audit and nobody could correct.
+   *
+   * undefined is meaningful. It means the membrane has not been told, and the
+   * app falls back to the one documented derivation — a child carries 2.0× —
+   * rather than inventing a ladder Canon never gave.
+   */
+  role?:                  'CHILD' | 'ADULT' | 'DEPENDENT' | 'OPERATOR';
+  /** Never below 1.0. A multiplier may raise caution, never lower it. */
+  sensitivityMultiplier?: number;
+  /** NO NAKED NUMBERS: the multiplier never travels without what caused it. */
+  sensitivityReason?:     string;
   homeLocation?:      string;
   setupFor?:          string;
   conciergeName?:     string;
@@ -115,6 +134,11 @@ export async function loadMemberProfile(): Promise<FullMemberProfile | null> {
       name:               m.name             ?? undefined,
       age:                m.age              ?? undefined,
       biologicalSex:      m.biological_sex   ?? undefined,
+      // SENSITIVITY IS A FIELD. Read straight off the membrane — no derivation
+      // here and none downstream unless these come back undefined.
+      role:                  m.role ?? undefined,
+      sensitivityMultiplier: m.sensitivity_multiplier != null ? Number(m.sensitivity_multiplier) : undefined,
+      sensitivityReason:     m.sensitivity_reason ?? undefined,
       homeLocation:       m.home_location    ?? undefined,
       setupFor:           m.setup_for        ?? undefined,
       conciergeName:      m.concierge_name   ?? undefined,
@@ -1068,4 +1092,46 @@ export async function getRetentionRecord(): Promise<RetentionRecord> {
       byFelt:     [...bf.values()],
     };
   } catch (e) { console.log('[db.ts] getRetentionRecord failed:', e); return empty; }
+}
+
+/**
+ * ─── THE VISION BOARD'S OWN WINDOW ──────────────────────────────────────────
+ * Added 2026-10-27.
+ *
+ * THE DEFECT THIS CLOSES, AND IT IS SUBTLE. The Vision Board is event-sourced:
+ * app/(tabs)/concierge.tsx folds `vision_trip_added` / `vision_lang_added` and
+ * their removals into tiles. That design is correct and it does persist.
+ *
+ * What it did was call getMembraneEvents(300) — the newest 300 events OF EVERY
+ * KIND. Every scan, every sync, every device import, every armed layer writes
+ * to the same table. A member who scans a few hundred items pushes their own
+ * trip out of the window, deriveBoard never sees the `added` event, and the
+ * tile VANISHES from a board they never touched.
+ *
+ * Nothing was lost — the row is still in the table. It simply stopped being
+ * read. A goal silently disappearing off a member's Vision Board because they
+ * used the scanner too much is the opposite of what Spoke 11 is for.
+ *
+ * This asks the database for the only six event types the board cares about,
+ * so an active member's scan history can never evict their own dreams.
+ */
+export async function getVisionBoardEvents(limit = 600): Promise<any[]> {
+  try {
+    const { data: { user }, error: ue } = await supabase.auth.getUser();
+    if (ue || !user) return [];
+
+    const { data, error } = await supabase
+      .from('membrane_events')
+      .select('*')
+      .eq('user_id', user.id)
+      .in('event_type', [
+        'vision_trip_added', 'vision_trip_removed', 'vision_trip_cover',
+        'vision_lang_added', 'vision_lang_removed', 'vision_board_shared',
+      ])
+      .order('occurred_at', { ascending: false })
+      .limit(limit);
+
+    if (error) { console.log('[db.ts] getVisionBoardEvents error:', error.message); return []; }
+    return data ?? [];
+  } catch { return []; }
 }

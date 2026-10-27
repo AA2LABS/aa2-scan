@@ -422,3 +422,136 @@ export function shelf(k: ShelfKey): ShelfItem[] { return SHELF.filter(b => b.she
 /** Counts, for the Learning Center header. Real numbers, never rounded up. */
 export const SHELF_COUNT = SHELF.length;
 export const AUDIBLE_COUNT = SHELF.filter(b => b.format !== 'print').length;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BRAIN TRAIN TOOLS — added 2026-09-22.
+//
+// SPOKE 17. The paths above are what the member READS. This is what the member
+// RUNS: short practices with a start and a stop, each one repeatable, each one
+// measurable if an instrument is on.
+//
+// ── THE SAME LAW, STATED FOR TOOLS ──────────────────────────────────────────
+// AA2 CARRIES THE PATH, NEVER THE PROVIDER'S MATERIAL.
+// Every tool below is a POINTER to the author's own free download page. AA2
+// does not host the audio, does not reproduce the worksheet, and does not
+// transcribe the exercise. The member downloads it from the author, keeps
+// their own copy, and AA2 records what it did to them.
+//
+// ── WHOSE WORK THIS IS ──────────────────────────────────────────────────────
+// Dr Russ Harris publishes these free at actmindfully.com.au. His name stays
+// on every row. The member is told where it came from before they run it.
+//
+// ── THE COUPLING NOBODY ELSE HAS ────────────────────────────────────────────
+// A practice run with no instrument leaves a feeling. The same practice run
+// with the stack on leaves a record. That is the only thing AA2 adds here,
+// and it is the whole reason these sit inside the Learning Center.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type ToolKind = 'audio' | 'worksheet' | 'pack';
+
+export type BrainTool = {
+  id: string;
+  name: string;
+  author: string;
+  kind: ToolKind;
+  /** Minutes the practice itself runs. Null for a worksheet with no clock. */
+  minutes: number | null;
+  /** What it does, in AA2's words. Never the author's script. */
+  what: string;
+  /** How the member runs it here — the AA2 protocol around someone else's tool. */
+  how: string;
+  /** What to wear if they want a record instead of a memory. Never required. */
+  instrument?: string;
+  /** The member's own downloaded copy, by filename, in their own vault folder. */
+  file?: string;
+  /** The author's own free page. Always where the member gets it. */
+  source: string;
+  sourceNote: string;
+  accent: string;
+};
+
+const HARRIS_AUDIO  = 'https://www.actmindfully.com.au/free-stuff/free-audio/';
+const HARRIS_SHEETS = 'https://www.actmindfully.com.au/free-stuff/extra-bits-ebooks-worksheets-and-handouts/';
+const HARRIS = 'Dr Russ Harris · actmindfully.com.au · free';
+
+export const BRAIN_TRAIN_TOOLS: BrainTool[] = [
+  {
+    id: 'anchor-40',
+    name: 'Dropping Anchor · 40 seconds',
+    author: 'Dr Russ Harris',
+    kind: 'audio',
+    minutes: 1,
+    accent: '#D49A4A',
+    what: 'The short one. A way to get steady on the spot, without leaving the room you are standing in.',
+    how: 'This is the one you run in the moment — before the call, in the parking lot, between claims. Run it the same way every time so the reps are comparable.',
+    instrument: 'Nothing. This one is meant to work with your hands full.',
+    file: 'Drop_Anchor_40_seconds.mp3',
+    source: HARRIS_AUDIO,
+    sourceNote: HARRIS,
+  },
+  {
+    id: 'anchor-7',
+    name: 'Dropping Anchor · 7 minutes',
+    author: 'Dr Russ Harris',
+    kind: 'audio',
+    minutes: 7,
+    accent: '#D49A4A',
+    what: 'The full-length version of the same practice. Long enough for the body to actually follow.',
+    how: 'The trainable one. Same time of day, same chair, same posture. What changes over weeks is you, not the recording.',
+    instrument: 'The Crown, if you want the record. Sit two minutes before you press play and two minutes after, and the before and after belong to the same session.',
+    file: 'Drop_Anchor_7_minutes.mp3',
+    source: HARRIS_AUDIO,
+    sourceNote: HARRIS,
+  },
+  {
+    id: 'join-the-dots',
+    name: 'Join The DOTS',
+    author: 'Dr Russ Harris',
+    kind: 'worksheet',
+    minutes: null,
+    accent: '#8FA8C8',
+    what: 'An inventory of what you do to get away from what you feel, and what it costs you when you do it.',
+    how: 'Fill it once on a calm day and once on a hard day. The gap between the two is the finding — and it is yours, not a score anyone hands you.',
+    file: 'Join_The_Dots_Worksheet_Russ_Harris.pdf',
+    source: HARRIS_SHEETS,
+    sourceNote: HARRIS,
+  },
+  {
+    id: 'values-checklist',
+    name: 'A Values Checklist',
+    author: 'Dr Russ Harris',
+    kind: 'worksheet',
+    minutes: null,
+    accent: '#7FA86B',
+    what: 'A list to choose from when the question is what actually matters to you, and the blank page is not helping.',
+    how: 'This is the one that feeds the Intent and Goals layer. What the member picks here is what every later reading gets measured against.',
+    file: 'A_Values_Checklist_Russ_Harris.pdf',
+    source: HARRIS_SHEETS,
+    sourceNote: HARRIS,
+  },
+  {
+    id: 'extra-bits',
+    name: 'ACT Made Simple · The Extra Bits · 2024',
+    author: 'Dr Russ Harris',
+    kind: 'pack',
+    minutes: null,
+    accent: '#C08A5E',
+    what: 'The author’s own companion pack to the textbook, chapter by chapter.',
+    how: 'Read it beside the chapter you are on, never ahead of it. It is the practice half of the book you already own.',
+    file: 'ACT_Made_Simple_The_Extra_Bits_Russ_Harris_2024.pdf',
+    source: HARRIS_SHEETS,
+    sourceNote: HARRIS,
+  },
+];
+
+export const TOOL_COUNT = BRAIN_TRAIN_TOOLS.length;
+
+export function toolsOfKind(k: ToolKind): BrainTool[] {
+  return BRAIN_TRAIN_TOOLS.filter(t => t.kind === k);
+}
+
+export const TOOL_KIND_NAMES: Record<ToolKind, string> = {
+  audio: 'RUN IT · AUDIO',
+  worksheet: 'WORK IT · ON PAPER',
+  pack: 'BESIDE THE BOOK',
+};

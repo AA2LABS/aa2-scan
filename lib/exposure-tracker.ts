@@ -235,3 +235,36 @@ export async function getRecentExposureClasses(
   }
   return Array.from(all);
 }
+
+/**
+ * ─── THE 30-DAY CUMULATIVE LOAD, FOR PANEL 02 ───────────────────────────────
+ * Added 2026-10-26 with the scan-result panel.
+ *
+ * CHEMICAL DOCTRINE PRINCIPLE 2: "CUMULATIVE LOAD MATTERS. AA2 tracks stacking
+ * across days, weeks, environments, and stress states." The panel shows that
+ * principle as a bar, and the bar has to come from the member's own scan
+ * history — never from the model, which has no way to know what they ate last
+ * Tuesday.
+ *
+ * Returns null when there is nothing to report, so the panel renders no
+ * section at all rather than a confident zero. A member with no scan history
+ * does not have a LOW load; they have no load yet, and those are different
+ * statements.
+ */
+export async function getCumulativeLoad(memberId: string): Promise<number | null> {
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const { data, error } = await supabase
+    .from('exposure_events')
+    .select('scanned_at, verdict')
+    .eq('member_id', memberId)
+    .gte('scanned_at', since)
+    .order('scanned_at', { ascending: false })
+    .limit(500);
+
+  if (error) {
+    console.log('[exposure-tracker] getCumulativeLoad error:', error.message);
+    return null;
+  }
+  if (!data || data.length === 0) return null;
+  return computeCumulativeLoad(data as ExposureEventLite[]);
+}

@@ -6,7 +6,7 @@ import {
 import { useFocusEffect, router, type Href } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DoorCover from '@/components/DoorCover';
-import { loadMemberProfile, buildPersonalTruth, logMembraneEvent, getMembraneEvents, type FullMemberProfile } from '../../lib/db';
+import { loadMemberProfile, buildPersonalTruth, logMembraneEvent, getMembraneEvents, getVisionBoardEvents, type FullMemberProfile } from '../../lib/db';
 import { streamClaude } from '../../lib/claude-stream';
 import { conciergeVoice, VOICE_MODEL } from '../../lib/voices';
 
@@ -162,7 +162,11 @@ export default function ConciergeScreen() {
 
   const load = useCallback(async () => {
     setProfile(await loadMemberProfile());
-    const board = deriveBoard(await getMembraneEvents(300));
+    // THE BOARD ASKS FOR ITS OWN EVENTS. It used to take the newest 300 of
+    // EVERY kind, so an active scanner could push a member's own trip out of
+    // the read window and the tile would silently vanish from a board they
+    // never touched. Nothing was ever lost — it just stopped being read.
+    const board = deriveBoard(await getVisionBoardEvents(600));
     setTrips(board.trips); setLangs(board.langs);
   }, []);
   useFocusEffect(useCallback(() => { load(); }, [load]));

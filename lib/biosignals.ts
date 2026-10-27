@@ -19,6 +19,7 @@ import { fetchStravaRange } from './stravaSync';
 import { parseGarminExport, GARMIN_NIGHT_FILES, type GarminFile } from './garminImport';
 import { parseOuraExport, countNightFields } from './ouraExport';
 import { parseWhoopExport, toBiosignalRows as whoopRows } from './whoopImport';
+import { parseMuseExport, toBiosignalRows as museRows } from './museImport';
 
 /**
  * THE CROWN HAS HAD A SEAT SINCE 2026-08-14 AND NOTHING EVER SAT IN IT.
@@ -98,6 +99,33 @@ export type BiosignalRow = {
   wakeEvents?: number | null;
   vo2max?: number | null;
   vo2maxEstimated?: boolean | null;
+  /**
+   * ─── THE CROWN ────────────────────────────────────────────────────────────
+   * Added 2026-10-26 by migration 20261026190000_the_crown_lands.
+   *
+   * Band power as MIND MONITOR emits it — absolute, logarithmic, averaged
+   * across TP9 · AF7 · AF8 · TP10. Never the Muse app's calm percent, alpha
+   * peak or brain recharge score: Canon §9.9 bans vendor verdicts as truth and
+   * §9.10 forbids merging EEG with fNIRS into any single "focus" number.
+   *
+   * These are the only channels in the whole row that are MEASURED rather than
+   * inferred. Every other field above is an instrument's estimate from a pulse.
+   */
+  eegDelta?: number | null;
+  eegTheta?: number | null;
+  eegAlpha?: number | null;
+  eegBeta?: number | null;
+  eegGamma?: number | null;
+  /** Percent of samples where ALL FOUR channels reported good contact.
+   *  LAW 23: contact quality is a per-session field. Under ~70 the bands are
+   *  not a weaker measurement — they are not a measurement. */
+  eegContactGoodPct?: number | null;
+  /** The denominator. NO NAKED NUMBERS: a band never travels without the
+   *  count of samples behind it. */
+  eegSamples?: number | null;
+  /** Length of the sit. A 40-second recording and a 40-minute one are not the
+   *  same evidence and must never average together silently. */
+  eegSessionSec?: number | null;
   // The pipe is not the sensor. One heartbeat, one vote.
   originSource?: BiosignalSource | null;
 };
@@ -110,7 +138,10 @@ const NIGHT_COLUMNS =
   'time_in_bed_min, deep_min, rem_min, light_min, awake_min, efficiency_pct, ' +
   'latency_min, resting_hr, avg_hr, min_hr, spo2_avg, spo2_min, respiration_avg, ' +
   'breathing_index, skin_temp_delta, restless_moments, wake_events, vo2max, ' +
-  'vo2max_estimated, room_temp_c, room_light, room_noise_db, room_pressure';
+  'vo2max_estimated, room_temp_c, room_light, room_noise_db, room_pressure, ' +
+  // THE CROWN — the measured channels. Added 2026-10-26.
+  'eeg_delta, eeg_theta, eeg_alpha, eeg_beta, eeg_gamma, ' +
+  'eeg_contact_good_pct, eeg_samples, eeg_session_sec';
 
 export type SyncResult = { ok: boolean; days: number; message: string };
 
@@ -164,6 +195,16 @@ async function upsertReadings(rows: BiosignalRow[]): Promise<SyncResult> {
       room_light:       r.roomLight ?? null,
       room_noise_db:    r.roomNoiseDb ?? null,
       room_pressure:    r.roomPressure ?? null,
+      // THE CROWN — measured, not inferred. Null for every other instrument,
+      // and that null is the honest answer: they cannot read a brain.
+      eeg_delta:             r.eegDelta ?? null,
+      eeg_theta:             r.eegTheta ?? null,
+      eeg_alpha:             r.eegAlpha ?? null,
+      eeg_beta:              r.eegBeta ?? null,
+      eeg_gamma:             r.eegGamma ?? null,
+      eeg_contact_good_pct:  r.eegContactGoodPct ?? null,
+      eeg_samples:           r.eegSamples ?? null,
+      eeg_session_sec:       r.eegSessionSec ?? null,
     }));
 
     // NO-OVERLAP INTELLIGENCE: the membrane never double-counts a day.
@@ -277,9 +318,20 @@ export async function getLiveReadout(days = 30): Promise<LiveReadout> {
         roomLight: r.room_light ?? null,
         roomNoiseDb: r.room_noise_db ?? null,
         roomPressure: r.room_pressure ?? null,
+        eegDelta: r.eeg_delta ?? null,
+        eegTheta: r.eeg_theta ?? null,
+        eegAlpha: r.eeg_alpha ?? null,
+        eegBeta: r.eeg_beta ?? null,
+        eegGamma: r.eeg_gamma ?? null,
+        eegContactGoodPct: r.eeg_contact_good_pct ?? null,
+        eegSamples: r.eeg_samples ?? null,
+        eegSessionSec: r.eeg_session_sec ?? null,
       };
       out.latest[src] = row; // ascending order → last write wins = newest
-      const v = row.hrv ?? row.readiness ?? row.activity ?? row.sleep;
+      // THE CROWN'S SPARKLINE IS THETA. Canon amendment 2026-09-19 §4.4:
+      // "Mind Monitor work watches theta." It is last in the chain so no other
+      // instrument's row ever picks it up by accident — only Muse writes it.
+      const v = row.hrv ?? row.readiness ?? row.activity ?? row.sleep ?? row.eegTheta;
       if (v != null) (out.series[src] ??= []).push(Number(v));
     }
     return out;
@@ -784,6 +836,120 @@ export async function importStravaExport(): Promise<SyncResult> {
 // The founder's law (2026-08-01): AA2 takes the same daily data and gives an
 // assessment of all devices compared. Deterministic — computed from the
 // member's own readings, never improvised.
+/**
+ * ─── THE CROWN'S IMPORT — MIND MONITOR CSV ──────────────────────────────────
+ * Founder order 2026-10-26: "my instruments need to be wired live and showing
+ * on the dashboard."
+ *
+ * This is the lane that finally seats the instrument that has had a seat since
+ * 2026-08-14. The note at the top of this file has named the hole for two
+ * months; this closes it.
+ *
+ * WHY A FILE AND NOT THE SDK. Both exist and both are canon. §9.9: "TWO PATHS
+ * INTO AA2: CSV export via BYOB upload, or OSC streaming over Wi-Fi to an IP
+ * and port on the local network — real-time EEG into the membrane, never
+ * touching a cloud. That is the top rung." The CSV is the rung that works
+ * today with a file the founder already has; the SDK license is applied for
+ * and tracked PENDING, never re-proposed as new.
+ *
+ * THE SIZE GUARD IS NOT A LIMITATION, IT IS THE SETTINGS LAW SHOWING UP.
+ * §9.9 mandates Recording Interval → Constant for 256 samples/sec of raw. An
+ * eight-hour night at that rate is millions of rows and gigabytes — a phone
+ * cannot hold it as a string and should not try. A sit is what this lane is
+ * for. A whole night belongs to the SDK path, and the honest thing is to say
+ * so rather than crash reaching for it.
+ */
+export async function importMuseExport(): Promise<SyncResult> {
+  const picked = await DocumentPicker.getDocumentAsync({
+    type: ['text/csv', 'text/comma-separated-values', 'text/*', '*/*'],
+    multiple: true,
+    copyToCacheDirectory: true,
+  });
+  if (picked.canceled || !picked.assets?.length) {
+    return { ok: false, days: 0, message: 'Import cancelled.' };
+  }
+
+  // 48 MB is roughly a 25-minute sit at 256 Hz across the full 16-channel
+  // preset. Past that the phone is the wrong tool and saying so is the
+  // honest answer, not a silent out-of-memory.
+  const MAX_BYTES = 48 * 1024 * 1024;
+
+  try {
+    const files: { name: string; text: string }[] = [];
+    const tooBig: string[] = [];
+    for (const a of picked.assets) {
+      const nm = a.name ?? 'unnamed.csv';
+      if (!/\.csv$/i.test(nm)) continue;
+      if (typeof a.size === 'number' && a.size > MAX_BYTES) { tooBig.push(nm); continue; }
+      files.push({ name: nm, text: await FileSystem.readAsStringAsync(a.uri) });
+    }
+
+    if (!files.length) {
+      return {
+        ok: false, days: 0,
+        message: tooBig.length
+          ? `${tooBig.join(', ')} is larger than this lane can read on a phone. That is a full-night Constant-interval recording — it belongs on the SDK path, not the file path. A session-length sit imports fine.`
+          : 'No CSV in that pick. Mind Monitor writes the file to its own Recordings folder — pick it from there.',
+      };
+    }
+
+    const { sessions, ignored, notes } = parseMuseExport(files);
+
+    if (!sessions.length) {
+      const why = notes.length ? ` ${notes.join(' ')}` : '';
+      const ig = ignored.length ? ` Ignored: ${ignored.join(', ')}.` : '';
+      return {
+        ok: false, days: 0,
+        message: `No readable Mind Monitor session in that pick.${ig}${why} The file needs a TimeStamp column and at least one band column — check the preset before the next recording.`,
+      };
+    }
+
+    const res = await upsertReadings(museRows(sessions));
+    if (!res.ok) return res;
+
+    // THE RECEIPT. Every number ships with what it means: how long the sit
+    // was, how many samples stand behind the bands, and whether the sensors
+    // were actually touching skin. A member reads this line and knows whether
+    // to trust the row it just wrote.
+    const parts: string[] = [];
+    for (const s of sessions) {
+      const len = s.sessionSec != null
+        ? (s.sessionSec >= 90 ? `${Math.round(s.sessionSec / 60)} min` : `${Math.round(s.sessionSec)} sec`)
+        : 'length unknown';
+      const contact = s.contactGoodPct != null ? `${s.contactGoodPct}% good contact` : 'contact unknown';
+      parts.push(`${s.readingDate} · ${len} · ${s.samples} samples · ${contact}`);
+    }
+    const warn = notes.length ? ` ⚠ ${notes.join(' ')}` : '';
+    const ig = ignored.length ? ` Ignored: ${ignored.join(', ')}.` : '';
+
+    logMembraneEvent({
+      eventType: 'device_import',
+      sourceScreen: 'biobuddy',
+      subject: 'muse',
+      value: {
+        days: res.days,
+        lane: 'mind_monitor_csv',
+        sessions: sessions.map(s => ({
+          date: s.readingDate, samples: s.samples,
+          sessionSec: s.sessionSec, contactGoodPct: s.contactGoodPct,
+        })),
+        // PROVENANCE IS PART OF THE READING. §9.9: the 60 Hz notch filter is on
+        // by default on US power, "so the raw is pre-cleaned and AA2 must
+        // record that provenance."
+        provenance: 'Mind Monitor CSV · band power downstream of the 60 Hz notch filter',
+      },
+    });
+
+    return {
+      ok: true,
+      days: res.days,
+      message: `THE CROWN IS ON THE READOUT. ${parts.join(' · ')}.${ig}${warn}`,
+    };
+  } catch (e: any) {
+    return { ok: false, days: 0, message: String(e?.message ?? e) };
+  }
+}
+
 export type ConsensusRow = { metric: string; values: { source: BiosignalSource; label: string }[] };
 export type StackConsensus = {
   day: string | null;
@@ -1003,4 +1169,21 @@ export function separateRoomFromBody(
     line: `Skin ${skinTempDelta > 0 ? 'warmer' : 'cooler'} than your baseline while the room held at its own. The room did not do this one.`,
     confident: true,
   };
+}
+
+/**
+ * THE PORT'S WRITE DOOR. Health Connect reads the river in lib/healthConnect
+ * and lands it here, through the same upsert every other lane uses — one
+ * membrane, one table, one conflict rule. Exported rather than duplicated so
+ * the port can never drift from the file lanes.
+ */
+export async function upsertReadingsPublic(rows: BiosignalRow[]): Promise<SyncResult> {
+  const res = await upsertReadings(rows);
+  if (res.ok) {
+    logMembraneEvent({
+      eventType: 'device_sync', sourceScreen: 'biobuddy', subject: 'health_connect',
+      value: { days: res.days, lane: 'health_connect', origins: [...new Set(rows.map(r => r.originSource ?? r.source))] },
+    });
+  }
+  return res;
 }

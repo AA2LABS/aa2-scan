@@ -67,6 +67,42 @@ const CARRIED: OffRow[] = [
   { title: 'In Case of Emergency',  chip: 'READY' },
 ];
 
+/**
+ * ─── THE RIG · CARRIED WITH YOU · LAW 19 ────────────────────────────────────
+ * Wired 2026-10-27. The third OFF GRID row, owed since 2026-09-04.
+ *
+ * THIS LIST IS THE WORKED EXAMPLE OF THE FOUNDER'S OWN LAW. The Buggy and Bug
+ * Out Bag System was written in full on 2026-03-08 in Master Canon v2-1 §31,
+ * carried as a POINTER through v56–v59, and by v70 only the pointer survived.
+ * The body was recovered from the Google Drive on 2026-09-04 and the amendment
+ * closed with one sentence: "The OFF GRID face of map.tsx is owed a third row
+ * — THE RIG · CARRIED WITH YOU. It is a wire, not a rewire." This is that wire.
+ *
+ * THE PHILOSOPHY, VERBATIM FROM §31: "Redundancy. Every BE AWARE bag has a
+ * backup watch. Backup earbuds. Backup power. Anything you can afford to have
+ * redundancy in — you have it. Because when you are stranded on a hike or
+ * genuinely off-grid the primary device failure cannot mean biosignal
+ * blackout. The mesh stays alive because the redundancy was already packed."
+ *
+ * AND THE REASON IT IS NOT SURVIVAL THEATRE — the founder, 2026-09-04:
+ * "humans panic when the umbilical cord of connection to the world is about
+ * to die, so that's been high priority of my entire design." Section 5 of the
+ * Founder Message rules the tone: these are "recommended Bug-In and Bug-Out
+ * starter packages as GUIDANCE — not mandates... They are about confidence."
+ *
+ * NO CHIP CLAIMS A STATE AA2 CANNOT SEE. Every row here is a checklist item
+ * the member confirms, not a device AA2 polls. Calling one PACKED when nobody
+ * told AA2 it was packed would be the Owner's Manual Law broken on a backpack.
+ */
+const THE_RIG: OffRow[] = [
+  { title: 'Backup watch · solar + satellite', chip: 'GARMIN' },
+  { title: 'Backup earbuds',                   chip: 'AUDIO' },
+  { title: 'Backup power bank',                chip: 'MULTI-DEVICE' },
+  { title: 'Backup phone + SIM',               chip: 'NOT STRANDED' },
+  { title: 'Solar charging',                   chip: 'NO OUTLET' },
+  { title: 'Pocket charger · the ring',        chip: 'OURA' },
+];
+
 function parseDollars(text?: string | null): number | null {
   if (!text) return null;
   const m = String(text).match(/\$\s*([0-9]+(?:\.[0-9]{1,2})?)/);
@@ -616,6 +652,26 @@ End with the EQUALIZER CO-SIGN: per AA2 law the Chauffeur compiles this Dossier 
               ) : <Text style={s.offChev}>›</Text>}
             </TouchableOpacity>
           ))}
+
+          {/* ── THE RIG · LAW 19 · the third row, owed since 2026-09-04 ─────
+              Off-grid, battery is the whole constraint. This is the only list
+              on the OFF GRID face that is about staying ALIVE as a membrane
+              rather than about where to buy food. */}
+          <Text style={[s.sectionLabel, { marginHorizontal: 12, marginTop: 16 }]}>THE RIG · CARRIED WITH YOU</Text>
+          {THE_RIG.map((row, i) => (
+            <TouchableOpacity key={`rig-${i}`} style={s.offRow} onPress={() => openOffRow(row)} activeOpacity={0.7}>
+              <Text style={s.offRowTitle}>{row.title}</Text>
+              {row.chip ? (
+                <View style={[s.offChip, { borderColor: GRID.off, backgroundColor: GRID.off + '1A' }]}>
+                  <Text style={[s.offChipTxt, { color: GRID.off }]}>{row.chip}</Text>
+                </View>
+              ) : <Text style={s.offChev}>›</Text>}
+            </TouchableOpacity>
+          ))}
+          {/* GUIDANCE, NEVER A MANDATE — the Founder Message, Section 5. */}
+          <Text style={[s.offRowTitle, { marginHorizontal: 12, marginTop: 10, marginBottom: 4, opacity: 0.55, fontSize: 11.5 }]}>
+            A starter package, not a mandate. Redundancy is what keeps the mesh alive when the primary dies.
+          </Text>
         </ScrollView>
       )}
     </SafeAreaView>

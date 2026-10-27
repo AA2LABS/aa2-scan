@@ -16,6 +16,13 @@ export default function DepthOnDemandScreen() {
       chip: '5 PATHS', chipColor: SAND,
       route: '/study' },
 
+    // BRAIN TRAIN TOOLS — wired 2026-09-22. The Study Layer is what the member
+    // reads; this is what the member runs. Pointer-only, same law.
+    { icon: '◆', title: 'Brain Train Tools',
+      desc: 'Dropping Anchor, Join The DOTS, the Values Checklist, the Extra Bits. Practices with a start and a stop — run one with the stack on and you keep a record instead of a feeling.',
+      chip: '5 TOOLS', chipColor: SAND,
+      route: '/brain-train-tools' },
+
     { icon: '◎', title: 'Tied To What You Scan',
       desc: 'Every flagged chemical opens a lesson. Depth only when you ask for it.',
       chip: 'LIVE', chipColor: SAND },

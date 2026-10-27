@@ -39,6 +39,17 @@ const DOORS: Door[] = [
   // is why opening the Vault landed you on the Vision Board. It has its own
   // door art and its own screen now.
   { title: 'Vault / Aware Dollars', art: require('../../assets/doors/door-vault.jpg'),     route: '/vault' as Href },
+  // ── THE STORIES · WIRED 2026-10-27 ──────────────────────────────────────
+  // app/stories.tsx has existed the whole time and NO DOOR ANYWHERE LED TO IT
+  // — an unreachable room, with seven broken doors inside it pointing at
+  // /story-* screens that did not exist either. The seven rooms were built
+  // 2026-10-27; this is the door that finally reaches them.
+  //
+  // THE ART WAS ALREADY ON DISK. door-receipt.jpg has sat unused in
+  // assets/doors/ — staged and never wired, exactly the state the Apothecary
+  // door was found in. I AM THE RECEIPT is the right face for the room that
+  // tells AA2's own story.
+  { title: 'The Stories',     art: require('../../assets/doors/door-receipt.jpg'),         route: '/stories' as Href },
 ];
 
 export default function AA2DoorHall() {
