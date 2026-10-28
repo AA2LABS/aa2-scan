@@ -126,6 +126,26 @@ export async function portStatus(): Promise<PortStatus> {
   }
 }
 
+/**
+ * THE THIRTY-DAY FLOOR. Health Connect hands back only the last 30 days unless
+ * READ_HEALTH_DATA_HISTORY is granted on top of the channel permissions. It is
+ * declared in the Android manifest beside the eleven channels, and it is asked
+ * for HERE — but in a call of its own.
+ *
+ * Why its own call: requestPermission is all-or-nothing. On a phone whose
+ * Health Connect is too old to know this permission, putting it in the same
+ * array as the eleven channels throws, and the member ends up with NOTHING
+ * permitted because of one line AA2 added for depth. The channels are asked
+ * first and kept; history is asked second and is allowed to fail.
+ *
+ * AA2 DOES NOT CLAIM IT. getGrantedPermissions() in react-native-health-connect
+ * reverse-maps the channel permissions and the two special cases for exercise
+ * route and background access — it has no case for history, so a granted
+ * history permission never comes back over the bridge. There is no receipt, so
+ * there is no claim: the readout says what the floor is, not what was allowed.
+ */
+export const HISTORY_PERMISSION = 'ReadHealthDataHistory' as const;
+
 export async function requestAccess(): Promise<PortStatus> {
   const m = load();
   if (!m) return portStatus();
@@ -133,6 +153,9 @@ export async function requestAccess(): Promise<PortStatus> {
     await m.initialize();
     await m.requestPermission(READ_TYPES.map(recordType => ({ accessType: 'read' as const, recordType })));
   } catch { /* the member declining is a valid answer, not an error */ }
+  try {
+    await m.requestPermission([{ accessType: 'read' as const, recordType: HISTORY_PERMISSION }]);
+  } catch { /* an older Health Connect does not know this one. The eleven stand. */ }
   return portStatus();
 }
 
